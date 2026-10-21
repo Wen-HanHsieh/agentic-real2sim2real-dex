@@ -1,0 +1,809 @@
+{
+ "title": "Agentic Real2Sim2Real: Closed-loop Feedback Learning",
+ "generated_utc": "2026-10-21T20:28:15Z",
+ "collected_utc": "2026-10-21T20:27:40Z",
+ "stale": {
+  "metrics": false,
+  "agents": false,
+  "evaluations": false
+ },
+ "price": {
+  "spot_usd_per_h": 5.3032,
+  "spot_timestamp": "2026-10-21T13:00:00+00:00",
+  "on_demand_usd_per_h": 10.49264,
+  "gpus": 4
+ },
+ "agents": {
+  "baseball": {
+   "status": "running",
+   "status_detail": "last activity 0 min ago",
+   "efficiency": {
+    "start_utc": "2026-10-21T19:53:26Z",
+    "elapsed_s": 2073.6506538391113,
+    "active_s": 1731.2330000400543,
+    "tool_calls": 77,
+    "tokens": {
+     "input_tokens": 6023069,
+     "cached_input_tokens": 5808128,
+     "output_tokens": 51639,
+     "reasoning_output_tokens": 19363,
+     "total_tokens": 6074708
+    },
+    "gpu_hours_util": 0.0,
+    "gpu_hours_alloc": 0.0,
+    "cpu_core_hours": 3.831,
+    "token_trend": [
+     [
+      "2026-10-21T20:00:00Z",
+      1142669
+     ],
+     [
+      "2026-10-21T20:10:00Z",
+      1804449
+     ],
+     [
+      "2026-10-21T20:20:00Z",
+      3894418
+     ],
+     [
+      "2026-10-21T20:30:00Z",
+      6074708
+     ]
+    ],
+    "resource_trend": [
+     [
+      "2026-10-21T20:20:00Z",
+      0.0,
+      16.55
+     ],
+     [
+      "2026-10-21T20:30:00Z",
+      0.0,
+      8.99
+     ]
+    ],
+    "sampling_since_utc": "2026-10-21T20:10:42Z"
+   },
+   "research": {
+    "simulators": [
+     "MuJoCo"
+    ],
+    "methods": [
+     "trajectory optimization",
+     "reinforcement learning",
+     "teacher-student distillation",
+     "system identification"
+    ],
+    "direction": "Hypothesis H1: a staged trajectory with proprioceptive contact correction is a useful first baseline under fixed initial conditions. Use local derivative-free trajectory search before spending target trials. Teacher/student reinforcement learning remains an option if trajectory search is insufficient.",
+    "entries": [
+     {
+      "time_utc": null,
+      "section": "",
+      "kind": "note",
+      "text": "2026-10-21 \u2014 Research initialization Read all task, hardware, object, interface, deployment, scoring, and API documents. Inspected target start screenshot and demonstration frames. No target internals or previous research accessed. Budget starts at 100/100.",
+      "log": "research/research_log.txt",
+      "log_updated_utc": "2026-10-21T20:27:37Z"
+     },
+     {
+      "time_utc": null,
+      "section": "",
+      "kind": "note",
+      "text": "Constraints: fixed wrist, 20 joints, 500 Hz policy / 1 kHz PD; proprioception only; deterministic CPU package. Success requires a 20 cm toss, settled catch, +720 degree world-Z rotation within 3 cm, then final hold.",
+      "log": "research/research_log.txt",
+      "log_updated_utc": "2026-10-21T20:27:37Z"
+     },
+     {
+      "time_utc": null,
+      "section": "",
+      "kind": "hypothesis",
+      "text": "Hypothesis H1: a staged trajectory with proprioceptive contact correction is a useful first baseline under fixed initial conditions. Use local derivative-free trajectory search before spending target trials. Teacher/student reinforcement learning remains an option if trajectory search is insufficient.",
+      "log": "research/research_log.txt",
+      "log_updated_utc": "2026-10-21T20:27:37Z"
+     },
+     {
+      "time_utc": null,
+      "section": "",
+      "kind": "experiment",
+      "text": "Local simulator: independently translate supplied URDF and mount into MuJoCo, preserve inertias, limits, armatures, and PD gains. Contact friction, damping, collision treatment, and ball start position are uncertain surrogate parameters, not known target properties. Initial friction assumption 0.8; local timestep 1 ms.",
+      "log": "research/research_log.txt",
+      "log_updated_utc": "2026-10-21T20:27:37Z"
+     },
+     {
+      "time_utc": null,
+      "section": "",
+      "kind": "reference",
+      "text": "Relevant primary sources consulted: MuJoCo Python/API documentation (https://mujoco.readthedocs.io/en/stable/APIreference/APIfunctions.html); In-Hand Object Rotation via Rapid Motor Adaptation (https://arxiv.org/abs/2210.04887), showing the potential of proprioceptive history for rotation. These motivate design choices and do not establish success on this task.",
+      "log": "research/research_log.txt",
+      "log_updated_utc": "2026-10-21T20:27:37Z"
+     },
+     {
+      "time_utc": "2026-10-21T20:15:00Z",
+      "section": "",
+      "kind": "submission",
+      "text": "20:15 UTC \u2014 Resumed the artifacts in this same task workspace; API budget 1 used / 99 remaining, baseline s01 done. Baseline video retains the ball without release (no task progress). Robot hold q differs from command by a few milliradians. Local inferred ball start (-0.0610,-0.0020,0.3316) m; this is surrogate calibration, not privileged target state.",
+      "log": "research/research_log.txt",
+      "log_updated_utc": "2026-10-21T20:27:37Z"
+     },
+     {
+      "time_utc": "2026-10-21T20:15:00Z",
+      "section": "",
+      "kind": "experiment",
+      "text": "Local flick1: release-to-apex 0.1726 m, contact-free interval 0.376 s, settled retention. Local spin1: ~37 rad over 4 s, displacement under 0.027 m. These are nominal surrogate results only. Combined staged_v1: toss 0.1726 m (below required 0.20 m), spin 36.98 rad, spin displacement 0.0235 m, final 0.3 s peak translational speed 0.00078 m/s and contact at final step. Run submitted to measure transfer; no claim of complete task. Local preflight and authoritative remote validate both pass; inference ~0.003 ms. Hypothesis H2: transfer can be evaluated separately for launch height and spin direction even before qualifying toss. Concurrent local catch1 search increases launch height while rewarding retention.",
+      "log": "research/research_log.txt",
+      "log_updated_utc": "2026-10-21T20:27:37Z"
+     },
+     {
+      "time_utc": "2026-10-21T20:17:00Z",
+      "section": "",
+      "kind": "submission",
+      "text": "20:17 UTC \u2014 s02 video: release occurs, ball travels away from the palm and drops; no catch, spin has no ball. No complete-stage success claimed. Nominal model's fast-launch joint RMS error is 0.093 rad over 0.4\u20131.2 s. Found a local implementation error: clamping qvel after integration still permits integrated displacement above documented motor speed. Added v3 helper with position increments limited each 1 ms as well. This reduces launch-segment RMS to 0.058 rad and correctly predicts loss, though significant trajectory mismatch remains. Old v2 results are invalid as evidence of compliant simulated success; preserve only as search seeds. Corrected local spin-only test still produces 36.98 rad, max 0.0256 m displacement, retained final hold (speed 0.00034 m/s). spin_probe is an explicit isolated-stage transfer experiment; it cannot earn full task progress without toss/catch. Preflight an\u2026",
+      "log": "research/research_log.txt",
+      "log_updated_utc": "2026-10-21T20:27:37Z"
+     },
+     {
+      "time_utc": "2026-10-21T20:28:00Z",
+      "section": "",
+      "kind": "submission",
+      "text": "20:28 UTC \u2014 s03 spin-only target video retains and visibly rotates ball, then holds to final frame. Sparse optical-flow diagnostic estimates camera-axis rotation (3.07,-2.27,-6.73) rad, with 58/400 low-feature frames. This is not a reliable world-Z milestone measurement; do not equate local 37 rad to target rotation. Need longer gait and calibrated rotation reconstruction. s04 corrected-model staged test: ball rises, recontacts the hand near ~1.0 s, then rolls off by ~1.6 s. Catch is not stable. q agreement after flight is ~0.008 rad, whereas launch mismatch is ~0.072 rad. Hypothesis H3: open final catch posture (MCP ~0.27, PIP ~2.05, DIP ~1.4) permits rolling loss; return to Q0 earlier during flight. A local speed/friction/contact-softness scan modestly improves launch joint fit with speed factor 0.9; parameters remain non-identifiable from one launch. Full unfiltered self-collision su\u2026",
+      "log": "research/research_log.txt",
+      "log_updated_utc": "2026-10-21T20:27:37Z"
+     }
+    ],
+    "estimated_scores": [],
+    "log_files": [
+     {
+      "name": "research/research_log.txt",
+      "updated_utc": "2026-10-21T20:27:37Z",
+      "bytes": 4823
+     }
+    ]
+   },
+   "evaluations": {
+    "used": 4,
+    "limit": 100,
+    "submissions": [
+     {
+      "id": "s01",
+      "submitted_utc": "2026-10-21T19:56:25Z",
+      "finished_utc": "2026-10-21T19:59:28Z",
+      "state": "done",
+      "video": "videos/baseball/s01.mp4"
+     },
+     {
+      "id": "s02",
+      "submitted_utc": "2026-10-21T20:12:26Z",
+      "finished_utc": "2026-10-21T20:14:02Z",
+      "state": "done",
+      "video": "videos/baseball/s02.mp4"
+     },
+     {
+      "id": "s03",
+      "submitted_utc": "2026-10-21T20:17:12Z",
+      "finished_utc": "2026-10-21T20:20:40Z",
+      "state": "done",
+      "video": "videos/baseball/s03.mp4"
+     },
+     {
+      "id": "s04",
+      "submitted_utc": "2026-10-21T20:23:13Z",
+      "finished_utc": "2026-10-21T20:24:56Z",
+      "state": "done",
+      "video": "videos/baseball/s04.mp4"
+     }
+    ],
+    "validate_calls_utc": [
+     "2026-10-21T19:56:18Z",
+     "2026-10-21T20:12:11Z",
+     "2026-10-21T20:16:54Z",
+     "2026-10-21T20:22:42Z"
+    ]
+   }
+  },
+  "pen": {
+   "status": "running",
+   "status_detail": "last activity 0 min ago",
+   "efficiency": {
+    "start_utc": "2026-10-21T19:53:23Z",
+    "elapsed_s": 2076.6878678798676,
+    "active_s": 1706.2959997653961,
+    "tool_calls": 95,
+    "tokens": {
+     "input_tokens": 8423857,
+     "cached_input_tokens": 8145920,
+     "output_tokens": 67753,
+     "reasoning_output_tokens": 25103,
+     "total_tokens": 8491610
+    },
+    "gpu_hours_util": 0.3489,
+    "gpu_hours_alloc": 0.4681,
+    "cpu_core_hours": 1.356,
+    "token_trend": [
+     [
+      "2026-10-21T20:00:00Z",
+      1595303
+     ],
+     [
+      "2026-10-21T20:10:00Z",
+      2457443
+     ],
+     [
+      "2026-10-21T20:20:00Z",
+      5590555
+     ],
+     [
+      "2026-10-21T20:30:00Z",
+      8491610
+     ]
+    ],
+    "resource_trend": [
+     [
+      "2026-10-21T20:20:00Z",
+      77.3,
+      6.87
+     ],
+     [
+      "2026-10-21T20:30:00Z",
+      169.1,
+      1.98
+     ]
+    ],
+    "sampling_since_utc": "2026-10-21T20:10:42Z"
+   },
+   "research": {
+    "simulators": [
+     "MuJoCo Warp"
+    ],
+    "methods": [
+     "CMA-ES",
+     "trajectory optimization",
+     "teacher-student distillation",
+     "system identification"
+    ],
+    "direction": "Success rubric is evaluated locally at physics resolution; remote evidence supplies videos/joint logs only, so inferred object motion and contact will be labelled estimates.",
+    "entries": [
+     {
+      "time_utc": null,
+      "section": "Pen manipulation research log",
+      "kind": "experiment",
+      "text": "All target interaction uses the documented `r2s2r-pen` API. No target internals or other research workspaces are used.",
+      "log": "research/LOG.md",
+      "log_updated_utc": "2026-10-21T19:54:18Z"
+     },
+     {
+      "time_utc": null,
+      "section": "2026-10-21 \u2014 Setup and initial hypothesis",
+      "kind": "hypothesis",
+      "text": "Read all task, success, hardware, object, contract, packaging, and remote API documents. Inspected target screenshot and sampled human demonstration frames.",
+      "log": "research/LOG.md",
+      "log_updated_utc": "2026-10-21T19:54:18Z"
+     },
+     {
+      "time_utc": null,
+      "section": "2026-10-21 \u2014 Setup and initial hypothesis",
+      "kind": "hypothesis",
+      "text": "Available compute: four NVIDIA L40S GPUs (46 GB each), 48 CPU threads. Initial submission budget: 100/100.",
+      "log": "research/LOG.md",
+      "log_updated_utc": "2026-10-21T19:54:18Z"
+     },
+     {
+      "time_utc": null,
+      "section": "2026-10-21 \u2014 Setup and initial hypothesis",
+      "kind": "hypothesis",
+      "text": "Required behavior: +1080 degrees of world-Z heading within three <=3 s revolutions, then stable retained hold through final second. No object or contact observations at deployment; only encoders and target history.",
+      "log": "research/LOG.md",
+      "log_updated_utc": "2026-10-21T19:54:18Z"
+     },
+     {
+      "time_utc": null,
+      "section": "2026-10-21 \u2014 Setup and initial hypothesis",
+      "kind": "hypothesis",
+      "text": "Hypothesis H1: train a privileged simulation controller, then distill/replay a robust phase-conditioned policy with proprioceptive feedback. Fixed starting conditions may permit trajectory optimization as a useful bootstrap.",
+      "log": "research/LOG.md",
+      "log_updated_utc": "2026-10-21T19:54:18Z"
+     },
+     {
+      "time_utc": null,
+      "section": "2026-10-21 \u2014 Setup and initial hypothesis",
+      "kind": "experiment",
+      "text": "Local model choice: MuJoCo with supplied URDF meshes, documented root transform, mass, armature, torque/speed bounds, and 1 kHz PD. GPU batching via MuJoCo Warp if needed.",
+      "log": "research/LOG.md",
+      "log_updated_utc": "2026-10-21T19:54:18Z"
+     },
+     {
+      "time_utc": null,
+      "section": "2026-10-21 \u2014 Setup and initial hypothesis",
+      "kind": "hypothesis",
+      "text": "Unknowns to identify from allowed feedback: exact initial pen position, contact friction/compliance, passive settling. These must be treated as estimates, not known target parameters.",
+      "log": "research/LOG.md",
+      "log_updated_utc": "2026-10-21T19:54:18Z"
+     },
+     {
+      "time_utc": null,
+      "section": "2026-10-21 \u2014 Setup and initial hypothesis",
+      "kind": "hypothesis",
+      "text": "Related primary sources consulted: MuJoCo Warp documentation/repository; Wang et al., *Lessons from Learning to Spin Pens*, PMLR 270 (2025). That work motivates simulation trajectories plus proprioceptive policy refinement; it does not establish feasibility for this hand/task.",
+      "log": "research/LOG.md",
+      "log_updated_utc": "2026-10-21T19:54:18Z"
+     },
+     {
+      "time_utc": null,
+      "section": "2026-10-21 \u2014 Setup and initial hypothesis",
+      "kind": "hypothesis",
+      "text": "No performance result or success claimed yet.",
+      "log": "research/LOG.md",
+      "log_updated_utc": "2026-10-21T19:54:18Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Scope and evidence",
+      "kind": "observation",
+      "text": "Read README, TASK, SUCCESS, CONTRACT, PACKAGE, REMOTE_API, hardware/object specifications, demonstration frames, and target screenshot. Target access is exclusively through `r2s2r-pen`. Existing `research/` contents are excluded. At entry the API reports 1/100 submissions used; prior results are not inspected. GPU 1 is selected to avoid an existing GPU 0 process.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Plan and hypotheses",
+      "kind": "hypothesis",
+      "text": "Build an independent MuJoCo model from the supplied URDF and mount, capsule geometry, masses, armatures, PD gains, effort and speed limits.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Plan and hypotheses",
+      "kind": "hypothesis",
+      "text": "Estimate initial object placement from public screenshot and hand kinematics; treat friction and settling as uncertain.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Plan and hypotheses",
+      "kind": "hypothesis",
+      "text": "First establish retention and controlled positive heading, then optimize finger gait and distill/replay robust local trajectories using proprioceptive corrections.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Plan and hypotheses",
+      "kind": "hypothesis",
+      "text": "Success rubric is evaluated locally at physics resolution; remote evidence supplies videos/joint logs only, so inferred object motion and contact will be labelled estimates.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Plan and hypotheses",
+      "kind": "reference",
+      "text": "Related work: MuJoCo Python documentation https://mujoco.readthedocs.io/en/stable/python.html ; vendor Wuji-MJLab https://github.com/wuji-technology/wuji-mjlab (different 250 mm pen and camera observations; its checkpoints are not directly compatible).",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Experiments",
+      "kind": "experiment",
+      "text": "Pending model calibration and a fresh hold baseline.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Hold baseline s02",
+      "kind": "experiment",
+      "text": "Local preflight and authoritative remote validate passed. Act mean 0.003 ms remotely; deterministic replay passed.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Hold baseline s02",
+      "kind": "submission",
+      "text": "Fresh submission s02 (second global submission) completed. Video: visibly stationary pen retained throughout 12 s; no spin. Estimated progress 0. Joint logs max absolute velocity 0.23 rad/s including encoder noise.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Hold baseline s02",
+      "kind": "experiment",
+      "text": "Native local hold steady joint angles differ from remote steady angles by order 1e-4 rad, supporting the public URDF, inertias and PD construction. Object placement/friction remain uncalibrated.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Local trajectory search",
+      "kind": "experiment",
+      "text": "Implemented multithreaded native MuJoCo rollout and separable CMA-ES over smooth joint-position keyframes.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Local trajectory search",
+      "kind": "experiment",
+      "text": "Unconstrained search produced multi-turn trajectories with >50 rad/s joints; rejected as hardware-incompatible and not submitted.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Local trajectory search",
+      "kind": "observation",
+      "text": "Added explicit pen touch sensing in the local simulator and loss for >95 ms contact gaps, >45 degree tilt, >75 mm horizontal displacement and >28 mm height loss. Added a strong joint speed penalty. Early constrained results exceed 180 degrees locally, but still fall short of a compliant full revolution. These are simulated results only.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Packaged trajectory v1 and transfer s03",
+      "kind": "observation",
+      "text": "Added deterministic target slew at 80% motor speed and damping reflex above 75% measured motor speed; replayed with explicit PD at 1 kHz for all 12 s.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Packaged trajectory v1 and transfer s03",
+      "kind": "note",
+      "text": "Exact local replay: max joint speed / limit = 0.787. Retention constraints first fail at 2.942 s, with maximum retained heading approximately +132 degrees; later free-flight rotation is explicitly excluded. Final contact is lost. This is a partial-progress calibration candidate, not a task solution.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Packaged trajectory v1 and transfer s03",
+      "kind": "experiment",
+      "text": "Local preflight passed (mean 0.026 ms), authoritative remote validation passed (mean 0.031 ms), submitted as s03.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Packaged trajectory v1 and transfer s03",
+      "kind": "note",
+      "text": "Simulation lesson: optimizing native position-actuator rollouts and adding reflexes afterwards changes the contact sequence materially. Next optimizer must include the deployed controller inside simulation.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Transfer diagnosis and model revision",
+      "kind": "submission",
+      "text": "s03 video: motion initially rotates slightly clockwise, followed by a rapid partial counterclockwise sweep and loss before a complete revolution. Automated top-view color tracking estimates approximately +137 degrees in the image near 2.5 s, but occlusion and tilt prevent certifying retention/heading milestones. No verified score is assigned.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Transfer diagnosis and model revision",
+      "kind": "note",
+      "text": "Joint logs: pinky abduction peaks at 10.385 rad/s versus its 8.11 rad/s limit, so s03 is not hardware-compliant.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Transfer diagnosis and model revision",
+      "kind": "note",
+      "text": "Original model omitted inter-finger collisions. Added them and excluded adjacent wrist/proximal geometry and links within the same finger to avoid convex-hull overlap at the mount. This reduces active-motion joint prediction errors (third second RMS about 0.173 to 0.118 rad; fourth about 0.240 to 0.187 rad), while steady pose remains consistent.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Transfer diagnosis and model revision",
+      "kind": "note",
+      "text": "Running contact-parameter identification against the returned q_target/q traces, and GPU search with the actual 500 Hz controller, 1 kHz physics, contact retention, and motor speed penalties.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     },
+     {
+      "time_utc": null,
+      "section": "Transfer diagnosis and model revision",
+      "kind": "note",
+      "text": "Target budget: 3 used globally, 97 remaining. This study has submitted s02 and s03 only.",
+      "log": "study_r3/LOG.md",
+      "log_updated_utc": "2026-10-21T20:24:00Z"
+     }
+    ],
+    "estimated_scores": [
+     {
+      "submission": "s02",
+      "score": 0.0,
+      "time_utc": null,
+      "quote": "Fresh submission s02 (second global submission) completed. Video: visibly stationary pen retained throughout 12 s; no spin. Estimated progress 0. Joint logs max absolute velocity 0.23 rad/s including encoder noise."
+     }
+    ],
+    "log_files": [
+     {
+      "name": "research/LOG.md",
+      "updated_utc": "2026-10-21T19:54:18Z",
+      "bytes": 1600
+     },
+     {
+      "name": "study_r3/LOG.md",
+      "updated_utc": "2026-10-21T20:24:00Z",
+      "bytes": 4524
+     }
+    ]
+   },
+   "evaluations": {
+    "used": 3,
+    "limit": 100,
+    "submissions": [
+     {
+      "id": "s01",
+      "submitted_utc": "2026-10-21T19:55:38Z",
+      "finished_utc": "2026-10-21T19:57:48Z",
+      "state": "done",
+      "video": "videos/pen/s01.mp4"
+     },
+     {
+      "id": "s02",
+      "submitted_utc": "2026-10-21T20:11:10Z",
+      "finished_utc": "2026-10-21T20:13:18Z",
+      "state": "done",
+      "video": "videos/pen/s02.mp4"
+     },
+     {
+      "id": "s03",
+      "submitted_utc": "2026-10-21T20:18:56Z",
+      "finished_utc": "2026-10-21T20:20:34Z",
+      "state": "done",
+      "video": "videos/pen/s03.mp4"
+     }
+    ],
+    "validate_calls_utc": [
+     "2026-10-21T19:55:30Z",
+     "2026-10-21T20:10:56Z",
+     "2026-10-21T20:18:25Z"
+    ]
+   }
+  },
+  "cube": {
+   "status": "running",
+   "status_detail": "last activity 0 min ago",
+   "efficiency": {
+    "start_utc": "2026-10-21T19:53:24Z",
+    "elapsed_s": 2075.7198152542114,
+    "active_s": 1718.8890001773834,
+    "tool_calls": 78,
+    "tokens": {
+     "input_tokens": 4999358,
+     "cached_input_tokens": 4848000,
+     "output_tokens": 60915,
+     "reasoning_output_tokens": 29500,
+     "total_tokens": 5060273
+    },
+    "gpu_hours_util": 0.0,
+    "gpu_hours_alloc": 0.0,
+    "cpu_core_hours": 3.492,
+    "token_trend": [
+     [
+      "2026-10-21T20:00:00Z",
+      1438708
+     ],
+     [
+      "2026-10-21T20:10:00Z",
+      2326515
+     ],
+     [
+      "2026-10-21T20:20:00Z",
+      3671783
+     ],
+     [
+      "2026-10-21T20:30:00Z",
+      5060273
+     ]
+    ],
+    "resource_trend": [
+     [
+      "2026-10-21T20:20:00Z",
+      0.0,
+      9.28
+     ],
+     [
+      "2026-10-21T20:30:00Z",
+      0.0,
+      15.09
+     ]
+    ],
+    "sampling_since_utc": "2026-10-21T20:10:42Z"
+   },
+   "research": {
+    "simulators": [
+     "MuJoCo"
+    ],
+    "methods": [
+     "CEM",
+     "domain randomization",
+     "system identification"
+    ],
+    "direction": "Decision: submit this locally simulated trajectory once as a contact/transfer probe, while developing placement/friction robustness and video-based analysis. Package passed full local preflight (20000 actions, deterministic, 0.007 ms mean) and remote validate (valid, uncharged). Follow paper arxiv:1910.07113 for the domain randomization rationale; own surrogate follows official MuJoCo modeling docs. No claims of reproduced solving skill.",
+    "entries": [
+     {
+      "time_utc": null,
+      "section": "",
+      "kind": "note",
+      "text": "Autonomous cube manipulation research \u2014 2026-10-21",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     },
+     {
+      "time_utc": null,
+      "section": "",
+      "kind": "note",
+      "text": "Scope: provided task resources, robot assets, own simulation, documented r2s2r-cube API only.",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     },
+     {
+      "time_utc": null,
+      "section": "",
+      "kind": "note",
+      "text": "Target: fixed scramble R' F U2, inverse U2 F' R; 40 s; encoder-only policy; 100 submissions.",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     },
+     {
+      "time_utc": null,
+      "section": "",
+      "kind": "observation",
+      "text": "Measured: no experiments yet, all 100 submissions available. Four NVIDIA L40S GPUs available.",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     },
+     {
+      "time_utc": null,
+      "section": "",
+      "kind": "note",
+      "text": "Unknowns: cube placement coordinates, contact friction, layer resistance, target mechanism implementation.",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     },
+     {
+      "time_utc": null,
+      "section": "",
+      "kind": "decision",
+      "text": "Decision: construct an independent MuJoCo surrogate from the provided URDF and mechanism specification. Start with a hold baseline, then kinematic finger trajectories and local optimization; compare target feedback videos and encoder residuals.",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     },
+     {
+      "time_utc": null,
+      "section": "",
+      "kind": "hypothesis",
+      "text": "Hypothesis: bottom-layer support plus coordinated thumb/finger sweeps can generate isolated turns. This is unverified.",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     },
+     {
+      "time_utc": null,
+      "section": "",
+      "kind": "reference",
+      "text": "References: https://arxiv.org/abs/1910.07113 ; https://mujoco.readthedocs.io/en/3.8.0/modeling.html",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     },
+     {
+      "time_utc": null,
+      "section": "",
+      "kind": "experiment",
+      "text": "Experiment L001: CEM, 24 generations x 96 candidates, independent one-U-hinge MuJoCo surrogate, initial center (-.063,.015,.325), friction .9, resistance .0005 Nm, sinusoidal detent .003 Nm. Best released angle +89.94 degrees at 3.3 s, max center displacement 18.6 mm, max joint speed 7.23 rad/s. This is a local result only. Varying initial center by 5\u201313 mm reduced final angle to 42\u201349 degrees: transfer sensitivity is high. Decision: improve robustness before submission.",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     },
+     {
+      "time_utc": "2026-10-21T20:13:00Z",
+      "section": "",
+      "kind": "submission",
+      "text": "2026-10-21 20:13 UTC \u2014 resumed current workspace research and read all task documents, demonstration samples, target screenshot, and existing local code. API shows s01 completed, 99 submissions left. No target internals or other workspaces accessed.",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     },
+     {
+      "time_utc": "2026-10-21T20:13:00Z",
+      "section": "",
+      "kind": "submission",
+      "text": "E001/s01 hold baseline: video inspection at 0,.2,.5,1,2,5,10,20,30,40 s shows retained cube, no visible layer turn. Estimated rubric score 0 (independent visual assessment, not target label). Joint tracking RMSE 0.0020\u20130.0071 rad; maximum recorded speeds 0.19\u20130.23 rad/s are comparable to velocity noise. Baseline validates steady support.",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     },
+     {
+      "time_utc": "2026-10-21T20:13:00Z",
+      "section": "",
+      "kind": "experiment",
+      "text": "L002: rechecked existing quarter-turn trajectory for 40 s at screenshot-fitted centre [-.075607,.009798,.318856]. Final local layer angle 21.53 degrees, max centre motion 18.03 mm; this differs from L001's training placement and confirms transfer sensitivity. Do not interpret L001 as target success.",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     },
+     {
+      "time_utc": "2026-10-21T20:13:00Z",
+      "section": "",
+      "kind": "decision",
+      "text": "Decision: submit this locally simulated trajectory once as a contact/transfer probe, while developing placement/friction robustness and video-based analysis. Package passed full local preflight (20000 actions, deterministic, 0.007 ms mean) and remote validate (valid, uncharged). Follow paper arxiv:1910.07113 for the domain randomization rationale; own surrogate follows official MuJoCo modeling docs. No claims of reproduced solving skill.",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     },
+     {
+      "time_utc": "2026-10-21T20:13:00Z",
+      "section": "",
+      "kind": "experiment",
+      "text": "L003: optimizing at screenshot-fitted placement gave local quarter angle 90.03 degrees, max centre motion 10.4 mm, maximum observed joint speed 5.36 rad/s. A return-to-q0 cycle initialized from it completed near 90 degrees in seven independent surrogate variants (initial check: 84.55\u201394.40 degrees). Domain variation: \u00b12 mm centre, friction .55\u20131.25, hinge friction .0002\u2013.002 Nm, detent .001\u2013.006 Nm, mass .85\u20131.15 times nominal. Training includes settling after returning to q0, retention, speed, and base-pose drift penalties. These are training-domain results, not held-out transfer or target success.",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     },
+     {
+      "time_utc": "2026-10-21T20:13:00Z",
+      "section": "",
+      "kind": "experiment",
+      "text": "L004: hold-baseline contact fitting reduced own-surrogate mean encoder mismatch from .000850 to .000098 rad. Estimated initialization [-.07905,.00990,.31924] and friction .5005 are model-dependent, non-unique parameters; equilibrium pose differs from initialization. Do not label these as measured target object state or friction. Decision: retain screenshot-based placement and use this alternative in subsequent held-out checks.",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     },
+     {
+      "time_utc": "2026-10-21T20:13:00Z",
+      "section": "",
+      "kind": "note",
+      "text": "Methods: added image-only coloured-sticker renderer and camera fit from the supplied screenshot; initial image-fit loss .0285/.0557 in two views. These fits are hypotheses for independent feedback analysis. Also generalized own one-layer surrogate to selectable face axes, and began F' primitive search. This ideal single-hinge model does not establish robustness to the target's full mechanism.",
+      "log": "research/RESEARCH_LOG.txt",
+      "log_updated_utc": "2026-10-21T20:19:12Z"
+     }
+    ],
+    "estimated_scores": [
+     {
+      "submission": "s01",
+      "score": 0.0,
+      "time_utc": "2026-10-21T20:13:00Z",
+      "quote": "E001/s01 hold baseline: video inspection at 0,.2,.5,1,2,5,10,20,30,40 s shows retained cube, no visible layer turn. Estimated rubric score 0 (independent visual assessment, not target label). Joint tracking RMSE 0.0020\u20130"
+     }
+    ],
+    "log_files": [
+     {
+      "name": "research/RESEARCH_LOG.txt",
+      "updated_utc": "2026-10-21T20:19:12Z",
+      "bytes": 4173
+     }
+    ]
+   },
+   "evaluations": {
+    "used": 2,
+    "limit": 100,
+    "submissions": [
+     {
+      "id": "s01",
+      "submitted_utc": "2026-10-21T19:55:30Z",
+      "finished_utc": "2026-10-21T20:09:41Z",
+      "state": "done",
+      "video": "videos/cube/s01.mp4"
+     },
+     {
+      "id": "s02",
+      "submitted_utc": "2026-10-21T20:10:45Z",
+      "finished_utc": "2026-10-21T20:27:29Z",
+      "state": "done",
+      "video": "videos/cube/s02.mp4"
+     }
+    ],
+    "validate_calls_utc": [
+     "2026-10-21T19:55:15Z",
+     "2026-10-21T20:10:26Z",
+     "2026-10-21T20:21:32Z"
+    ]
+   }
+  }
+ },
+ "prompt": {
+  "text": "# Autonomous Dexterous Manipulation Research\n\nYour goal is to reproduce the dexterous manipulation skill demonstrated in the human video and develop a reliable policy for the target environment.\n\nRead the provided task documentation and resources before starting.\n\n## Research Autonomy\n\n- Independently choose your simulator, algorithms, policy architecture, rewards, curriculum, and training strategy.\n- Freely use available GPUs, papers, GitHub, datasets, and external tools.\n- Design and iterate on your own simulation and training environment.\n- Maintain a concise research log of hypotheses, experiments, results, and decisions.\n\n## Closed-loop Learning\n\nSuperDex is a black-box target environment. Interact with it only through the documented evaluation API.\n\n- Develop and validate solutions locally before submitting.\n- Use `r2s2r-preflight` and remote `validate` to check deployment compliance.\n- Submit policies and independently evaluate task progress and failure modes from evaluation videos and robot joint logs.\n- Use these findings to guide subsequent experiments and improve your approach.\n- Use the **100-submission budget** efficiently.\n\n`SUCCESS.md` defines evaluation criteria, not mandatory training rewards. You may design your own learning objectives.\n\n## Rules\n\n- Do not access target internals, previous research rounds, or other agents' workspaces.\n- Do not modify or exploit target evaluation conditions.\n- Respect all hardware, deployment, and evaluation constraints.\n- Distinguish measured results from assumptions. Never claim unverified success.\n- Make research decisions autonomously without waiting for human approval.\n\n**Objective:** Autonomously discover, develop, and refine a solution that reliably reproduces the demonstrated skill in the target environment.",
+  "same_for_all_agents": true,
+  "agents_with_prompt": [
+   "baseball",
+   "cube",
+   "pen"
+  ]
+ }
+}
