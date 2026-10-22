@@ -1,7 +1,7 @@
 {
  "title": "Agentic Real2Sim2Real: Closed-loop Feedback Learning",
- "generated_utc": "2026-10-22T05:02:30Z",
- "collected_utc": "2026-10-22T05:02:30Z",
+ "generated_utc": "2026-10-22T05:03:56Z",
+ "collected_utc": "2026-10-22T05:03:56Z",
  "stale": {
   "metrics": false,
   "agents": false,
@@ -16,7 +16,7 @@
  "agents": {
   "baseball": {
    "status": "running",
-   "status_detail": "last activity 9 min ago",
+   "status_detail": "last activity 11 min ago",
    "efficiency": {
     "start_utc": "2026-10-21T19:53:26Z",
     "elapsed_s": 32796.33388996124,
@@ -1118,6 +1118,10 @@
      }
     ]
    },
+   "best_so_far": {
+    "sid": "s08",
+    "basis": "research/research_log.txt: \"Current best target retained sequence remains s08\"; research/status.json: \"s08 retention/spin and s17 small toss/catch are component evidence only; neither has verified required toss or hardware compliance.\""
+   },
    "evaluations": {
     "used": 18,
     "limit": 100,
@@ -1127,126 +1131,643 @@
       "submitted_utc": "2026-10-21T19:56:25Z",
       "finished_utc": "2026-10-21T19:59:28Z",
       "state": "done",
-      "video": "videos/baseball/s01.mp4"
+      "video": "videos/baseball/s01.mp4",
+      "detail": {
+       "kind": "baseline",
+       "categories": [
+        "other"
+       ],
+       "hypothesis": "Measure the target's unmodified start condition before spending trials on manipulation (part of H1 plan: local search before target trials).",
+       "changes": "Hold policy: returns prev_q_target[-1] (start pose) every step; no release.",
+       "observed_local": "No local rollout of this package was saved.",
+       "observed_superdex": "\"Baseline video retains the ball without release (no task progress).\"; robot hold q differs from command by a few milliradians.",
+       "unknown": "Exact local validation of s01 not logged; hypothesis wording for s01 specifically is not written in the log (inferred from H1 plan and the package docstring).",
+       "agent_estimated_progress": null,
+       "failure_observation": "No release, so no task progress.",
+       "next_direction": "Infer ball start locally, then search flick (toss) and spin trajectories locally (flick1/spin1, staged_v1).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "missing",
+        "file": null,
+        "reason": "No saved local rollout/render of this package exists in the agent workspace (only research/artifacts/settled.npz, a settled start state, not a rollout). Regenerating requires running agent code in the r2s2r_replay sandbox; copying the workspace into the sandbox was refused by this session's permission policy (remote writes blocked), so nothing was executed on AWS.",
+        "model": "",
+        "initial_conditions": "",
+        "noise": "",
+        "steps": null,
+        "duration_s": null,
+        "differences": ""
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s02",
       "submitted_utc": "2026-10-21T20:12:26Z",
       "finished_utc": "2026-10-21T20:14:02Z",
       "state": "done",
-      "video": "videos/baseball/s02.mp4"
+      "video": "videos/baseball/s02.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory",
+        "optimization_method"
+       ],
+       "hypothesis": "H2: \"transfer can be evaluated separately for launch height and spin direction even before qualifying toss\"; a staged flick-then-spin trajectory from local derivative-free search is a useful first transfer test.",
+       "changes": "Open-loop 5000-step joint trajectory combining local flick1 launch and spin1 gait (trajectory.npz), replacing the hold.",
+       "observed_local": "Local (v2 model): toss 0.1726 m (below 0.20 m), spin 36.98 rad, displacement 0.0235 m, settled final hold. Agent later found the v2 motor-speed clamp invalid (\"Old v2 results are invalid\").",
+       "observed_superdex": "\"release occurs, ball travels away from the palm and drops; no catch, spin has no ball.\"",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Ball leaves palm after release and drops; local model had a speed-clamp bug allowing too-fast joint displacement.",
+       "next_direction": "Fix motor speed model (v3 position-increment limit), re-optimize catch (catch_v3, async_v3); run spin-only transfer test.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s02.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/staged_v1_local.npz (written 2026-10-21 20:12:02 UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent native MuJoCo rollout (research/src/sim.py + rollout.cpp, built model from research/src/local_model.py), legacy v2 helper (pre-v3 fix), default whole-hul\u2026",
+        "initial_conditions": "Agent settled start state stored in the trace (initial, 53 values): hand at Q0, ball resting on palm at the agent's inferred start (approx. (-0.061,-0.002,0.332) m, log 20:15 UTC).",
+        "noise": "Encoder noise irrelevant: open-loop package ignores observations; native rollout is deterministic.",
+        "steps": 5000,
+        "duration_s": 10.0,
+        "differences": "Open-loop trajectory package (policy.py returns trajectory q[step], no velocity); trace targets equal package trajectory.npz q exactly (5000x20), so the trace is this package's rollout. Agent legacy native model clipped joint positions/velocities to limits (agent later says this 'hid' launch position/speed excursions, log 03:36 UTC); local contact/friction/motor parameters are the agent's fitted surrogate guesses, not target values; ball start is the agent's camera-inferred estimate; render add\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s03",
       "submitted_utc": "2026-10-21T20:17:12Z",
       "finished_utc": "2026-10-21T20:20:40Z",
       "state": "done",
-      "video": "videos/baseball/s03.mp4"
+      "video": "videos/baseball/s03.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "controller_trajectory"
+       ],
+       "hypothesis": "Spin can be tested in isolation: \"spin_probe is an explicit isolated-stage transfer experiment; it cannot earn full task progress without toss/catch.\"",
+       "changes": "Open-loop spin-only gait trajectory (no toss), checked in the corrected v3 model.",
+       "observed_local": "Corrected local spin-only test: 36.98 rad, max 0.0256 m displacement, retained final hold (speed 0.00034 m/s).",
+       "observed_superdex": "\"spin-only target video retains and visibly rotates ball, then holds to final frame\"; sparse optical flow estimate (3.07,-2.27,-6.73) rad camera-axis is \"not a reliable world-Z milestone measurement\".",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Target rotation magnitude much lower/unknown vs local 37 rad; no toss/catch by design.",
+       "next_direction": "Longer gait and calibrated rotation reconstruction.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s03.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/spin_probe_local.npz (written 2026-10-21 20:16:41 UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent native MuJoCo rollout, corrected v3 helper (rollout_v3, position increments limited per 1 ms), whole-hull contacts, friction 0.8 (sim.py defaults).",
+        "initial_conditions": "Agent settled start state stored in the trace (initial, 53 values): hand at Q0, ball resting on palm at the agent's inferred start (approx. (-0.061,-0.002,0.332) m, log 20:15 UTC).",
+        "noise": "Encoder noise irrelevant: open-loop package ignores observations; native rollout is deterministic.",
+        "steps": 5000,
+        "duration_s": 10.0,
+        "differences": "Open-loop trajectory package (policy.py returns trajectory q[step], no velocity); trace targets equal package trajectory.npz q exactly (5000x20), so the trace is this package's rollout. An EXISTING agent render of this same trace also exists: research/artifacts/rotation_calibration.mp4 (made by research/src/check_video_estimator.py at 20:29:42 UTC from spin_probe_local.npz, steps 500-2500 only = t 1-5 s, one camera duplicated side-by-side, extra seam sites, mpeg4); copied here as s03_existing_p\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s04",
       "submitted_utc": "2026-10-21T20:23:13Z",
       "finished_utc": "2026-10-21T20:24:56Z",
       "state": "done",
-      "video": "videos/baseball/s04.mp4"
+      "video": "videos/baseball/s04.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "physics_contact_model",
+        "controller_trajectory",
+        "optimization_method"
+       ],
+       "hypothesis": "After fixing the motor-speed model (v3), a staged toss/catch/spin trajectory optimized in the corrected model should transfer better than s02.",
+       "changes": "Re-optimized open-loop staged trajectory (launch + catch + spin) in the corrected v3 model.",
+       "observed_local": "Agent's saved local trace (computed by this audit from the trace): ball rises ~0.18 m above start around 0.81 s and is held at final step. The log gives no explicit pre-submission numbers for s04.",
+       "observed_superdex": "\"ball rises, recontacts the hand near ~1.0 s, then rolls off by ~1.6 s. Catch is not stable.\"",
+       "unknown": "Exact local metrics the agent used to accept s04 are not logged.",
+       "agent_estimated_progress": null,
+       "failure_observation": "Open final catch posture permits rolling loss (H3); launch joint mismatch ~0.072 rad.",
+       "next_direction": "H3: return to Q0 earlier during flight (early-catch grid), longer spin, finger preload search.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s04.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/staged_v3_local.npz (written 2026-10-21 20:22:43 UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent native MuJoCo rollout, v3 helper, whole-hull contacts (sim.py defaults); exact friction not recorded in trace.",
+        "initial_conditions": "Agent settled start state stored in the trace (initial, 53 values): hand at Q0, ball resting on palm at the agent's inferred start (approx. (-0.061,-0.002,0.332) m, log 20:15 UTC).",
+        "noise": "Encoder noise irrelevant: open-loop package ignores observations; native rollout is deterministic.",
+        "steps": 5000,
+        "duration_s": 10.0,
+        "differences": "Open-loop trajectory package (policy.py returns trajectory q[step], no velocity); trace targets equal package trajectory.npz q exactly (5000x20), so the trace is this package's rollout. Agent legacy native model clipped joint positions/velocities to limits (agent later says this 'hid' launch position/speed excursions, log 03:36 UTC); local contact/friction/motor parameters are the agent's fitted surrogate guesses, not target values; ball start is the agent's camera-inferred estimate; render add\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s05",
       "submitted_utc": "2026-10-21T20:29:56Z",
       "finished_utc": "2026-10-21T20:33:36Z",
       "state": "done",
-      "video": "videos/baseball/s05.mp4"
+      "video": "videos/baseball/s05.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory"
+       ],
+       "hypothesis": "H3: \"open final catch posture (MCP ~0.27, PIP ~2.05, DIP ~1.4) permits rolling loss; return to Q0 earlier during flight.\"",
+       "changes": "Early cradle return at 0.75-0.95 s and longer spin 1.65-9.0 s.",
+       "observed_local": "Agent's saved local trace (audit computation): ~0.18 m rise, ball held to final step.",
+       "observed_superdex": "\"retains the ball after landing, through spin, and to final frame\"; approximate world-Z rotation 9.72 rad (~557 deg) with \"material uncertainty\"; toss \"visually below 0.20 m\".",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Toss below 20 cm (remaining rise after 0.66 s ~0.06 m).",
+       "next_direction": "H4 motor model fit (PD + torque-speed envelope); search higher ballistic release.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s05.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/early_catch_v1_local.npz (written 2026-10-21 20:29:02 UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent native MuJoCo rollout, v3 helper, whole-hull contacts (sim.py defaults).",
+        "initial_conditions": "Agent settled start state stored in the trace (initial, 53 values): hand at Q0, ball resting on palm at the agent's inferred start (approx. (-0.061,-0.002,0.332) m, log 20:15 UTC).",
+        "noise": "Encoder noise irrelevant: open-loop package ignores observations; native rollout is deterministic.",
+        "steps": 5000,
+        "duration_s": 10.0,
+        "differences": "Open-loop trajectory package (policy.py returns trajectory q[step], no velocity); trace targets equal package trajectory.npz q exactly (5000x20), so the trace is this package's rollout. Agent legacy native model clipped joint positions/velocities to limits (agent later says this 'hid' launch position/speed excursions, log 03:36 UTC); local contact/friction/motor parameters are the agent's fitted surrogate guesses, not target values; ball start is the agent's camera-inferred estimate; render add\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s06",
       "submitted_utc": "2026-10-21T20:42:58Z",
       "finished_utc": "2026-10-21T20:46:57Z",
       "state": "done",
-      "video": "videos/baseball/s06.mp4"
+      "video": "videos/baseball/s06.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "controller_trajectory"
+       ],
+       "hypothesis": "Compare target rotation rate across gait frequencies \"for efficient target speed comparison\".",
+       "changes": "\"same retained toss/catch prefix followed by 1.8, 2.4, and 3.0 Hz gait segments\".",
+       "observed_local": "Local retention test passed before submission (log: \"after local trajectory retention test\"); saved trace holds ball to final step.",
+       "observed_superdex": "\"retains ball across 1.8/2.4/3.0 Hz gait segments\"; estimated net rates 2.88/2.71/2.32 rad/s.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Short blocks are orientation/occlusion sensitive; toss still below criterion.",
+       "next_direction": "s08: full 7.35 s 1.8 Hz gait with the retained catch.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s06.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/spin_speeds_local.npz (written 2026-10-21 20:41:27 UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent native MuJoCo rollout (rollout_v4 era, motor-envelope model per log 20:43 UTC); exact version/params not recorded in trace.",
+        "initial_conditions": "Agent settled start state stored in the trace (initial, 53 values): hand at Q0, ball resting on palm at the agent's inferred start (approx. (-0.061,-0.002,0.332) m, log 20:15 UTC).",
+        "noise": "Encoder noise irrelevant: open-loop package ignores observations; native rollout is deterministic.",
+        "steps": 5000,
+        "duration_s": 10.0,
+        "differences": "Open-loop trajectory package (policy.py returns trajectory q[step], no velocity); trace targets equal package trajectory.npz q exactly (5000x20), so the trace is this package's rollout. Agent legacy native model clipped joint positions/velocities to limits (agent later says this 'hid' launch position/speed excursions, log 03:36 UTC); local contact/friction/motor parameters are the agent's fitted surrogate guesses, not target values; ball start is the agent's camera-inferred estimate; render add\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s07",
       "submitted_utc": "2026-10-21T20:47:57Z",
       "finished_utc": "2026-10-21T20:49:41Z",
       "state": "done",
-      "video": "videos/baseball/s07.mp4"
+      "video": "videos/baseball/s07.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "system_identification",
+        "controller_trajectory"
+       ],
+       "hypothesis": "H4: \"explicit 1 kHz PD plus a linear torque-speed envelope fits launch robot logs much better\"; a launch optimized under the fitted motor model should toss higher and still catch.",
+       "changes": "New launch/catch trajectory searched in the fitted motor surrogate (\"stronger motor-fit launch\").",
+       "observed_local": "Agent's saved local trace (audit computation) peaks ~0.19 m above start at 0.97 s and ends WITHOUT hand contact; log says \"nominal surrogate returns to palm\". The two are not reconciled in the log.",
+       "observed_superdex": "\"stronger motor-fit launch misses catch; its ball path drifts outward\".",
+       "unknown": "Which local model the agent used to accept s07, and why its saved trace ends without hand contact, is not stated.",
+       "agent_estimated_progress": null,
+       "failure_observation": "Good joint-trajectory fit does not imply correct contact transfer.",
+       "next_direction": "Photometric sphere tracking, static-grasp calibration, contact-geometry hypothesis (convex decomposition).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s07.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/motor_catch_v1_local.npz (written 2026-10-21 20:46:25 UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent native MuJoCo rollout with fitted motor envelope (rollout_v4 era); exact params not recorded in trace.",
+        "initial_conditions": "Agent settled start state stored in trace (ball start z ~0.330 m, slightly different from s02-s06).",
+        "noise": "Encoder noise irrelevant: open-loop package ignores observations; native rollout is deterministic.",
+        "steps": 5000,
+        "duration_s": 10.0,
+        "differences": "Open-loop trajectory package (policy.py returns trajectory q[step], no velocity); trace targets equal package trajectory.npz q exactly (5000x20), so the trace is this package's rollout. Agent legacy native model clipped joint positions/velocities to limits (agent later says this 'hid' launch position/speed excursions, log 03:36 UTC); local contact/friction/motor parameters are the agent's fitted surrogate guesses, not target values; ball start is the agent's camera-inferred estimate; render add\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s08",
       "submitted_utc": "2026-10-21T20:58:08Z",
       "finished_utc": "2026-10-21T21:02:42Z",
       "state": "done",
-      "video": "videos/baseball/s08.mp4"
+      "video": "videos/baseball/s08.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory"
+       ],
+       "hypothesis": "The retained s05 catch plus a long slow gait should accumulate more world-Z rotation: \"s08 now tests a full 7.35 s 1.8 Hz gait with the known retained catch.\"",
+       "changes": "Same retained toss/catch prefix, then a single 7.35 s 1.8 Hz spin gait and final hold.",
+       "observed_local": "Saved local trace holds ball to final step (audit computation); no explicit local metric logged.",
+       "observed_superdex": "\"retains the ball through the long 1.8 Hz spin and final hold\"; ~21.5 rad world-Z net rotation with \"material camera/occlusion uncertainty\"; toss below 20 cm.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Toss remains below 20 cm.",
+       "next_direction": "Raise toss height: launch searches, MJX/PPO residual learning, self-contact model fixes.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s08.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/slow_spin_full_local.npz (written 2026-10-21 20:56:37 UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent native MuJoCo rollout (rollout_v5 era); exact params not recorded in trace.",
+        "initial_conditions": "Agent settled start state stored in the trace (initial, 53 values): hand at Q0, ball resting on palm at the agent's inferred start (approx. (-0.061,-0.002,0.332) m, log 20:15 UTC).",
+        "noise": "Encoder noise irrelevant: open-loop package ignores observations; native rollout is deterministic.",
+        "steps": 5000,
+        "duration_s": 10.0,
+        "differences": "Open-loop trajectory package (policy.py returns trajectory q[step], no velocity); trace targets equal package trajectory.npz q exactly (5000x20), so the trace is this package's rollout. Agent legacy native model clipped joint positions/velocities to limits (agent later says this 'hid' launch position/speed excursions, log 03:36 UTC); local contact/friction/motor parameters are the agent's fitted surrogate guesses, not target values; ball start is the agent's camera-inferred estimate; render add\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s09",
       "submitted_utc": "2026-10-21T21:08:47Z",
       "finished_utc": "2026-10-21T21:10:37Z",
       "state": "done",
-      "video": "videos/baseball/s09.mp4"
+      "video": "videos/baseball/s09.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory"
+       ],
+       "hypothesis": "Delaying finger timing (from a local timing grid) may raise the launch while keeping the catch.",
+       "changes": "Open-loop trajectory with \"delayed finger timing\" relative to the retained sequence (research/artifacts/timing_grid.npz holds 75 timing settings).",
+       "observed_local": "Pre-submission local result not logged. Post-hoc separate-contacts model (22:05 UTC) \"lose[s] retention\", consistent with target.",
+       "observed_superdex": "\"s09 delayed finger timing loses the catch\".",
+       "unknown": "Exact hypothesis wording and pre-submission local metrics for s09 are not in the log; hypothesis above is inferred from \"delayed finger timing\" and timing_grid.npz.",
+       "agent_estimated_progress": null,
+       "failure_observation": "Catch lost.",
+       "next_direction": "Self-contact/friction recalibration (H5) using s02/s07/s09 as held-out motions.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s09.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/separate_contacts_s09.npz (written 2026-10-21 22:05:08 UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent native MuJoCo rollout in the LATER separate-contacts model (research/src/fit_separate_contacts.py; ball friction 1.2, torsion 0.02, softness 0.004, condi\u2026",
+        "initial_conditions": "Agent settled start for that model (stored in trace).",
+        "noise": "Encoder noise irrelevant: open-loop package ignores observations; native rollout is deterministic.",
+        "steps": 5000,
+        "duration_s": 10.0,
+        "differences": "Open-loop trajectory package (policy.py returns trajectory q[step], no velocity); trace targets (taken from the s09 target command log) equal package trajectory.npz q exactly (5000x20), so the trace is this package's rollout. Model differs from whatever the agent used before submitting s09. Agent legacy native model clipped joint positions/velocities to limits (agent later says this 'hid' launch position/speed excursions, log 03:36 UTC); local contact/friction/motor parameters are the agent's f\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s10",
       "submitted_utc": "2026-10-21T22:12:19Z",
       "finished_utc": "2026-10-21T22:14:03Z",
       "state": "done",
-      "video": "videos/baseball/s10.mp4"
+      "video": "videos/baseball/s10.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "physics_contact_model",
+        "system_identification",
+        "controller_trajectory"
+       ],
+       "hypothesis": "A launch designed in the new conservative motor/contact model (H5 low-friction self contacts, separate hand-ball friction) will transfer: \"Cross_staged1 is a transfer test from the new conservative motor/contact model\".",
+       "changes": "First 1.5 s new trajectory, 0.4 s Q0 return, known 1.8 Hz spin 2.0-9.0 s, 0.55 s return and 0.45 s hold.",
+       "observed_local": "Local audited rise 0.1233 m, 0.33 s flight, settled catch, final contact, final-window peak speed 0.00158 m/s.",
+       "observed_superdex": "\"ball rolls outward and falls before the intended main launch (~0.7 s); no catch/spin.\"",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Predicted retention falsified; empty-hand fit does not predict ball transfer.",
+       "next_direction": "Exact palm surface geometry, stereo ball-start reconstruction, thumb-supported launch (H6).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s10.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/cross_staged1.npz (written 2026-10-21 22:11:55 UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent native MuJoCo rollout with separate hand-ball/self contacts (cross-finger self-collision) and fitted motor envelope; matches research/artifacts/cross_sta\u2026",
+        "initial_conditions": "Agent settled start state stored in the trace (initial, 53 values): hand at Q0, ball resting on palm at the agent's inferred start (approx. (-0.061,-0.002,0.334) m, log 20:15 UTC).",
+        "noise": "Encoder noise irrelevant: open-loop package ignores observations; native rollout is deterministic.",
+        "steps": 5000,
+        "duration_s": 10.0,
+        "differences": "Open-loop trajectory package (policy.py returns trajectory q[step], no velocity); trace targets equal package trajectory.npz q exactly (5000x20), so the trace is this package's rollout. Agent legacy native model clipped joint positions/velocities to limits (agent later says this 'hid' launch position/speed excursions, log 03:36 UTC); local contact/friction/motor parameters are the agent's fitted surrogate guesses, not target values; ball start is the agent's camera-inferred estimate; render add\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s11",
       "submitted_utc": "2026-10-21T22:49:44Z",
       "finished_utc": "2026-10-21T22:52:39Z",
       "state": "done",
-      "video": "videos/baseball/s11.mp4"
+      "video": "videos/baseball/s11.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "controller_trajectory",
+        "curriculum_data"
+       ],
+       "hypothesis": "H6: long-finger scoop lacks speed margin; \"prepare a thumb-supported grasp then extend the thumb\". s11 \"deliberately tests grasp transfer only\".",
+       "changes": "\"first 2.5 s aligned thumb preparation, then constant final pose\" (from a 30-parameter grasp-transfer curriculum).",
+       "observed_local": "Native 10 s retention, final contact, max final-window speed 0.000199 m/s, distal-thumb support ~0.907 N.",
+       "observed_superdex": "\"s11 loses ball during preparation (~0.8 s); thumb support did not transfer.\"",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Thumb support did not transfer; joint q diverges from local reference by 0.2-0.6 s (thumb flex 0.671 vs 0.469).",
+       "next_direction": "Proprioceptive capture controller instead of continuing fragile preparation (s12).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s11.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/thumb_grasp_probe.npz (written 2026-10-21 22:48:21 UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent native MuJoCo rollout, v6 helper with force features, CoACD/whole-hull model of that time; exact contact params not recorded in trace.",
+        "initial_conditions": "Agent settled start state stored in trace (ball z ~0.326 m, from stereo/palm-surface work).",
+        "noise": "Encoder noise irrelevant: open-loop package ignores observations; native rollout is deterministic.",
+        "steps": 5000,
+        "duration_s": 10.0,
+        "differences": "Open-loop trajectory package (policy.py returns trajectory q[step], no velocity); trace targets equal package trajectory.npz q exactly (5000x20), so the trace is this package's rollout. Agent legacy native model clipped joint positions/velocities to limits (agent later says this 'hid' launch position/speed excursions, log 03:36 UTC); local contact/friction/motor parameters are the agent's fitted surrogate guesses, not target values; ball start is the agent's camera-inferred estimate; render add\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s12",
       "submitted_utc": "2026-10-21T23:00:32Z",
       "finished_utc": "2026-10-21T23:07:30Z",
       "state": "done",
-      "video": "videos/baseball/s12.mp4"
+      "video": "videos/baseball/s12.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "controller_trajectory",
+        "initial_state_estimation"
+       ],
+       "hypothesis": "The target retains the ball early, so \"test a proprioceptive capture rather than continuing fragile preparation\".",
+       "changes": "Complementary-filter joint estimate (integrates noisy qd, corrects from q); \"freezes estimated current q at 0.35 s with a small bounded closing bias\".",
+       "observed_local": "\"All three local models retain at 3 s, final-window speeds <0.00014 m/s for selected setting\".",
+       "observed_superdex": "\"retains ball through every inspected frame to 9.9 s, visibly stationary after settling.\" Grasp/hold component evidence only.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "No toss by design.",
+       "next_direction": "Use captured grasp as a reliable preparation; guarded slow progression (s14); thumb-ready launch searches.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s12.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/capture_175_0.5_coacd_contacts.json.npz (written 2026-10-21 22:58:17 (written by research/src/capture_grasp_grid.py) UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent Python MuJoCo evaluator research/src/evaluate_actor_cpu.py with CoACD contact config (research/artifacts/coacd_contacts.json), same as the package config\u2026",
+        "initial_conditions": "Agent settled start state stored in trace.",
+        "noise": "Encoder noise ON (sigma_q 0.002 rad, sigma_qd 0.05 rad/s), seed 0.",
+        "steps": 1500,
+        "duration_s": 3.0,
+        "differences": "Closed-loop package. Trace is the grid run with freeze_step 175 and bias scale 0.5, identical to the package config (freeze_step 175, same bias), same policy.py (sha256 fa78176d...) and trajectory.npz equal to thumb_grasp_probe targets; first 175 commanded targets equal package q exactly. Horizon is 3 s (1500 steps), the agent's own validation horizon, not the 10 s SuperDex episode. Agent legacy native model clipped joint positions/velocities to limits (agent later says this 'hid' launch positi\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s13",
       "submitted_utc": "2026-10-21T23:49:25Z",
       "finished_utc": "2026-10-21T23:50:38Z",
       "state": "done",
-      "video": "videos/baseball/s13.mp4"
+      "video": "videos/baseball/s13.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "system_identification"
+       ],
+       "hypothesis": "\"aims to identify unpublished torque-speed behavior without conflating ball/self-contact forces\".",
+       "changes": "\"Deliberately releases ball before isolated index MCP, thumb CMC flex, index PIP steps\".",
+       "observed_local": "Strict native hardware audit: zero position/speed excess; zero simulated self-contact during isolated pulses.",
+       "observed_superdex": "\"video confirms empty hand and isolated separated-finger motions\"; fit supports a linear torque-speed envelope (~1.0-1.05).",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Not a task attempt; envelope fit retained nominal 1.0 after index-alignment correction.",
+       "next_direction": "Contact-guided launch curriculum and rebound search; nominal motor envelope.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s13.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/motor_probe.npz (written 2026-10-21 23:46:07 UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent native MuJoCo rollout (strict joint-limit v8/v9 era) with the ball parked off-scene (ball z ~995 m in the trace), i.e. an empty-hand model.",
+        "initial_conditions": "Hand at Q0; ball removed from the scene in the local run.",
+        "noise": "Encoder noise irrelevant: open-loop package ignores observations; native rollout is deterministic.",
+        "steps": 5000,
+        "duration_s": 10.0,
+        "differences": "Open-loop trajectory package (policy.py returns trajectory q[step], no velocity); trace targets equal package trajectory.npz q exactly (5000x20), so the trace is this package's rollout. Local run is empty-hand from t=0, whereas in SuperDex the ball starts in the hand and is dropped by the package; the ball is not visible in this render. Agent legacy native model clipped joint positions/velocities to limits (agent later says this 'hid' launch position/speed excursions, log 03:36 UTC); local cont\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s14",
       "submitted_utc": "2026-10-22T00:34:26Z",
       "finished_utc": "2026-10-22T00:40:02Z",
       "state": "done",
-      "video": "videos/baseball/s14.mp4"
+      "video": "videos/baseball/s14.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "controller_trajectory",
+        "safety_governor"
+       ],
+       "hypothesis": "A slow, error-bounded joint servo after the proven 0.35 s capture can carry the ball to a launch-ready grasp; \"This tests grasp transfer only\".",
+       "changes": "\"exact first 0.35 s of successful capture prefix, then a complementary-filter joint estimate follows a shifted local joint-position path with bounded servo error and tracking-dependent phase speed; freezes current grasp at 3.5 s.\"",
+       "observed_local": "\"retains in 9/9 full 10 s local tests across no-self, whole-hull self and CoACD self models x 3 encoder seeds\"; max final-window speed 0.000742 m/s; hardware audits pass.",
+       "observed_superdex": "\"retains through every inspected frame to 9.9 s, visibly stationary after 4 s. It transfers ball outward onto the fingers\"; reached grasp differs from local prediction (\"substantially wrong\").",
+       "unknown": "Which of the 9 local runs the agent considers nominal is not stated; the CoACD seed-0 run is rendered because the package config names coacd_contacts.json.",
+       "agent_estimated_progress": null,
+       "failure_observation": "Different, lower fingertip grasp than predicted.",
+       "next_direction": "Calibrate a launch to the actually attained s14 grasp (s15).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s14.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/guarded_grasp1_full_coacd_contacts.json_0.npz (written 2026-10-22 00:33:21 UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent Python MuJoCo evaluator research/src/evaluate_actor_cpu.py, CoACD contact config (as in package config.json).",
+        "initial_conditions": "Agent settled start state stored in trace.",
+        "noise": "Encoder noise ON (sigma_q 0.002, sigma_qd 0.05), seed 0.",
+        "steps": 5000,
+        "duration_s": 10.0,
+        "differences": "Closed-loop package; provenance by timestamp (trace written 65 s before submission), matching guarded_grasp1_full_validation.json (CoACD seed 0 retained) and the log's 9/9 statement; package reference.npz commands equal thumb_grasp_probe targets and first 175 trace targets equal them exactly. Writing script for guarded_grasp1_full_* is not in research/src. Agent legacy native model clipped joint positions/velocities to limits (agent later says this 'hid' launch position/speed excursions, log 03\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s15",
       "submitted_utc": "2026-10-22T01:58:21Z",
       "finished_utc": "2026-10-22T02:01:21Z",
       "state": "done",
-      "video": "videos/baseball/s15.mp4"
+      "video": "videos/baseball/s15.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory",
+        "initial_state_estimation",
+        "system_identification"
+       ],
+       "hypothesis": "Reusing the target-verified s14 preparation, a fixed launch pulse calibrated to the actually attained grasp can produce a toss and recatch.",
+       "changes": "\"launches at 4.0 s with a fixed q-reference/velocity-feedforward pulse, returns to captured grasp over 0.20 s, then freezes a filtered encoder anchor at 5 s\".",
+       "observed_local": "\"Offline aligned curriculum tests retain 3/3 nominal encoder-noise seeds with ~0.092 m toss; all 15 other friction/condim/noise checks fail retention. Full Q0 local replay fails\".",
+       "observed_superdex": "\"outward preparation retains, small launch/recontacts occur, ball is lost by 5 s\"; rise ~0.167 m upper bound; catch-position mismatch. No 20 cm toss.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Ball lands away from where the controller returns (catch-position mismatch).",
+       "next_direction": "Fit forward models to s15 data; palm-cup catch (s16).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s15.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/grasp_toss1_0.6_4_0.npz (written 2026-10-22 01:49:23 (written by research/src/validate_grasp_toss.py) UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent aligned evaluator research/src/evaluate_aligned_policy.py: friction 0.6, condim 4, torsion 0.02, solref 0.004, cross self-collision (self friction 0.05),\u2026",
+        "initial_conditions": "Simulation starts at step 2000 (t=4.0 s) from research/artifacts/s14_reconstructed_initial.npz (agent reconstruction of the s14 target grasp); policy state primed by replaying the s14 SuperDex encoder log for steps 0-1999.",
+        "noise": "Encoder noise ON, seed 0.",
+        "steps": 3000,
+        "duration_s": 6.0,
+        "differences": "Validation ran on research/packages/grasp_toss_catch1, which differs from the submitted deploy copy only by evaluator-only config keys (friction/softness/contact_config, not read by policy.py) and the manifest; launch.npz/reference.npz/policy.py identical. Horizon is t=4-10 s only (agent's own validation horizon); the agent's full-episode Q0 replay (grasp_toss1_continuous_local) loses the ball and is not rendered. Agent legacy native model clipped joint positions/velocities to limits (agent lat\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s16",
       "submitted_utc": "2026-10-22T02:24:29Z",
       "finished_utc": "2026-10-22T02:27:48Z",
       "state": "done",
-      "video": "videos/baseball/s16.mp4"
+      "video": "videos/baseball/s16.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory",
+        "system_identification"
+       ],
+       "hypothesis": "Fitted forward models of s15 imply a palm-cup return posture will catch the same small toss.",
+       "changes": "\"same preparation and launch as s15, return over .25 s toward a palm cup (thumbCF.2, longMCP.8/PIP1.1/DIP.6), capture filtered encoder anchor at 5 s\".",
+       "observed_local": "\"Aligned noisy-encoder replay retains 10/10 across two fitted models x five seeds\"; \"Broader contact/initial-state sweep retains 18/72\".",
+       "observed_superdex": "\"s16 palm catch fails in target; stereo reconstruction shows more lateral drift, not a higher toss\".",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Encoder-dependent guarded preparation varied the final grasp (~0.04-0.05 rad), shifting landing laterally.",
+       "next_direction": "Replay own s15 command history to remove that variation (s17).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s16.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/palm_catch1_4_0.npz (written 2026-10-22 02:23:29 (written by research/src/validate_palm_catch.py) UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent aligned evaluator with fitted model s15_forwardfit1 (condim 4; agent fit mu~0.309, torsion~0.0247), one of the two models used for its 10/10 check.",
+        "initial_conditions": "Simulation starts at step 2000 (t=4.0 s) from the s15_forwardfit1 initial state (reconstructed pre-launch grasp); policy state primed with the s15 SuperDex encoder log.",
+        "noise": "Encoder noise ON, seed 0.",
+        "steps": 3000,
+        "duration_s": 6.0,
+        "differences": "Validated path research/packages/palm_catch1 is byte-identical to the submitted deploy copy except the manifest. Horizon t=4-10 s only. Agent legacy native model clipped joint positions/velocities to limits (agent later says this 'hid' launch position/speed excursions, log 03:36 UTC); local contact/friction/motor parameters are the agent's fitted surrogate guesses, not target values; ball start is the agent's camera-inferred estimate; render adds red seam markers on the ball (visual only) and u\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s17",
       "submitted_utc": "2026-10-22T02:41:36Z",
       "finished_utc": "2026-10-22T02:45:45Z",
       "state": "done",
-      "video": "videos/baseball/s17.mp4"
+      "video": "videos/baseball/s17.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory"
+       ],
+       "hypothesis": "Replaying our own s15 command history (instead of encoder-dependent guarded preparation) removes sensor-driven grasp variation so the palm catch works.",
+       "changes": "Replay of s15 commands to step 2500, then the same palm-return catch and encoder-anchor hold.",
+       "observed_local": "\"local 10/10 aligned tests retained\".",
+       "observed_superdex": "\"Target video shows small toss, catch and retention through 9.9 s\"; no qualifying 20 cm toss.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Toss too small; later audit finds the legacy launch exceeded thumb-CMC position and joint speed limits.",
+       "next_direction": "Second toss (rebound) from the s17 incoming-ball state via sampling MPC/CMA (s18).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s17.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/replay_palm_catch1_4_0.npz (written 2026-10-22 02:39:41 UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent aligned evaluator, fitted model s15_forwardfit1 (condim 4).",
+        "initial_conditions": "Starts at t=4.0 s from s15_forwardfit1 initial state; policy primed with s15 SuperDex encoder log.",
+        "noise": "Encoder noise ON, seed 0.",
+        "steps": 3000,
+        "duration_s": 6.0,
+        "differences": "Trace targets/velocities for steps 2000-2499 equal the package trajectory.npz exactly. Horizon t=4-10 s only. Agent legacy native model clipped joint positions/velocities to limits (agent later says this 'hid' launch position/speed excursions, log 03:36 UTC); local contact/friction/motor parameters are the agent's fitted surrogate guesses, not target values; ball start is the agent's camera-inferred estimate; render adds red seam markers on the ball (visual only) and uses two free cameras, not\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s18",
       "submitted_utc": "2026-10-22T03:07:11Z",
       "finished_utc": "2026-10-22T03:10:22Z",
       "state": "done",
-      "video": "videos/baseball/s18.mp4"
+      "video": "videos/baseball/s18.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory",
+        "optimization_method"
+       ],
+       "hypothesis": "From the s17 incoming-ball state, an offline-planned force pulse can produce a higher second toss with retention.",
+       "changes": "Same s17 prefix to step 2130, then an offline-planned torque pulse (sampling MPC + final-acceleration CMA), return toward Q0 and encoder-anchor hold.",
+       "observed_local": "\"Noisy encoder validation retains 5/5 nominal cases at ~.132-.135 m but 0/5 alternative-contact cases\".",
+       "observed_superdex": "\"target loses ball by 4.6 s before a useful second toss, rejecting the nominal transfer prediction.\"",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Ball lost early; nominal contact model wrong. Hardware audit then found legacy launches exceeded position/speed limits.",
+       "next_direction": "Unclipped v22/v23 physics with JointGuard; guarded teacher training (s15 position residual, 0.08 kg bounce curriculum, direct force from Q0).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/baseball/sim_s18.mp4",
+        "reason": "No pre-existing local render of this package; rendered from the agent's own saved local rollout trace research/artifacts/replay_rebound1_4_0.npz (written 2026-10-22 03:05:49 UTC), whose recorded commands were checked against the submitted package.",
+        "model": "Agent aligned evaluator, fitted model s15_forwardfit1 (condim 4), the \"nominal\" model (alternative point-contact model lost 0/5).",
+        "initial_conditions": "Starts at t=4.0 s from s15_forwardfit1 initial state; policy primed with s15 SuperDex encoder log.",
+        "noise": "Encoder noise ON, seed 0.",
+        "steps": 3000,
+        "duration_s": 6.0,
+        "differences": "Trace targets/velocities for steps 2000-2129 equal package trajectory.npz exactly. Horizon t=4-10 s only. Agent legacy native model clipped joint positions/velocities to limits (agent later says this 'hid' launch position/speed excursions, log 03:36 UTC); local contact/friction/motor parameters are the agent's fitted surrogate guesses, not target values; ball start is the agent's camera-inferred estimate; render adds red seam markers on the ball (visual only) and uses two free cameras, not the\u2026"
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      }
     ],
     "validate_calls_utc": [
@@ -2520,6 +3041,10 @@
      }
     ]
    },
+   "best_so_far": {
+    "sid": "s10",
+    "basis": "study_r3/state.json strategy: \"Test short-horizon image-estimated continuation of measured best s10 prefix\"; LOG: s10 stereo peak ~97 deg before reversal (highest image-estimated target heading; no verified milestone or task success in any trial)."
+   },
    "evaluations": {
     "used": 12,
     "limit": 100,
@@ -2529,84 +3054,439 @@
       "submitted_utc": "2026-10-21T19:55:38Z",
       "finished_utc": "2026-10-21T19:57:48Z",
       "state": "done",
-      "video": "videos/pen/s01.mp4"
+      "video": "videos/pen/s01.mp4",
+      "detail": {
+       "kind": "baseline",
+       "categories": [
+        "other"
+       ],
+       "hypothesis": "First (research-era) session: establish the submission/feedback pipeline before any learning; plan was a privileged sim teacher distilled into a proprioceptive policy.",
+       "changes": "Submitted the unmodified example hold package (holds prev_q_target[-1] = start pose for 12 s, no velocity target).",
+       "observed_local": "Agent recorded only a settled local hold state (research/local_hold.npz); no local metrics in the log. Re-run in research/model.py: hand holds still, pen drops ~34 mm onto the fingers, stays resting there with ~8 deg yaw drift over 12 s.",
+       "observed_superdex": "Not recorded: the research-era LOG.md has no entry after submission, and the later study_r3 session states it did not inspect prior results.",
+       "unknown": "SuperDex outcome of s01 as seen by the agent; exact local scene used for the s01-era hold check.",
+       "agent_estimated_progress": null,
+       "failure_observation": "",
+       "next_direction": "",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/pen/sim_s01.mp4",
+        "reason": "APPROXIMATE re-creation: exact hold package run for 6000 steps in the research-era model, but the agent's own s01-era local hold state (research/local_hold.npz) is NOT reproduced (closest max state diff 0.23; model.py was modified after that file was written). Treat as illustrative of the research-era model, not as the agent's validation rollout.",
+        "model": "research/model.py build() defaults (built-in PD position actuators, friction 0.8, no hand self-collision, solver Newton 15 it)",
+        "initial_conditions": "research/model.py initial(): pen at (-0.122,-0.010,0.325) m, horizontal, unsettled; hand at q0",
+        "noise": "off (no encoder noise; hold policy ignores observations)",
+        "steps": 6000,
+        "duration_s": 12.0,
+        "differences": "Local MuJoCo approximation built by the agent from public URDF/meshes, not the SuperDex simulator/hardware; explicit PD torque model at 1 kHz; capsule pen 10 g; camera views are free MuJoCo cameras, not the SuperDex cameras. Initial pen placement is an unvalidated default guess (pen drops ~34 mm into the palm at start); s01-era scene not recoverable."
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s02",
       "submitted_utc": "2026-10-21T20:11:10Z",
       "finished_utc": "2026-10-21T20:13:18Z",
       "state": "done",
-      "video": "videos/pen/s02.mp4"
+      "video": "videos/pen/s02.mp4",
+      "detail": {
+       "kind": "baseline",
+       "categories": [
+        "other"
+       ],
+       "hypothesis": "A fresh hold baseline from the restarted study gives a clean reference of target joint tracking and pen resting behaviour.",
+       "changes": "Same example hold policy as s01 (identical policy.py); manifest renamed independent_hold_baseline.",
+       "observed_local": "Agent: 'Native local hold steady joint angles differ from remote steady angles by order 1e-4 rad'. Re-run: pen retained 12 s, heading change -0.6 deg, max speed ratio 0.0001.",
+       "observed_superdex": "Agent: 'visibly stationary pen retained throughout 12 s; no spin. Estimated progress 0.'",
+       "unknown": "No saved agent rollout of this package exists, so the re-run cannot be compared bit-for-bit; the pre-20:22 model is a reconstruction (see sim_video).",
+       "agent_estimated_progress": {
+        "value": 0.0,
+        "quote": "Estimated progress 0."
+       },
+       "failure_observation": "No spin (expected for a hold baseline); joint log max |v| 0.23 rad/s including encoder noise.",
+       "next_direction": "Build native trajectory search with joint-speed and retention constraints (\"Local trajectory search\").",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/pen/sim_s02.mp4",
+        "reason": "Generated: exact package re-run in the reconstructed pre-20:22 model. Existing study_r3/local_hold.mp4 was NOT used: it was rendered by sim.py __main__ stepping q0 directly for 3 s (no package code, no settle), not a rollout of this package.",
+        "model": "Reconstructed original study_r3 model: study_r3/hand.xml with hand geoms conaffinity 3->2 (no hand-hand collisions). The agent rebuilt hand.xml at 20:22 (after\u2026",
+        "initial_conditions": "eval_policy.py default reset: pen centre guessed at (-0.105,-0.012,0.307) m, horizontal, heading 90 deg, settled 0.5 s under q0 hold (uncalibrated guess from screenshot)",
+        "noise": "off (NOISE=0)",
+        "steps": 6000,
+        "duration_s": 12.0,
+        "differences": "Local MuJoCo approximation built by the agent from public URDF/meshes, not the SuperDex simulator/hardware; explicit PD torque model at 1 kHz; capsule pen 10 g; camera views are free MuJoCo cameras, not the SuperDex cameras. Pen pose uncalibrated guess; friction 0.8 / solref 0.004 defaults; no encoder noise."
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s03",
       "submitted_utc": "2026-10-21T20:18:56Z",
       "finished_utc": "2026-10-21T20:20:34Z",
       "state": "done",
-      "video": "videos/pen/s03.mp4"
+      "video": "videos/pen/s03.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory",
+        "optimization_method",
+        "safety_governor"
+       ],
+       "hypothesis": "A CMA-ES-optimised open-loop joint-keyframe trajectory with joint-speed and retention penalties can give partial positive rotation on target.",
+       "changes": "New package trajectory_v1_speed_reflex: replays a 500 Hz optimised target table from step 250, with target slew limit at 80% motor speed and damping reflex above 75% measured speed.",
+       "observed_local": "Agent: 'Exact local replay: max joint speed / limit = 0.787. Retention constraints first fail at 2.942 s, with maximum retained heading approximately +132 degrees'. Re-run reproduces 2.942 s / 132.3 deg / 0.787 exactly. (Agent's post-hoc 20:22 re-evaluation in the revised inter-finger-collision model: max retained 39 deg, pen lost.)",
+       "observed_superdex": "Agent: 'motion initially rotates slightly clockwise, followed by a rapid partial counterclockwise sweep and loss before a complete revolution'; pinky abduction 10.385 rad/s > 8.11 limit, 'not hardware-compliant'.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Partial CCW sweep then pen lost before a full revolution; speed-limit violation on pinky abduction; 'No verified score is assigned.'",
+       "next_direction": "Optimizer must include the deployed controller inside simulation; add inter-finger collisions; contact identification against returned q_target/q.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/pen/sim_s03.mp4",
+        "reason": "Generated: exact package re-run; reconstructed pre-submission model reproduces the agent's logged pre-submit replay (retention fail 2.942 s, +132 deg, speed ratio 0.787). Model is a reconstruction (the original hand.xml was overwritten at 20:22), matched by outcome, not by file hash.",
+        "model": "Reconstructed original study_r3 model (hand.xml with hand-hand collisions disabled, conaffinity 3->2); friction 0.8, solref 0.004",
+        "initial_conditions": "eval_policy.py default reset: pen centre guessed at (-0.105,-0.012,0.307) m, horizontal, heading 90 deg, settled 0.5 s under q0 hold (uncalibrated guess from screenshot)",
+        "noise": "off (NOISE=0)",
+        "steps": 6000,
+        "duration_s": 12.0,
+        "differences": "Local MuJoCo approximation built by the agent from public URDF/meshes, not the SuperDex simulator/hardware; explicit PD torque model at 1 kHz; capsule pen 10 g; camera views are free MuJoCo cameras, not the SuperDex cameras. No hand self-collision (later found to matter); uncalibrated pen pose; no encoder noise."
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s04",
       "submitted_utc": "2026-10-21T20:34:01Z",
       "finished_utc": "2026-10-21T20:36:17Z",
       "state": "done",
-      "video": "videos/pen/s04.mp4"
+      "video": "videos/pen/s04.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory",
+        "optimization_method",
+        "physics_contact_model"
+       ],
+       "hypothesis": "Optimising the trajectory with the deployed controller inside a native 1 kHz MuJoCo rollout (and with inter-finger collisions) will transfer better than s03.",
+       "changes": "New package: native-search candidate (small weights.npz + policy) from the exact-controller native optimizer; submitted the 'earlier robust partial candidate'.",
+       "observed_local": "Re-run (= agent's saved candidate_native1 rollout, bit-identical): +90 at 2.377 s, +180 at 2.48 s, max retained 357.1 deg, retention fails 2.673 s, speed ratio 0.826. Agent: 'Noise tests ... 16/16 local trials reached +180 degrees retained, no full turns; max joint speed ratio 0.912.'",
+       "observed_superdex": "Agent: robot tracking improved (joint RMS 0.002-0.008 rad, speeds within limits) but pen behaviour differs; later stereo shows tilt ~51-70 deg at 0.9-0.95 s, 'failure to reproduce the required horizontal, retained skill'.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Pen tipped out of the palm plane around 0.9-1.0 s; no positive-rotation milestone verified.",
+       "next_direction": "Fit the initial pen pose from video; gentle contact-identification probe; stereo reconstruction of the start state.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/pen/sim_s04.mp4",
+        "reason": "Generated: exact package re-run; bit-identical (max abs diff 0.0 over 12000 ticks) to the agent's saved validation rollout study_r3/candidate_native1/local_evaluation.npz.",
+        "model": "study_r3/hand.xml (20:22 build, inter-finger collisions, friction 0.8, solref 0.004)",
+        "initial_conditions": "eval_policy.py default reset: pen centre guessed at (-0.105,-0.012,0.307) m, horizontal, heading 90 deg, settled 0.5 s under q0 hold (uncalibrated guess from screenshot)",
+        "noise": "off (NOISE=0; agent's nominal check)",
+        "steps": 6000,
+        "duration_s": 12.0,
+        "differences": "Local MuJoCo approximation built by the agent from public URDF/meshes, not the SuperDex simulator/hardware; explicit PD torque model at 1 kHz; capsule pen 10 g; camera views are free MuJoCo cameras, not the SuperDex cameras. Uncalibrated pen start pose (agent later found initial geometry the leading mismatch); fixed friction; no encoder noise."
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s05",
       "submitted_utc": "2026-10-21T20:49:55Z",
       "finished_utc": "2026-10-21T20:52:22Z",
       "state": "done",
-      "video": "videos/pen/s05.mp4"
+      "video": "videos/pen/s05.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "system_identification"
+       ],
+       "hypothesis": "A clean low-amplitude response will identify the initial pen contacts and placement better than failed task attempts.",
+       "changes": "Gentle probe: sequential +0.10 rad PIP and +0.08 rad abduction pulses, one joint at a time, 0.3 s cosine ramps.",
+       "observed_local": "Agent: 'Independent local replay retains the pen for 12 s, max joint speed ratio 0.053, essentially no yaw.' Re-run identical (0.0527, heading <0.3 deg).",
+       "observed_superdex": "Agent: 'all recorded joint speeds below 0.66 rad/s; video retains pen throughout with only small responses to pulses.'",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Pen retained with small responses (as intended).",
+       "next_direction": "New native searches from the stereo-derived initial state.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/pen/sim_s05.mp4",
+        "reason": "Generated: bit-identical to the agent's saved validation rollout study_r3/probe1/local_evaluation.npz (max abs diff 0.0).",
+        "model": "study_r3/hand.xml (20:22 build)",
+        "initial_conditions": "eval_policy.py default reset: pen centre guessed at (-0.105,-0.012,0.307) m, horizontal, heading 90 deg, settled 0.5 s under q0 hold (uncalibrated guess from screenshot)",
+        "noise": "off (NOISE=0)",
+        "steps": 6000,
+        "duration_s": 12.0,
+        "differences": "Local MuJoCo approximation built by the agent from public URDF/meshes, not the SuperDex simulator/hardware; explicit PD torque model at 1 kHz; capsule pen 10 g; camera views are free MuJoCo cameras, not the SuperDex cameras. Uncalibrated pen pose; fixed friction; no encoder noise."
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s06",
       "submitted_utc": "2026-10-21T21:02:26Z",
       "finished_utc": "2026-10-21T21:04:16Z",
       "state": "done",
-      "video": "videos/pen/s06.mp4"
+      "video": "videos/pen/s06.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "initial_state_estimation",
+        "controller_trajectory",
+        "domain_randomization"
+       ],
+       "hypothesis": "Re-optimising from the stereo-calibrated initial pen pose (and checking friction/placement/noise variation) will give partial progress that transfers.",
+       "changes": "Same policy.py as s04 with new weights from native search seeded with the stereo-derived, locally settled initial state (generation 102 candidate).",
+       "observed_local": "Re-run (= saved candidate_calibrated1 rollout): +180 at 2.584 s, max retained 238.9 deg, retention fails 2.698 s, speed 0.787. Agent domain test: '27/32 reach +90 degrees; none reach +180'.",
+       "observed_superdex": "Agent: 'Hardware speeds are within published limits. Stereo estimates show modest early yaw, followed by tilt about 61 degrees at 2.0 s and eventual drop.'",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Modest early yaw, tilt ~61 deg at 2.0 s, eventual drop; no retained positive revolution.",
+       "next_direction": "Fit physics against s04/s06 commands and stereo; privileged MPC teacher and closed-loop learning.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/pen/sim_s06.mp4",
+        "reason": "Generated: bit-identical to the agent's saved rollout study_r3/candidate_calibrated1/local_evaluation.npz.",
+        "model": "study_r3/hand.xml (20:22 build)",
+        "initial_conditions": "study_r3/calibration_stereo.npz (agent's two-camera stereo estimate of the initial pen pose, locally settled), hand at start pose q0",
+        "noise": "off (NOISE=0)",
+        "steps": 6000,
+        "duration_s": 12.0,
+        "differences": "Local MuJoCo approximation built by the agent from public URDF/meshes, not the SuperDex simulator/hardware; explicit PD torque model at 1 kHz; capsule pen 10 g; camera views are free MuJoCo cameras, not the SuperDex cameras. Stereo-estimated pen pose (mm-level uncertainty); nominal friction 0.8; no encoder noise."
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s07",
       "submitted_utc": "2026-10-21T23:50:24Z",
       "finished_utc": "2026-10-21T23:52:06Z",
       "state": "done",
-      "video": "videos/pen/s07.mp4"
+      "video": "videos/pen/s07.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory",
+        "safety_governor",
+        "optimization_method"
+       ],
+       "hypothesis": "A persistent-beam-search three-turn reference, replayed as a pure-NumPy waveform with a tracking-error brake, can be safely tried on target.",
+       "changes": "New package pen_three_turn_reference_capture_v2: recorded position/velocity command waveform from the beam plan, constant-target capture after the third turn, tracking-error brake plus absolute 0.88 speed guard.",
+       "observed_local": "Re-run (= saved waveform_robust2/noise913): full local task, turns at 1.998/3.725/6.723 s, net 1104.5 deg, retained 12 s, speed 0.858. Agent: '8/8 nominal encoder-noise seeds complete, but every friction/pose perturbation fails the task'.",
+       "observed_superdex": "Agent: 'Absolute .88 guard latched before meaningful pen rotation. Later video shows >45degree tilt (~.5s), no verified first stage milestone.'",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Target joint10 speed ratio 0.8918 vs local 0.858 tripped the global guard early; pen tilted >45 deg ~0.5 s.",
+       "next_direction": "Replace all-joint stop with per-joint reactive torque governor (s08).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/pen/sim_s07.mp4",
+        "reason": "Generated: bit-identical to the agent's saved validation rollout study_r3/waveform_robust2/noise913/local_evaluation.npz.",
+        "model": "study_r3/hand.xml (20:22 build), friction 0.8",
+        "initial_conditions": "study_r3/calibration_stereo.npz (agent's two-camera stereo estimate of the initial pen pose, locally settled), hand at start pose q0 (identical to waveform_robust2/noise913/initial.npz)",
+        "noise": "on: documented Gaussian encoder noise (q 0.002 rad, qd 0.05 rad/s), seed 913 (agent's nominal seed)",
+        "steps": 6000,
+        "duration_s": 12.0,
+        "differences": "Local MuJoCo approximation built by the agent from public URDF/meshes, not the SuperDex simulator/hardware; explicit PD torque model at 1 kHz; capsule pen 10 g; camera views are free MuJoCo cameras, not the SuperDex cameras. Single nominal contact model the agent later showed to be wrong for the pen; stereo-estimated start pose; synthetic noise seed. Local success did not transfer."
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s08",
       "submitted_utc": "2026-10-21T23:56:21Z",
       "finished_utc": "2026-10-21T23:58:04Z",
       "state": "done",
-      "video": "videos/pen/s08.mp4"
+      "video": "videos/pen/s08.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "safety_governor",
+        "controller_trajectory"
+       ],
+       "hypothesis": "The s07 failure was the over-conservative global speed latch; a per-joint reactive torque governor will let the reference run on target while staying within motor limits.",
+       "changes": "Package diff vs s07: adds joint_qhat feedback (q/v gains with deadbands) and per-joint torque reduction when outward velocity exceeds reference by >0.025*limit at ratio >0.70; absolute fallback 0.93.",
+       "observed_local": "Re-run (= saved governor_m0.025/noise913): unchanged nominal full local task (1104.5 deg, speed 0.858). Agent: 'Physical task stress variants still fail.'",
+       "observed_superdex": "Agent: 's08 fails before a verified turn.' Governor first intervenes 0.026 s; velocity-deviation latch at 0.086 s on joint 4 'too conservative for transfer'.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Latch triggered at 0.086 s; no verified turn.",
+       "next_direction": "Position-error latch instead of velocity latch, changed quiet-capture fallback (s09).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/pen/sim_s08.mp4",
+        "reason": "Generated: bit-identical to the agent's saved rollout study_r3/waveform_governor1/governor_m0.025/noise913/local_evaluation.npz.",
+        "model": "study_r3/hand.xml (20:22 build), friction 0.8",
+        "initial_conditions": "study_r3/calibration_stereo.npz (agent's two-camera stereo estimate of the initial pen pose, locally settled), hand at start pose q0",
+        "noise": "on: encoder noise seed 913",
+        "steps": 6000,
+        "duration_s": 12.0,
+        "differences": "Local MuJoCo approximation built by the agent from public URDF/meshes, not the SuperDex simulator/hardware; explicit PD torque model at 1 kHz; capsule pen 10 g; camera views are free MuJoCo cameras, not the SuperDex cameras. Same contact-model caveat as s07."
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s09",
       "submitted_utc": "2026-10-22T00:05:48Z",
       "finished_utc": "2026-10-22T00:08:14Z",
       "state": "done",
-      "video": "videos/pen/s09.mp4"
+      "video": "videos/pen/s09.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "safety_governor",
+        "controller_trajectory"
+       ],
+       "hypothesis": "With a less conservative position-error guard, the target will track the reference long enough to show whether the pen-contact model (not joint tracking) is the main error.",
+       "changes": "Package diff vs s08: position_guard (>0.15 rad from filtered reference) replaces velocity-deviation latch; quiet capture after 10 samples < 0.5 rad/s; feedback q 0.5 / v 1.",
+       "observed_local": "Re-run (= saved waveform_robust3/noise913): nominal full local task (1104.5 deg). Agent: '8/8nominalfulltask,9physicalstressvariantsfailtask,0motorviolations'.",
+       "observed_superdex": "Agent: 'good hand tracking, negligible pen turn': two-view heading range -0.9 to +24.4 deg, max tilt 23.1 deg, guard latched 1.762 s; 'separates good joint tracking from the larger pen-contact model error'.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Joint tracking good (RMSE 0.002-0.014 rad) but pen barely turned; guard latched at 1.762 s.",
+       "next_direction": "Fit contact model to s09 (fit_s09), then stationary-pen-constrained fits; plan in fitted physics.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/pen/sim_s09.mp4",
+        "reason": "Generated: bit-identical to the agent's saved rollout study_r3/waveform_robust3/noise913/local_evaluation.npz.",
+        "model": "study_r3/hand.xml (20:22 build), friction 0.8",
+        "initial_conditions": "study_r3/calibration_stereo.npz (agent's two-camera stereo estimate of the initial pen pose, locally settled), hand at start pose q0",
+        "noise": "on: encoder noise seed 913",
+        "steps": 6000,
+        "duration_s": 12.0,
+        "differences": "Local MuJoCo approximation built by the agent from public URDF/meshes, not the SuperDex simulator/hardware; explicit PD torque model at 1 kHz; capsule pen 10 g; camera views are free MuJoCo cameras, not the SuperDex cameras. The agent's s09 analysis showed this contact model badly mispredicts the pen (old model replaying s09 commands: red-point error 314 mm / axis 85 deg)."
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s10",
       "submitted_utc": "2026-10-22T01:46:12Z",
       "finished_utc": "2026-10-22T01:47:38Z",
       "state": "done",
-      "video": "videos/pen/s10.mp4"
+      "video": "videos/pen/s10.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "physics_contact_model",
+        "system_identification",
+        "controller_trajectory"
+       ],
+       "hypothesis": "Competing fitted contact models disagree on this partial gait (232 vs 23-55 deg), so one target trial is informative for model selection.",
+       "changes": "New package: observation-only replay of a teacher's desired hand poses under a live encoder-based torque governor, cut at 1.2 s then filtered-joint capture/hold (desired_capture_probe1).",
+       "observed_local": "Re-run in the stationary single-contact model (= saved desired_probe_crossmodels/single): +90 at 0.591 s, +180 at 1.043 s, max 232.4 deg, retained 12 s, speed 0.865. Other models: multicontact 55 deg, approx fit09 23 deg, original 55 deg.",
+       "observed_superdex": "Agent: 'Independent stereo estimates peak97.28deg around.72s, then reverse to~63deg and tilt45.14deg by.98s. Subsequent raw video shows pen loss.'",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Pen reached ~97 deg (image estimate) at 0.72 s then reversed, tilted 45 deg and was lost; no retained revolution.",
+       "next_direction": "Held-out model checks on s10; joint-stop refit; replan the early motion rather than reuse s10's failed first second.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/pen/sim_s10.mp4",
+        "reason": "Generated: bit-identical to the agent's saved rollout study_r3/desired_probe_crossmodels/single/local_evaluation.npz (agent's primary model for this package).",
+        "model": "study_r3/hand_static_single1.xml (stationary single-contact fit: mu 2, solref 0.03, margin -1 mm, condim 3, armature x1.2)",
+        "initial_conditions": "study_r3/calibration_static_single1.npz (initial pen pose fitted jointly with stationary-hold prior)",
+        "noise": "on: encoder noise seed 913",
+        "steps": 6000,
+        "duration_s": 12.0,
+        "differences": "Local MuJoCo approximation built by the agent from public URDF/meshes, not the SuperDex simulator/hardware; explicit PD torque model at 1 kHz; capsule pen 10 g; camera views are free MuJoCo cameras, not the SuperDex cameras. Fitted contact parameters are not unique; on held-out s10 commands this model was off by 18 mm / 12 deg and predicted 91 deg vs ~97 deg observed; joint stops later found too soft."
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s11",
       "submitted_utc": "2026-10-22T03:37:19Z",
       "finished_utc": "2026-10-22T03:39:25Z",
       "state": "done",
-      "video": "videos/pen/s11.mp4"
+      "video": "videos/pen/s11.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "physics_contact_model",
+        "controller_trajectory",
+        "safety_governor"
+       ],
+       "hypothesis": "With corrected joint-stop physics, a replanned early gait plus an optimised joint-only capture should reach and hold one turn; the trial tests the revised gait/contact predictions.",
+       "changes": "New package first_turn_joint_stop_diagnostic: desired-pose replay from the corrected-stop beam with a capture offset optimised at 2.4 s and a relative joint-velocity torque guard (margin 0.035).",
+       "observed_local": "Re-run (= saved joint_capture_safe_robust_m0.035/noise913): first 360 at 2.414 s, max 395.8 deg, final 355.8 deg, retained 12 s, speed 0.866. Agent: 'still1/8 first turn and0 full-task successes'.",
+       "observed_superdex": "Agent: 'Video/stereo peak23.61deg then reversal; tilt~71deg around.9s and pen remains steeply held. No90deg/revolution'.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "Peak ~24 deg then reversal and ~71 deg tilt at 0.9 s; joint discrepancy from ~0.6 s in index/ring abduction and thumb, attributed to a self-contact mismatch.",
+       "next_direction": "Refit without hand self-collision (no-self models), CoACD collision decomposition, short-horizon conditional fit of s10.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/pen/sim_s11.mp4",
+        "reason": "Generated: bit-identical to the agent's saved rollout study_r3/joint_capture_safe_robust_m0.035/noise913/local_evaluation.npz.",
+        "model": "study_r3/hand_jointfit1.xml (corrected joint stops solref .004/.5, static3 contact: mu 2, solref .03, margin -1 mm, condim 3, armature x1.2; physically identic\u2026",
+        "initial_conditions": "study_r3/calibration_jointfit1.npz (identical to the saved initial.npz)",
+        "noise": "on: encoder noise seed 913",
+        "steps": 6000,
+        "duration_s": 12.0,
+        "differences": "Local MuJoCo approximation built by the agent from public URDF/meshes, not the SuperDex simulator/hardware; explicit PD torque model at 1 kHz; capsule pen 10 g; camera views are free MuJoCo cameras, not the SuperDex cameras. Includes hand self-collisions that s11 itself showed to be mispredicted (held-out s11 replay error 71-88 mm / 48-61 deg)."
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      },
      {
       "id": "s12",
       "submitted_utc": "2026-10-22T04:09:45Z",
       "finished_utc": "2026-10-22T04:11:13Z",
       "state": "done",
-      "video": "videos/pen/s12.mp4"
+      "video": "videos/pen/s12.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory",
+        "initial_state_estimation",
+        "physics_contact_model"
+       ],
+       "hypothesis": "Re-executing the measured s10 motor prefix (the best target trial) and continuing with a locally planned correction from the image-estimated 0.5 s state will preserve the s10 progress and complete a turn.",
+       "changes": "New package: first 0.64 s are the actual s10 logged motor commands, frozen planned Qt/Vt until 1.84 s, live speed-fault/relative guards, then filtered-joint capture.",
+       "observed_local": "Agent conditional check (from image-estimated 0.5 s state): primary convex model 8/8 first turns (360 at 1.573 s), alternative 0/8. Full task-start re-run (= saved transient_full_start_checks1/jointA): only 24.0 deg max, retained 12 s, speed 0.950; agent: 'predict only19\u201324deg after speed fallback'.",
+       "observed_superdex": "Not observed by the agent: log ends at submission ('Submitted s12'), state.json lists 'Analyze s12 documented video/logs' as next step.",
+       "unknown": "SuperDex outcome of s12 as seen by the agent (not analysed before the pause).",
+       "agent_estimated_progress": null,
+       "failure_observation": "",
+       "next_direction": "Analyze s12 video/logs and compare its first 0.64 s with s10 (from state.json).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/pen/sim_s12.mp4",
+        "reason": "Generated: re-run matches the agent's saved full-start check study_r3/transient_full_start_checks1/jointA/local_evaluation.npz to max abs diff 5.5e-11 (not bit-identical). The agent's primary validation was a conditional continuation from an image-estimated 0.5 s state (transient_frozen_validation1, convex model, 8/8 first turns), which is not a full 12 s task-start episode and is not rendered here.",
+        "model": "study_r3/hand_jointfit1.xml (jointA: corrected stops + static3 contact)",
+        "initial_conditions": "study_r3/calibration_jointfit1.npz (full task start, NOT the image-estimated 0.5 s conditional state the agent used for its primary s12 check)",
+        "noise": "on: encoder noise seed 913",
+        "steps": 6000,
+        "duration_s": 12.0,
+        "differences": "Local MuJoCo approximation built by the agent from public URDF/meshes, not the SuperDex simulator/hardware; explicit PD torque model at 1 kHz; capsule pen 10 g; camera views are free MuJoCo cameras, not the SuperDex cameras. Full-start local model predicts only ~24 deg; the s10 prefix commands are replayed open-loop into a local start state that does not match the target's; hand self-contact model contradicted by s11."
+       },
+       "intended_moves": "",
+       "actual_moves": ""
+      }
      }
     ],
     "validate_calls_utc": [
@@ -3872,6 +4752,7 @@
      }
     ]
    },
+   "best_so_far": null,
    "evaluations": {
     "used": 16,
     "limit": 100,
@@ -3881,112 +4762,585 @@
       "submitted_utc": "2026-10-21T19:55:30Z",
       "finished_utc": "2026-10-21T20:09:41Z",
       "state": "done",
-      "video": "videos/cube/s01.mp4"
+      "video": "videos/cube/s01.mp4",
+      "detail": {
+       "kind": "baseline",
+       "categories": [
+        "other"
+       ],
+       "hypothesis": "A static hold of the start pose should retain the cube and give a reference for encoder/tracking behaviour.",
+       "changes": "Example hold package (returns prev_q_target[-1], i.e. q0, every step); no learned or optimized motion.",
+       "observed_local": "Not separately documented for this package; the agent ran a local hold rollout in research/simulate.py (research/local_hold.npz). Regenerated replay: cube held, layer angle -4.6 deg at 40 s (settling only).",
+       "observed_superdex": "Cube retained, no visible layer turn; joint tracking RMSE 0.0020-0.0071 rad; agent estimated rubric score 0.",
+       "unknown": "Exact local validation run for this package is not logged.",
+       "agent_estimated_progress": {
+        "value": 0.0,
+        "quote": "Estimated rubric score 0 (independent visual assessment, not target label)"
+       },
+       "failure_observation": "No layer motion was commanded; cube retained (\"shows retained cube, no visible layer turn\").",
+       "next_direction": "Submit the locally simulated quarter-turn trajectory as a contact/transfer probe while developing placement/friction robustness (\"submit this locally simulated trajectory once as a contact/transfer probe\").",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s01.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "model.py single-hinge selectable-face surrogate (simulate_sequence.phase stepping); setup from research/simulate_sequence.py phase() / research/robust_optimize\u2026",
+        "initial_conditions": "t=0: hand at q0, cube at the agent's placement for this model",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261023; policy is an open-loop action table (noise has no effect)",
+        "steps": 20000,
+        "duration_s": 40.0,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Cube modelled as one hinged layer (U) with detent .003 Nm and friction .9 at the screenshot-fitted centre, no settling before t=0 (initial penetration as noted by the agent); motor speed limit emulated by to\u2026"
+       },
+       "intended_moves": "none (hold baseline)",
+       "actual_moves": "\"no visible layer turn\""
+      }
      },
      {
       "id": "s02",
       "submitted_utc": "2026-10-21T20:10:45Z",
       "finished_utc": "2026-10-21T20:27:29Z",
       "state": "done",
-      "video": "videos/cube/s02.mp4"
+      "video": "videos/cube/s02.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "controller_trajectory",
+        "optimization_method"
+       ],
+       "hypothesis": "A CEM-optimized U quarter-turn finger trajectory from the one-hinge MuJoCo surrogate might transfer; submitted explicitly as a contact/transfer probe.",
+       "changes": "Smoothstep-interpolated 6-waypoint trajectory (policies/local_u_quarter/trajectory.npz, 0-3.3 s then hold of last waypoint) from CEM on the single-U-hinge surrogate.",
+       "observed_local": "Agent: at the screenshot-fitted centre the quarter turn only reached 21.53 deg at 40 s (L001 90 deg was at a different placement). Regenerated replay reproduces 21.53 deg.",
+       "observed_superdex": "Cube retained, no completed layer turn; image fits estimate ~40 deg peak at 2 s and ~22 deg at 40 s; index/middle abduction appeared contact-blocked.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "\"No verified >=45 degree milestone or completed turn\"; contact-blocked index and middle fingers.",
+       "next_direction": "Fit dynamic surrogate parameters to s02 encoder traces; prototype a compliant mechanism (\"fit dynamic surrogate parameters to s02 encoder traces while s03 evaluates\").",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s02.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "model.py single-hinge selectable-face surrogate (simulate_sequence.phase stepping); setup from research/simulate_sequence.py phase() / research/robust_optimize\u2026",
+        "initial_conditions": "t=0: hand at q0, cube at the agent's placement for this model",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261024; policy is an open-loop action table (noise has no effect)",
+        "steps": 20000,
+        "duration_s": 40.0,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Cube modelled as one hinged layer (U) with detent .003 Nm and friction .9 at the screenshot-fitted centre, no settling before t=0 (initial penetration as noted by the agent); motor speed limit emulated by to\u2026"
+       },
+       "intended_moves": "U (single quarter-turn probe)",
+       "actual_moves": "\"~40.1 degree peak at 2 s and ~21.6 degrees at 40 s\" (image-only single-U fit, \"No verified >=45 degree milestone or completed turn\")"
+      }
      },
      {
       "id": "s03",
       "submitted_utc": "2026-10-21T20:30:03Z",
       "finished_utc": "2026-10-21T20:41:36Z",
       "state": "done",
-      "video": "videos/cube/s03.mp4"
+      "video": "videos/cube/s03.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory",
+        "domain_randomization",
+        "optimization_method"
+       ],
+       "hypothesis": "Two return-to-q0 U cycles, optimized with placement/friction/resistance/mass randomization, should complete the first solving move U2.",
+       "changes": "Frozen u_double_v1: two return-to-q0 cycles over 9 s (13 waypoints, motion ends 8 s) then hold; trained at the screenshot-fitted placement with domain variation.",
+       "observed_local": "Agent: nominal 40 s local result 175.41 deg; 10/12 held-out cases within 10 deg of 180. Regenerated replay reproduces 175.41 deg exactly.",
+       "observed_superdex": "Cube retained; top colours changed through quarter/half-turn-like patterns, but face turn vs whole-cube rotation was ambiguous; no verified milestone. Later reconstruction (L018) of this opening: one net U' plus a whole-cube yaw.",
+       "unknown": "Exact SuperDex face state after s03 was never resolved by the agent from s03 alone.",
+       "agent_estimated_progress": null,
+       "failure_observation": "\"Occlusion, camera error, and local minima make this inconclusive. No verified task score or solving milestone is claimed.\"",
+       "next_direction": "Submit full_sequence_v1 preserving the exact s03 prefix and attempting F'/R (\"preserving the exact s03 prefix then attempting the locally validated F'/R phases\").",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s03.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "model.py single-hinge selectable-face surrogate (simulate_sequence.phase stepping); setup from research/simulate_sequence.py phase() / research/robust_optimize\u2026",
+        "initial_conditions": "t=0: hand at q0, cube at the agent's placement for this model",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261025; policy is an open-loop action table (noise has no effect)",
+        "steps": 20000,
+        "duration_s": 40.0,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Cube modelled as one hinged layer (U) with detent .003 Nm and friction .9 at the screenshot-fitted centre, no settling before t=0 (initial penetration as noted by the agent); motor speed limit emulated by to\u2026"
+       },
+       "intended_moves": "U2",
+       "actual_moves": "Inconclusive at the time (\"whole yaw ~180 with U ~-21 degrees has loss .147; U ~159 with small whole rotation has .193\"); later read as \"one net U' from initial, conditional distance 3\""
+      }
      },
      {
       "id": "s04",
       "submitted_utc": "2026-10-21T20:52:04Z",
       "finished_utc": "2026-10-21T21:05:25Z",
       "state": "done",
-      "video": "videos/cube/s04.mp4"
+      "video": "videos/cube/s04.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory",
+        "curriculum_data",
+        "optimization_method"
+       ],
+       "hypothesis": "After the s03 U2 macro, separately trained F' and R primitives (phase-rebuilding surrogate) could finish the inverse sequence U2 F' R.",
+       "changes": "full_sequence_v1: exact s03 commands for 9 s, then CEM F' primitive 9-14.5 s and curriculum-retrained R primitive 14.5-20 s, then hold (package diff: identical to s03 up to step 5150, first difference at step 5151).",
+       "observed_local": "Agent: phase-rebuilding surrogate finished U2/F'/R at 177.73/92.62/-96.11 deg, with explicit snap at phase switches. Regenerated continuous replay with the same snapping: 180.4 / 91.0 / -91.4 deg (locally solved).",
+       "observed_superdex": "Cube retained, final state visibly unsolved; first 4500 steps repeated s03 within encoder noise; intended F' pattern not reached. Reconstruction: opening gave U' plus a 90 deg whole-cube yaw, then the late phase acted as a physical R-clockwise (= initial-frame F), conditional distance 4.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "\"final state visibly unsolved\"; \"The intended F' phase did not visibly reach its expected colour pattern.\"",
+       "next_direction": "Undo the unintended F with an R-side counterclockwise correction after the evaluated s04 prefix (E006); build exact cube algebra / distance tables for state estimation.",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s04.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "model.py single-hinge selectable-face surrogate (simulate_sequence.phase stepping); setup from research/simulate_sequence.py (phase-rebuilding U2 -> F' -> R su\u2026",
+        "initial_conditions": "t=0: hand at q0, cube at the agent's placement for this model",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261026; policy is an open-loop action table (noise has no effect)",
+        "steps": 20000,
+        "duration_s": 40.0,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Cube modelled as one hinged layer (U) with detent .003 Nm and friction .9 at the screenshot-fitted centre, no settling before t=0 (initial penetration as noted by the agent); motor speed limit emulated by to\u2026"
+       },
+       "intended_moves": "U2 F' R (full solution)",
+       "actual_moves": "\"consistent with a 90-degree whole-cube yaw plus U' in the opening macro, followed by a physical R-clockwise macro\"; leading state \"conditional distance 4\""
+      }
      },
      {
       "id": "s05",
       "submitted_utc": "2026-10-21T21:17:06Z",
       "finished_utc": "2026-10-21T21:32:20Z",
       "state": "done",
-      "video": "videos/cube/s05.mp4"
+      "video": "videos/cube/s05.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory",
+        "training_method",
+        "physics_contact_model"
+       ],
+       "hypothesis": "Training the U macro on two repeated cycles jointly (intermediate angles and final pose) across three finger-contact models gives a more robust U2.",
+       "changes": "u_two_cycles_v2: new two-cycle-trained motion (9 s then hold) from robust_u_two_cycles_restart; stored as an offline 20000-step action table, bit-identical to the interpolated policy (differs from s03 from step 151).",
+       "observed_local": "Agent: compliant selected-face surrogate nominal 40 s ends 181.57 deg, but stronger-resistance/static-equilibrium cases do not reliably turn (0 or 84 deg). Regenerated replay: 186.3 deg in the same nominal case (see notes on the discrepancy).",
+       "observed_superdex": "Cube retained, speeds within limits, final state visibly unsolved; top palette RWYB differs from the U2 pattern; discrete ranking leading conditional distance 5 (low confidence).",
+       "unknown": "Exact SuperDex state (ranking residual .263, \"not confident exact state\").",
+       "agent_estimated_progress": null,
+       "failure_observation": "\"Do not use this rollout as a successful opening move.\"",
+       "next_direction": "Exact cube algebra and image-based discrete state reconstruction (L017/L018); correct s04's unintended turn instead (s06).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s05.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "face_model.py selected-face surrogate, axis (0, 0, 1); setup from research/face_stress_check.py case 'nominal_40s' (face_model U axis, stiffness .5, resistance\u2026",
+        "initial_conditions": "t=0: hand at q0, cube at the agent's placement for this model",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261027; policy is an open-loop action table (noise has no effect)",
+        "steps": 20000,
+        "duration_s": 40.0,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Regenerated angle 186.3 deg vs agent-reported 181.57 deg for the same nominal case: commands are identical; a possible (unverified) cause is that research/face_model.py now uses the later scalar force kernel\u2026"
+       },
+       "intended_moves": "U2",
+       "actual_moves": "\"final top palette RWYB differs from the required U2 pattern\"; \"a leading conditional distance 5\" (insufficient evidence for exact state)"
+      }
      },
      {
       "id": "s06",
       "submitted_utc": "2026-10-21T21:41:39Z",
       "finished_utc": "2026-10-21T21:57:03Z",
       "state": "done",
-      "video": "videos/cube/s06.mp4"
+      "video": "videos/cube/s06.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory",
+        "initial_state_estimation",
+        "physics_contact_model"
+       ],
+       "hypothesis": "Under the s04 reconstruction, an R-side counterclockwise turn after the evaluated s04 prefix should undo the unintended F, leaving three turns to solve.",
+       "changes": "correct_r_inverse_v1: exact s04 commands for 20 s (identical through step 10150), then a compliant-surrogate-trained R-side counterclockwise correction over 4.5 s, then hold.",
+       "observed_local": "Agent: 20 s hold tests end 88.88/88.89 deg in two fitted grasp scenarios; a higher-resistance stress case does not turn. Regenerated replay of the image-grasp case reproduces 88.88 deg.",
+       "observed_superdex": "Cube retained, speeds within limits, but final OWGG pattern does not show the intended net undo.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "\"Do not credit the simulated inverse R turn as a transferred skill.\"",
+       "next_direction": "\"use three repetitions of the previously observed clockwise R-side motion as an alternative to a counterclockwise turn, and shorten the prefix to stop before the known unintended clockwise turn.\"",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s06.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "face_model.py selected-face surrogate, axis [0, -1, 0]; setup from research/validate_inverse_r.py case 'image_grasp' (face_model R axis, research/compliant_r_i\u2026",
+        "initial_conditions": "conditional state at t=20 s (see differences)",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261028; policy is an open-loop action table (noise has no effect)",
+        "steps": 10000,
+        "duration_s": 20.0,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Horizon: simulation starts at t=20 s from the agent's conditional cube/hand state estimate (as in the agent's own validation); the earlier part of the episode is NOT simulated in this video. Initial state =\u2026"
+       },
+       "intended_moves": "R' (undo s04's unintended turn after the 20 s s04 prefix)",
+       "actual_moves": "\"final OWGG pattern does not show the intended net undo\""
+      }
      },
      {
       "id": "s07",
       "submitted_utc": "2026-10-21T22:26:01Z",
       "finished_utc": "2026-10-21T22:41:14Z",
       "state": "done",
-      "video": "videos/cube/s07.mp4"
+      "video": "videos/cube/s07.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "controller_trajectory",
+        "safety_governor",
+        "domain_randomization"
+       ],
+       "hypothesis": "From the A+B state after the s04 15.5 s prefix, a staged U-prime would reach conditional distance 2 (plan U' R R R F).",
+       "changes": "ab_u_damped_v1: exact s04 prefix 15.5 s, new U-prime primitive 4.5 s (ab_u_damped_stage_v1), 20 s hold; adds filtered encoder velocity feedback (gain 2, EMA 0.2, clipped) from step 7750.",
+       "observed_local": "Agent: 6 noiseless + 8 velocity-noise (sigma .05) cases complete the quarter turn within 10 deg. Regenerated replay of noisy case 0: 91.5 deg (agent 91.4).",
+       "observed_superdex": "Retained, speeds below limits; RGB ranking strongly favours the unchanged state (conditional distance 3); no transferred U turn; residual U ~ -1.35 deg at 40 s.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "\"Replaying actual q/qd targets in6 local grasps gives jointRMSE.0150-.0168rad but still falsely predicts90-98deg U. This is evidence of model mismatch\"",
+       "next_direction": "\"Decision: recalibrate/strengthen resistance and audit contact geometry.\"",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s07.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "face_model.py selected-face surrogate, axis [0, 0, 1]; setup from research/validate_curriculum.py output research/ab_u_damped_noise_validation case 0 start spe\u2026",
+        "initial_conditions": "conditional state at t=15.5 s (see differences)",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261029; policy is feedback-dependent after its prefix (velocity\u2026",
+        "steps": 12250,
+        "duration_s": 24.5,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Horizon: simulation starts at t=15.5 s from the agent's conditional cube/hand state estimate (as in the agent's own validation); the earlier part of the episode is NOT simulated in this video. Initial state\u2026"
+       },
+       "intended_moves": "U' (after s04 A+B prefix)",
+       "actual_moves": "\"strongly favors unchanged key1313130b130216 (conditionaldistance3, loss.1031)\"; \"Fitted residualU at40s~-1.35deg\""
+      }
      },
      {
       "id": "s08",
       "submitted_utc": "2026-10-21T22:56:05Z",
       "finished_utc": "2026-10-21T23:10:20Z",
       "state": "done",
-      "video": "videos/cube/s08.mp4"
+      "video": "videos/cube/s08.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "physics_contact_model",
+        "system_identification",
+        "controller_trajectory"
+       ],
+       "hypothesis": "A moderate-strength U controller distinguishes the competing low/high detent hypotheses (3/9 local cases turn, 6/9 do not).",
+       "changes": "ab_strong_u_v2: exact s04 15.5 s prefix, new strong-resistance-trained U primitive over 6 s (strong_u_v2), 18.5 s hold; same velocity feedback as s07.",
+       "observed_local": "Agent: 9 noisy local checks all physically safe but only 3 complete a quarter. Regenerated replay of case 0 (one of the turning cases): 91.0 deg (agent 90.6).",
+       "observed_superdex": "Retained; a visible completed wrong-axis turn: the U-trained motion caused a physical R-clockwise (same state as s04, conditional distance 4).",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "\"This isolates a structural error in forced-active-face training; strongresistance alone is insufficient.\"",
+       "next_direction": "Build an eight-corner contact-selected multiface model (no forced active face) and replay s07/s08 in it (L034/L035).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s08.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "face_model.py selected-face surrogate, axis [0, 0, 1]; setup from research/validate_curriculum.py output research/strong_u_probe_noise_validation case 0 start\u2026",
+        "initial_conditions": "conditional state at t=15.5 s (see differences)",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261030; policy is feedback-dependent after its prefix (velocity\u2026",
+        "steps": 12250,
+        "duration_s": 24.5,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Horizon: simulation starts at t=15.5 s from the agent's conditional cube/hand state estimate (as in the agent's own validation); the earlier part of the episode is NOT simulated in this video. Initial state\u2026"
+       },
+       "intended_moves": "U' (strong; hypothesis test)",
+       "actual_moves": "\"Visible completed wrong-axis turn\"; \"causesphysicalR-clockwise\"; key 0a130a160a0216 \"(conditionaldistance4)\""
+      }
      },
      {
       "id": "s09",
       "submitted_utc": "2026-10-21T23:22:32Z",
       "finished_utc": "2026-10-21T23:37:55Z",
       "state": "done",
-      "video": "videos/cube/s09.mp4"
+      "video": "videos/cube/s09.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "controller_trajectory"
+       ],
+       "hypothesis": "Repeating the empirically observed 9 s opening (U' + whole Z90) immediately, without the B regrasp, might compose to undo the initial U2 and reach distance 2.",
+       "changes": "empirical_A_twice: exact s03 first 9 s commands repeated at 9-18 s, hold 18-40 s, no velocity feedback (differs from s03 from step 4651).",
+       "observed_local": "Agent: 4 opening-consistent multiface scenarios retain the cube but predict no additional net turn. Regenerated replay in the decomposed-collision multiface model (agent's held-out replay setup) shows three U commits, matching the agent's note that this model wrongly predicts two extra U turns for s09.",
+       "observed_superdex": "Retained; RGB strongly favours the same one-net-U' state (conditional distance 3); exact repetition does not yield net U2.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "\"Exactfour-cycle repetitiondoesnotyieldnetU2.\"",
+       "next_direction": "Full-history multiface calibration and GPU batching; CEM continuation from the exact 9 s prefix (L038-L046).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s09.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "multiface_model.py full-history (contact phalanx_all, collision decomposed, substeps 1); setup from research/evaluate_multiface.py held-out replay research/mul\u2026",
+        "initial_conditions": "t=0: hand at q0, cube at the agent's placement for this model",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261031; policy is an open-loop action table (noise has no effect)",
+        "steps": 20000,
+        "duration_s": 40.0,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Full 40 s history in the contact-selected eight-corner model; agent notes this model is \"only partially supported\" and mismatches held-out trials (e.g. predicts extra U turns for s09)."
+       },
+       "intended_moves": "repeat opening A (expected net U2 / distance 2; probe)",
+       "actual_moves": "\"stronglyfavorssameone-net-Uprimekey1313130b130216 (conditionaldistance3)\""
+      }
      },
      {
       "id": "s10",
       "submitted_utc": "2026-10-22T00:06:03Z",
       "finished_utc": "2026-10-22T00:20:28Z",
       "state": "done",
-      "video": "videos/cube/s10.mp4"
+      "video": "videos/cube/s10.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "physics_contact_model",
+        "optimization_method",
+        "controller_trajectory",
+        "safety_governor"
+       ],
+       "hypothesis": "An all-axis continuation optimized in the contact-selected multiface model with decomposed wrist/thumb collisions, after the exact 9 s opening, could complete U2.",
+       "changes": "multiface_decomp_u2_v1: exact A 0-9 s, new 6 s CPU-CEM continuation (9-15 s), hold 15-40 s; velocity feedback gain 2 / alpha 0.2 from step 4500.",
+       "observed_local": "Agent: 8 perturbed decomposed domains with velocity noise all physically valid, 2/8 reach U2 (nominal final .71 deg). Regenerated nominal replay: U2 state reached (3.3 deg goal error).",
+       "observed_superdex": "Retained; a clearly partial layer through 40 s, U2 not completed; conditional fit favours U ~ -57.7 deg, apparently undoing earlier U progress rather than the intended next U'.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "\"Newmotionleavesclearlypartiallayerthrough40s, soU2notcompleted.\"",
+       "next_direction": "GPU robust trajectory search and RGB-initialized post-9 s pose models (L047-L051).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s10.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "multiface_model.py full-history (contact phalanx_all, collision decomposed, substeps 1); setup from research/validate_multiface_candidate.py research/multiface\u2026",
+        "initial_conditions": "t=0: hand at q0, cube at the agent's placement for this model",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261032; policy is feedback-dependent after its prefix (velocity\u2026",
+        "steps": 20000,
+        "duration_s": 40.0,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Full 40 s history in the contact-selected eight-corner model; agent notes this model is \"only partially supported\" and mismatches held-out trials (e.g. predicts extra U turns for s09)."
+       },
+       "intended_moves": "U' (complete U2 after opening)",
+       "actual_moves": "\"favorspartialU~-57.7deg(loss.1313) overR~14deg(.3967)/F~0deg(.4021)\"; \"DirectionappearstoundoearlierUprogress\""
+      }
      },
      {
       "id": "s11",
       "submitted_utc": "2026-10-22T00:38:06Z",
       "finished_utc": "2026-10-22T00:53:30Z",
       "state": "done",
-      "video": "videos/cube/s11.mp4"
+      "video": "videos/cube/s11.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "initial_state_estimation",
+        "optimization_method",
+        "controller_trajectory"
+       ],
+       "hypothesis": "Training the continuation from RGB/encoder-estimated post-9 s cube poses (instead of simulating the uncertain opening) should transfer U2.",
+       "changes": "post9_rgb_u2_v1: exact A 0-9 s, new 6 s CEM motion from RGB-initialized post-9 s grasps (post9_rgb_u2_g2), 25 s hold, same velocity feedback from 9 s (differs from s10 from step 4700).",
+       "observed_local": "Agent: 250 us 40 s noise checks 8/8 physical, 6/8 U2; with two 1 ms implementations 24/24 physical, 19/24 U2 (conditional own-simulator outcomes). Regenerated replay from the 9 s pose: U2 reached (1.3 deg goal error; agent case 0: 1.1 deg).",
+       "observed_superdex": "Retained; conditional RGB fit favours an over-turned R ~ -132.6 deg, not the expected U2.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "\"favorsR~-132.63deg(loss.1476), wellabovecanonicalquarter, notexpectedU2. Preparedcontinuationisinapplicabletothisactualprefix.\"",
+       "next_direction": "Exact time reversal of the S10 loop, and A9+B6.5+A9 reuse of the empirically demonstrated U cycle after a grip reset (L056).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s11.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "pose_initialized_model.py conditional post-9s RGB/encoder pose (contact phalanx_all, collision decomposed, substeps 1); setup from research/validate_pose_candi\u2026",
+        "initial_conditions": "conditional state at t=9 s (see differences)",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261033; policy is feedback-dependent after its prefix (velocity\u2026",
+        "steps": 15500,
+        "duration_s": 31.0,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Horizon: simulation starts at t=9 s from the agent's conditional cube/hand state estimate (as in the agent's own validation); the earlier part of the episode is NOT simulated in this video. Initial hand pose\u2026"
+       },
+       "intended_moves": "U' (complete U2 after opening)",
+       "actual_moves": "\"R ~ -132.63 deg\" (\"favorsR~-132.63deg(loss.1476), wellabovecanonicalquarter, notexpectedU2\")"
+      }
      },
      {
       "id": "s12",
       "submitted_utc": "2026-10-22T01:08:55Z",
       "finished_utc": "2026-10-22T01:22:34Z",
       "state": "done",
-      "video": "videos/cube/s12.mp4"
+      "video": "videos/cube/s12.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "controller_trajectory"
+       ],
+       "hypothesis": "The B grip reset after the opening may restore composability, so repeating the original A cycle after A+B would add another U turn.",
+       "changes": "empirical_AB_A_twice: exact s04 A9+B6.5 targets through 15.5 s, then the original A9 cycle 15.5-24.5 s, q0 hold to 40 s; native PD only (no velocity feedback).",
+       "observed_local": "Agent: 8/8 conditional 250 us perturbations physically valid but 0/8 U2 in the local post-9 models. Regenerated replay from the 9 s pose: unchanged one-U state (key 1313130b130216), matching the agent.",
+       "observed_superdex": "Retained; RGB favours the same one-U state (distance 3); B reset did not restore additional A turns.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "\"BresetdidnotrestoreadditionalAturns; rejectthiscompositionhypothesis.\"",
+       "next_direction": "Submit the slowed reversed-S10 direction probe (s13) and test an initial partial-U offset hypothesis (L058).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s12.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "pose_initialized_model.py conditional post-9s RGB/encoder pose (contact phalanx_all, collision decomposed, substeps 4); setup from research/validate_pose_candi\u2026",
+        "initial_conditions": "conditional state at t=9 s (see differences)",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261034; policy is an open-loop action table (noise has no effect)",
+        "steps": 15500,
+        "duration_s": 31.0,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Horizon: simulation starts at t=9 s from the agent's conditional cube/hand state estimate (as in the agent's own validation); the earlier part of the episode is NOT simulated in this video. Initial hand pose\u2026"
+       },
+       "intended_moves": "U' via repeated A after B regrasp (probe)",
+       "actual_moves": "\"RGB24.5/40favorssameone-Ukey1313130b130216distance3\""
+      }
      },
      {
       "id": "s13",
       "submitted_utc": "2026-10-22T01:28:52Z",
       "finished_utc": "2026-10-22T01:43:54Z",
       "state": "done",
-      "video": "videos/cube/s13.mp4"
+      "video": "videos/cube/s13.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "controller_trajectory",
+        "safety_governor"
+       ],
+       "hypothesis": "Reversing the S10 joint path (which produced a negative-U partial turn in SuperDex) may actuate U in the positive direction.",
+       "changes": "reverse_u_slow90_v1: exact A9 prefix, S10 6 s loop reversed in time, stretched to 8 s and scaled 0.9 around q0 (9-17 s), hold to 40 s; same velocity feedback from 9 s.",
+       "observed_local": "Agent: 13/13 conditional 250 us physical checks pass, but local models do not predict U2. Regenerated replay from the 9 s pose: no additional turn (one-U state), matching the agent.",
+       "observed_superdex": "Retained; leading one-U state (distance 3) but U2 alternative close; no verified extra quarter or solve.",
+       "unknown": "Exact SuperDex state (U2 alternative loss .1136 close to leading .0996).",
+       "agent_estimated_progress": null,
+       "failure_observation": "\"Noverifiedextraquarterorsolve.\"; status: \"direction-reversalprobeunsuccessfulonavailableevidence\"",
+       "next_direction": "Native SDF collision variants, teacher-hand replays and sequential digit-reset search (L060-L064).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s13.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "pose_initialized_model.py conditional post-9s RGB/encoder pose (contact phalanx_all, collision decomposed, substeps 4); setup from research/validate_pose_candi\u2026",
+        "initial_conditions": "conditional state at t=9 s (see differences)",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261035; policy is feedback-dependent after its prefix (velocity\u2026",
+        "steps": 15500,
+        "duration_s": 31.0,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Horizon: simulation starts at t=9 s from the agent's conditional cube/hand state estimate (as in the agent's own validation); the earlier part of the episode is NOT simulated in this video. Initial hand pose\u2026"
+       },
+       "intended_moves": "positive-U direction probe (reversed S10 path)",
+       "actual_moves": "\"RGB17/40leadingone-Ukey1313130b130216distance3loss.0996;U2alternative.1136close\""
+      }
      },
      {
       "id": "s14",
       "submitted_utc": "2026-10-22T02:20:13Z",
       "finished_utc": "2026-10-22T02:33:40Z",
       "state": "done",
-      "video": "videos/cube/s14.mp4"
+      "video": "videos/cube/s14.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "controller_trajectory"
+       ],
+       "hypothesis": "Releasing digits in a specific order between repeated A strokes may let each stroke add a U turn.",
+       "changes": "empirical_sequential_reset4_v1: four strokes of the first 2.5 s of A, each followed by ring/pinky/index/middle/thumb sequential 0.35 s returns + 0.5 s hold, ending 19 s, then q0 to 40 s; native PD, no velocity targets (differs from s03 from step 1251).",
+       "observed_local": "Agent: eight full 250 us checks all physical/contact pass, only 1 reaches U2. Regenerated nominal replay: one U commit at 1.64 s then no further turns (same as the agent's case 0).",
+       "observed_superdex": "Retained; two PIP release events but RGB favours the unchanged one-U state (distance 3); no additional quarter around the second event.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "\"Sequentialreturnnotasuccessfulcomposition.\"",
+       "next_direction": "Structured contact-grasp IK and ring ratchet searches; then test side-turn (R) repetition (s15).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s14.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "multiface_model.py full-history (contact phalanx_all, collision decomposed, substeps 4); setup from research/check_sequential_reset_full.py case 0 (multiface d\u2026",
+        "initial_conditions": "t=0: hand at q0, cube at the agent's placement for this model",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261036; policy is an open-loop action table (noise has no effect)",
+        "steps": 20000,
+        "duration_s": 40.0,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Full 40 s history in the contact-selected eight-corner model; agent notes this model is \"only partially supported\" and mismatches held-out trials (e.g. predicts extra U turns for s09)."
+       },
+       "intended_moves": "extra U turns via sequential digit resets (probe)",
+       "actual_moves": "\"RGBmid/finalfavorunchangedone-Ukey1313130b130216(distance3)\""
+      }
      },
      {
       "id": "s15",
       "submitted_utc": "2026-10-22T02:43:54Z",
       "finished_utc": "2026-10-22T03:01:14Z",
       "state": "done",
-      "video": "videos/cube/s15.mp4"
+      "video": "videos/cube/s15.mp4",
+      "detail": {
+       "kind": "diagnostic",
+       "categories": [
+        "controller_trajectory"
+       ],
+       "hypothesis": "Repeating the observed s04 side-turn (R) block three times tests side-turn composability and gives intermediate state evidence.",
+       "changes": "empirical_R_repetition_v1: exact s04 first 20 s, then three 6 s repetitions of its 4.5 s side-turn block (20-38 s), hold 2 s; velocity feedback from 20 s (differs from s04 from step 10201).",
+       "observed_local": "Agent: eight noisy 250 us conditional checks from the RGB 20 s pose all physical; 7/8 predict only one extra R quarter then stall. Regenerated replay: one extra quarter commit at 21.8 s about the cube-frame F axis (-X; the agent reads its R-side macro as initial-frame F after the opening reorientation), then stall.",
+       "observed_superdex": "Retained; RGB 32/40 favours a new state at distance 5, algebraically R1 followed by U3 rather than R2; no verified distance 2.",
+       "unknown": "",
+       "agent_estimated_progress": null,
+       "failure_observation": "\"Rmacroiscontextdependent;noverifieddistance2.\"",
+       "next_direction": "Feedback learning track: 50 Hz GRU actor on noisy q/qd trained with PPO in GPU physics (L070).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s15.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "pose_initialized_model.py conditional post-20s RGB/encoder pose (contact phalanx_all, collision decomposed, substeps 4); setup from research/validate_pose_cand\u2026",
+        "initial_conditions": "conditional state at t=20 s (see differences)",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261037; policy is feedback-dependent after its prefix (velocity\u2026",
+        "steps": 10000,
+        "duration_s": 20.0,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Horizon: simulation starts at t=20 s from the agent's conditional cube/hand state estimate (as in the agent's own validation); the earlier part of the episode is NOT simulated in this video. Initial hand pos\u2026"
+       },
+       "intended_moves": "R (x3, side-turn composability probe)",
+       "actual_moves": "\"ExactalgebraidentifiesadditionalU3afterR1,notpredictedR2\"; \"newkeydistance5\""
+      }
      },
      {
       "id": "s16",
       "submitted_utc": "2026-10-22T03:57:30Z",
       "finished_utc": "2026-10-22T04:14:03Z",
       "state": "done",
-      "video": "videos/cube/s16.mp4"
+      "video": "videos/cube/s16.mp4",
+      "detail": {
+       "kind": "improvement",
+       "categories": [
+        "policy_architecture",
+        "training_method",
+        "domain_randomization",
+        "safety_governor"
+       ],
+       "hypothesis": "A learned proprioceptive feedback controller (GRU residual over the S11 continuation) trained with PPO across model randomization might transfer U2 better than open-loop motions.",
+       "changes": "recurrent_u2_v1: exact A9 prefix; 50 Hz GRU-64 actor from the 2,150,400-step PPO checkpoint (proprio/time/baseline inputs), 500 Hz rate-bounded q targets + gain-2 velocity targets; 15 s measured posture capture then hold to 40 s (first new command at step 4500).",
+       "observed_local": "Agent: fourteen CPU checks all physically pass, 3 U2 holds; GPU training-distribution eval 78/512 U2 holds vs 81/512 for zero correction. Regenerated replay from the 9 s pose: no U2 (one quarter commit about the cube-frame F axis at 12.45 s, goal error 59.8 deg), consistent with the agent's case 0 (staged_U2_hold false).",
+       "observed_superdex": "Not assessed by the agent in the log: STATUS still lists S16 as awaiting feedback; only a replay check (package reproduces the recorded SuperDex commands exactly) exists.",
+       "unknown": "SuperDex outcome of s16 is not described in the agent's research log or STATUS (feedback was downloaded at the end of the run but no visual/RGB conclusion was written).",
+       "agent_estimated_progress": null,
+       "failure_observation": "Not stated by the agent for this trial.",
+       "next_direction": "Critic audit and expanded privileged critic features; goal-curriculum and wide-action PPO tracks resumed (L074-L076).",
+       "package_verified": true,
+       "sim_video": {
+        "status": "generated",
+        "file": "videos/cube/sim_s16.mp4",
+        "reason": "No existing local video render of this package was found in the workspace (only contact-sheet JPGs of SuperDex feedback); regenerated by replaying the exact package in the agent's validation surrogate.",
+        "model": "pose_initialized_model.py conditional post-9s RGB/encoder pose (contact phalanx_all, collision decomposed, substeps 4); setup from research/validate_recurrent.\u2026",
+        "initial_conditions": "conditional state at t=9 s (see differences)",
+        "noise": "on: q N(0,0.002), qd N(0,0.05) in observations, seed 20261038; policy is feedback-dependent after its prefix (velocity\u2026",
+        "steps": 15500,
+        "duration_s": 31.0,
+        "differences": "Own surrogate, not SuperDex: cube mechanism, contact/friction parameters and cube placement are the agent's hypotheses (agent: \"No calibrated target plant claimed\"); encoder noise q 0.002 rad / qd 0.05 rad/s with a fixed seed (SuperDex noise realisation unknown); no SuperDex internals used. Horizon: simulation starts at t=9 s from the agent's conditional cube/hand state estimate (as in the agent's own validation); the earlier part of the episode is NOT simulated in this video. Initial hand pose\u2026"
+       },
+       "intended_moves": "U2 (learned feedback after opening)",
+       "actual_moves": "not assessed by the agent (no RGB/video conclusion logged for s16)"
+      }
      }
     ],
     "validate_calls_utc": [
@@ -4023,6 +5377,330 @@
    "baseball",
    "cube",
    "pen"
+  ]
+ },
+ "cube_reference": {
+  "scramble": "R' F U2",
+  "scramble_encoded": [
+   [
+    1,
+    3
+   ],
+   [
+    2,
+    1
+   ],
+   [
+    0,
+    2
+   ]
+  ],
+  "solution": "U2 F' R",
+  "solution_encoded": [
+   [
+    0,
+    2
+   ],
+   [
+    2,
+    3
+   ],
+   [
+    1,
+    1
+   ]
+  ],
+  "unique_optimal_in_URF": true,
+  "equivalents": {
+   "U2": "D2",
+   "F'": "B",
+   "R": "L'"
+  },
+  "colors": {
+   "U": "#f2f2f2",
+   "D": "#ffd800",
+   "F": "#009e47",
+   "B": "#0044ad",
+   "R": "#cc1111",
+   "L": "#ff7200"
+  },
+  "convention": "Faces fixed by the start orientation: U up (+Z), F toward the fingertips (-X), R toward the little finger (-Y). WCA notation: X = 90 deg clockwise looking at face X from outside.",
+  "verified_with": "evaluator cube kinematics (apply_move, exact distance table), 2026-10-22",
+  "steps": [
+   {
+    "label": "Start (scrambled with R' F U2)",
+    "move": null,
+    "distance": 3,
+    "faces": {
+     "U": [
+      [
+       "L",
+       "L"
+      ],
+      [
+       "B",
+       "U"
+      ]
+     ],
+     "D": [
+      [
+       "R",
+       "R"
+      ],
+      [
+       "D",
+       "F"
+      ]
+     ],
+     "F": [
+      [
+       "D",
+       "B"
+      ],
+      [
+       "U",
+       "U"
+      ]
+     ],
+     "B": [
+      [
+       "F",
+       "F"
+      ],
+      [
+       "D",
+       "B"
+      ]
+     ],
+     "R": [
+      [
+       "L",
+       "D"
+      ],
+      [
+       "B",
+       "R"
+      ]
+     ],
+     "L": [
+      [
+       "U",
+       "R"
+      ],
+      [
+       "L",
+       "F"
+      ]
+     ]
+    }
+   },
+   {
+    "label": "After U2",
+    "move": "U2",
+    "axis": "U",
+    "quarter_turns": 2,
+    "distance": 2,
+    "faces": {
+     "U": [
+      [
+       "U",
+       "B"
+      ],
+      [
+       "L",
+       "L"
+      ]
+     ],
+     "D": [
+      [
+       "R",
+       "R"
+      ],
+      [
+       "D",
+       "F"
+      ]
+     ],
+     "F": [
+      [
+       "F",
+       "F"
+      ],
+      [
+       "U",
+       "U"
+      ]
+     ],
+     "B": [
+      [
+       "D",
+       "B"
+      ],
+      [
+       "D",
+       "B"
+      ]
+     ],
+     "R": [
+      [
+       "U",
+       "R"
+      ],
+      [
+       "B",
+       "R"
+      ]
+     ],
+     "L": [
+      [
+       "L",
+       "D"
+      ],
+      [
+       "L",
+       "F"
+      ]
+     ]
+    }
+   },
+   {
+    "label": "After F'",
+    "move": "F'",
+    "axis": "F",
+    "quarter_turns": 3,
+    "distance": 1,
+    "faces": {
+     "U": [
+      [
+       "U",
+       "B"
+      ],
+      [
+       "U",
+       "B"
+      ]
+     ],
+     "D": [
+      [
+       "D",
+       "F"
+      ],
+      [
+       "D",
+       "F"
+      ]
+     ],
+     "F": [
+      [
+       "F",
+       "U"
+      ],
+      [
+       "F",
+       "U"
+      ]
+     ],
+     "B": [
+      [
+       "D",
+       "B"
+      ],
+      [
+       "D",
+       "B"
+      ]
+     ],
+     "R": [
+      [
+       "R",
+       "R"
+      ],
+      [
+       "R",
+       "R"
+      ]
+     ],
+     "L": [
+      [
+       "L",
+       "L"
+      ],
+      [
+       "L",
+       "L"
+      ]
+     ]
+    }
+   },
+   {
+    "label": "After R",
+    "move": "R",
+    "axis": "R",
+    "quarter_turns": 1,
+    "distance": 0,
+    "faces": {
+     "U": [
+      [
+       "U",
+       "U"
+      ],
+      [
+       "U",
+       "U"
+      ]
+     ],
+     "D": [
+      [
+       "D",
+       "D"
+      ],
+      [
+       "D",
+       "D"
+      ]
+     ],
+     "F": [
+      [
+       "F",
+       "F"
+      ],
+      [
+       "F",
+       "F"
+      ]
+     ],
+     "B": [
+      [
+       "B",
+       "B"
+      ],
+      [
+       "B",
+       "B"
+      ]
+     ],
+     "R": [
+      [
+       "R",
+       "R"
+      ],
+      [
+       "R",
+       "R"
+      ]
+     ],
+     "L": [
+      [
+       "L",
+       "L"
+      ],
+      [
+       "L",
+       "L"
+      ]
+     ]
+    }
+   }
   ]
  }
 }
