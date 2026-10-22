@@ -16,6 +16,7 @@ r2s2r-pen fetch sNN > sNN.tgz
 r2s2r-pen frames sNN <top|left|right|all> <t1,t2,...> [depth] > frames.tgz
 r2s2r-pen history
 r2s2r-pen note sNN < note.json
+r2s2r-hwcheck traj.npz          # local: check your own trajectories against the hardware rules (HARDWARE_CHECK.md)
 ```
 
 Responses are JSON (`fetch` and `frames` return a .tar.gz); errors return `{"error": "..."}` with a non-zero exit code.

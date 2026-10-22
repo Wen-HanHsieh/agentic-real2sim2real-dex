@@ -52,15 +52,18 @@ every required trial), and the cell's internal validity checks have no sensor eq
 
 ### Hardware
 
-- **Measured:** joint positions and speeds against the URDF limits exactly as published (`hardware/SPECS.md`); no
-  tolerance is added. Each gets one of three decisions from the documented encoder noise (σ 0.002 rad, 0.05 rad/s):
-  `violation` if a measured value, or the mean of 10 or 50 consecutive measured values, lies beyond a limit by more than
-  k·σ/√window; `compliant` if every measured value lies inside by more than k·σ; otherwise `uncertain` (the joint was within
-  measurement noise of a limit). k (in the report) makes a wrong clear decision at most 1 % likely over all joints, steps
-  and windows. A clear violation makes the trial status `failure`; an uncertain decision makes it at best `unknown`.
-- **Estimated:** torque. Nothing measures torque on this hand; `estimated.joint_torque_demand` applies the PD law of
-  `hardware/SPECS.md` to the measured state and your commanded targets. Above the effort limit the motor saturates, so this
-  is a demand, not a measured torque.
+Judged by the authoritative rules of `hardware/SPECS.md` section 6 (`hardware/hardware_spec.json`) with the same code as
+`HARDWARE_CHECK.md`, applied to your robot log:
+
+- **Measured:** joint positions (against the URDF limits with the published 0.02 rad allowance) and joint speeds. Each gets
+  `violation`, `compliant` or `uncertain` from the documented encoder noise (σ 0.002 rad, 0.05 rad/s): `violation` if a
+  measured value, or the mean of 10 or 50 consecutive values, lies beyond a limit by more than k·σ/√window; `compliant` if
+  every value lies inside by more than k·σ; otherwise `uncertain`. A clear violation makes the trial status `failure`; an
+  uncertain decision makes it at best `unknown`.
+- **Commanded:** action validity (finite, correctly shaped; targets outside the limits are clipped).
+- **Estimated:** torque demand. Nothing measures torque on this hand; `estimated.joint_torque_demand` applies the PD law of
+  `hardware/SPECS.md` to the measured state and your targets. Above the effort limit the actuator saturates: reported,
+  not a violation (the applied torque never exceeds the limit on the target).
 
 ## 3. What is measured, and how
 
@@ -74,12 +77,12 @@ as certain (`observability.tolerances`); the point score uses the thresholds exa
 | Pen centre, horizontal travel, drop | from the tip band and the known 140 mm length | 3 mm |
 | Tilt of the long axis | from the 3D axis | 1.5 deg |
 | Centre speed (hold) | time derivative of the centre (0.1 s window) | 0.005 m/s |
-| Angular speed (hold) | not fully observable: rotation about the pen's own long axis cannot be seen; the swing rate of the long axis is a lower bound | a swing rate ≥ 0.6 rad/s proves 'angular speed < 0.5 rad/s' fails; otherwise the condition is unknown |
+| Full 3D orientation and angular speed (hold) | the yellow and green roll markers give rotation about the long axis; angular velocity from the orientation track (0.2 s window) | 0.15 rad/s; where both markers are hidden, the swing rate of the long axis is used as a lower bound |
 | Hand contact | object surface within 4 mm of the robot model at the measured joint angles | gaps 2.5–5.5 mm count as uncertain |
 | Environment contact | object surface within 3 mm of the floor | gaps 1.5–4.5 mm count as uncertain |
 
-Not observable: the cell's internal validity checks; contact forces; joint torque; for the pen, rotation about its own long
-axis (so its hold milestones can be disproven but not confirmed, and a sensor `success` cannot be concluded for the pen).
+Not observable: the cell's internal validity checks; contact forces; joint torque; for the pen, its rotation about the
+long axis while both roll markers are hidden (then only a lower bound on its angular speed is known).
 An object hidden from all three cameras for longer than 0.5 s is treated as not retained in the point estimate and as
 unknown in the interval. The point score credits only what was observed; `score_bounds` gives the range.
 
