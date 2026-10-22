@@ -33,7 +33,8 @@ A deterministic program scores the trial against `SUCCESS.md` using only the cam
 | `status` | `success`, `failure` or `unknown` (rule in `status_rule`) |
 | `score`, `score_bounds` | total progress 0–1 (`SUCCESS.md` stages: first turn, turning, solving, hold); the interval covers moments that could not be observed and measurement error near thresholds |
 | `confidence` | 0–1: observed fraction × (1 − interval width) |
-| `stages` | per-stage score with every milestone: reached, time, label |
+| `stages` | per-stage score and score bounds; every milestone: reached (point), `reached_bounds`, `certain`, time, label |
+| `unobservable` | quantities in `SUCCESS.md` that the sensors cannot observe for this task, and what that means for the score |
 | `events` | timestamped observations (release, landing, rest, rotation milestones, layer turns, loss of retention, ...) |
 | `object_motion` | measured summary quantities (see §3) |
 | `hardware` | `measured` (joint positions and speeds vs the URDF limits) and `estimated` (torque demand from the PD law) |
@@ -51,9 +52,12 @@ every required trial), and the cell's internal validity checks have no sensor eq
 
 ### Hardware
 
-- **Measured:** joint position against the URDF limits (encoder noise σ 0.002 rad) and joint speed against the URDF
-  speed limits (σ 0.05 rad/s). A speed above the limit by more than 3σ is a violation. A position beyond a limit by more
-  than 3σ is reported, and makes the status `unknown` (the cell's position tolerance is not published).
+- **Measured:** joint positions and speeds against the URDF limits exactly as published (`hardware/SPECS.md`); no
+  tolerance is added. Each gets one of three decisions from the documented encoder noise (σ 0.002 rad, 0.05 rad/s):
+  `violation` if a measured value, or the mean of 10 or 50 consecutive measured values, lies beyond a limit by more than
+  k·σ/√window; `compliant` if every measured value lies inside by more than k·σ; otherwise `uncertain` (the joint was within
+  measurement noise of a limit). k (in the report) makes a wrong clear decision at most 1 % likely over all joints, steps
+  and windows. A clear violation makes the trial status `failure`; an uncertain decision makes it at best `unknown`.
 - **Estimated:** torque. Nothing measures torque on this hand; `estimated.joint_torque_demand` applies the PD law of
   `hardware/SPECS.md` to the measured state and your commanded targets. Above the effort limit the motor saturates, so this
   is a demand, not a measured torque.
@@ -66,15 +70,17 @@ as certain (`observability.tolerances`); the point score uses the thresholds exa
 | Quantity | How | Margin |
 |---|---|---|
 | Sticker colours and cubie orientations | colour segmentation, 3D sticker planes, cube model with one moving layer | - |
-| Layer turns (which layer, direction, angle) | continuous layer angle relative to the last settled state; a turn completes when the layer stays aligned for 0.1 s | one frame (40 ms) |
-| Cube state and distance to solved | tracked from the scramble you are given; one layer may be part-way | - |
+| Layer turns (which layer, direction, angle) | continuous layer angle; a turn is complete when the turned layer is stably aligned (within 10°, moving less than 5°) for 0.1 s, so a continuous half turn is one turn | one frame (40 ms) |
+| Cube state and distance to solved | tracked from the scramble you are given; distance to solved is read only at settled, aligned states | - |
 | Cube centre and drop | from the identified cubies | 3 mm |
 | Mechanism deviation (jam) | orientation residuals of cubies seen with two or more stickers | values within 4 deg of the 15 deg limit are uncertain |
 | Hand contact | object surface within 4 mm of the robot model at the measured joint angles | gaps 2.5–5.5 mm count as uncertain |
 | Environment contact | object surface within 3 mm of the floor | gaps 1.5–4.5 mm count as uncertain |
 
-Not observable: the cell's internal validity checks; contact forces; anything hidden from all three cameras for longer than
-0.5 s is treated as not retained in the point estimate and as unknown in the interval.
+Not observable: the cell's internal validity checks; contact forces; joint torque; for the pen, rotation about its own long
+axis (so its hold milestones can be disproven but not confirmed, and a sensor `success` cannot be concluded for the pen).
+An object hidden from all three cameras for longer than 0.5 s is treated as not retained in the point estimate and as
+unknown in the interval. The point score credits only what was observed; `score_bounds` gives the range.
 
 `sensor/sensor_tracks.npz` holds the per-frame tracks: `t`, `hand_contact`, `environment_contact`,
 `hand_contact_uncertain`, `environment_contact_uncertain`, `hand_gap_m`, and cube_centre_z (n,) [m], aligned (n,), distance_to_solved (n,), solved (n,), layer_angle_deg (n,), layer_axis (n,), mechanism_deviation_deg (n,), state_key (n,) opaque state id. NaN means not observed.
