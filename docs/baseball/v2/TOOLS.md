@@ -1,47 +1,59 @@
-# Tools
+# Research Tools
 
-All tools run locally on your machine, are optional, and send nothing anywhere unless they call the SuperDex API on
-your behalf (`r2s2r-baseball`). None of them computes or changes official results.
+These tools run on your machine. They are optional and never compute or change official results. Only `r2s2r-harness` contacts the target environment, and only through the commands of `REMOTE_API.md`.
 
-| Tool | Use it to | Documentation |
+| Tool | Purpose | Reference |
 |---|---|---|
-| `r2s2r-preflight my_policy/` | check a package before `validate` / `submit` | `PACKAGE.md` |
-| `r2s2r-hwcheck traj.npz` | check your own trajectories against the hardware rules | `HARDWARE_CHECK.md` |
-| `r2s2r-maskiou BUNDLE sim.npz` | compare SuperDex masks with masks from your simulation | below |
-| `r2s2r-harness --api r2s2r-baseball ...` | keep experiment records, archive results, retrieve your best policy | below |
+| `r2s2r-preflight` | Check a policy package before `validate` / `submit` | `PACKAGE.md` |
+| `r2s2r-hwcheck` | Check local trajectories against the hardware rules | `HARDWARE_CHECK.md` |
+| `r2s2r-maskiou` | Compare target segmentation masks with masks from your simulation | Section 1 |
+| `r2s2r-harness` | Experiment records, archives, regression gate, best evaluated policy | Section 2 |
 
-## Sim-to-Real mask IoU (`r2s2r-maskiou`)
+Implementations: `tools/hwcheck/`, `tools/maskiou/`, `tools/harness/`.
 
-Compares the camera-derived masks of a fetched submission (`masks/`) with masks rendered by your simulation, per frame
-and view. It is a diagnostic: it is not a SuperDex reward, score or success criterion, and it is never required.
+## 1. Sim-to-Target Mask IoU
+
+`r2s2r-maskiou` compares the masks of a fetched feedback bundle (`masks/`) with masks rendered by your simulation, per frame and view. It is a diagnostic, not an official reward or success criterion.
 
 ```bash
 r2s2r-maskiou sNN_bundle/ my_sim_masks.npz --json iou.json --vis overlays/
 ```
 
-`my_sim_masks.npz`: `top` / `left` / `right` as (n, H, W) masks (any subset), `t` (s since control step 0) or
-`control_step` (n,), and the camera you rendered with: `calibration_sha256` of the bundle's `calibration.json`, or
-`K_<view>` and `T_world_cam_<view>`. Rules: frames are matched to the SuperDex frame at the same control step (within
-1 ms; `--max-time-error` to change), never interpolated or warped; `--time-offset` shifts your clock by a constant you
-choose and is reported. A view whose camera or image size does not match is refused (or, with
-`--allow-calibration-mismatch`, marked unreliable). Both masks empty gives an undefined IoU, not 1. Frames where the
-SuperDex mask is invalid, occluded (`visible_fraction` < 0.5; render your hand as an occluder too) or has low colour
-agreement are reported. Output: per-frame IoU, per-view mean / median / min, multi-view mean, overlays (green SuperDex
-only, magenta yours only, white both).
+**Simulation input (`.npz`):**
 
-## Research harness (`r2s2r-harness`)
+- `top`, `left`, `right`: `(n, H, W)` binary masks (any subset of views).
+- `t` (seconds since control step 0) or `control_step`: `(n,)`.
+- The camera you rendered with: `calibration_sha256` of the bundle's `calibration.json`, or `K_<view>` and `T_world_cam_<view>`.
+
+**Rules:**
+
+- Each frame is matched to the target frame at the same control step (within 1 ms; `--max-time-error` to change); nothing is interpolated or warped. `--time-offset` shifts your clock by a constant you choose and is reported.
+- A view whose camera or image size does not match is refused (with `--allow-calibration-mismatch`: compared but marked unreliable).
+- Both masks empty gives an undefined IoU, not 1. Frames where the target mask is invalid, occluded (`visible_fraction` < 0.5; render your hand as an occluder too), or has low colour agreement are reported.
+
+**Output:** per-frame IoU, per-view mean, median and minimum, multi-view mean, warnings, and optional overlays (green: target only, magenta: yours only, white: both).
+
+## 2. Research Harness
+
+`r2s2r-harness` keeps experiment records and policy artifacts using the API commands `history`, `note`, `fetch`, and `package`.
 
 ```bash
-export R2S2R_API=r2s2r-baseball
-r2s2r-harness summary                       # every submission: role, keep, official status / score / bounds, hardware, gate
+export R2S2R_API=r2s2r-baseball        # or pass --api r2s2r-baseball
+
+r2s2r-harness summary
 r2s2r-harness record sNN --kind improvement --hypothesis ... --change ... --evidence ... --decision ... \
-    [--keep keep|reject|undecided] [--repo .] [--sim-config cfg.json] [--checkpoint REF] [--analysis TEXT] [--local res.json]
-r2s2r-harness gate sNN                      # official regression gate of sNN against the best comparable earlier submission
-r2s2r-harness best --download best/         # the best evaluated policy and its exact package (hash verified)
-r2s2r-harness archive ~/records             # write-once local copy of history, feedback bundles and packages, with a manifest
-r2s2r-harness verify ~/records              # detect modified or missing archive files
+    [--keep keep|reject|undecided] [--repo .] [--sim-config cfg.json] [--checkpoint REF] [--analysis TEXT] \
+    [--local result.json] [--parent sMM]
+r2s2r-harness gate sNN
+r2s2r-harness best --download best/
+r2s2r-harness archive ~/records
+r2s2r-harness verify ~/records
 ```
 
-`record` fills `source_revision` and the latest commit's diff stat from `--repo`. The best policy and the regression
-gate are computed by SuperDex from official results under comparable versions (`REMOTE_API.md` section 7); the harness
-only displays them. Which candidate to investigate next is your decision.
+- **`summary`:** every submission with role, keep, official status, score and bounds, hardware, and gate.
+- **`record`:** appends a note (`REMOTE_API.md` section 6); `--repo` adds the source revision and the latest commit's diff stat.
+- **`gate`:** the official regression gate of a submission against the best comparable earlier one.
+- **`best`:** the best evaluated policy; `--download` saves its exact package after verifying the hash.
+- **`archive` / `verify`:** a write-once local copy of history, feedback bundles, and packages with a manifest, and its integrity check.
+
+The best policy and the gate are computed by the target environment from official results; the harness only records and displays them. **You decide which experiments to run, which policies to keep, and how to improve them.**

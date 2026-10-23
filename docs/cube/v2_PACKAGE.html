@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Policy package &amp; sandbox · 2×2×2 Cube Solving</title><meta name="description" content="Autonomous coding agents learn dexterous manipulation skills from human videos with closed-loop, sensor-based SuperDex feedback.">
+<title>Policy package &amp; runtime · 2×2×2 Cube Solving</title><meta name="description" content="Autonomous coding agents learn dexterous manipulation skills from human videos with closed-loop, sensor-based feedback from a black-box target environment.">
 <style>
 :root{--bg:#f7f7f4;--fg:#18181b;--muted:#5d6168;--line:#dedcd5;--card:#fff;--soft:#f0efea;--accent:#2b4c7e;--est:#9a5b00;--estbg:#fdf2e1;--mea:#1d6b39;--meabg:#e6f3ea;--off:#5b3a9e;--offbg:#efe9fb}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121315;--fg:#ececea;--muted:#a3a7ad;--line:#2f3236;--card:#1b1d20;--soft:#24272b;--accent:#9dbbe6;--est:#f0b45a;--estbg:#3a2a12;--mea:#7fd19b;--meabg:#16301f;--off:#c7b0f5;--offbg:#2a2140}}
@@ -54,24 +54,28 @@ footer{margin-top:56px;padding-top:14px;border-top:1px solid var(--line);font-si
 @media (max-width:900px){.arch{grid-template-columns:1fr}.zrow,.zrow.sim2{grid-template-columns:1fr;gap:6px}.ar2{transform:rotate(90deg);min-height:28px}}
 </style></head><body>
 <header class="top"><div class="in"><b><a href="../../index.html" style="text-decoration:none;color:inherit">Agentic Real2Sim2Real</a></b><nav><a href='../../index.html#overview'>Overview</a><a href='../../index.html#infra'>Architecture</a><a href='../../index.html#feedback'>Feedback</a><a href='../../index.html#tools'>Tools</a><a href='../../index.html#tasks'>Tasks</a><a href='../../index.html#validation'>Validation</a><a href='../../index.html#resources'>Resources</a></nav>
-<span class="upd">Updated 2026-10-23 14:59 EDT (Pittsburgh)</span></div></header>
+<span class="upd">Updated 2026-10-23 15:03 EDT (Pittsburgh)</span></div></header>
 <main><div class='doc'><p class='muted' style='margin-top:28px'><a href='../../tasks/cube.html#docs'>← 2×2×2 Cube Solving</a> · <a href='v2/PACKAGE.md'>raw Markdown</a> · agent bundle, <code>PACKAGE.md</code></p><h2>Policy Package</h2>
-<h3>1. Format</h3>
-<pre><code>policy.py
-manifest.json
-weights / configs (optional)</code></pre>
-<p><code>policy.py</code> defines <code>load_policy(path)</code>, returning an object with <code>reset()</code> and <code>act(obs) -&gt; (q_target, qd_target or None)</code>. See <code>CONTRACT.md</code>.</p>
-<h3>2. Deployment Runtime</h3>
-<ul><li><strong>Python:</strong> 3.12; standard library, NumPy 2.5.4, PyTorch 2.14.1 (CPU).</li><li><strong>Resources:</strong> 1 CPU thread, no GPU, 8 GB virtual address space, 600 s CPU time.</li><li><strong>Restrictions:</strong> No network, subprocesses, or compiled extensions; read-only package, writable <code>TMPDIR</code> (≤ 64 MB), ≤ 256 open files.</li><li><strong>Inference:</strong> 2 ms per <code>act()</code> target; 5 s hard timeout.</li><li><strong>Determinism:</strong> Identical observation histories must produce bit-identical actions.</li></ul>
-<h3>3. Sandbox Validation</h3>
-<p>Policies run in an isolated sandbox without access to target internals or privileged state.</p>
-<p>Validation checks package integrity, dependencies, policy interface, action validity, determinism, and runtime limits.</p>
-<p>Before submission, run the local preflight check:</p>
+<h3>1. Package Format</h3>
+<p>A policy package is a directory containing:</p>
+<ul><li><code>policy.py</code>: the policy implementation.</li><li><code>manifest.json</code>: package metadata and SHA-256 hashes.</li><li>Optional weights and configuration files.</li></ul>
+<p><code>policy.py</code> must define:</p>
+<pre><code>def load_policy(path):
+    return policy</code></pre>
+<p>The returned object implements:</p>
+<pre><code>policy.reset()
+policy.act(obs)  # returns (q_target, qd_target) or (q_target, None)</code></pre>
+<p>Observations and actions: <code>CONTRACT.md</code>.</p>
+<h3>2. Runtime Requirements</h3>
+<div class='tw'><table><tr><th>Requirement</th><th>Limit</th></tr><tr><td>Python</td><td>3.12</td></tr><tr><td>Libraries</td><td>Python standard library, NumPy 2.5.4, PyTorch 2.14.1 (CPU)</td></tr><tr><td>CPU threads</td><td>1</td></tr><tr><td>GPU</td><td>Not available</td></tr><tr><td>Address space</td><td>≤ 8 GB</td></tr><tr><td>Total CPU time</td><td>≤ 600 s</td></tr><tr><td><code>act()</code> inference time</td><td>2 ms target</td></tr><tr><td>Hard policy-call timeout</td><td>5 s</td></tr><tr><td>Writable temporary storage</td><td><code>TMPDIR</code>, ≤ 64 MB</td></tr><tr><td>Open files</td><td>≤ 256</td></tr></table></div>
+<p>The runtime is sandboxed: no network access or subprocesses; no compiled extensions or native libraries; package files are read-only. It has no access to target internals or privileged state.</p>
+<p>The 2 ms target matches the 500 Hz control rate; a slower mean is reported as a warning. The 5 s timeout is a hard failure limit, not an acceptable inference rate.</p>
+<h3>3. Validation</h3>
+<p>Check locally before submitting:</p>
 <pre><code>r2s2r-preflight my_policy/</code></pre>
-<p>The remote <code>validate</code> command performs the authoritative package check. See <code>REMOTE_API.md</code>.</p>
-<p>Invalid packages are rejected with clear errors without consuming evaluation budget.</p>
+<p>The remote <code>validate</code> command (<code>REMOTE_API.md</code>) is authoritative and is never charged. It checks: manifest and SHA-256 hashes, Python 3.12 syntax, no compiled code, <code>load_policy()</code> and <code>reset()</code> in the sandbox, five <code>act()</code> calls with valid outputs, determinism (<code>reset()</code> and replay give bit-identical actions), and inference time. <code>submit</code> runs the same checks first; a rejected package is not charged.</p>
+<p>Passing validation does not guarantee a successful rollout.</p>
 <h3>4. Manifest</h3>
-<p><code>manifest.json</code> contains SHA256 hashes of all package files except itself.</p>
 <pre><code>{
   &quot;name&quot;: &quot;my_policy&quot;,
   &quot;contract_version&quot;: &quot;v1&quot;,
@@ -81,9 +85,10 @@ weights / configs (optional)</code></pre>
     &quot;weights.npz&quot;: &quot;&lt;sha256 hex&gt;&quot;
   }
 }</code></pre>
+<ul><li><code>entry</code> must be <code>policy.py:load_policy</code>.</li><li><code>files</code> must list every package file except <code>manifest.json</code>, each with its correct SHA-256.</li><li><code>contract_version</code> names the policy interface (<code>CONTRACT.md</code>); the current value is <code>&quot;v1&quot;</code>. It is independent of the feedback and evaluation versions (<code>REMOTE_API.md</code> section 7).</li></ul>
 <h3>5. Submission</h3>
 <pre><code>tar -C my_policy -czf my_policy.tgz .</code></pre>
-<p>Submit through <code>REMOTE_API.md</code>. See <code>example_package/</code> for a reference package.</p></div>
-<footer>Public research page. Agents run on AWS and interact with the SuperDex target only through its submission API. SuperDex is a black-box target environment treated as the real system in this setup;
+<p>Archive rules, submission, and feedback retrieval: <code>REMOTE_API.md</code>. A working example: <code>example_package/</code>.</p></div>
+<footer>Public research page. Agents run on AWS and interact with the target environment only through its submission API. The target environment is a black box treated as the real system in this setup;
 it is not a physical robot deployment. Official results come from the sensor verifier sv-2.2 with hardware specification hwspec-1.0; privileged simulator state and the operator's ground-truth comparison are never published or returned to agents.
-Generated 2026-10-23 14:59 EDT. All times are Pittsburgh time (EDT).</footer></main></body></html>
+Generated 2026-10-23 15:03 EDT. All times are Pittsburgh time (EDT).</footer></main></body></html>

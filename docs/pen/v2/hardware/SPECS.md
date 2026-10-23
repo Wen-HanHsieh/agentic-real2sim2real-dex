@@ -1,17 +1,18 @@
-# Hardware Specification: Wuji Hand 2 (Right, Beta 1)
+# Wuji Hand 2: Hardware Specification
 
-## 1. Robot Model
+## 1. Robot
 
-- **URDF:** `wuji_hand2_right/urdf/right.urdf`
+- **Robot:** Wuji Hand 2, right hand, 20 actuated revolute joints.
+- **Actuation:** Direct-drive, back-drivable motors with field-oriented control (FOC); no gearbox.
+- **URDF:** `wuji_hand2_right/urdf/right.urdf` (joint names, order, axes, position, speed, and effort limits).
 - **Meshes:** `wuji_hand2_right/meshes/right/`
 - **License:** `wuji_hand2_right/LICENSE`
 - **Source:** wuji-technology/wuji-description, release v2026.7.23, commit `1407bee`.
-- **Robot:** 20 actuated revolute joints, direct-drive, back-drivable FOC motors, no gearbox.
 - **Torque–speed curve:** Not published.
 
 ## 2. Joint Specifications
 
-Joint vectors follow the vendor URDF order. Position, speed, and effort limits come from the URDF; armature values come from the vendor MJCF. Initial positions `q₀` are in radians.
+Joint vectors follow the vendor URDF order. Position, speed, and effort limits come from the URDF; armature values come from the vendor MJCF. `q₀` is this task's nominal initial configuration [rad].
 
 | # | Joint | Lower (rad) | Upper (rad) | Max speed (rad/s) | Effort (N·m) | Armature (kg·m²) | q₀ (rad) |
 |---|---|---|---|---|---|---|---|
@@ -36,31 +37,25 @@ Joint vectors follow the vendor URDF order. Position, speed, and effort limits c
 | 18 | r_pinky_pip | -1.047 | 2.094 | 12.86 | 0.3 | 2e-4 | 1.2 |
 | 19 | r_pinky_dip | -1.047 | 1.570 | 13.5 | 0.3 | 2e-4 | 0.3 |
 
-The initial configuration `q₀` is fixed across evaluation trials. At step 0, `prev_q_target` contains three exact copies of `q₀`; measured `q` may differ due to passive settling and encoder noise.
+`q₀` is the same in every trial. Measured initial positions may differ because of settling and encoder noise (`CONTRACT.md`).
 
-## 3. Robot Mount
-
-The Wuji Hand 2 is fixed in the world with no wrist or arm motion.
+## 3. Mount and World Frame
 
 - **World frame:** X forward, Y left, Z up.
 - **Gravity:** `(0, 0, -9.81)` m/s².
-- **Root link:** `r_wrist`.
-- **Position (m):** `(0.0, 0.0, 0.30)`.
-- **Orientation (quaternion, wxyz):** `(0.541675, 0.454520, 0.454520, 0.541675)`.
+- **Fixed root link:** `r_wrist`, no wrist or arm motion.
+- **Root position (m):** `(0.0, 0.0, 0.30)`.
+- **Root orientation (quaternion, wxyz):** `(0.541675, 0.454520, 0.454520, 0.541675)`.
 
-The hand is palm-up, with fingertips tilted downward by 10°. The mount is fixed across all evaluation trials.
-
-The quaternion specifies the complete transform from the `r_wrist` frame to the world frame, including the fixed SuperDex frame offset. Apply it directly to the vendor URDF root; do not apply an additional mount rotation.
+The hand is palm-up, with fingertips tilted downward by 10°. The quaternion is the complete transform from the `r_wrist` frame to the world frame; apply it directly to the vendor URDF root without an additional mount rotation. The mount is the same in every trial.
 
 ## 4. Joint Controller
 
-MIT-style PD controller at 1 kHz:
+A joint-space PD controller runs at 1 kHz. Policy commands arrive at 500 Hz and are held for two controller ticks:
 
-\[
-\tau = k_p(q_{\mathrm{target}} - q) + k_d(\dot q_{\mathrm{target}} - \dot q)
-\]
-
-Commands arrive at 500 Hz and are held for two PD ticks. Motor speed and effort limits apply.
+```text
+tau_demand = kp (q_target − q) + kd (qd_target − qd)
+```
 
 | Joints | kp (N·m/rad) | kd (N·m·s/rad) |
 |---|---|---|
@@ -68,28 +63,28 @@ Commands arrive at 500 Hz and are held for two PD ticks. Motor speed and effort 
 | `r_thumb_cmc_flex`, `r_thumb_cmc_abd` | 4.0 | 0.04 |
 | All other joints | 2.0 | 0.02 |
 
-## 5. Sensors
+The applied torque is `tau_demand` saturated at each joint's effort limit. Motor speed limits apply.
+
+## 5. Encoder Observations
 
 Joint encoders at 500 Hz with independent Gaussian noise:
 
-- **Position:** σ = 0.002 rad
-- **Velocity:** σ = 0.05 rad/s
+| Measurement | Standard deviation |
+|---|---|
+| Joint position | 0.002 rad |
+| Joint velocity | 0.05 rad/s |
 
-No tactile, force, motor-current, camera, or object-state observations are provided to the policy. See `CONTRACT.md` for the observation and action interface.
+The policy receives no tactile, force, motor-current, camera, or object-state observations (`CONTRACT.md`).
 
 ## 6. Hardware Compliance (authoritative)
 
-These rules are the single hardware specification used by SuperDex to judge trials, by the sensor-based feedback
-(`FEEDBACK.md`) and by the hardware validation tool (`HARDWARE_CHECK.md`). Machine-readable copy:
-`hardware/hardware_spec.json` (version `hwspec-1.0`).
+This section is the single hardware specification. The target environment's evaluation (`FEEDBACK.md`) and the local tool `r2s2r-hwcheck` (`HARDWARE_CHECK.md`) apply it; `hardware/hardware_spec.json` (`hwspec-1.0`) is its machine-readable form.
 
 | Quantity | Requirement (every joint, every step) | Notes |
 |---|---|---|
-| Joint position | `lower − 0.02 ≤ q ≤ upper + 0.02` rad (URDF limits, section 2) | Joint stops are compliant: a joint that is pressed into its stop (by a target at or beyond the limit, by contact or by inertia) deflects slightly past the nominal URDF value. The allowance keeps pressing into a stop compliant; travel further past a stop is a violation. |
-| Joint velocity | `|q̇| ≤` URDF max speed (section 2), no allowance | Applies to joints back-driven by contact. |
-| Joint torque | `|τ_applied| ≤` URDF effort (section 2), no allowance | The actuator is current-limited: the PD torque kp (q_target - q) + kd (qd_target - qd) is saturated at the effort limit, so the applied torque never exceeds it on the target. A PD demand above the limit is saturation; it is reported, and it is not a violation. |
-| Actions | `q_target`: shape (20,), finite; `qd_target`: `None` or shape (20,), finite | Targets outside the URDF limits are clipped. A non-finite or wrongly shaped action, a policy error, or no answer within 5 s ends the trial. |
+| Joint position | `lower − 0.02 ≤ q ≤ upper + 0.02` rad | Joint stops are compliant: pressing into a stop deflects slightly past the URDF limit; travel beyond the allowance is a violation |
+| Joint velocity | `abs(qd) ≤` URDF max speed, no allowance | Also applies to joints back-driven by contact |
+| Applied torque | `abs(tau_applied) ≤` URDF effort, no allowance | The actuator saturates the PD torque at the effort limit, so the applied torque never exceeds it on the target; demand above the limit is saturation, reported but not a violation |
+| Actions | `q_target`: finite `(20,)`; `qd_target`: `None` or finite `(20,)` | Position targets are clipped to the URDF limits; a non-finite or wrongly shaped action, a policy error, or no answer within 5 s ends the trial |
 
-Nothing else is enforced on the hardware. The torque–speed curve is not published; the applied torque never exceeds
-the effort limit on the target, so a policy cannot violate the torque requirement there — check it in your own
-simulator with `HARDWARE_CHECK.md` if your actuator model can exceed it.
+Nothing else is enforced; no torque–speed envelope is specified. If your simulator's actuator model can exceed the effort limit, check your trajectories with `HARDWARE_CHECK.md`.

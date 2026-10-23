@@ -8,7 +8,7 @@ The red tip is a visual marker only; it defines the heading direction used in `S
 
 ## Visual Markings (cameras)
 
-Visual only: they change no physical property (mass, inertia, collision geometry and friction are as above).
+Visual only: they change no physical property (mass, inertia, and collision geometry are as above).
 
 - **Red tip:** the last 18 mm at the heading end.
 - **White band:** 8 mm wide at the centre.

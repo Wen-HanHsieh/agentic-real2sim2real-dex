@@ -1,33 +1,55 @@
-# Success Criteria: Ball Toss, Catch, and Spin
+# Target Environment: Success Criteria and Task Progress Rubric
 
-Complete all stages in order within **10 s (5000 steps at 500 Hz)**. Total progress score: 0–1.
+**Task:** Toss → Catch → Spin → Hold
 
-### 1. Toss (0–0.25)
-- **0:** No release.
-- **0.10:** Upward release with ≥ 0.05 s contact-free flight.
-- **0.25:** Upward release, ≥ 0.10 s contact-free flight, apex ≥ 20 cm above release, and a physically consistent free-fall arc.
+The target environment evaluates each rollout against these criteria. The total score ranges from **0 to 1.0**.
 
-### 2. Catch (0–0.30)
-- **0:** No valid toss or recontact.
-- **0.10:** Hand recontacts the ball after a valid toss, before any environment contact.
-- **0.30:** Ball lands on the hand, touches nothing else afterward, and maintains speed < 0.02 m/s for ≥ 0.10 s while touching the hand. Define the first qualifying moment as `t_rest`.
+- **Episode:** 10 s (5,000 control steps at 500 Hz).
+- **Stage dependency:** Later-stage progress is credited only after the preceding stage is fully completed.
+- **Official success:** the official evaluation reports `status: success`. This requires a score of 1.0 even when every unobservable moment counts against the policy, hardware compliance (`hardware/SPECS.md` section 6), and a valid run (all 5,000 steps executed without a policy failure).
 
-### 3. Spin (0–0.30)
-- **0:** < 90°
-- **0.10:** ≥ 90°
-- **0.15:** ≥ 180°
-- **0.20:** ≥ 360°
-- **0.25:** ≥ 540°
-- **0.30:** ≥ 720°
+## 1. Toss (0–0.25)
 
-Measure signed net rotation about world +Z after `t_rest` (counterclockwise from above is positive). All milestones require contact gaps < 0.10 s and ball-center displacement ≤ 3 cm from its position at `t_rest`.
+| Score | Milestone |
+|---|---|
+| 0.10 | Upward release with at least 0.05 s of contact-free flight |
+| 0.25 | Upward release with at least 0.10 s of contact-free flight, an apex at least 20 cm above the release point, and a physically consistent free-fall arc |
 
-### 4. Hold (0–0.15)
-- **0:** Required spin incomplete or ball not retained.
-- **0.05:** After the spin, maintain hand contact and speed < 0.02 m/s for ≥ 0.10 s.
-- **0.10:** Maintain ≥ 720° net rotation, hand contact, and speed < 0.02 m/s throughout the final 0.15 s.
-- **0.15:** Maintain ≥ 720° net rotation and speed < 0.02 m/s throughout the final 0.30 s; hand contact at the final step.
+## 2. Catch (0–0.30)
 
-**Scoring:** Award the highest satisfied milestone per stage. Later-stage scores require full completion of preceding stages. Earlier hops and regrasps before the qualifying toss are allowed.
+| Score | Milestone |
+|---|---|
+| 0.10 | The hand recontacts the ball before it touches anything else |
+| 0.30 | The ball lands on the hand, touches nothing else afterwards, and stays below 0.02 m/s for at least 0.10 s while touching the hand; the first such moment is `t_rest` |
 
-**Official success:** Score = 1.0, with all physical, hardware, and runtime requirements satisfied in every required evaluation trial.
+## 3. Spin (0–0.30)
+
+After `t_rest`, the ball's signed net rotation about the **world +Z axis** is measured (counterclockwise from above is positive).
+
+| Score | Milestone |
+|---|---|
+| 0.10 | At least 90° |
+| 0.15 | At least 180° |
+| 0.20 | At least 360° |
+| 0.25 | At least 540° |
+| 0.30 | At least 720° |
+
+Every spin milestone requires contact gaps shorter than 0.10 s and the ball centre within 3 cm of its position at `t_rest`.
+
+## 4. Hold (0–0.15)
+
+| Score | Milestone |
+|---|---|
+| 0.05 | After the spin, hand contact and speed below 0.02 m/s for at least 0.10 s |
+| 0.10 | Throughout the final 0.15 s: at least 720° net rotation, hand contact, and speed below 0.02 m/s |
+| 0.15 | Throughout the final 0.30 s: at least 720° net rotation and speed below 0.02 m/s; hand contact at the final step |
+
+**Scoring:** Each stage scores 0 until its first milestone and otherwise its highest satisfied milestone. Hops and regrasps before the qualifying toss are allowed.
+
+## 5. Sensor-Based Evaluation
+
+The target environment scores these criteria from sensor-observable evidence: cameras, the robot's joint log, and the public robot and object specifications. Measurements are estimates, not ground truth. Where the evidence cannot decide a milestone, the result is reported as uncertain, and the overall status may be `unknown` instead of `success` or `failure`. See `FEEDBACK.md` for results, measurements, and uncertainty.
+
+## 6. Research Freedom
+
+These criteria define the **official target evaluation**, not a required training reward. You may design your own training rewards, intermediate objectives, curricula, optimization methods, simulators, and policy architectures. Your own metrics do not replace official results.

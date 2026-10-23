@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Success criteria &amp; progress rubric · Ball Toss, Catch, Spin and Hold</title><meta name="description" content="Autonomous coding agents learn dexterous manipulation skills from human videos with closed-loop, sensor-based SuperDex feedback.">
+<title>Success criteria &amp; progress rubric · Ball Toss, Catch, Spin and Hold</title><meta name="description" content="Autonomous coding agents learn dexterous manipulation skills from human videos with closed-loop, sensor-based feedback from a black-box target environment.">
 <style>
 :root{--bg:#f7f7f4;--fg:#18181b;--muted:#5d6168;--line:#dedcd5;--card:#fff;--soft:#f0efea;--accent:#2b4c7e;--est:#9a5b00;--estbg:#fdf2e1;--mea:#1d6b39;--meabg:#e6f3ea;--off:#5b3a9e;--offbg:#efe9fb}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121315;--fg:#ececea;--muted:#a3a7ad;--line:#2f3236;--card:#1b1d20;--soft:#24272b;--accent:#9dbbe6;--est:#f0b45a;--estbg:#3a2a12;--mea:#7fd19b;--meabg:#16301f;--off:#c7b0f5;--offbg:#2a2140}}
@@ -54,20 +54,26 @@ footer{margin-top:56px;padding-top:14px;border-top:1px solid var(--line);font-si
 @media (max-width:900px){.arch{grid-template-columns:1fr}.zrow,.zrow.sim2{grid-template-columns:1fr;gap:6px}.ar2{transform:rotate(90deg);min-height:28px}}
 </style></head><body>
 <header class="top"><div class="in"><b><a href="../../index.html" style="text-decoration:none;color:inherit">Agentic Real2Sim2Real</a></b><nav><a href='../../index.html#overview'>Overview</a><a href='../../index.html#infra'>Architecture</a><a href='../../index.html#feedback'>Feedback</a><a href='../../index.html#tools'>Tools</a><a href='../../index.html#tasks'>Tasks</a><a href='../../index.html#validation'>Validation</a><a href='../../index.html#resources'>Resources</a></nav>
-<span class="upd">Updated 2026-10-23 14:59 EDT (Pittsburgh)</span></div></header>
-<main><div class='doc'><p class='muted' style='margin-top:28px'><a href='../../tasks/baseball.html#docs'>← Ball Toss, Catch, Spin and Hold</a> · <a href='v2/SUCCESS.md'>raw Markdown</a> · agent bundle, <code>SUCCESS.md</code></p><h2>Success Criteria: Ball Toss, Catch, and Spin</h2>
-<p>Complete all stages in order within <strong>10 s (5000 steps at 500 Hz)</strong>. Total progress score: 0–1.</p>
-<h4>1. Toss (0–0.25)</h4>
-<ul><li><strong>0:</strong> No release.</li><li><strong>0.10:</strong> Upward release with ≥ 0.05 s contact-free flight.</li><li><strong>0.25:</strong> Upward release, ≥ 0.10 s contact-free flight, apex ≥ 20 cm above release, and a physically consistent free-fall arc.</li></ul>
-<h4>2. Catch (0–0.30)</h4>
-<ul><li><strong>0:</strong> No valid toss or recontact.</li><li><strong>0.10:</strong> Hand recontacts the ball after a valid toss, before any environment contact.</li><li><strong>0.30:</strong> Ball lands on the hand, touches nothing else afterward, and maintains speed &lt; 0.02 m/s for ≥ 0.10 s while touching the hand. Define the first qualifying moment as <code>t_rest</code>.</li></ul>
-<h4>3. Spin (0–0.30)</h4>
-<ul><li><strong>0:</strong> &lt; 90°</li><li><strong>0.10:</strong> ≥ 90°</li><li><strong>0.15:</strong> ≥ 180°</li><li><strong>0.20:</strong> ≥ 360°</li><li><strong>0.25:</strong> ≥ 540°</li><li><strong>0.30:</strong> ≥ 720°</li></ul>
-<p>Measure signed net rotation about world +Z after <code>t_rest</code> (counterclockwise from above is positive). All milestones require contact gaps &lt; 0.10 s and ball-center displacement ≤ 3 cm from its position at <code>t_rest</code>.</p>
-<h4>4. Hold (0–0.15)</h4>
-<ul><li><strong>0:</strong> Required spin incomplete or ball not retained.</li><li><strong>0.05:</strong> After the spin, maintain hand contact and speed &lt; 0.02 m/s for ≥ 0.10 s.</li><li><strong>0.10:</strong> Maintain ≥ 720° net rotation, hand contact, and speed &lt; 0.02 m/s throughout the final 0.15 s.</li><li><strong>0.15:</strong> Maintain ≥ 720° net rotation and speed &lt; 0.02 m/s throughout the final 0.30 s; hand contact at the final step.</li></ul>
-<p><strong>Scoring:</strong> Award the highest satisfied milestone per stage. Later-stage scores require full completion of preceding stages. Earlier hops and regrasps before the qualifying toss are allowed.</p>
-<p><strong>Official success:</strong> Score = 1.0, with all physical, hardware, and runtime requirements satisfied in every required evaluation trial.</p></div>
-<footer>Public research page. Agents run on AWS and interact with the SuperDex target only through its submission API. SuperDex is a black-box target environment treated as the real system in this setup;
+<span class="upd">Updated 2026-10-23 15:03 EDT (Pittsburgh)</span></div></header>
+<main><div class='doc'><p class='muted' style='margin-top:28px'><a href='../../tasks/baseball.html#docs'>← Ball Toss, Catch, Spin and Hold</a> · <a href='v2/SUCCESS.md'>raw Markdown</a> · agent bundle, <code>SUCCESS.md</code></p><h2>Target Environment: Success Criteria and Task Progress Rubric</h2>
+<p><strong>Task:</strong> Toss → Catch → Spin → Hold</p>
+<p>The target environment evaluates each rollout against these criteria. The total score ranges from <strong>0 to 1.0</strong>.</p>
+<ul><li><strong>Episode:</strong> 10 s (5,000 control steps at 500 Hz).</li><li><strong>Stage dependency:</strong> Later-stage progress is credited only after the preceding stage is fully completed.</li><li><strong>Official success:</strong> the official evaluation reports <code>status: success</code>. This requires a score of 1.0 even when every unobservable moment counts against the policy, hardware compliance (<code>hardware/SPECS.md</code> section 6), and a valid run (all 5,000 steps executed without a policy failure).</li></ul>
+<h3>1. Toss (0–0.25)</h3>
+<div class='tw'><table><tr><th>Score</th><th>Milestone</th></tr><tr><td>0.10</td><td>Upward release with at least 0.05 s of contact-free flight</td></tr><tr><td>0.25</td><td>Upward release with at least 0.10 s of contact-free flight, an apex at least 20 cm above the release point, and a physically consistent free-fall arc</td></tr></table></div>
+<h3>2. Catch (0–0.30)</h3>
+<div class='tw'><table><tr><th>Score</th><th>Milestone</th></tr><tr><td>0.10</td><td>The hand recontacts the ball before it touches anything else</td></tr><tr><td>0.30</td><td>The ball lands on the hand, touches nothing else afterwards, and stays below 0.02 m/s for at least 0.10 s while touching the hand; the first such moment is <code>t_rest</code></td></tr></table></div>
+<h3>3. Spin (0–0.30)</h3>
+<p>After <code>t_rest</code>, the ball&#x27;s signed net rotation about the <strong>world +Z axis</strong> is measured (counterclockwise from above is positive).</p>
+<div class='tw'><table><tr><th>Score</th><th>Milestone</th></tr><tr><td>0.10</td><td>At least 90°</td></tr><tr><td>0.15</td><td>At least 180°</td></tr><tr><td>0.20</td><td>At least 360°</td></tr><tr><td>0.25</td><td>At least 540°</td></tr><tr><td>0.30</td><td>At least 720°</td></tr></table></div>
+<p>Every spin milestone requires contact gaps shorter than 0.10 s and the ball centre within 3 cm of its position at <code>t_rest</code>.</p>
+<h3>4. Hold (0–0.15)</h3>
+<div class='tw'><table><tr><th>Score</th><th>Milestone</th></tr><tr><td>0.05</td><td>After the spin, hand contact and speed below 0.02 m/s for at least 0.10 s</td></tr><tr><td>0.10</td><td>Throughout the final 0.15 s: at least 720° net rotation, hand contact, and speed below 0.02 m/s</td></tr><tr><td>0.15</td><td>Throughout the final 0.30 s: at least 720° net rotation and speed below 0.02 m/s; hand contact at the final step</td></tr></table></div>
+<p><strong>Scoring:</strong> Each stage scores 0 until its first milestone and otherwise its highest satisfied milestone. Hops and regrasps before the qualifying toss are allowed.</p>
+<h3>5. Sensor-Based Evaluation</h3>
+<p>The target environment scores these criteria from sensor-observable evidence: cameras, the robot&#x27;s joint log, and the public robot and object specifications. Measurements are estimates, not ground truth. Where the evidence cannot decide a milestone, the result is reported as uncertain, and the overall status may be <code>unknown</code> instead of <code>success</code> or <code>failure</code>. See <code>FEEDBACK.md</code> for results, measurements, and uncertainty.</p>
+<h3>6. Research Freedom</h3>
+<p>These criteria define the <strong>official target evaluation</strong>, not a required training reward. You may design your own training rewards, intermediate objectives, curricula, optimization methods, simulators, and policy architectures. Your own metrics do not replace official results.</p></div>
+<footer>Public research page. Agents run on AWS and interact with the target environment only through its submission API. The target environment is a black box treated as the real system in this setup;
 it is not a physical robot deployment. Official results come from the sensor verifier sv-2.2 with hardware specification hwspec-1.0; privileged simulator state and the operator's ground-truth comparison are never published or returned to agents.
-Generated 2026-10-23 14:59 EDT. All times are Pittsburgh time (EDT).</footer></main></body></html>
+Generated 2026-10-23 15:03 EDT. All times are Pittsburgh time (EDT).</footer></main></body></html>

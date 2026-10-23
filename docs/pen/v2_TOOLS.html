@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Optional tools: mask IoU, research harness · Pen Spinning</title><meta name="description" content="Autonomous coding agents learn dexterous manipulation skills from human videos with closed-loop, sensor-based SuperDex feedback.">
+<title>Optional tools &amp; Research Harness · Pen Spinning</title><meta name="description" content="Autonomous coding agents learn dexterous manipulation skills from human videos with closed-loop, sensor-based feedback from a black-box target environment.">
 <style>
 :root{--bg:#f7f7f4;--fg:#18181b;--muted:#5d6168;--line:#dedcd5;--card:#fff;--soft:#f0efea;--accent:#2b4c7e;--est:#9a5b00;--estbg:#fdf2e1;--mea:#1d6b39;--meabg:#e6f3ea;--off:#5b3a9e;--offbg:#efe9fb}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121315;--fg:#ececea;--muted:#a3a7ad;--line:#2f3236;--card:#1b1d20;--soft:#24272b;--accent:#9dbbe6;--est:#f0b45a;--estbg:#3a2a12;--mea:#7fd19b;--meabg:#16301f;--off:#c7b0f5;--offbg:#2a2140}}
@@ -54,24 +54,33 @@ footer{margin-top:56px;padding-top:14px;border-top:1px solid var(--line);font-si
 @media (max-width:900px){.arch{grid-template-columns:1fr}.zrow,.zrow.sim2{grid-template-columns:1fr;gap:6px}.ar2{transform:rotate(90deg);min-height:28px}}
 </style></head><body>
 <header class="top"><div class="in"><b><a href="../../index.html" style="text-decoration:none;color:inherit">Agentic Real2Sim2Real</a></b><nav><a href='../../index.html#overview'>Overview</a><a href='../../index.html#infra'>Architecture</a><a href='../../index.html#feedback'>Feedback</a><a href='../../index.html#tools'>Tools</a><a href='../../index.html#tasks'>Tasks</a><a href='../../index.html#validation'>Validation</a><a href='../../index.html#resources'>Resources</a></nav>
-<span class="upd">Updated 2026-10-23 14:59 EDT (Pittsburgh)</span></div></header>
-<main><div class='doc'><p class='muted' style='margin-top:28px'><a href='../../tasks/pen.html#docs'>← Pen Spinning</a> · <a href='v2/TOOLS.md'>raw Markdown</a> · agent bundle, <code>TOOLS.md</code></p><h2>Tools</h2>
-<p>All tools run locally on your machine, are optional, and send nothing anywhere unless they call the SuperDex API on your behalf (<code>r2s2r-pen</code>). None of them computes or changes official results.</p>
-<div class='tw'><table><tr><th>Tool</th><th>Use it to</th><th>Documentation</th></tr><tr><td><code>r2s2r-preflight my_policy/</code></td><td>check a package before <code>validate</code> / <code>submit</code></td><td><code>PACKAGE.md</code></td></tr><tr><td><code>r2s2r-hwcheck traj.npz</code></td><td>check your own trajectories against the hardware rules</td><td><code>HARDWARE_CHECK.md</code></td></tr><tr><td><code>r2s2r-maskiou BUNDLE sim.npz</code></td><td>compare SuperDex masks with masks from your simulation</td><td>below</td></tr><tr><td><code>r2s2r-harness --api r2s2r-pen ...</code></td><td>keep experiment records, archive results, retrieve your best policy</td><td>below</td></tr></table></div>
-<h3>Sim-to-Real mask IoU (<code>r2s2r-maskiou</code>)</h3>
-<p>Compares the camera-derived masks of a fetched submission (<code>masks/</code>) with masks rendered by your simulation, per frame and view. It is a diagnostic: it is not a SuperDex reward, score or success criterion, and it is never required.</p>
+<span class="upd">Updated 2026-10-23 15:03 EDT (Pittsburgh)</span></div></header>
+<main><div class='doc'><p class='muted' style='margin-top:28px'><a href='../../tasks/pen.html#docs'>← Pen Spinning</a> · <a href='v2/TOOLS.md'>raw Markdown</a> · agent bundle, <code>TOOLS.md</code></p><h2>Research Tools</h2>
+<p>These tools run on your machine. They are optional and never compute or change official results. Only <code>r2s2r-harness</code> contacts the target environment, and only through the commands of <code>REMOTE_API.md</code>.</p>
+<div class='tw'><table><tr><th>Tool</th><th>Purpose</th><th>Reference</th></tr><tr><td><code>r2s2r-preflight</code></td><td>Check a policy package before <code>validate</code> / <code>submit</code></td><td><code>PACKAGE.md</code></td></tr><tr><td><code>r2s2r-hwcheck</code></td><td>Check local trajectories against the hardware rules</td><td><code>HARDWARE_CHECK.md</code></td></tr><tr><td><code>r2s2r-maskiou</code></td><td>Compare target segmentation masks with masks from your simulation</td><td>Section 1</td></tr><tr><td><code>r2s2r-harness</code></td><td>Experiment records, archives, regression gate, best evaluated policy</td><td>Section 2</td></tr></table></div>
+<p>Implementations: <code>tools/hwcheck/</code>, <code>tools/maskiou/</code>, <code>tools/harness/</code>.</p>
+<h3>1. Sim-to-Target Mask IoU</h3>
+<p><code>r2s2r-maskiou</code> compares the masks of a fetched feedback bundle (<code>masks/</code>) with masks rendered by your simulation, per frame and view. It is a diagnostic, not an official reward or success criterion.</p>
 <pre><code>r2s2r-maskiou sNN_bundle/ my_sim_masks.npz --json iou.json --vis overlays/</code></pre>
-<p><code>my_sim_masks.npz</code>: <code>top</code> / <code>left</code> / <code>right</code> as (n, H, W) masks (any subset), <code>t</code> (s since control step 0) or <code>control_step</code> (n,), and the camera you rendered with: <code>calibration_sha256</code> of the bundle&#x27;s <code>calibration.json</code>, or <code>K_&lt;view&gt;</code> and <code>T_world_cam_&lt;view&gt;</code>. Rules: frames are matched to the SuperDex frame at the same control step (within 1 ms; <code>--max-time-error</code> to change), never interpolated or warped; <code>--time-offset</code> shifts your clock by a constant you choose and is reported. A view whose camera or image size does not match is refused (or, with <code>--allow-calibration-mismatch</code>, marked unreliable). Both masks empty gives an undefined IoU, not 1. Frames where the SuperDex mask is invalid, occluded (<code>visible_fraction</code> &lt; 0.5; render your hand as an occluder too) or has low colour agreement are reported. Output: per-frame IoU, per-view mean / median / min, multi-view mean, overlays (green SuperDex only, magenta yours only, white both).</p>
-<h3>Research harness (<code>r2s2r-harness</code>)</h3>
-<pre><code>export R2S2R_API=r2s2r-pen
-r2s2r-harness summary                       # every submission: role, keep, official status / score / bounds, hardware, gate
+<p><strong>Simulation input (<code>.npz</code>):</strong></p>
+<ul><li><code>top</code>, <code>left</code>, <code>right</code>: <code>(n, H, W)</code> binary masks (any subset of views).</li><li><code>t</code> (seconds since control step 0) or <code>control_step</code>: <code>(n,)</code>.</li><li>The camera you rendered with: <code>calibration_sha256</code> of the bundle&#x27;s <code>calibration.json</code>, or <code>K_&lt;view&gt;</code> and <code>T_world_cam_&lt;view&gt;</code>.</li></ul>
+<p><strong>Rules:</strong></p>
+<ul><li>Each frame is matched to the target frame at the same control step (within 1 ms; <code>--max-time-error</code> to change); nothing is interpolated or warped. <code>--time-offset</code> shifts your clock by a constant you choose and is reported.</li><li>A view whose camera or image size does not match is refused (with <code>--allow-calibration-mismatch</code>: compared but marked unreliable).</li><li>Both masks empty gives an undefined IoU, not 1. Frames where the target mask is invalid, occluded (<code>visible_fraction</code> &lt; 0.5; render your hand as an occluder too), or has low colour agreement are reported.</li></ul>
+<p><strong>Output:</strong> per-frame IoU, per-view mean, median and minimum, multi-view mean, warnings, and optional overlays (green: target only, magenta: yours only, white: both).</p>
+<h3>2. Research Harness</h3>
+<p><code>r2s2r-harness</code> keeps experiment records and policy artifacts using the API commands <code>history</code>, <code>note</code>, <code>fetch</code>, and <code>package</code>.</p>
+<pre><code>export R2S2R_API=r2s2r-pen        # or pass --api r2s2r-pen
+
+r2s2r-harness summary
 r2s2r-harness record sNN --kind improvement --hypothesis ... --change ... --evidence ... --decision ... \
-    [--keep keep|reject|undecided] [--repo .] [--sim-config cfg.json] [--checkpoint REF] [--analysis TEXT] [--local res.json]
-r2s2r-harness gate sNN                      # official regression gate of sNN against the best comparable earlier submission
-r2s2r-harness best --download best/         # the best evaluated policy and its exact package (hash verified)
-r2s2r-harness archive ~/records             # write-once local copy of history, feedback bundles and packages, with a manifest
-r2s2r-harness verify ~/records              # detect modified or missing archive files</code></pre>
-<p><code>record</code> fills <code>source_revision</code> and the latest commit&#x27;s diff stat from <code>--repo</code>. The best policy and the regression gate are computed by SuperDex from official results under comparable versions (<code>REMOTE_API.md</code> section 7); the harness only displays them. Which candidate to investigate next is your decision.</p></div>
-<footer>Public research page. Agents run on AWS and interact with the SuperDex target only through its submission API. SuperDex is a black-box target environment treated as the real system in this setup;
+    [--keep keep|reject|undecided] [--repo .] [--sim-config cfg.json] [--checkpoint REF] [--analysis TEXT] \
+    [--local result.json] [--parent sMM]
+r2s2r-harness gate sNN
+r2s2r-harness best --download best/
+r2s2r-harness archive ~/records
+r2s2r-harness verify ~/records</code></pre>
+<ul><li><strong><code>summary</code>:</strong> every submission with role, keep, official status, score and bounds, hardware, and gate.</li><li><strong><code>record</code>:</strong> appends a note (<code>REMOTE_API.md</code> section 6); <code>--repo</code> adds the source revision and the latest commit&#x27;s diff stat.</li><li><strong><code>gate</code>:</strong> the official regression gate of a submission against the best comparable earlier one.</li><li><strong><code>best</code>:</strong> the best evaluated policy; <code>--download</code> saves its exact package after verifying the hash.</li><li><strong><code>archive</code> / <code>verify</code>:</strong> a write-once local copy of history, feedback bundles, and packages with a manifest, and its integrity check.</li></ul>
+<p>The best policy and the gate are computed by the target environment from official results; the harness only records and displays them. <strong>You decide which experiments to run, which policies to keep, and how to improve them.</strong></p></div>
+<footer>Public research page. Agents run on AWS and interact with the target environment only through its submission API. The target environment is a black box treated as the real system in this setup;
 it is not a physical robot deployment. Official results come from the sensor verifier sv-2.2 with hardware specification hwspec-1.0; privileged simulator state and the operator's ground-truth comparison are never published or returned to agents.
-Generated 2026-10-23 14:59 EDT. All times are Pittsburgh time (EDT).</footer></main></body></html>
+Generated 2026-10-23 15:03 EDT. All times are Pittsburgh time (EDT).</footer></main></body></html>

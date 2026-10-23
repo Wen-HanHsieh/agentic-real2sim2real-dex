@@ -1,42 +1,61 @@
 # Policy Package
 
-## 1. Format
+## 1. Package Format
 
-```text
-policy.py
-manifest.json
-weights / configs (optional)
+A policy package is a directory containing:
+
+- `policy.py`: the policy implementation.
+- `manifest.json`: package metadata and SHA-256 hashes.
+- Optional weights and configuration files.
+
+`policy.py` must define:
+
+```python
+def load_policy(path):
+    return policy
 ```
 
-`policy.py` defines `load_policy(path)`, returning an object with `reset()` and `act(obs) -> (q_target, qd_target or None)`. See `CONTRACT.md`.
+The returned object implements:
 
-## 2. Deployment Runtime
+```python
+policy.reset()
+policy.act(obs)  # returns (q_target, qd_target) or (q_target, None)
+```
 
-- **Python:** 3.12; standard library, NumPy 2.5.4, PyTorch 2.14.1 (CPU).
-- **Resources:** 1 CPU thread, no GPU, 8 GB virtual address space, 600 s CPU time.
-- **Restrictions:** No network, subprocesses, or compiled extensions; read-only package, writable `TMPDIR` (≤ 64 MB), ≤ 256 open files.
-- **Inference:** 2 ms per `act()` target; 5 s hard timeout.
-- **Determinism:** Identical observation histories must produce bit-identical actions.
+Observations and actions: `CONTRACT.md`.
 
-## 3. Sandbox Validation
+## 2. Runtime Requirements
 
-Policies run in an isolated sandbox without access to target internals or privileged state.
+| Requirement | Limit |
+|---|---|
+| Python | 3.12 |
+| Libraries | Python standard library, NumPy 2.5.4, PyTorch 2.14.1 (CPU) |
+| CPU threads | 1 |
+| GPU | Not available |
+| Address space | ≤ 8 GB |
+| Total CPU time | ≤ 600 s |
+| `act()` inference time | 2 ms target |
+| Hard policy-call timeout | 5 s |
+| Writable temporary storage | `TMPDIR`, ≤ 64 MB |
+| Open files | ≤ 256 |
 
-Validation checks package integrity, dependencies, policy interface, action validity, determinism, and runtime limits.
+The runtime is sandboxed: no network access or subprocesses; no compiled extensions or native libraries; package files are read-only. It has no access to target internals or privileged state.
 
-Before submission, run the local preflight check:
+The 2 ms target matches the 500 Hz control rate; a slower mean is reported as a warning. The 5 s timeout is a hard failure limit, not an acceptable inference rate.
+
+## 3. Validation
+
+Check locally before submitting:
 
 ```bash
 r2s2r-preflight my_policy/
 ```
 
-The remote `validate` command performs the authoritative package check. See `REMOTE_API.md`.
+The remote `validate` command (`REMOTE_API.md`) is authoritative and is never charged. It checks: manifest and SHA-256 hashes, Python 3.12 syntax, no compiled code, `load_policy()` and `reset()` in the sandbox, five `act()` calls with valid outputs, determinism (`reset()` and replay give bit-identical actions), and inference time. `submit` runs the same checks first; a rejected package is not charged.
 
-Invalid packages are rejected with clear errors without consuming evaluation budget.
+Passing validation does not guarantee a successful rollout.
 
 ## 4. Manifest
-
-`manifest.json` contains SHA256 hashes of all package files except itself.
 
 ```json
 {
@@ -50,10 +69,14 @@ Invalid packages are rejected with clear errors without consuming evaluation bud
 }
 ```
 
+- `entry` must be `policy.py:load_policy`.
+- `files` must list every package file except `manifest.json`, each with its correct SHA-256.
+- `contract_version` names the policy interface (`CONTRACT.md`); the current value is `"v1"`. It is independent of the feedback and evaluation versions (`REMOTE_API.md` section 7).
+
 ## 5. Submission
 
 ```bash
 tar -C my_policy -czf my_policy.tgz .
 ```
 
-Submit through `REMOTE_API.md`. See `example_package/` for a reference package.
+Archive rules, submission, and feedback retrieval: `REMOTE_API.md`. A working example: `example_package/`.

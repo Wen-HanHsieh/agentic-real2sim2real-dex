@@ -1,9 +1,9 @@
 # Task: Ball Toss, Catch, and Spin
 
-Your goal is to reproduce the dexterous manipulation skill demonstrated in the given human video using the Wuji Hand 2 in simulation and successfully execute it in the provided target environment.
+Reproduce the dexterous manipulation skill demonstrated in the human video using the Wuji Hand 2: **toss a ball, catch it, spin it in the hand, and hold it**.
 
-The task is to toss a ball, catch it, spin it in the hand, and hold it.
+Develop your policy in your own simulation and evaluate it in the provided target environment.
 
-- **Human video:** `demo/`
+- **Human demonstration:** `demo/`
 - **Target environment:** `target/screenshot.png`
 - **Success criteria:** `SUCCESS.md`

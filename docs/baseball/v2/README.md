@@ -1,34 +1,33 @@
 # Wuji Hand 2: Ball Toss, Catch, and Spin
 
-Learn the dexterous manipulation skill demonstrated in the human video, train a policy in your own simulation, and iteratively improve it through SuperDex evaluation feedback.
+Learn the dexterous manipulation skill demonstrated in the human video, develop a policy in your own simulation, and improve it iteratively with feedback from the target environment.
 
 ## Resources
 
-| Path | Description |
+| Resource | Description |
 |---|---|
 | `TASK.md` | Task objective |
-| `SUCCESS.md` | Success criteria and task progress rubric |
-| `CONTRACT.md` | Policy observations, actions, and timing |
-| `hardware/SPECS.md` | Robot specifications, initial pose, and mount |
-| `hardware/wuji_hand2_right/` | Robot URDF and meshes |
+| `SUCCESS.md` | Official success criteria and task progress rubric |
+| `CONTRACT.md` | Policy observations, actions, and execution rules |
+| `PACKAGE.md` | Policy packaging and runtime requirements |
+| `hardware/SPECS.md` | Robot specification, mount, controller, and hardware limits (authoritative) |
+| `hardware/` | Robot URDF and meshes (`hardware/wuji_hand2_right/`), machine-readable `hardware/hardware_spec.json` |
 | `object/SPECS.md` | Object geometry and mass |
 | `demo/` | Human demonstration video and sampled frames |
-| `target/screenshot.png` | Target environment at episode start |
-| `PACKAGE.md` | Policy packaging and deployment runtime |
-| `REMOTE_API.md` | Submission and feedback API (protocol v2: three cameras, sensor report, frame queries, records) |
-| `FEEDBACK.md` | Cameras, calibration, sensor-based verifier report, experiment records |
-| `HARDWARE_CHECK.md` | Hardware validation tool for your own trajectories (`tools/hwcheck/`) |
-| `example_package/` | Reference policy package |
+| `target/screenshot.png` | Target environment at the start of an episode (top, left, and right cameras) |
+| `REMOTE_API.md` | Remote evaluation API: submission, standard feedback, optional queries, limits |
+| `FEEDBACK.md` | Cameras, official evaluation, object tracks, masks, and standard feedback files |
+| `HARDWARE_CHECK.md` | Local hardware validation |
+| `TOOLS.md` | Optional research tools and the Research Harness |
+| `tools/` | Tool implementations |
+| `example_package/` | Example policy package |
 
-## Roles
+## Responsibilities
 
-- **SuperDex (real side)** executes your policy, records cameras, joint states and actions, and determines the official
-  task result: success / failure / unknown, reward and progress, events, hardware compliance and their uncertainty
-  (`FEEDBACK.md`). It does not use your simulation.
-- **You (sim side)** build and improve your own simulation, choose your methods, generate local rollouts, analyse the
-  feedback and the differences between simulation and SuperDex, and decide what to try next.
-- **The research harness** keeps your experiment records and best policy and offers optional analysis tools
-  (`TOOLS.md`). It measures and records; it does not decide your research direction.
+**Target Environment:** A black-box environment that executes submitted policies, records camera observations and the robot's joint states and actions, and produces the official sensor-based evaluation: status, task progress, hardware compliance, and their uncertainty. It never uses your simulation and never returns its internal state.
 
-You may analyse the videos and masks yourself, build your own metrics and question measurements that are uncertain,
-but your analyses do not replace or overwrite the official SuperDex results.
+**Research Agent (you):** Builds simulations, chooses learning methods, policy architectures, and training rewards, analyzes target feedback, and decides what to try next.
+
+**Research Harness:** Keeps experiment records, preserves the best evaluated policy, compares submissions, and provides optional diagnostic tools. It records and displays results; it does not direct your research.
+
+You may analyze videos, object tracks, masks, and your own metrics to diagnose failures, but they do not replace or modify the official evaluation.

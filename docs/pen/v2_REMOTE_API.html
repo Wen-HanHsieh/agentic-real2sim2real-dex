@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Evaluation API · Pen Spinning</title><meta name="description" content="Autonomous coding agents learn dexterous manipulation skills from human videos with closed-loop, sensor-based SuperDex feedback.">
+<title>Remote evaluation API · Pen Spinning</title><meta name="description" content="Autonomous coding agents learn dexterous manipulation skills from human videos with closed-loop, sensor-based feedback from a black-box target environment.">
 <style>
 :root{--bg:#f7f7f4;--fg:#18181b;--muted:#5d6168;--line:#dedcd5;--card:#fff;--soft:#f0efea;--accent:#2b4c7e;--est:#9a5b00;--estbg:#fdf2e1;--mea:#1d6b39;--meabg:#e6f3ea;--off:#5b3a9e;--offbg:#efe9fb}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121315;--fg:#ececea;--muted:#a3a7ad;--line:#2f3236;--card:#1b1d20;--soft:#24272b;--accent:#9dbbe6;--est:#f0b45a;--estbg:#3a2a12;--mea:#7fd19b;--meabg:#16301f;--off:#c7b0f5;--offbg:#2a2140}}
@@ -54,9 +54,9 @@ footer{margin-top:56px;padding-top:14px;border-top:1px solid var(--line);font-si
 @media (max-width:900px){.arch{grid-template-columns:1fr}.zrow,.zrow.sim2{grid-template-columns:1fr;gap:6px}.ar2{transform:rotate(90deg);min-height:28px}}
 </style></head><body>
 <header class="top"><div class="in"><b><a href="../../index.html" style="text-decoration:none;color:inherit">Agentic Real2Sim2Real</a></b><nav><a href='../../index.html#overview'>Overview</a><a href='../../index.html#infra'>Architecture</a><a href='../../index.html#feedback'>Feedback</a><a href='../../index.html#tools'>Tools</a><a href='../../index.html#tasks'>Tasks</a><a href='../../index.html#validation'>Validation</a><a href='../../index.html#resources'>Resources</a></nav>
-<span class="upd">Updated 2026-10-23 14:59 EDT (Pittsburgh)</span></div></header>
-<main><div class='doc'><p class='muted' style='margin-top:28px'><a href='../../tasks/pen.html#docs'>← Pen Spinning</a> · <a href='v2/REMOTE_API.md'>raw Markdown</a> · agent bundle, <code>REMOTE_API.md</code></p><h2>Remote Evaluation API (feedback protocol v2)</h2>
-<p>SuperDex executes submitted policies on the target cell and returns what its sensors observed: three calibrated camera views, your robot&#x27;s own logs, and a sensor-based assessment of the trial against <code>SUCCESS.md</code>. Protocol identifier: <code>r2s2r-feedback/2</code> (see <code>FEEDBACK.md</code>).</p>
+<span class="upd">Updated 2026-10-23 15:03 EDT (Pittsburgh)</span></div></header>
+<main><div class='doc'><p class='muted' style='margin-top:28px'><a href='../../tasks/pen.html#docs'>← Pen Spinning</a> · <a href='v2/REMOTE_API.md'>raw Markdown</a> · agent bundle, <code>REMOTE_API.md</code></p><h2>Remote Evaluation API</h2>
+<p>The target environment executes submitted policies and stores sensor-based feedback after each rollout. Feedback contents: <code>FEEDBACK.md</code>. Packaging: <code>PACKAGE.md</code>.</p>
 <h3>1. Commands</h3>
 <pre><code>r2s2r-pen budget
 r2s2r-preflight my_policy/
@@ -68,46 +68,40 @@ r2s2r-pen frames sNN &lt;top|left|right|all&gt; &lt;t1,t2,...&gt; [depth] &gt; f
 r2s2r-pen masks sNN &lt;top|left|right|all&gt; &lt;i0:i1[:step] | i,j,...&gt; &gt; masks.tgz
 r2s2r-pen history
 r2s2r-pen note sNN &lt; note.json
-r2s2r-pen package sNN &gt; sNN.tar</code></pre>
-<p>Local tools on AWS (optional, nothing is sent anywhere; <code>TOOLS.md</code>): <code>r2s2r-preflight</code>, <code>r2s2r-hwcheck</code>, <code>r2s2r-maskiou</code>, <code>r2s2r-harness</code>.</p>
-<p>Responses are JSON (<code>fetch</code> and <code>frames</code> return a .tar.gz); errors return <code>{&quot;error&quot;: &quot;...&quot;}</code> with a non-zero exit code.</p>
-<p><code>validate</code> checks the package without executing a full trial or consuming submission budget. <code>r2s2r-preflight</code> is a local compatibility check; remote <code>validate</code> is authoritative.</p>
+r2s2r-pen package sNN &gt; sNN_package.tgz</code></pre>
+<p>Responses are JSON, except <code>fetch</code>, <code>frames</code>, and <code>masks</code> (<code>.tar.gz</code>) and <code>package</code> (the archive exactly as submitted). Errors return <code>{&quot;error&quot;: &quot;...&quot;}</code> with a non-zero exit code. <code>r2s2r-preflight</code> is a local check (<code>PACKAGE.md</code>).</p>
 <h3>2. Submission</h3>
-<ul><li><strong>Package:</strong> <code>.tar</code> or <code>.tar.gz</code>, ≤ 500 MB, ≤ 2000 files; <code>policy.py</code> at the archive root or inside one top-level directory (<code>PACKAGE.md</code>).</li><li>No links, absolute paths, or <code>..</code> paths.</li><li>One evaluation at a time; every accepted submission consumes one budget slot.</li><li><strong>Budget:</strong> 100 submissions.</li></ul>
-<h3>3. Evaluation</h3>
-<p>Each submission executes <strong>1 trial</strong>, lasting <strong>12 s (6000 steps at 500 Hz)</strong>, with fixed initial conditions. The policy interface is unchanged (<code>CONTRACT.md</code>): the policy itself never receives camera images.</p>
-<p>States: <code>queued</code> → <code>running</code> → <code>done</code>, or <code>timeout</code> / <code>error</code>.</p>
-<h3>4. Feedback (<code>fetch</code>)</h3>
-<pre><code>&lt;experiment&gt;_&lt;id&gt;/
-├── feedback.json            protocol, file list with SHA-256
-├── calibration.json         camera intrinsics, extrinsics, conventions, depth model
-├── logs/trial_0.npz         joint_names, q, qd, q_target, qd_target (6000 steps)
-├── masks/
-│   ├── top.npz  left.npz  right.npz   object segmentation masks from the cameras, one per frame and view
-│   └── masks.json           encoding and fields
-├── video/
-│   ├── top.mp4  left.mp4  right.mp4   three synchronized views, real time, 100 fps
-│   ├── frames.json          frame_t and control_step of every frame (identical for every view)
-│   └── video.json
-└── sensor/
-    ├── sensor_report.json   sensor-based verifier: status, score with uncertainty, stages, events, measurements
-    └── sensor_tracks.npz    the perceived tracks behind the report</code></pre>
-<p>The sensor report is computed only from the cameras, your robot log and public documents. It reports what was observed, never why. See <code>FEEDBACK.md</code> for every field, its accuracy, and what cannot be observed.</p>
-<h3>5. Frame queries (<code>frames</code>)</h3>
-<p>Re-renders exact instants of a finished trial in any view, after the rollout (the trial itself is never paused): up to 8 times per call (seconds since control step 0, up to 3 decimals; the nearest 1 ms instant is returned), optional 16-bit depth (0.1 mm units). Up to 240 frames (times × views) per submission; not charged to the budget.</p>
-<h3>6. Masks (<code>masks</code>)</h3>
-<p>Selected segmentation masks as PNG (0 = background, 255 = object) with <code>masks/masks.json</code> (frame index, time, control step, validity, visibility, colour agreement), read from the immutable record: a range <code>i0:i1[:step]</code> or a list of frame indices of <code>video/frames.json</code>, one view or <code>all</code>, up to 60 masks per call. The complete masks are also in the <code>fetch</code> bundle (<code>masks/</code>). See <code>FEEDBACK.md</code> section 4.</p>
-<h3>7. Experiment records (<code>history</code>, <code>note</code>, <code>package</code>)</h3>
-<p><code>history</code> lists every submission: package, archive and feedback SHA-256, state, the <strong>official</strong> sensor results with their versions, your notes, the submission&#x27;s role (from your latest note), and a regression <code>gate</code> against the best comparable earlier submission (<code>improved</code>, <code>equal</code>, <code>regressed</code>, <code>not_comparable</code> when the verifier, rubric, rig or hardware-spec version differs). It names <code>best_evaluated</code> (official results only: runtime valid, then no hardware violation, then task success, then score, then its lower bound; ties: earlier) and <code>latest_candidate</code> (latest submission not marked diagnostic or experimental). Official results cannot be set or changed by notes.</p>
-<p><code>note sNN</code> appends one record (append-only, hash-chained; corrections are new notes):</p>
+<ul><li><strong>Archive:</strong> <code>.tar</code> or <code>.tar.gz</code>, ≤ 500 MB, ≤ 2000 files; <code>policy.py</code> at the archive root or inside one top-level directory; no links, absolute paths, or <code>..</code> paths.</li><li><strong>Checks:</strong> <code>validate</code> and <code>submit</code> run the same package checks (<code>PACKAGE.md</code>). A rejected package is not recorded and not charged.</li><li><strong>Receipt:</strong> <code>submit</code> returns <code>submission_id</code>, <code>policy_sha256</code>, <code>state: queued</code>, and the check&#x27;s inference timing and warnings.</li><li>One evaluation runs at a time.</li></ul>
+<h3>3. Evaluation and Budget</h3>
+<ul><li><strong>Trial:</strong> one trial per submission, 12 s (6,000 steps at 500 Hz), from fixed initial conditions.</li><li><strong>Budget:</strong> 100 charged submissions; <code>budget</code> returns the used and total count.</li><li><strong>States:</strong> <code>queued</code> → <code>running</code> → <code>done</code>, or <code>error</code> / <code>timeout</code>. Results are not available during a rollout.</li></ul>
+<div class='tw'><table><tr><th>Outcome</th><th>State</th><th>Charged</th><th>Standard feedback</th></tr><tr><td>Rollout completed</td><td><code>done</code></td><td>yes</td><td>yes</td></tr><tr><td>Policy failure: exception, invalid action, no answer within 5 s, or more than 64 MB written to <code>TMPDIR</code></td><td><code>error</code></td><td>yes</td><td>yes, up to the failure</td></tr><tr><td>Evaluation exceeded 45 minutes</td><td><code>timeout</code></td><td>yes</td><td>no</td></tr><tr><td>Target-side infrastructure error</td><td><code>error</code></td><td>no</td><td>no</td></tr></table></div>
+<p><code>status</code> reports the error message and whether an <code>error</code> was charged. Identical resubmissions are charged.</p>
+<h3>4. Standard Feedback (<code>fetch</code>)</h3>
+<p><code>fetch sNN</code> returns the stored feedback of a finished rollout:</p>
+<pre><code>&lt;experiment&gt;_sNN/
+├── feedback.json
+├── calibration.json
+├── logs/trial_0.npz
+├── video/   top.mp4  left.mp4  right.mp4  frames.json  video.json
+├── sensor/  sensor_report.json  sensor_tracks.npz
+└── masks/   top.npz  left.npz  right.npz  masks.json</code></pre>
+<p>File contents, uncertainty, and timestamps: <code>FEEDBACK.md</code>.</p>
+<h3>5. Optional Queries</h3>
+<p>Queries read the stored record of a finished rollout. They are not charged and never change official results.</p>
+<div class='tw'><table><tr><th>Command</th><th>Returns</th><th>Limits</th></tr><tr><td><code>frames sNN VIEW TIMES [depth]</code></td><td>PNG frames from the same cameras at any instant (s, up to 3 decimals; nearest 1 ms), optional 16-bit depth, and <code>frames/frames.json</code></td><td>≤ 8 times per call; ≤ 240 frames (times × views) per submission</td></tr><tr><td><code>masks sNN VIEW FRAMES</code></td><td>Masks as PNG (255 = object) with <code>masks/masks.json</code>; <code>FRAMES</code>: <code>i0:i1[:step]</code> (end excluded) or <code>i,j,...</code> indices of <code>video/frames.json</code></td><td>≤ 60 masks (frames × views) per call</td></tr><tr><td><code>history</code></td><td>Every submission and the best evaluated policy (section 6)</td><td>—</td></tr><tr><td><code>note sNN</code></td><td>Appends your research note to a submission (section 6)</td><td>≤ 16 KB per note</td></tr><tr><td><code>package sNN</code></td><td>The exact archive you submitted; its SHA-256 equals <code>archive_sha256</code> in <code>history</code></td><td>—</td></tr></table></div>
+<h3>6. Research Records</h3>
+<p><code>history</code> lists every submission with its hashes (<code>policy_sha256</code>, <code>archive_sha256</code>, <code>feedback_sha256</code>), <code>state</code>, <code>official</code> results with versions, your notes, <code>role</code>, <code>keep</code>, and <code>gate</code>:</p>
+<ul><li><strong><code>gate</code>:</strong> <code>first</code>, <code>improved</code>, <code>equal</code>, <code>regressed</code>, or <code>not_comparable</code> (different evaluation versions), against the best comparable earlier submission.</li><li><strong><code>best_evaluated</code>:</strong> ranked by official results only: valid run, then no hardware violation, then <code>success</code>, then score, then score lower bound; ties go to the earlier submission.</li><li><strong><code>latest_candidate</code>:</strong> the latest submission not labelled <code>diagnostic</code> or <code>experimental</code>.</li></ul>
+<p><code>note sNN</code> appends one record (append-only and hash-chained; corrections are new notes). Required fields: <code>kind</code>, <code>hypothesis</code>, <code>change</code>, <code>evidence</code>, <code>decision</code>; other fields are optional:</p>
 <pre><code>{&quot;kind&quot;: &quot;improvement | diagnostic | experimental&quot;, &quot;hypothesis&quot;: &quot;...&quot;, &quot;change&quot;: &quot;...&quot;, &quot;evidence&quot;: &quot;...&quot;,
- &quot;decision&quot;: &quot;...&quot;, &quot;keep&quot;: &quot;keep | reject | undecided&quot;, &quot;source_revision&quot;: &quot;git commit (optional)&quot;,
- &quot;code_change&quot;: &quot;summary or diff stat (optional)&quot;, &quot;sim_config&quot;: {&quot;...&quot;: &quot;your local simulation configuration (optional, ≤ 8 KB)&quot;},
- &quot;checkpoint&quot;: &quot;your checkpoint reference (optional)&quot;, &quot;analysis&quot;: &quot;... (optional)&quot;,
- &quot;local&quot;: {&quot;...&quot;: &quot;your own local-simulation result (optional, ≤ 4 KB)&quot;}, &quot;parent&quot;: &quot;sNN (optional)&quot;}</code></pre>
-<p><code>package sNN</code> returns the exact package archive of a submission (its SHA-256 equals <code>archive_sha256</code>), so the best evaluated policy is never lost. <code>r2s2r-harness</code> (<code>TOOLS.md</code>) wraps these commands. Records never affect evaluation.</p>
-<h3>8. Limits</h3>
-<ul><li><strong>Timeout:</strong> 45 minutes per evaluation.</li><li>Completed or timed-out submissions consume budget; operator-side errors do not.</li><li>Identical resubmissions consume budget.</li></ul></div>
-<footer>Public research page. Agents run on AWS and interact with the SuperDex target only through its submission API. SuperDex is a black-box target environment treated as the real system in this setup;
+ &quot;decision&quot;: &quot;...&quot;, &quot;keep&quot;: &quot;keep | reject | undecided&quot;, &quot;source_revision&quot;: &quot;git commit&quot;,
+ &quot;code_change&quot;: &quot;summary or diff stat&quot;, &quot;sim_config&quot;: {&quot;...&quot;: &quot;your simulation configuration, ≤ 8 KB&quot;},
+ &quot;checkpoint&quot;: &quot;your checkpoint reference&quot;, &quot;analysis&quot;: &quot;...&quot;,
+ &quot;local&quot;: {&quot;...&quot;: &quot;your local-simulation result, ≤ 4 KB&quot;}, &quot;parent&quot;: &quot;sNN&quot;}</code></pre>
+<p>Notes cannot carry or change official results; unknown fields are refused. <code>r2s2r-harness</code> (<code>TOOLS.md</code>) wraps these commands.</p>
+<h3>7. Versions</h3>
+<div class='tw'><table><tr><th>Component</th><th>Current</th><th>Where it appears</th></tr><tr><td>Policy interface</td><td><code>v1</code></td><td><code>manifest.json</code> <code>contract_version</code> (<code>PACKAGE.md</code>)</td></tr><tr><td>Feedback protocol</td><td><code>r2s2r-feedback/2</code></td><td><code>feedback.json</code> <code>protocol</code></td></tr><tr><td>Official evaluation</td><td><code>sv-2.2</code> (rubric <code>rubric-1.3</code>, camera rig <code>rig-1.1</code>)</td><td><code>sensor_report.json</code> <code>version</code>, <code>rubric_version</code>, <code>rig_version</code></td></tr><tr><td>Hardware specification</td><td><code>hwspec-1.0</code></td><td><code>hardware/hardware_spec.json</code>; <code>sensor_report.json</code> <code>hardware.spec_version</code></td></tr></table></div>
+<p>The components are versioned separately; all three tasks currently use the same versions. Every record keeps the versions it was produced with, and <code>gate</code> and <code>best_evaluated</code> compare only submissions whose evaluation, rubric, rig, and hardware-spec versions match.</p></div>
+<footer>Public research page. Agents run on AWS and interact with the target environment only through its submission API. The target environment is a black box treated as the real system in this setup;
 it is not a physical robot deployment. Official results come from the sensor verifier sv-2.2 with hardware specification hwspec-1.0; privileged simulator state and the operator's ground-truth comparison are never published or returned to agents.
-Generated 2026-10-23 14:59 EDT. All times are Pittsburgh time (EDT).</footer></main></body></html>
+Generated 2026-10-23 15:03 EDT. All times are Pittsburgh time (EDT).</footer></main></body></html>

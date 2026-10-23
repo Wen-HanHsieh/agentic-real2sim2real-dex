@@ -1,8 +1,6 @@
-# Remote Evaluation API (feedback protocol v2)
+# Remote Evaluation API
 
-SuperDex executes submitted policies on the target cell and returns what its sensors observed: three calibrated camera
-views, your robot's own logs, and a sensor-based assessment of the trial against `SUCCESS.md`. Protocol identifier:
-`r2s2r-feedback/2` (see `FEEDBACK.md`).
+The target environment executes submitted policies and stores sensor-based feedback after each rollout. Feedback contents: `FEEDBACK.md`. Packaging: `PACKAGE.md`.
 
 ## 1. Commands
 
@@ -17,90 +15,88 @@ r2s2r-cube frames sNN <top|left|right|all> <t1,t2,...> [depth] > frames.tgz
 r2s2r-cube masks sNN <top|left|right|all> <i0:i1[:step] | i,j,...> > masks.tgz
 r2s2r-cube history
 r2s2r-cube note sNN < note.json
-r2s2r-cube package sNN > sNN.tar
+r2s2r-cube package sNN > sNN_package.tgz
 ```
 
-Local tools on AWS (optional, nothing is sent anywhere; `TOOLS.md`): `r2s2r-preflight`, `r2s2r-hwcheck`,
-`r2s2r-maskiou`, `r2s2r-harness`.
-
-Responses are JSON (`fetch` and `frames` return a .tar.gz); errors return `{"error": "..."}` with a non-zero exit code.
-
-`validate` checks the package without executing a full trial or consuming submission budget. `r2s2r-preflight` is a local
-compatibility check; remote `validate` is authoritative.
+Responses are JSON, except `fetch`, `frames`, and `masks` (`.tar.gz`) and `package` (the archive exactly as submitted). Errors return `{"error": "..."}` with a non-zero exit code. `r2s2r-preflight` is a local check (`PACKAGE.md`).
 
 ## 2. Submission
 
-- **Package:** `.tar` or `.tar.gz`, ≤ 500 MB, ≤ 2000 files; `policy.py` at the archive root or inside one top-level directory (`PACKAGE.md`).
-- No links, absolute paths, or `..` paths.
-- One evaluation at a time; every accepted submission consumes one budget slot.
-- **Budget:** 100 submissions.
+- **Archive:** `.tar` or `.tar.gz`, ≤ 500 MB, ≤ 2000 files; `policy.py` at the archive root or inside one top-level directory; no links, absolute paths, or `..` paths.
+- **Checks:** `validate` and `submit` run the same package checks (`PACKAGE.md`). A rejected package is not recorded and not charged.
+- **Receipt:** `submit` returns `submission_id`, `policy_sha256`, `state: queued`, and the check's inference timing and warnings.
+- One evaluation runs at a time.
 
-## 3. Evaluation
+## 3. Evaluation and Budget
 
-Each submission executes **1 trial**, lasting **40 s (20000 steps at 500 Hz)**, with fixed initial conditions. The policy interface is
-unchanged (`CONTRACT.md`): the policy itself never receives camera images.
+- **Trial:** one trial per submission, 40 s (20,000 steps at 500 Hz), from fixed initial conditions.
+- **Budget:** 100 charged submissions; `budget` returns the used and total count.
+- **States:** `queued` → `running` → `done`, or `error` / `timeout`. Results are not available during a rollout.
 
-States: `queued` → `running` → `done`, or `timeout` / `error`.
+| Outcome | State | Charged | Standard feedback |
+|---|---|---|---|
+| Rollout completed | `done` | yes | yes |
+| Policy failure: exception, invalid action, no answer within 5 s, or more than 64 MB written to `TMPDIR` | `error` | yes | yes, up to the failure |
+| Evaluation exceeded 90 minutes | `timeout` | yes | no |
+| Target-side infrastructure error | `error` | no | no |
 
-## 4. Feedback (`fetch`)
+`status` reports the error message and whether an `error` was charged. Identical resubmissions are charged.
+
+## 4. Standard Feedback (`fetch`)
+
+`fetch sNN` returns the stored feedback of a finished rollout:
 
 ```text
-<experiment>_<id>/
-├── feedback.json            protocol, file list with SHA-256
-├── calibration.json         camera intrinsics, extrinsics, conventions, depth model
-├── logs/trial_0.npz         joint_names, q, qd, q_target, qd_target (20000 steps)
-├── masks/
-│   ├── top.npz  left.npz  right.npz   object segmentation masks from the cameras, one per frame and view
-│   └── masks.json           encoding and fields
-├── video/
-│   ├── top.mp4  left.mp4  right.mp4   three synchronized views, real time, 25 fps
-│   ├── frames.json          frame_t and control_step of every frame (identical for every view)
-│   └── video.json
-└── sensor/
-    ├── sensor_report.json   sensor-based verifier: status, score with uncertainty, stages, events, measurements
-    └── sensor_tracks.npz    the perceived tracks behind the report
+<experiment>_sNN/
+├── feedback.json
+├── calibration.json
+├── logs/trial_0.npz
+├── video/   top.mp4  left.mp4  right.mp4  frames.json  video.json
+├── sensor/  sensor_report.json  sensor_tracks.npz
+└── masks/   top.npz  left.npz  right.npz  masks.json
 ```
 
-The sensor report is computed only from the cameras, your robot log and public documents. It reports what was observed,
-never why. See `FEEDBACK.md` for every field, its accuracy, and what cannot be observed.
+File contents, uncertainty, and timestamps: `FEEDBACK.md`.
 
-## 5. Frame queries (`frames`)
+## 5. Optional Queries
 
-Re-renders exact instants of a finished trial in any view, after the rollout (the trial itself is never paused):
-up to 8 times per call (seconds since control step 0, up to 3 decimals; the nearest 1 ms instant is returned), optional
-16-bit depth (0.1 mm units). Up to 240 frames (times × views) per submission; not charged to the budget.
+Queries read the stored record of a finished rollout. They are not charged and never change official results.
 
-## 6. Masks (`masks`)
+| Command | Returns | Limits |
+|---|---|---|
+| `frames sNN VIEW TIMES [depth]` | PNG frames from the same cameras at any instant (s, up to 3 decimals; nearest 1 ms), optional 16-bit depth, and `frames/frames.json` | ≤ 8 times per call; ≤ 240 frames (times × views) per submission |
+| `masks sNN VIEW FRAMES` | Masks as PNG (255 = object) with `masks/masks.json`; `FRAMES`: `i0:i1[:step]` (end excluded) or `i,j,...` indices of `video/frames.json` | ≤ 60 masks (frames × views) per call |
+| `history` | Every submission and the best evaluated policy (section 6) | — |
+| `note sNN` | Appends your research note to a submission (section 6) | ≤ 16 KB per note |
+| `package sNN` | The exact archive you submitted; its SHA-256 equals `archive_sha256` in `history` | — |
 
-Selected segmentation masks as PNG (0 = background, 255 = object) with `masks/masks.json` (frame index, time, control
-step, validity, visibility, colour agreement), read from the immutable record: a range `i0:i1[:step]` or a list of frame
-indices of `video/frames.json`, one view or `all`, up to 60 masks per call. The complete masks are also in the `fetch`
-bundle (`masks/`). See `FEEDBACK.md` section 4.
+## 6. Research Records
 
-## 7. Experiment records (`history`, `note`, `package`)
+`history` lists every submission with its hashes (`policy_sha256`, `archive_sha256`, `feedback_sha256`), `state`, `official` results with versions, your notes, `role`, `keep`, and `gate`:
 
-`history` lists every submission: package, archive and feedback SHA-256, state, the **official** sensor results with
-their versions, your notes, the submission's role (from your latest note), and a regression `gate` against the best
-comparable earlier submission (`improved`, `equal`, `regressed`, `not_comparable` when the verifier, rubric, rig or
-hardware-spec version differs). It names `best_evaluated` (official results only: runtime valid, then no hardware
-violation, then task success, then score, then its lower bound; ties: earlier) and `latest_candidate` (latest submission
-not marked diagnostic or experimental). Official results cannot be set or changed by notes.
+- **`gate`:** `first`, `improved`, `equal`, `regressed`, or `not_comparable` (different evaluation versions), against the best comparable earlier submission.
+- **`best_evaluated`:** ranked by official results only: valid run, then no hardware violation, then `success`, then score, then score lower bound; ties go to the earlier submission.
+- **`latest_candidate`:** the latest submission not labelled `diagnostic` or `experimental`.
 
-`note sNN` appends one record (append-only, hash-chained; corrections are new notes):
+`note sNN` appends one record (append-only and hash-chained; corrections are new notes). Required fields: `kind`, `hypothesis`, `change`, `evidence`, `decision`; other fields are optional:
 
 ```json
 {"kind": "improvement | diagnostic | experimental", "hypothesis": "...", "change": "...", "evidence": "...",
- "decision": "...", "keep": "keep | reject | undecided", "source_revision": "git commit (optional)",
- "code_change": "summary or diff stat (optional)", "sim_config": {"...": "your local simulation configuration (optional, ≤ 8 KB)"},
- "checkpoint": "your checkpoint reference (optional)", "analysis": "... (optional)",
- "local": {"...": "your own local-simulation result (optional, ≤ 4 KB)"}, "parent": "sNN (optional)"}
+ "decision": "...", "keep": "keep | reject | undecided", "source_revision": "git commit",
+ "code_change": "summary or diff stat", "sim_config": {"...": "your simulation configuration, ≤ 8 KB"},
+ "checkpoint": "your checkpoint reference", "analysis": "...",
+ "local": {"...": "your local-simulation result, ≤ 4 KB"}, "parent": "sNN"}
 ```
 
-`package sNN` returns the exact package archive of a submission (its SHA-256 equals `archive_sha256`), so the best
-evaluated policy is never lost. `r2s2r-harness` (`TOOLS.md`) wraps these commands. Records never affect evaluation.
+Notes cannot carry or change official results; unknown fields are refused. `r2s2r-harness` (`TOOLS.md`) wraps these commands.
 
-## 8. Limits
+## 7. Versions
 
-- **Timeout:** 90 minutes per evaluation.
-- Completed or timed-out submissions consume budget; operator-side errors do not.
-- Identical resubmissions consume budget.
+| Component | Current | Where it appears |
+|---|---|---|
+| Policy interface | `v1` | `manifest.json` `contract_version` (`PACKAGE.md`) |
+| Feedback protocol | `r2s2r-feedback/2` | `feedback.json` `protocol` |
+| Official evaluation | `sv-2.2` (rubric `rubric-1.3`, camera rig `rig-1.1`) | `sensor_report.json` `version`, `rubric_version`, `rig_version` |
+| Hardware specification | `hwspec-1.0` | `hardware/hardware_spec.json`; `sensor_report.json` `hardware.spec_version` |
+
+The components are versioned separately; all three tasks currently use the same versions. Every record keeps the versions it was produced with, and `gate` and `best_evaluated` compare only submissions whose evaluation, rubric, rig, and hardware-spec versions match.

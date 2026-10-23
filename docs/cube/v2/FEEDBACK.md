@@ -1,135 +1,94 @@
-# Feedback Protocol v2: Cameras, Sensor Verifier, Records
+# Target Evaluation Feedback
 
-Task: One-handed 2x2x2 Rubik's Cube Solving. Everything in this document describes data returned by `fetch`, `frames` and `history`
-(`REMOTE_API.md`). The policy's observation and action interface (`CONTRACT.md`) is unchanged.
+The target environment evaluates each rollout from sensor-observable evidence: three cameras, the robot's joint log, and the public robot and object specifications. Official success criteria are in `SUCCESS.md`. Feedback exists only after the rollout; the deployed policy never receives camera images (`CONTRACT.md`).
 
 ## 1. Cameras
 
-Three fixed, hardware-synchronized RGB-D cameras (global shutter, 848 × 480, pinhole without distortion,
-D405-class depth). All three views show the same instant in frame k.
+Three fixed, synchronized RGB-D cameras (global shutter, 848 × 480, pinhole without distortion):
 
-| View | Purpose |
+| View | Perspective |
 |---|---|
-| `top` | from above: contacts on the palm side, headings, rotations about +Z, the cube's U face |
-| `left` | from the hand's left (+Y), nearly level: heights, toss trajectory, grasp and fingers |
-| `right` | from the hand's right (−Y) and the fingertip side, elevated: complementary view for 3D pose |
+| `top` | Above the hand |
+| `left` | From the hand's left (+Y), nearly level |
+| `right` | From the hand's right (−Y) and the fingertip side, elevated |
 
-`calibration.json` gives, per view, `K` (3×3), `T_world_cam` (camera → world) and `T_cam_world`, plus:
+- **RGB video:** 25 fps, H.264, real time, covering the whole rollout (1,001 frames per view).
+- **Calibration:** `calibration.json`: per view `K`, `T_world_cam`, `T_cam_world`; world frame as in `hardware/SPECS.md`; OpenCV camera frame, pixel (0, 0) at the centre of the top-left pixel.
+- **Timestamps:** `video/frames.json` gives each frame's time `t` (s since control step 0) and `control_step = round(t × 500)`, the same for all views. Row `s` of `logs/trial_0.npz` is control step `s` (the state measured before the action at `s`).
+- **Depth:** 16-bit PNG in 0.1 mm units (0 = no return), noise σ = 1 mm × (z / 0.5 m)², through the `frames ... depth` query only.
 
-- **World frame:** `hardware/SPECS.md` (X forward, Y left, Z up, metres).
-- **Camera frame:** OpenCV (x right, y down, z forward); pixel (0, 0) is the centre of the top-left pixel.
-- **Time:** `t` in seconds since control step 0; `control_step = round(t × 500)`; `video/frames.json` lists both per frame.
-- **Depth:** z along the optical axis; 16-bit PNG in 0.1 mm units in frame queries, 0 = no return; noise σ = 1 mm × (z / 0.5 m)².
-- **Video:** 25 fps, H.264, real time, covering the whole policy phase.
+## 2. Official Evaluation
 
-## 2. Sensor-based verifier (`sensor/sensor_report.json`)
+`sensor/sensor_report.json`:
 
-A deterministic program scores the trial against `SUCCESS.md` using only the camera frames, your robot log
-(`logs/trial_0.npz`), the public robot model and mount (`hardware/`) and the object's public dimensions
-(`object/SPECS.md`). It never reads simulator state. Fields:
-
-| Field | Meaning |
+| Field | Description |
 |---|---|
-| `status` | `success`, `failure` or `unknown` (rule in `status_rule`); `task_status`: the same for the task alone |
-| `score`, `score_bounds` | total progress 0–1 (`SUCCESS.md` stages: first turn, turning, solving, hold); the interval covers moments that could not be observed and measurement error near thresholds |
-| `progress`, `reward` (+ `_bounds`) | the same quantity as `score`: the official per-trial progress and reward |
-| `confidence` | 0–1: observed fraction × (1 − interval width) |
-| `stages` | per-stage score and score bounds; every milestone: reached (point), `reached_bounds`, `certain`, time, label |
-| `unobservable` | quantities in `SUCCESS.md` that the sensors cannot observe for this task, and what that means for the score |
-| `events` | timestamped observations (release, landing, rest, rotation milestones, layer turns, loss of retention, ...) |
-| `object_motion` | measured summary quantities (see §3) |
-| `hardware` | `measured` (joint positions and speeds vs the URDF limits) and `estimated` (torque demand from the PD law) |
-| `runtime` | steps run vs expected, finite actions, policy errors, inference time |
-| `observability` | frames, visibility fractions, margins used (`tolerances`), and what is not observable |
-| `version`, `rubric_version`, `rig_version`, `code_sha256` | exact versions; identical inputs give identical reports |
+| `status` | Official result: `success`, `failure`, or `unknown` (rule below and in `status_rule`) |
+| `task_status` | The same decision for the task rubric alone |
+| `score`, `score_bounds` | Task progress 0–1 (stages: first turn, turning, solving, hold) and its uncertainty interval |
+| `progress`, `reward` (and `_bounds`) | The same quantity as `score` |
+| `stages` | Per-stage scores; per milestone `reached`, `reached_bounds`, `certain`, time |
+| `events` | Timestamped observations (layer turns, distance to solved, solved, loss of retention) |
+| `object_motion` | Measured summary quantities |
+| `hardware` | Joint position and speed compliance (measured), action validity, PD torque demand (estimated) |
+| `runtime` | `valid` / `invalid`, steps run and expected, policy error, inference time |
+| `confidence`, `observability`, `unobservable` | Observed fraction, measurement margins, what cannot be observed |
+| `version`, `rubric_version`, `rig_version`, `code_sha256` | Evaluation versions (`REMOTE_API.md` section 7) |
 
-Status rule: `success` only if the score is 1.0 even when every unobservable or near-threshold moment counts against the
-policy, hardware is compliant and the run is valid; `failure` if the score is below 1.0 even when they all count for it,
-or a hardware limit is measurably exceeded, or the run is invalid; otherwise `unknown`.
+**Status rule:**
 
-The verifier states what happened, never why. It is an independent sensor reading, not the cell's internal judgement:
-official success remains as defined in `SUCCESS.md` (score 1.0 with every physical, hardware and runtime requirement in
-every required trial), and the cell's internal validity checks have no sensor equivalent.
+- `success`: the score is 1.0 even when every unobservable or near-threshold moment counts against the policy, the hardware is compliant, and the run is valid.
+- `failure`: the score is below 1.0 even when all of them count for the policy, a hardware limit is clearly exceeded, or the run is invalid (policy failure or missing steps).
+- `unknown`: otherwise; the evidence cannot decide.
 
-### Hardware
+**Sensor estimates, not ground truth.** Every value is measured from the cameras and the joint log; the target's internal state is never read or returned. A joint measurement within encoder noise of a limit is `uncertain`; torque is only estimated (`hardware/SPECS.md` section 6). The evaluation reports what happened, not why; diagnosing causes is your task.
 
-Judged by the authoritative rules of `hardware/SPECS.md` section 6 (`hardware/hardware_spec.json`) with the same code as
-`HARDWARE_CHECK.md`, applied to your robot log:
+## 3. Object Tracking and Segmentation
 
-- **Measured:** joint positions (against the URDF limits with the published 0.02 rad allowance) and joint speeds. Each gets
-  `violation`, `compliant` or `uncertain` from the documented encoder noise (σ 0.002 rad, 0.05 rad/s): `violation` if a
-  measured value, or the mean of 10 or 50 consecutive values, lies beyond a limit by more than k·σ/√window; `compliant` if
-  every value lies inside by more than k·σ; otherwise `uncertain`. A clear violation makes the trial status `failure`; an
-  uncertain decision makes it at best `unknown`.
-- **Commanded:** action validity (finite, correctly shaped; targets outside the limits are clipped).
-- **Estimated:** torque demand. Nothing measures torque on this hand; `estimated.joint_torque_demand` applies the PD law of
-  `hardware/SPECS.md` to the measured state and your targets. Above the effort limit the actuator saturates: reported,
-  not a violation (the applied torque never exceeds the limit on the target).
+**Measurements**
 
-## 3. What is measured, and how
-
-The margin is how far a measurement must clear a `SUCCESS.md` threshold before the score interval treats the milestone
-as certain (`observability.tolerances`); the point score uses the thresholds exactly.
-
-| Quantity | How | Margin |
+| Quantity | How it is measured | Margin |
 |---|---|---|
-| Sticker colours and cubie orientations | colour segmentation, 3D sticker planes, cube model with one moving layer | - |
-| Layer turns (which layer, direction, angle) | continuous layer angle; a turn is complete when the turned layer is stably aligned (within 10°, moving less than 5°) for 0.1 s, so a continuous half turn is one turn | one frame (40 ms) |
-| Cube state and distance to solved | tracked from the scramble you are given; distance to solved is read only at settled, aligned states | - |
+| Sticker colours and cubie orientations | colour segmentation, 3D sticker planes, cube model with one moving layer; stickers hidden by the hand are filled in from the last observed state and the mechanism's legal configurations | – |
+| Layer turns (layer, direction, angle) | continuous layer angle; a turn is complete when the turned layer is stably aligned (within 10°, moving less than 5°) for 0.1 s, so a continuous half turn is one turn | one frame (40 ms) |
+| Cube state and distance to solved | tracked from the given scramble; read only at settled, aligned states | – |
 | Cube centre and drop | from the identified cubies | 3 mm |
-| Mechanism deviation (jam) | orientation residuals of cubies seen with two or more stickers | values within 4 deg of the 15 deg limit are uncertain |
-| Hand contact | object surface within 4 mm of the robot model at the measured joint angles | gaps 2.5–5.5 mm count as uncertain |
-| Environment contact | object surface within 3 mm of the floor | gaps 1.5–4.5 mm count as uncertain |
+| Mechanism deviation | orientation residuals of cubies seen with two or more stickers | values within 4° of the 15° limit are uncertain |
+| Hand contact | object surface within 4 mm of the robot model at the measured joint angles | gaps 2.5–5.5 mm are uncertain |
+| Environment contact | object surface within 3 mm of the floor | gaps 1.5–4.5 mm are uncertain |
 
-Not observable: the cell's internal validity checks; contact forces; joint torque; for the pen, its rotation about the
-long axis while both roll markers are hidden (then only a lower bound on its angular speed is known).
-An object hidden from all three cameras for longer than 0.5 s is treated as not retained in the point estimate and as
-unknown in the interval. The point score credits only what was observed; `score_bounds` gives the range.
+A milestone is certain only when the measurement clears the `SUCCESS.md` threshold by the margin; the point score uses the thresholds exactly. An object hidden from all cameras for more than 0.5 s counts as not retained in the point score and as unknown in `score_bounds`. Not observable: contact forces and joint torques.
 
-`sensor/sensor_tracks.npz` holds the per-frame tracks: `t`, `hand_contact`, `environment_contact`,
-`hand_contact_uncertain`, `environment_contact_uncertain`, `hand_gap_m`, and cube_centre_z (n,) [m], aligned (n,), distance_to_solved (n,), solved (n,), layer_angle_deg (n,), layer_axis (n,), mechanism_deviation_deg (n,), state_key (n,) opaque state id. NaN means not observed.
+**Object tracks** (`sensor/sensor_tracks.npz`, one row per video frame): `t`, `hand_contact`, `environment_contact` (1 / 0 / NaN), `hand_contact_uncertain`, `environment_contact_uncertain`, `hand_gap_m`, and `cube_centre_z` (n,) [m], `aligned` (n,), `distance_to_solved` (n,), `solved` (n,), `layer_angle_deg` (n,), `layer_axis` (n,), `mechanism_deviation_deg` (n,), `state_key` (n,) opaque state id. NaN means not observed.
 
-## 4. Segmentation masks (`masks/`)
+**Segmentation masks** (`masks/<view>.npz`): the `cube` mask of every frame and view, pixel-aligned with the RGB and depth images and indexed like `video/frames.json`. Each is the object's camera-estimated pose rendered with its public geometry, kept where the observed depth agrees within 8 mm; pixels hidden by the hand are excluded. Run-length encoded, with per-frame `valid`, `visible_fraction`, `colour_agreement`, and other fields described in `masks/masks.json`. A mask can be invalid or partly occluded.
 
-For every frame and view, the object's pixels in that camera image, derived from the cameras: the object's
-camera-estimated 3D pose rendered with its public geometry, kept where the observed depth agrees with the model
-surface (within 8 mm). Pixels hidden behind something nearer (fingers) are not part of the mask. Masks are pixel-aligned
-with the RGB and depth images of the same view and share `video/frames.json` timestamps.
+## 4. Standard Feedback
 
-`masks/<view>.npz`: `rle_counts`, `rle_offsets` (mask k = run lengths `counts[offsets[k]:offsets[k+1]]` over the
-row-major H × W image, alternating background/object, starting with background), `frame_index`, `t`, `control_step`,
-`valid` (a camera pose estimate existed), `area`, `model_area` (unoccluded silhouette), `visible_fraction`,
-`colour_agreement`, `occluded_px`, `shape`, `label`. The `masks` command returns selected frames as PNG.
+Produced and stored after every completed rollout, never changed afterwards. They are not pushed to you; retrieve them with `fetch sNN` (`REMOTE_API.md`).
 
-## 5. What a submission returns, and what is on request
+| File | Contents |
+|---|---|
+| `feedback.json` | Protocol, task, policy SHA-256, versions, and the SHA-256 of every file |
+| `calibration.json` | Camera intrinsics, extrinsics, conventions, depth model |
+| `logs/trial_0.npz` | `joint_names`; measured `q`, `qd`; commanded `q_target`, `qd_target` (20,000 rows) |
+| `video/top.mp4`, `video/left.mp4`, `video/right.mp4` | Synchronized RGB videos |
+| `video/frames.json`, `video/video.json` | Per-frame time and control step; video metadata |
+| `sensor/sensor_report.json` | Official evaluation (section 2) |
+| `sensor/sensor_tracks.npz` | Sensor-estimated object tracks and contact (section 3) |
+| `masks/top.npz`, `masks/left.npz`, `masks/right.npz`, `masks/masks.json` | Segmentation masks and their encoding (section 3) |
 
-| Information | Returned automatically by `fetch` | On request |
-|---|---|---|
-| RGB video, three views | `video/*.mp4` | single frames: `frames` |
-| Depth | – | `frames ... depth` (16-bit PNG, 0.1 mm) |
-| Joint positions and velocities, measured | `logs/trial_0.npz` (`q`, `qd`) | – |
-| Submitted actions | `logs/trial_0.npz` (`q_target`, `qd_target`) | – |
-| Execution result, runtime diagnostics | `sensor_report.json` `runtime`; `status` command | – |
-| Task success / failure / unknown | `sensor_report.json` | `history` |
-| Reward and progress, stage scores, uncertainty | `sensor_report.json` | `history` (summary) |
-| Events, hardware (measured / estimated), confidence | `sensor_report.json` | – |
-| Segmentation masks | `masks/*.npz` | selected frames: `masks` |
-| Perceived object tracks | `sensor/sensor_tracks.npz` | – |
-| Calibration, timestamps | `calibration.json`, `video/frames.json` | – |
-| Your package, records, best policy | – | `package`, `history`, `note`; `r2s2r-harness` |
+## 5. Optional Queries and Tools
 
-Timestamps: frame k of every view, every mask k and `control_step` k describe the same instant; log row s is control
-step s (the action at s and the state measured before it); the last frame is the state after the last logged step.
+| Command or tool | Use |
+|---|---|
+| `frames` | RGB frames at any instant of a finished rollout, optionally with depth |
+| `masks` | Selected masks as PNG |
+| `history`, `note`, `package` | Experiment records, your research notes, exact past packages |
+| `r2s2r-maskiou`, `r2s2r-hwcheck`, `r2s2r-harness` | Local tools (`TOOLS.md`) |
 
-## 6. Frame queries
+None of them changes official results. Syntax and limits: `REMOTE_API.md`.
 
-`frames sNN <view|all> <t1,...> [depth]` returns PNG frames rendered by the same cameras at any instant of the trial
-(nearest 1 ms), with `frames/frames.json` giving the exact time and control step. Use it to inspect moments between video
-frames, to get depth, or to check events reported by the verifier.
+## 6. Research Use
 
-## 7. Experiment records
-
-`history` keeps an immutable record of every submission (package, archive and feedback SHA-256; state; sensor summary)
-and your `note` entries (hypothesis → change → evidence → decision, diagnostic or improvement, with your own local-simulation
-result if you provide one), so you can compare local predictions with SuperDex observations across iterations.
-Feedback bundles of finished submissions never change.
+You may use videos, joint logs, object tracks, masks, and official results to diagnose failures and improve your simulation and policy. Your own diagnostic metrics do not replace the official evaluation.
