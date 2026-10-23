@@ -38,7 +38,7 @@ footer{margin-top:56px;padding-top:14px;border-top:1px solid var(--line);font-si
 @media (max-width:560px){.pair{grid-template-columns:1fr}.upd{margin-left:0}}
 </style></head><body>
 <header class="top"><div class="in"><b><a href="../../index.html" style="text-decoration:none;color:inherit">Agentic Real2Sim2Real</a></b><nav><a href='../../index.html#overview'>Overview</a><a href='../../index.html#tasks'>Tasks</a><a href='../../index.html#progress'>Live progress</a><a href='../../index.html#efficiency'>Efficiency</a><a href='../../index.html#infra'>Feedback v2</a><a href='../../index.html#resources'>Resources</a></nav>
-<span class="upd">Updated 2026-10-22 20:02 EDT (Pittsburgh) · auto-refresh every 10 min</span></div></header>
+<span class="upd">Updated 2026-10-22 20:06 EDT (Pittsburgh) · auto-refresh every 10 min</span></div></header>
 <main><div class='doc'><p class='muted' style='margin-top:28px'><a href='../../tasks/pen.html#v2'>← Pen Spinning</a> · <a href='v2/REMOTE_API.md'>raw Markdown</a></p><h2>Remote Evaluation API (feedback protocol v2)</h2>
 <p>SuperDex executes submitted policies on the target cell and returns what its sensors observed: three calibrated camera views, your robot&#x27;s own logs, and a sensor-based assessment of the trial against <code>SUCCESS.md</code>. Protocol identifier: <code>r2s2r-feedback/2</code> (see <code>FEEDBACK.md</code>).</p>
 <h3>1. Commands</h3>
@@ -49,9 +49,11 @@ tar -C my_policy -czf - . | r2s2r-pen submit
 r2s2r-pen status
 r2s2r-pen fetch sNN &gt; sNN.tgz
 r2s2r-pen frames sNN &lt;top|left|right|all&gt; &lt;t1,t2,...&gt; [depth] &gt; frames.tgz
+r2s2r-pen masks sNN &lt;top|left|right|all&gt; &lt;i0:i1[:step] | i,j,...&gt; &gt; masks.tgz
 r2s2r-pen history
 r2s2r-pen note sNN &lt; note.json
-r2s2r-hwcheck traj.npz          # local: check your own trajectories against the hardware rules (HARDWARE_CHECK.md)</code></pre>
+r2s2r-pen package sNN &gt; sNN.tar</code></pre>
+<p>Local tools on AWS (optional, nothing is sent anywhere; <code>TOOLS.md</code>): <code>r2s2r-preflight</code>, <code>r2s2r-hwcheck</code>, <code>r2s2r-maskiou</code>, <code>r2s2r-harness</code>.</p>
 <p>Responses are JSON (<code>fetch</code> and <code>frames</code> return a .tar.gz); errors return <code>{&quot;error&quot;: &quot;...&quot;}</code> with a non-zero exit code.</p>
 <p><code>validate</code> checks the package without executing a full trial or consuming submission budget. <code>r2s2r-preflight</code> is a local compatibility check; remote <code>validate</code> is authoritative.</p>
 <h3>2. Submission</h3>
@@ -64,6 +66,9 @@ r2s2r-hwcheck traj.npz          # local: check your own trajectories against the
 ├── feedback.json            protocol, file list with SHA-256
 ├── calibration.json         camera intrinsics, extrinsics, conventions, depth model
 ├── logs/trial_0.npz         joint_names, q, qd, q_target, qd_target (6000 steps)
+├── masks/
+│   ├── top.npz  left.npz  right.npz   object segmentation masks from the cameras, one per frame and view
+│   └── masks.json           encoding and fields
 ├── video/
 │   ├── top.mp4  left.mp4  right.mp4   three synchronized views, real time, 100 fps
 │   ├── frames.json          frame_t and control_step of every frame (identical for every view)
@@ -74,13 +79,19 @@ r2s2r-hwcheck traj.npz          # local: check your own trajectories against the
 <p>The sensor report is computed only from the cameras, your robot log and public documents. It reports what was observed, never why. See <code>FEEDBACK.md</code> for every field, its accuracy, and what cannot be observed.</p>
 <h3>5. Frame queries (<code>frames</code>)</h3>
 <p>Re-renders exact instants of a finished trial in any view, after the rollout (the trial itself is never paused): up to 8 times per call (seconds since control step 0, up to 3 decimals; the nearest 1 ms instant is returned), optional 16-bit depth (0.1 mm units). Up to 240 frames (times × views) per submission; not charged to the budget.</p>
-<h3>6. Experiment records (<code>history</code>, <code>note</code>)</h3>
-<p><code>history</code> lists every submission with its package hash, archive hash, feedback hash, state and the sensor summary, plus your notes, and marks the best submission so far (highest sensor score; ties: hardware compliant, runtime valid, earliest). <code>note sNN</code> appends one record to a submission (append-only; corrections are new notes):</p>
-<pre><code>{&quot;kind&quot;: &quot;diagnostic | improvement&quot;, &quot;hypothesis&quot;: &quot;...&quot;, &quot;change&quot;: &quot;...&quot;, &quot;evidence&quot;: &quot;...&quot;, &quot;decision&quot;: &quot;...&quot;,
- &quot;local&quot;: {&quot;score&quot;: 0.4, &quot;...&quot;: &quot;your own local-simulation result for this package (optional, ≤ 4 KB)&quot;}, &quot;parent&quot;: &quot;sNN (optional)&quot;}</code></pre>
-<p>Records are bookkeeping only; they never affect evaluation.</p>
-<h3>7. Limits</h3>
+<h3>6. Masks (<code>masks</code>)</h3>
+<p>Selected segmentation masks as PNG (0 = background, 255 = object) with <code>masks/masks.json</code> (frame index, time, control step, validity, visibility, colour agreement), read from the immutable record: a range <code>i0:i1[:step]</code> or a list of frame indices of <code>video/frames.json</code>, one view or <code>all</code>, up to 60 masks per call. The complete masks are also in the <code>fetch</code> bundle (<code>masks/</code>). See <code>FEEDBACK.md</code> section 4.</p>
+<h3>7. Experiment records (<code>history</code>, <code>note</code>, <code>package</code>)</h3>
+<p><code>history</code> lists every submission: package, archive and feedback SHA-256, state, the <strong>official</strong> sensor results with their versions, your notes, the submission&#x27;s role (from your latest note), and a regression <code>gate</code> against the best comparable earlier submission (<code>improved</code>, <code>equal</code>, <code>regressed</code>, <code>not_comparable</code> when the verifier, rubric, rig or hardware-spec version differs). It names <code>best_evaluated</code> (official results only: runtime valid, then no hardware violation, then task success, then score, then its lower bound; ties: earlier) and <code>latest_candidate</code> (latest submission not marked diagnostic or experimental). Official results cannot be set or changed by notes.</p>
+<p><code>note sNN</code> appends one record (append-only, hash-chained; corrections are new notes):</p>
+<pre><code>{&quot;kind&quot;: &quot;improvement | diagnostic | experimental&quot;, &quot;hypothesis&quot;: &quot;...&quot;, &quot;change&quot;: &quot;...&quot;, &quot;evidence&quot;: &quot;...&quot;,
+ &quot;decision&quot;: &quot;...&quot;, &quot;keep&quot;: &quot;keep | reject | undecided&quot;, &quot;source_revision&quot;: &quot;git commit (optional)&quot;,
+ &quot;code_change&quot;: &quot;summary or diff stat (optional)&quot;, &quot;sim_config&quot;: {&quot;...&quot;: &quot;your local simulation configuration (optional, ≤ 8 KB)&quot;},
+ &quot;checkpoint&quot;: &quot;your checkpoint reference (optional)&quot;, &quot;analysis&quot;: &quot;... (optional)&quot;,
+ &quot;local&quot;: {&quot;...&quot;: &quot;your own local-simulation result (optional, ≤ 4 KB)&quot;}, &quot;parent&quot;: &quot;sNN (optional)&quot;}</code></pre>
+<p><code>package sNN</code> returns the exact package archive of a submission (its SHA-256 equals <code>archive_sha256</code>), so the best evaluated policy is never lost. <code>r2s2r-harness</code> (<code>TOOLS.md</code>) wraps these commands. Records never affect evaluation.</p>
+<h3>8. Limits</h3>
 <ul><li><strong>Timeout:</strong> 45 minutes per evaluation.</li><li>Completed or timed-out submissions consume budget; operator-side errors do not.</li><li>Identical resubmissions consume budget.</li></ul></div>
 <footer>Public research demo. Agents run on AWS and interact with the SuperDex target only through its submission API; in the current experiment SuperDex returns only a trial video and the robot's own joint logs. The feedback protocol v2 shown under "Feedback v2" (three calibrated cameras and a sensor-based verifier) has been validated on replays and is not yet used by the agents.
 Agent summaries are excerpts of the agents' own research logs, sanitized; agent-estimated progress is the agent's own judgement, not an official result. Official SuperDex verdicts are kept private.
-Data generated 2026-10-22 20:02 EDT; collected 2026-10-22 20:02 EDT. All times are Pittsburgh time (EDT).</footer></main></body></html>
+Data generated 2026-10-22 20:06 EDT; collected 2026-10-22 20:06 EDT. All times are Pittsburgh time (EDT).</footer></main></body></html>

@@ -30,8 +30,9 @@ A deterministic program scores the trial against `SUCCESS.md` using only the cam
 
 | Field | Meaning |
 |---|---|
-| `status` | `success`, `failure` or `unknown` (rule in `status_rule`) |
+| `status` | `success`, `failure` or `unknown` (rule in `status_rule`); `task_status`: the same for the task alone |
 | `score`, `score_bounds` | total progress 0–1 (`SUCCESS.md` stages: spin-up, sustain, hold); the interval covers moments that could not be observed and measurement error near thresholds |
+| `progress`, `reward` (+ `_bounds`) | the same quantity as `score`: the official per-trial progress and reward |
 | `confidence` | 0–1: observed fraction × (1 − interval width) |
 | `stages` | per-stage score and score bounds; every milestone: reached (point), `reached_bounds`, `certain`, time, label |
 | `unobservable` | quantities in `SUCCESS.md` that the sensors cannot observe for this task, and what that means for the score |
@@ -74,9 +75,9 @@ as certain (`observability.tolerances`); the point score uses the thresholds exa
 |---|---|---|
 | Pen axis and heading (back end to red tip) | multi-view RGB-D line fit; the red tip gives the direction | - |
 | Signed cumulative heading rotation | unwrapped heading from step 0 | 1 deg |
-| Pen centre, horizontal travel, drop | from the tip band and the known 140 mm length | 3 mm |
+| Pen centre, horizontal travel, drop | bounded by direct evidence: red tip, white centre band and the visible length; when they are hidden the centre is known only within an interval along the axis, used as a worst case in score_bounds; gaps up to 0.1 s are bridged only when the observed speeds prove no threshold could be crossed | 3 mm plus the along-axis interval |
+| Centre speed (hold) | derivative of the smoothest centre path consistent with the per-frame intervals (0.1 s window) | 0.005 m/s |
 | Tilt of the long axis | from the 3D axis | 1.5 deg |
-| Centre speed (hold) | time derivative of the centre (0.1 s window) | 0.005 m/s |
 | Full 3D orientation and angular speed (hold) | the yellow and green roll markers give rotation about the long axis; angular velocity from the orientation track (0.2 s window) | 0.15 rad/s; where both markers are hidden, the swing rate of the long axis is used as a lower bound |
 | Hand contact | object surface within 4 mm of the robot model at the measured joint angles | gaps 2.5–5.5 mm count as uncertain |
 | Environment contact | object surface within 3 mm of the floor | gaps 1.5–4.5 mm count as uncertain |
@@ -89,13 +90,45 @@ unknown in the interval. The point score credits only what was observed; `score_
 `sensor/sensor_tracks.npz` holds the per-frame tracks: `t`, `hand_contact`, `environment_contact`,
 `hand_contact_uncertain`, `environment_contact_uncertain`, `hand_gap_m`, and pen_axis (n,3) unit vector back->tip, pen_centre (n,3) [m], pen_speed (n,) [m/s], pen_swing_rate (n,) [rad/s]. NaN means not observed.
 
-## 4. Frame queries
+## 4. Segmentation masks (`masks/`)
+
+For every frame and view, the object's pixels in that camera image, derived from the cameras: the object's
+camera-estimated 3D pose rendered with its public geometry, kept where the observed depth agrees with the model
+surface (within 8 mm). Pixels hidden behind something nearer (fingers) are not part of the mask. Masks are pixel-aligned
+with the RGB and depth images of the same view and share `video/frames.json` timestamps.
+
+`masks/<view>.npz`: `rle_counts`, `rle_offsets` (mask k = run lengths `counts[offsets[k]:offsets[k+1]]` over the
+row-major H × W image, alternating background/object, starting with background), `frame_index`, `t`, `control_step`,
+`valid` (a camera pose estimate existed), `area`, `model_area` (unoccluded silhouette), `visible_fraction`,
+`colour_agreement`, `occluded_px`, `shape`, `label`. The `masks` command returns selected frames as PNG.
+
+## 5. What a submission returns, and what is on request
+
+| Information | Returned automatically by `fetch` | On request |
+|---|---|---|
+| RGB video, three views | `video/*.mp4` | single frames: `frames` |
+| Depth | – | `frames ... depth` (16-bit PNG, 0.1 mm) |
+| Joint positions and velocities, measured | `logs/trial_0.npz` (`q`, `qd`) | – |
+| Submitted actions | `logs/trial_0.npz` (`q_target`, `qd_target`) | – |
+| Execution result, runtime diagnostics | `sensor_report.json` `runtime`; `status` command | – |
+| Task success / failure / unknown | `sensor_report.json` | `history` |
+| Reward and progress, stage scores, uncertainty | `sensor_report.json` | `history` (summary) |
+| Events, hardware (measured / estimated), confidence | `sensor_report.json` | – |
+| Segmentation masks | `masks/*.npz` | selected frames: `masks` |
+| Perceived object tracks | `sensor/sensor_tracks.npz` | – |
+| Calibration, timestamps | `calibration.json`, `video/frames.json` | – |
+| Your package, records, best policy | – | `package`, `history`, `note`; `r2s2r-harness` |
+
+Timestamps: frame k of every view, every mask k and `control_step` k describe the same instant; log row s is control
+step s (the action at s and the state measured before it); the last frame is the state after the last logged step.
+
+## 6. Frame queries
 
 `frames sNN <view|all> <t1,...> [depth]` returns PNG frames rendered by the same cameras at any instant of the trial
 (nearest 1 ms), with `frames/frames.json` giving the exact time and control step. Use it to inspect moments between video
 frames, to get depth, or to check events reported by the verifier.
 
-## 5. Experiment records
+## 7. Experiment records
 
 `history` keeps an immutable record of every submission (package, archive and feedback SHA-256; state; sensor summary)
 and your `note` entries (hypothesis → change → evidence → decision, diagnostic or improvement, with your own local-simulation

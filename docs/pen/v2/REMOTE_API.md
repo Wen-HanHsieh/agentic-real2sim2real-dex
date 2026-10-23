@@ -14,10 +14,14 @@ tar -C my_policy -czf - . | r2s2r-pen submit
 r2s2r-pen status
 r2s2r-pen fetch sNN > sNN.tgz
 r2s2r-pen frames sNN <top|left|right|all> <t1,t2,...> [depth] > frames.tgz
+r2s2r-pen masks sNN <top|left|right|all> <i0:i1[:step] | i,j,...> > masks.tgz
 r2s2r-pen history
 r2s2r-pen note sNN < note.json
-r2s2r-hwcheck traj.npz          # local: check your own trajectories against the hardware rules (HARDWARE_CHECK.md)
+r2s2r-pen package sNN > sNN.tar
 ```
+
+Local tools on AWS (optional, nothing is sent anywhere; `TOOLS.md`): `r2s2r-preflight`, `r2s2r-hwcheck`,
+`r2s2r-maskiou`, `r2s2r-harness`.
 
 Responses are JSON (`fetch` and `frames` return a .tar.gz); errors return `{"error": "..."}` with a non-zero exit code.
 
@@ -45,6 +49,9 @@ States: `queued` → `running` → `done`, or `timeout` / `error`.
 ├── feedback.json            protocol, file list with SHA-256
 ├── calibration.json         camera intrinsics, extrinsics, conventions, depth model
 ├── logs/trial_0.npz         joint_names, q, qd, q_target, qd_target (6000 steps)
+├── masks/
+│   ├── top.npz  left.npz  right.npz   object segmentation masks from the cameras, one per frame and view
+│   └── masks.json           encoding and fields
 ├── video/
 │   ├── top.mp4  left.mp4  right.mp4   three synchronized views, real time, 100 fps
 │   ├── frames.json          frame_t and control_step of every frame (identical for every view)
@@ -63,20 +70,36 @@ Re-renders exact instants of a finished trial in any view, after the rollout (th
 up to 8 times per call (seconds since control step 0, up to 3 decimals; the nearest 1 ms instant is returned), optional
 16-bit depth (0.1 mm units). Up to 240 frames (times × views) per submission; not charged to the budget.
 
-## 6. Experiment records (`history`, `note`)
+## 6. Masks (`masks`)
 
-`history` lists every submission with its package hash, archive hash, feedback hash, state and the sensor summary, plus
-your notes, and marks the best submission so far (highest sensor score; ties: hardware compliant, runtime valid, earliest).
-`note sNN` appends one record to a submission (append-only; corrections are new notes):
+Selected segmentation masks as PNG (0 = background, 255 = object) with `masks/masks.json` (frame index, time, control
+step, validity, visibility, colour agreement), read from the immutable record: a range `i0:i1[:step]` or a list of frame
+indices of `video/frames.json`, one view or `all`, up to 60 masks per call. The complete masks are also in the `fetch`
+bundle (`masks/`). See `FEEDBACK.md` section 4.
+
+## 7. Experiment records (`history`, `note`, `package`)
+
+`history` lists every submission: package, archive and feedback SHA-256, state, the **official** sensor results with
+their versions, your notes, the submission's role (from your latest note), and a regression `gate` against the best
+comparable earlier submission (`improved`, `equal`, `regressed`, `not_comparable` when the verifier, rubric, rig or
+hardware-spec version differs). It names `best_evaluated` (official results only: runtime valid, then no hardware
+violation, then task success, then score, then its lower bound; ties: earlier) and `latest_candidate` (latest submission
+not marked diagnostic or experimental). Official results cannot be set or changed by notes.
+
+`note sNN` appends one record (append-only, hash-chained; corrections are new notes):
 
 ```json
-{"kind": "diagnostic | improvement", "hypothesis": "...", "change": "...", "evidence": "...", "decision": "...",
- "local": {"score": 0.4, "...": "your own local-simulation result for this package (optional, ≤ 4 KB)"}, "parent": "sNN (optional)"}
+{"kind": "improvement | diagnostic | experimental", "hypothesis": "...", "change": "...", "evidence": "...",
+ "decision": "...", "keep": "keep | reject | undecided", "source_revision": "git commit (optional)",
+ "code_change": "summary or diff stat (optional)", "sim_config": {"...": "your local simulation configuration (optional, ≤ 8 KB)"},
+ "checkpoint": "your checkpoint reference (optional)", "analysis": "... (optional)",
+ "local": {"...": "your own local-simulation result (optional, ≤ 4 KB)"}, "parent": "sNN (optional)"}
 ```
 
-Records are bookkeeping only; they never affect evaluation.
+`package sNN` returns the exact package archive of a submission (its SHA-256 equals `archive_sha256`), so the best
+evaluated policy is never lost. `r2s2r-harness` (`TOOLS.md`) wraps these commands. Records never affect evaluation.
 
-## 7. Limits
+## 8. Limits
 
 - **Timeout:** 45 minutes per evaluation.
 - Completed or timed-out submissions consume budget; operator-side errors do not.
