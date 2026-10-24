@@ -10,7 +10,7 @@ Learn the dexterous manipulation skill demonstrated in the human video, develop 
 | `SUCCESS.md` | Official success criteria and task progress rubric |
 | `CONTRACT.md` | Policy observations, actions, and execution rules |
 | `PACKAGE.md` | Policy packaging and runtime requirements |
-| `hardware/SPECS.md` | Robot specification, mount, controller, and hardware limits (authoritative) |
+| `hardware/SPECS.md` | Wuji Hand 2.2 specification: mount, controller, and hardware limits (authoritative) |
 | `hardware/` | Robot URDF and meshes (`hardware/wuji_hand2_right/`), machine-readable `hardware/hardware_spec.json` |
 | `object/SPECS.md` | Object geometry, mass, and visual markings |
 | `demo/` | Human demonstration video and sampled frames |

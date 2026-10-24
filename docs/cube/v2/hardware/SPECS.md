@@ -1,13 +1,14 @@
-# Wuji Hand 2: Hardware Specification
+# Wuji Hand 2.2: Hardware Specification
 
 ## 1. Robot
 
-- **Robot:** Wuji Hand 2, right hand, 20 actuated revolute joints.
+- **Robot:** Wuji Hand 2.2 (Beta), right hand, 20 actuated revolute joints.
 - **Actuation:** Direct-drive, back-drivable motors with field-oriented control (FOC); no gearbox.
-- **URDF:** `wuji_hand2_right/urdf/right.urdf` (joint names, order, axes, position, speed, and effort limits).
+- **Fingertip pads:** passive soft rubber pads, modelled as rigid links `r_*_tip_sensor_frame` fixed to each distal link (2.9 g fingers, 6.0 g thumb). The link name is the vendor's; there is no tactile sensing.
+- **URDF:** `wuji_hand2_right/urdf/right.urdf` (joint names, order, axes, position, speed, and effort limits; link masses and inertias). Root link: `r_mount` (mounting flange); `r_wrist` is the palm frame.
 - **Meshes:** `wuji_hand2_right/meshes/right/`
 - **License:** `wuji_hand2_right/LICENSE`
-- **Source:** wuji-technology/wuji-description, release v2026.7.23, commit `1407bee`.
+- **Source:** wuji-technology/wuji-description, release v2026.10.12, commit `829c9aa`, `hand2/hand2_2`.
 - **Torque–speed curve:** Not published.
 
 ## 2. Joint Specifications
@@ -43,11 +44,12 @@ Joint vectors follow the vendor URDF order. Position, speed, and effort limits c
 
 - **World frame:** X forward, Y left, Z up.
 - **Gravity:** `(0, 0, -9.81)` m/s².
-- **Fixed root link:** `r_wrist`, no wrist or arm motion.
-- **Root position (m):** `(0.0, 0.0, 0.30)`.
-- **Root orientation (quaternion, wxyz):** `(0.560986, 0.430459, 0.430459, 0.560986)`.
+- **Fixed root link:** `r_mount` (URDF root), no wrist or arm motion.
+- **Root position (m):** `(0.027681, -0.002080, 0.307114)`.
+- **Root orientation (quaternion, wxyz):** `(0.553986, 0.421314, 0.439445, 0.567875)`.
+- **Palm frame `r_wrist` in the world:** position `(0.000075, -0.000002, 0.299715)` m, orientation (wxyz) `(0.553981, 0.421317, 0.439442, 0.567880)`.
 
-The hand is palm-up, with fingertips tilted downward by 15°. The quaternion is the complete transform from the `r_wrist` frame to the world frame; apply it directly to the vendor URDF root without an additional mount rotation. The mount is the same in every trial.
+The hand is palm-up, with fingertips tilted downward by 15°. The root position and orientation are the complete transform from the `r_mount` frame to the world frame; apply them directly to the URDF root without an additional mount rotation. The `r_wrist` pose follows from the URDF joint `r_wrist_fixed` and is given for reference. The mount is the same in every trial.
 
 ## 4. Joint Controller
 
@@ -78,7 +80,7 @@ The policy receives no tactile, force, motor-current, camera, or object-state ob
 
 ## 6. Hardware Compliance (authoritative)
 
-This section is the single hardware specification. The target environment's evaluation (`FEEDBACK.md`) and the local tool `r2s2r-hwcheck` (`HARDWARE_CHECK.md`) apply it; `hardware/hardware_spec.json` (`hwspec-1.0`) is its machine-readable form.
+This section is the single hardware specification. The target environment's evaluation (`FEEDBACK.md`) and the local tool `r2s2r-hwcheck` (`HARDWARE_CHECK.md`) apply it; `hardware/hardware_spec.json` (`hwspec-1.1`) is its machine-readable form.
 
 | Quantity | Requirement (every joint, every step) | Notes |
 |---|---|---|

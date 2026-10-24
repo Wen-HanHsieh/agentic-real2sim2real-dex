@@ -74,7 +74,7 @@ Queries read the stored record of a finished rollout. They are not charged and n
 
 `history` lists every submission with its hashes (`policy_sha256`, `archive_sha256`, `feedback_sha256`), `state`, `official` results with versions, your notes, `role`, `keep`, and `gate`:
 
-- **`gate`:** `first`, `improved`, `equal`, `regressed`, or `not_comparable` (different evaluation versions), against the best comparable earlier submission.
+- **`gate`:** `first`, `improved`, `equal`, `regressed`, or `not_comparable` (different evaluation or target model versions), against the best comparable earlier submission.
 - **`best_evaluated`:** ranked by official results only: valid run, then no hardware violation, then `success`, then score, then score lower bound; ties go to the earlier submission.
 - **`latest_candidate`:** the latest submission not labelled `diagnostic` or `experimental`.
 
@@ -96,7 +96,8 @@ Notes cannot carry or change official results; unknown fields are refused. `r2s2
 |---|---|---|
 | Policy interface | `v1` | `manifest.json` `contract_version` (`PACKAGE.md`) |
 | Feedback protocol | `r2s2r-feedback/2` | `feedback.json` `protocol` |
-| Official evaluation | `sv-2.2` (rubric `rubric-1.3`, camera rig `rig-1.1`) | `sensor_report.json` `version`, `rubric_version`, `rig_version` |
-| Hardware specification | `hwspec-1.0` | `hardware/hardware_spec.json`; `sensor_report.json` `hardware.spec_version` |
+| Official evaluation | `sv-2.3` (rubric `rubric-1.3`, camera rig `rig-1.1`) | `sensor_report.json` `version`, `rubric_version`, `rig_version` |
+| Hardware specification | `hwspec-1.1` | `hardware/hardware_spec.json`; `sensor_report.json` `hardware.spec_version` |
+| Target model | `tm-2` (Wuji Hand 2.2) | `feedback.json` `target_model_version`, `robot`; `history` `official.versions.target_model` |
 
-The components are versioned separately; all three tasks currently use the same versions. Every record keeps the versions it was produced with, and `gate` and `best_evaluated` compare only submissions whose evaluation, rubric, rig, and hardware-spec versions match.
+The components are versioned separately; all three tasks currently use the same versions. The target model version names the simulated robot revision and physics configuration of the target environment; earlier records ran `tm-1` (Wuji Hand 2 Beta 1). Every record keeps the versions it was produced with, and `gate` and `best_evaluated` compare only submissions whose evaluation, rubric, rig, hardware-spec, and target model versions match.

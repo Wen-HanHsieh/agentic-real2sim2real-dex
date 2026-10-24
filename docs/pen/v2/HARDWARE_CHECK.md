@@ -1,6 +1,6 @@
 # Hardware Validation Tool
 
-`r2s2r-hwcheck` checks joint trajectories against the hardware rules of `hardware/SPECS.md` section 6, using the machine-readable `hardware/hardware_spec.json` (`hwspec-1.0`). The target environment's evaluation applies the same rules. The tool is simulator-independent and needs only NumPy.
+`r2s2r-hwcheck` checks joint trajectories against the hardware rules of `hardware/SPECS.md` section 6, using the machine-readable `hardware/hardware_spec.json` (`hwspec-1.1`). The target environment's evaluation applies the same rules. The tool is simulator-independent and needs only NumPy.
 
 Passing a local check does not guarantee compliance during target execution: the target rollout is a different trajectory.
 

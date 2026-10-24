@@ -70,7 +70,7 @@ Produced and stored after every completed rollout, never changed afterwards. The
 
 | File | Contents |
 |---|---|
-| `feedback.json` | Protocol, task, policy SHA-256, versions, and the SHA-256 of every file |
+| `feedback.json` | Protocol, task, policy SHA-256, target model version and robot revision, evaluation versions, and the SHA-256 of every file |
 | `calibration.json` | Camera intrinsics, extrinsics, conventions, depth model |
 | `logs/trial_0.npz` | `joint_names`; measured `q`, `qd`; commanded `q_target`, `qd_target` (6,000 rows) |
 | `video/top.mp4`, `video/left.mp4`, `video/right.mp4` | Synchronized RGB videos |
