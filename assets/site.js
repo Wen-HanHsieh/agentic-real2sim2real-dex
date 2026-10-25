@@ -129,7 +129,7 @@
     var tr = cur.train;
     setSrc("train", tr ? tr.src : null, tr && tr.poster);
     $("[data-gone='train'] [data-reason]", root).textContent = "No video for " + cur.id + ": " + cur.train_reason + ".";
-    $("[data-source='train']", root).textContent = tr ? "Source: agent-registered training rollout of " + cur.id + (tr.simulator ? " · " + tr.simulator : "") + " · video " + (tr.sha || "") + " · registered " + tr.recorded + " (" + (tr.timing === "after_result" ? "after" : "before") + " the target result)" : "";
+    $("[data-source='train']", root).textContent = tr ? "Source: agent-registered training rollout of " + cur.id + (tr.simulator ? " · " + tr.simulator : "") + (tr.local_run ? " · local run " + tr.local_run : "") + (tr.match === "verified" ? " · package verified (same SHA-256 as " + cur.id + ")" : "") + " · video " + (tr.sha || "") + " · registered " + tr.recorded + " (" + (tr.timing === "after_result" ? "after" : "before") + " the target result)" : "";
     meta.textContent = cur.id + " · policy " + (cur.policy || "–") + " · package " + (cur.package || "–") + " · submitted " + cur.when;
     sync(true);
   }
