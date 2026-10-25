@@ -53,6 +53,9 @@
   }
   fresh(); setInterval(fresh, 120000);
 
+  // toss-height chart on narrow screens: open scrolled to the newest submissions
+  $$(".toss .cw").forEach(function (c) { c.scrollLeft = c.scrollWidth; });
+
   // synchronized training-sim / target-sim player
   var dataEl = $("#r2s2r-data");
   var root = $("[data-player]");
