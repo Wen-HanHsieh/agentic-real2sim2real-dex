@@ -1,18 +1,18 @@
 {
  "title": "Agentic Real2Sim2Real",
- "generated_utc": "2026-10-25T09:02:31Z",
- "exported_utc": "2026-10-25T09:02:29Z",
+ "generated_utc": "2026-10-25T09:12:32Z",
+ "exported_utc": "2026-10-25T09:12:29Z",
  "current": {
   "baseball": {
-   "used": 9,
+   "used": 10,
    "limit": 100,
    "best": "s03",
    "latest_candidate": "s05",
    "activity": {
-    "time": "2026-10-25T08:10:30",
-    "verb": "status"
+    "time": "2026-10-25T09:07:36",
+    "verb": "fetch"
    },
-   "record_chain": "intact (20 entries)",
+   "record_chain": "intact (21 entries)",
    "submissions": [
     {
      "id": "s01",
@@ -1530,6 +1530,170 @@
       "local_run": "physical_redirect_tuned_m0_s42",
       "match": "verified"
      }
+    },
+    {
+     "id": "s10",
+     "received": "2026-10-25T09:04:55",
+     "finished": "2026-10-25T09:07:31",
+     "state": "done",
+     "official": {
+      "status": "failure",
+      "score": 0.1,
+      "bounds": [
+       0.1,
+       0.1
+      ],
+      "confidence": 0.469,
+      "stages": {
+       "toss": 0.1,
+       "catch": 0.0,
+       "spin": 0.0,
+       "hold": 0.0
+      },
+      "milestones": [
+       {
+        "stage": "toss",
+        "label": "upward release, >= 0.05 s contact-free flight",
+        "reached": true,
+        "certain": true
+       },
+       {
+        "stage": "toss",
+        "label": "upward release, >= 0.10 s flight, apex >= 20 cm, free-fall arc",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "catch",
+        "label": "hand recontacts the ball first",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "catch",
+        "label": "lands on the hand, touches nothing else, rests (< 0.02 m/s, 0.1 s)",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "spin",
+        "label": ">= 90 deg about +Z after rest",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "spin",
+        "label": ">= 180 deg about +Z after rest",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "spin",
+        "label": ">= 360 deg about +Z after rest",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "spin",
+        "label": ">= 540 deg about +Z after rest",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "spin",
+        "label": ">= 720 deg about +Z after rest",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "hold",
+        "label": "after the spin: contact and < 0.02 m/s for 0.1 s",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "hold",
+        "label": "final 0.15 s: >= 720 deg, contact, < 0.02 m/s",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "hold",
+        "label": "final 0.30 s: >= 720 deg, < 0.02 m/s; contact at the end",
+        "reached": false,
+        "certain": true
+       }
+      ],
+      "hardware": "compliant",
+      "runtime": "valid",
+      "versions": {
+       "verifier": "sv-2.3",
+       "rubric": "rubric-1.3",
+       "rig": "rig-1.1",
+       "hardware_spec": "hwspec-1.1",
+       "target_model": "tm-2"
+      }
+     },
+     "gate": "equal",
+     "role": "diagnostic",
+     "keep": null,
+     "policy": "0dc32ac32731",
+     "package": "641d4f809be8",
+     "vs_previous": {
+      "id": "s09",
+      "outcome": "tied",
+      "basis": "identical status and score bounds",
+      "score_delta": 0.0,
+      "gained": [],
+      "lost": []
+     },
+     "vs_best": {
+      "id": "s03",
+      "outcome": "tied",
+      "basis": "identical status and score bounds",
+      "score_delta": 0.0,
+      "gained": [],
+      "lost": []
+     },
+     "rollout": "complete rollout",
+     "needs": [
+      "reflection: missing (no record after the result)"
+     ],
+     "intent": {
+      "id": "i10",
+      "kind": "diagnostic",
+      "hypothesis": "Fine joint control from contact-gradient discovery, made robust by encoder guarding and release/catch refinement, will increase transferred release velocity beyond s09 while keeping joint speeds below limits.",
+      "change": "Replace grouped preparation and return knots with a 500Hz encoder-guarded control spline through .44s, close for catch from .62 to .82s, then retain the previously transferred s05 spin and hold.",
+      "rationale": "Native implicit PD improves short encoder replay but is not identified target physics. Selected package passes12 formal 1kHz hardware checks and10of12 full local catch/hold tests, with8.3to15.1cm tosses across four models. This diagnoses transfer of a stronger locally validated partial solution; no20cm or full-success claim.",
+      "parent": "s09",
+      "local": "{\"package\": \"policies/gradient_guarded_local_1\", \"policy_type\": \"deterministic encoder/time guarded control spline then catch, verified spin, hold\", \"physical_start\": \"Q0, published ball, .5s own physical settling; reset XY sigma .25mm\", \"tests\": 12, \"models\": 4, \"hardware\": \"36 family rollouts pass 1kHz position/speed screening; all12 selected cases pass formal hardware checks, including applied actuator force\", \"max_actual_speed_ratio\": 0.9050425259758477, \"position_excess_rad\": 0.0, \"min_apex_m\": 0.08287850172139005, \"max_apex_m\": 0.1512759041768137, \"caught_and_held\": 10, \"full_task_success\": false, \"limitation\": \"Every local launch is below20cm. Some models lose the catch or exceed3cm spin drift. Native implicit PD better fits free-finger/short sensor segments but is not identified target physics. This is a transfer diagnostic, not a full-success claim.\", \"seed_checkpoint\": \"research/cma_release_height_seed.json\", \"seed_sha256\": \"c5d5b71317e9…\", \"preflight\": {\"calls\": 5000, \"deterministic\": true, \"mean_ms\": 0.018, \"max_ms\": 0.07}, \"equivalence\": {\"steps\": 220, \"max_absolute_state_difference\": 0.0945392683026558, \"max_effective_control_error_at_same_state\": 6.106226635438361e-16, \"max_joint_position_difference_rad\": 0.0009107795915251904, \"max_ball_position_difference_m\": 2.415885138820628e-05, \"model\": \"native implicit PD, damping .001, pads (.035,1), onset .95\", \"initial…",
+      "recorded": "2026-10-25T09:04:54",
+      "revision": "61e4b4557310",
+      "dirty": true,
+      "diff_base": "ef9fe08ee45d…",
+      "code_change": "w.json, research/physical_redirect_probe_m3_s42.json, research/physical_redirect_probe_m3_s42_hw.json, research/physical_redirect_probe_m3_s43.json, research/physical_redirect_probe_m3_s43_hw.json, research/physical_redirect_probe_m3_s44.json, research/physical_redirect_probe_m3_s44_hw.json, research/physical_redirect_probe_m4_s42.json, research/physical_redirect_probe_m4_s42_hw.json, research/physical_redirect_probe_m4_s43.json, research/physical_redirect_probe_m4_s43_hw.json, research/physical_redirect_probe_m4_s44.json, research/physical_redirect_probe_m4_s44_hw.json, research/physical_redirect_probe_validation.json, research/physical_redirect_tuned_m0_s42.json, research/physical_redirect_tuned_m0_s42_hw.json, research/physical_redirect_tuned_m0_s43.json, research/physical_redirect_tuned_m0_s43_hw.json, research/physical_redirect_tuned_m0_s44.json, research/physical_redirect_tuned_m0_s44_hw.json, research/physical_redirect_tuned_m1_s42.json, research/physical_redirect_tuned_m1_s42_hw.json, research/physical_redirect_tuned_m1_s43.json, research/physical_redirect_tuned_m1_s43_hw.json, research/physical_redirect_tuned_m1_s44.json, research/physical_redirect_tuned_m1_s44_hw.json, research/physical_redirect_tuned_m2_s42.json, research/physical_redirect_tuned_m2_s42_hw.json, research/physical_redirect_tuned_m2_s43.json, research/physical_redirect_tuned_m2_s43_hw.json, research/physical_redirect_tuned_m2_s44.json, research/physical_redirect_tuned_m2_s44_hw.json, research/physical_redirect_tuned_m3_s42.json, research/physical_redirect_tuned_m3_s42_hw.json, research/physical_red…"
+     },
+     "reflection": null,
+     "amendments": 0,
+     "notes": [],
+     "target_video": {
+      "views": [
+       "top",
+       "left",
+       "right"
+      ],
+      "fps": 100.0,
+      "duration": 10.0
+     },
+     "training_video": {
+      "simulator": "mujoco3.17-public-spec",
+      "recorded": "2026-10-25T09:06:55",
+      "timing": "before_result",
+      "sha": "b4bc890173e7",
+      "bytes": 298023,
+      "local_run": "gradient-tail1-m0-seed300",
+      "match": "verified"
+     }
     }
    ]
   },
@@ -1539,10 +1703,10 @@
    "best": "s22",
    "latest_candidate": "s22",
    "activity": {
-    "time": "2026-10-25T09:02:29",
-    "verb": "status"
+    "time": "2026-10-25T09:07:18",
+    "verb": "frames"
    },
-   "record_chain": "intact (43 entries)",
+   "record_chain": "intact (44 entries)",
    "submissions": [
     {
      "id": "s01",
@@ -4861,7 +5025,7 @@
      },
      "gate": "improved",
      "role": "improvement",
-     "keep": null,
+     "keep": "keep",
      "policy": "48ba6199e1e4",
      "package": "120337f18c43",
      "vs_previous": {
@@ -4887,9 +5051,7 @@
       "lost": []
      },
      "rollout": "complete rollout",
-     "needs": [
-      "reflection: missing (no record after the result)"
-     ],
+     "needs": [],
      "intent": {
       "id": "i22",
       "kind": "improvement",
@@ -4904,7 +5066,18 @@
       "diff_base": "3de52ca9dc4c…",
       "code_change": "tion.json, research/hold_700_validation.json, research/hold_720_validation.json, research/hold_740_validation.json, research/hold_760_validation.json, research/hold_780_validation.json, research/hold_800_validation.json, research/kinematic_fit7_s03.json, research/kinematic_fit_s03.json, research/kinematic_replay.so, research/local_evaluations.jsonl, research/local_hold_check.json, research/local_initial.png, research/native_noself_replay.json, research/native_noself_replay_with_self.json, research/native_teacher_replay_hw.json, research/observer_current_eval.json, research/observer_direct_nominal/, research/observer_direct_nominal_current.json, research/observer_direct_random/, research/observer_direct_random_current.json, research/observer_fixed_mixture/, research/observer_prior/, research/observer_prior_current.json, research/observer_prior_initial.json, research/observer_v1/, research/observer_v1_u600.json, research/pose_fit_s03_dense.json, research/pose_fit_s03_start.json, research/pose_fit_s21_anchor40.json, research/ppo_contact/, research/ppo_contact_eval_initial.json, research/ppo_contact_eval_u40.json, research/ppo_damped_contact/, research/ppo_gait/, research/ppo_grasps/, research/ppo_grip_regions/, research/ppo_recovery16/, research/ppo_recovery32_random/, research/ppo_recovery34/, research/ppo_recovery37/, research/ppo_recovery37_transfer/, research/ppo_recovery_s14_38/, research/ppo_recovery_s15_39/, research/ppo_recovery_s15_39_fit/, research/ppo_recovery_s15_40/, research/ppo_recovery_s16_23/, research/ppo_recovery_s17_42/, research/ppo_recovery_s17_42_explor…"
      },
-     "reflection": null,
+     "reflection": {
+      "what_worked": "FIRST CERTAIN OFFICIAL THIRD REVOLUTION:1.51,3.18,5.03s; score.75 exact bounds,hardware compliant maxspeed.8047,runtime6000valid. Raised.85 guard never activated and removed premature stop.",
+      "what_failed": "Final hold absent; heading peaks1117deg then reverses, tilt retention failure5.73s. Net final1050.9deg, full task incomplete.",
+      "diagnosis": "Rotation skill now meets timing, but continuing gait past third turn undoes progress. Reuse proven encoder damping-and-latch behavior as scheduled final catch immediately after1080.",
+      "evidence": "feedback/s22/<experiment>4_s22/sensor/sensor_report.json; tracks1112.5deg/0.4tilt at5.2 and1112.1deg/0.3tilt at5.5 before loss; no guard command divergence.",
+      "decision": "New best compliant policy score.75; preserve all three-turn prefix. Stop third-turn spin training as primary focus and validate a secure final hold.",
+      "next_hypothesis": "Reconstruct the retained post-third-turn pose, compare hold timing and scheduled joint braking locally, then evaluate final hold.",
+      "limitation": null,
+      "analysis": null,
+      "keep": "keep",
+      "recorded": "2026-10-25T09:05:27"
+     },
      "amendments": 0,
      "notes": [],
      "target_video": {
@@ -4926,7 +5099,7 @@
    "best": "s05",
    "latest_candidate": "s04",
    "activity": {
-    "time": "2026-10-25T09:02:09",
+    "time": "2026-10-25T09:12:25",
     "verb": "status"
    },
    "record_chain": "intact (17 entries)",
