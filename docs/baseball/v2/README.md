@@ -31,3 +31,16 @@ Learn the dexterous manipulation skill demonstrated in the human video, develop 
 **Research Harness:** Keeps experiment records, preserves the best evaluated policy, compares submissions, and provides optional diagnostic tools. It records and displays results; it does not direct your research.
 
 You may analyze videos, object tracks, masks, and your own metrics to diagnose failures, but they do not replace or modify the official evaluation.
+
+## Research Cycle
+
+Hypothesis → Change → Local validation → Target submission → Feedback → Failure analysis → Decision → Next iteration
+
+| | |
+|---|---|
+| **Preserved automatically** | Every submission's exact package, hashes, official evaluation, and feedback; the best evaluated policy; comparisons with earlier comparable submissions (`history`). |
+| **Your research record (standard)** | Before each submission: your hypothesis and planned change (`r2s2r-harness submit`, which also captures your git revision and diff). After each result: what worked and what failed, your diagnosis and its evidence, keep / reject / undecided, and your next hypothesis (`r2s2r-harness reflect`). If an evaluation produced no rollout evidence, say so. |
+| **Your choice** | Simulator, learning method, policy architecture, reward, curriculum, diagnostic methods, and what to try next. |
+| **Optional tools** | Frame and mask queries, `r2s2r-maskiou`, `r2s2r-hwcheck`, and your own visualizations and scripts. |
+
+Your diagnosis is a hypothesis; the official evaluation is authoritative. Missing records never block a submission; `history` lists them (`REMOTE_API.md` section 6).

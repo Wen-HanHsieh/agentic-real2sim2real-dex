@@ -14,17 +14,18 @@ r2s2r-cube fetch sNN > sNN.tgz
 r2s2r-cube frames sNN <top|left|right|all> <t1,t2,...> [depth] > frames.tgz
 r2s2r-cube masks sNN <top|left|right|all> <i0:i1[:step] | i,j,...> > masks.tgz
 r2s2r-cube history
+r2s2r-cube intent < intent.json
 r2s2r-cube note sNN < note.json
 r2s2r-cube package sNN > sNN_package.tgz
 ```
 
-Responses are JSON, except `fetch`, `frames`, and `masks` (`.tar.gz`) and `package` (the archive exactly as submitted). Errors return `{"error": "..."}` with a non-zero exit code. `r2s2r-preflight` is a local check (`PACKAGE.md`).
+`r2s2r-harness submit` and `r2s2r-harness reflect` (`TOOLS.md`) wrap `intent`, `submit`, and `note` (section 6). Responses are JSON, except `fetch`, `frames`, and `masks` (`.tar.gz`) and `package` (the archive exactly as submitted). Errors return `{"error": "..."}` with a non-zero exit code. `r2s2r-preflight` is a local check (`PACKAGE.md`).
 
 ## 2. Submission
 
 - **Archive:** `.tar` or `.tar.gz`, ≤ 500 MB, ≤ 2000 files; `policy.py` at the archive root or inside one top-level directory; no links, absolute paths, or `..` paths.
 - **Checks:** `validate` and `submit` run the same package checks (`PACKAGE.md`). A rejected package is not recorded and not charged.
-- **Receipt:** `submit` returns `submission_id`, `policy_sha256`, `state: queued`, and the check's inference timing and warnings.
+- **Receipt:** `submit` returns `submission_id`, `policy_sha256`, `archive_sha256`, `state: queued`, `research_intent` (the intent bound to this submission, section 6), and the check's inference timing and warnings.
 - One evaluation runs at a time.
 
 ## 3. Evaluation and Budget
@@ -67,18 +68,54 @@ Queries read the stored record of a finished rollout. They are not charged and n
 | `frames sNN VIEW TIMES [depth]` | PNG frames from the same cameras at any instant (s, up to 3 decimals; nearest 1 ms), optional 16-bit depth, and `frames/frames.json` | ≤ 8 times per call; ≤ 240 frames (times × views) per submission |
 | `masks sNN VIEW FRAMES` | Masks as PNG (255 = object) with `masks/masks.json`; `FRAMES`: `i0:i1[:step]` (end excluded) or `i,j,...` indices of `video/frames.json` | ≤ 60 masks (frames × views) per call |
 | `history` | Every submission and the best evaluated policy (section 6) | — |
-| `note sNN` | Appends your research note to a submission (section 6) | ≤ 16 KB per note |
+| `intent` | Records your research intent before a submission (section 6) | ≤ 16 KB per intent |
+| `note sNN` | Appends your reflection or note to a submission (section 6) | ≤ 16 KB per note |
 | `package sNN` | The exact archive you submitted; its SHA-256 equals `archive_sha256` in `history` | — |
 
 ## 6. Research Records
 
-`history` lists every submission with its hashes (`policy_sha256`, `archive_sha256`, `feedback_sha256`), `state`, `official` results with versions, your notes, `role`, `keep`, and `gate`:
+Every submission keeps an auditable chain: research intent → code and policy revision → submission → official evidence → your diagnosis → your decision.
 
+| Part | Recorded by | Command |
+|---|---|---|
+| Package, hashes, timestamps, state, official results with versions, feedback; best evaluated policy; comparisons | Target environment, automatically | `history` |
+| Research intent: hypothesis, planned change, rationale, parent, local evidence | You, before submitting | `intent` |
+| Source revision and code diff (`auto`) | `r2s2r-harness submit`, on your machine (not verified by the target) | `intent` |
+| Reflection: what worked and failed, diagnosis, evidence, keep / reject / undecided, next hypothesis | You, after the result | `note sNN` |
+
+**Intent (before submitting).** One JSON object; `package_sha256`, the SHA-256 of the exact archive you will submit, is required:
+
+```json
+{"package_sha256": "64 hex digits", "hypothesis": "...", "change": "...", "rationale": "...",
+ "kind": "improvement | diagnostic | experimental", "parent": "sNN", "checkpoint": "...",
+ "local": {"...": "≤ 4 KB"}, "sim_config": {"...": "≤ 8 KB"},
+ "auto": {"source_revision": "...", "source_dirty": false, "diff_base": "...", "code_diff_sha256": "...",
+          "code_change": "...", "git": "...", "captured_utc": "...", "captured_by": "..."}}
+```
+
+The target binds an intent to the first later submission whose `archive_sha256` equals `package_sha256` (if several intents name the same archive, the latest one before the submission); an intent recorded after a submission never binds to it.
+
+**Reflection (after the result).** `note sNN` with `"record": "reflection"`:
+
+```json
+{"record": "reflection", "what_worked": "...", "what_failed": "...", "diagnosis": "...", "evidence": "...",
+ "keep": "keep | reject | undecided", "decision": "...", "next_hypothesis": "...", "limitation": "...", "analysis": "..."}
+```
+
+Use `limitation` when an evaluation ended without rollout evidence. A later reflection on the same submission is an amendment; earlier records remain.
+
+**`history`** lists every submission with its hashes (`policy_sha256`, `archive_sha256`, `feedback_sha256`), `state`, `official` results (status, score and bounds, stages, milestones, versions), notes with `timing` (`before_result` / `after_result`), `role`, `keep`, `gate`, and:
+
+- **`research`:** the bound intent, the rollout evidence (`complete rollout`, `partial rollout` up to a policy failure, or `none`), reflections, current decision and next hypothesis, and `needs`: every missing part (for example `reflection: missing`). Missing parts are listed, never filled in, and never block a submission.
+- **`comparison`:** `vs_previous` (the previous comparable submission) and `vs_best_before` (the best comparable earlier submission): `improved`, `regressed`, `tied`, or `inconclusive` (score bounds overlap, or an unknown status), with score delta, stage deltas, and milestones gained or lost. One trial per submission: success is compared as a status, not a rate.
 - **`gate`:** `first`, `improved`, `equal`, `regressed`, or `not_comparable` (different evaluation or target model versions), against the best comparable earlier submission.
-- **`best_evaluated`:** ranked by official results only: valid run, then no hardware violation, then `success`, then score, then score lower bound; ties go to the earlier submission.
+- **`best_evaluated`:** ranked by official results only: valid run, then no hardware violation, then `success`, then score, then score lower bound; ties go to the earlier submission. `best_by_versions` gives the best of each version group.
 - **`latest_candidate`:** the latest submission not labelled `diagnostic` or `experimental`.
+- **`research_summary`:** records with intent and reflection, incomplete records, intents not bound to a submission, and the record-chain check.
 
-`note sNN` appends one record (append-only and hash-chained; corrections are new notes). Required fields: `kind`, `hypothesis`, `change`, `evidence`, `decision`; other fields are optional:
+Comparisons and the best policy are evidence; they never select, restore, or reject a policy.
+
+A plain `note sNN` (without `"record"`) keeps the original schema. Required fields: `kind`, `hypothesis`, `change`, `evidence`, `decision`; other fields are optional:
 
 ```json
 {"kind": "improvement | diagnostic | experimental", "hypothesis": "...", "change": "...", "evidence": "...",
@@ -88,7 +125,7 @@ Queries read the stored record of a finished rollout. They are not charged and n
  "local": {"...": "your local-simulation result, ≤ 4 KB"}, "parent": "sNN"}
 ```
 
-Notes cannot carry or change official results; unknown fields are refused. `r2s2r-harness` (`TOOLS.md`) wraps these commands.
+All records are append-only and hash-chained (corrections are new records); they cannot carry or change official results, and unknown fields are refused. `r2s2r-harness` (`TOOLS.md`) wraps these commands.
 
 ## 7. Versions
 

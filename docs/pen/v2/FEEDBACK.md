@@ -85,7 +85,7 @@ Produced and stored after every completed rollout, never changed afterwards. The
 |---|---|
 | `frames` | RGB frames at any instant of a finished rollout, optionally with depth |
 | `masks` | Selected masks as PNG |
-| `history`, `note`, `package` | Experiment records, your research notes, exact past packages |
+| `history`, `intent`, `note`, `package` | Experiment records and comparisons, your research intent and reflections, exact past packages |
 | `r2s2r-maskiou`, `r2s2r-hwcheck`, `r2s2r-harness` | Local tools (`TOOLS.md`) |
 
 None of them changes official results. Syntax and limits: `REMOTE_API.md`.
