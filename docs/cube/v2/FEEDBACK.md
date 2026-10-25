@@ -86,7 +86,7 @@ Evaluation evidence produced and stored automatically after every rollout (after
 | On-demand access | `package`, `frames`, `masks` | Exact earlier packages; RGB frames at any instant of a finished rollout, optionally with depth; selected masks as PNG |
 | Optional analysis tools | `r2s2r-maskiou`, `r2s2r-hwcheck`, your own diagnostics | Compare your simulation's masks with the target's; check trajectories against the hardware rules |
 
-None of them changes official results. Syntax and limits: `REMOTE_API.md` sections 5 and 6; tools: `TOOLS.md`.
+None of them changes official results. Syntax and limits: `REMOTE_API.md` sections 5 and 6; tools: `TOOLS.md`. Optionally, you may also link a video of your own training-simulation rollout of a submitted policy for display next to its target rollout (`training-video`, `r2s2r-harness video`); it is never evaluated.
 
 ## 6. Research Use
 
