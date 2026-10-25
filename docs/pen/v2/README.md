@@ -15,10 +15,10 @@ Learn the dexterous manipulation skill demonstrated in the human video, develop 
 | `object/SPECS.md` | Object geometry, mass, and visual markings |
 | `demo/` | Human demonstration video and sampled frames |
 | `target/screenshot.png` | Target environment at the start of an episode (top, left, and right cameras) |
-| `REMOTE_API.md` | Remote evaluation API: submission, standard feedback, optional queries, limits |
-| `FEEDBACK.md` | Cameras, official evaluation, object tracks, masks, and standard feedback files |
+| `REMOTE_API.md` | Remote evaluation API: submission, standard feedback, standard research workflow, on-demand access, limits |
+| `FEEDBACK.md` | Cameras, official evaluation, object tracks, masks, and the standard feedback files |
 | `HARDWARE_CHECK.md` | Local hardware validation |
-| `TOOLS.md` | Optional research tools and the Research Harness |
+| `TOOLS.md` | Research Harness (standard research workflow) and optional analysis tools |
 | `tools/` | Tool implementations |
 | `example_package/` | Example policy package |
 
@@ -28,7 +28,7 @@ Learn the dexterous manipulation skill demonstrated in the human video, develop 
 
 **Research Agent (you):** Builds simulations, chooses learning methods, policy architectures, and training rewards, analyzes target feedback, and decides what to try next.
 
-**Research Harness:** Keeps experiment records, preserves the best evaluated policy, compares submissions, and provides optional diagnostic tools. It records and displays results; it does not direct your research.
+**Research Harness:** Keeps your standard research records (intent before each submission, reflection after each result) and shows the experiment history, the best evaluated policy, and comparisons kept by the target environment. It records and displays results; it does not direct your research.
 
 You may analyze videos, object tracks, masks, and your own metrics to diagnose failures, but they do not replace or modify the official evaluation.
 
@@ -38,9 +38,10 @@ Hypothesis → Change → Local validation → Target submission → Feedback �
 
 | | |
 |---|---|
-| **Preserved automatically** | Every submission's exact package, hashes, official evaluation, and feedback; the best evaluated policy; comparisons with earlier comparable submissions (`history`). |
-| **Your research record (standard)** | Before each submission: your hypothesis and planned change (`r2s2r-harness submit`, which also captures your git revision and diff). After each result: what worked and what failed, your diagnosis and its evidence, keep / reject / undecided, and your next hypothesis (`r2s2r-harness reflect`). If an evaluation produced no rollout evidence, say so. |
+| **Standard feedback** (automatic) | After every rollout the target environment stores the evaluation evidence: three camera videos, the joint log, the official evaluation, object tracks, masks, calibration, and timestamps. Retrieve it with `fetch` (`FEEDBACK.md`). |
+| **Standard research workflow** | Kept automatically in `history`: every submission's exact package, hashes, official results, and feedback; the best evaluated policy; comparisons with earlier comparable submissions (regression detection). Your part: before each submission, your hypothesis and planned change (`r2s2r-harness submit`, which also captures your git revision and diff); after each result, what worked and what failed, your diagnosis and its evidence, keep / reject / undecided, and your next hypothesis (`r2s2r-harness reflect`). If an evaluation produced no rollout evidence, say so. |
+| **On-demand access** | When you need them: earlier policy packages (`package`, `r2s2r-harness best --download`), frames at selected instants (`frames`), and selected masks (`masks`). |
+| **Optional analysis tools** | `r2s2r-maskiou`, `r2s2r-hwcheck`, and your own diagnostics, visualizations, and scripts. |
 | **Your choice** | Simulator, learning method, policy architecture, reward, curriculum, diagnostic methods, and what to try next. |
-| **Optional tools** | Frame and mask queries, `r2s2r-maskiou`, `r2s2r-hwcheck`, and your own visualizations and scripts. |
 
-Your diagnosis is a hypothesis; the official evaluation is authoritative. Missing records never block a submission; `history` lists them (`REMOTE_API.md` section 6).
+Your diagnosis is a hypothesis; the official evaluation is authoritative. Missing records never block a submission; `history` lists them (`REMOTE_API.md` section 5).

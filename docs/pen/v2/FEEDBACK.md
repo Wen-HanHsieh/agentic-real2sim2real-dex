@@ -66,7 +66,7 @@ A milestone is certain only when the measurement clears the `SUCCESS.md` thresho
 
 ## 4. Standard Feedback
 
-Produced and stored after every completed rollout, never changed afterwards. They are not pushed to you; retrieve them with `fetch sNN` (`REMOTE_API.md`).
+Evaluation evidence produced and stored automatically after every rollout (after a policy failure: up to the failure), never changed afterwards. It is not pushed to you; retrieve it with `fetch sNN` (`REMOTE_API.md` section 4).
 
 | File | Contents |
 |---|---|
@@ -79,16 +79,15 @@ Produced and stored after every completed rollout, never changed afterwards. The
 | `sensor/sensor_tracks.npz` | Sensor-estimated object tracks and contact (section 3) |
 | `masks/top.npz`, `masks/left.npz`, `masks/right.npz`, `masks/masks.json` | Segmentation masks and their encoding (section 3) |
 
-## 5. Optional Queries and Tools
+## 5. Research Workflow, On-demand Access, and Analysis Tools
 
-| Command or tool | Use |
-|---|---|
-| `frames` | RGB frames at any instant of a finished rollout, optionally with depth |
-| `masks` | Selected masks as PNG |
-| `history`, `intent`, `note`, `package` | Experiment records and comparisons, your research intent and reflections, exact past packages |
-| `r2s2r-maskiou`, `r2s2r-hwcheck`, `r2s2r-harness` | Local tools (`TOOLS.md`) |
+| Category | Commands and tools | Use |
+|---|---|---|
+| Standard research workflow | `history`, `intent`, `note` (`r2s2r-harness submit`, `reflect`) | Experiment history, best evaluated policy, comparisons with earlier comparable submissions; your research intent before and reflection after each submission |
+| On-demand access | `package`, `frames`, `masks` | Exact earlier packages; RGB frames at any instant of a finished rollout, optionally with depth; selected masks as PNG |
+| Optional analysis tools | `r2s2r-maskiou`, `r2s2r-hwcheck`, your own diagnostics | Compare your simulation's masks with the target's; check trajectories against the hardware rules |
 
-None of them changes official results. Syntax and limits: `REMOTE_API.md`.
+None of them changes official results. Syntax and limits: `REMOTE_API.md` sections 5 and 6; tools: `TOOLS.md`.
 
 ## 6. Research Use
 

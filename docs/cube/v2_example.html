@@ -49,12 +49,14 @@ footer{margin-top:56px;padding-top:14px;border-top:1px solid var(--line);font-si
 .ret{margin:8px 0 0;border:1px dashed var(--line);border-radius:12px;padding:8px 12px;text-align:center;font-size:13px;color:var(--muted)}
 .cmp td:first-child{white-space:nowrap}
 .fgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.fi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:3px;min-width:0}.fi b{font-size:14px}.fi span{font-size:13px;color:var(--muted)}.fi>code{font-size:11.5px;align-self:flex-start;margin-top:auto;overflow-wrap:anywhere}@media (max-width:900px){.fgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:560px){.fgrid{grid-template-columns:1fr}}
+.bcol{display:flex;flex-direction:column;gap:10px;justify-content:center;min-width:0}
+.fgrid.g3{grid-template-columns:repeat(3,minmax(0,1fr))}@media (max-width:900px){.fgrid.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:560px){.fgrid.g3{grid-template-columns:1fr}}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}@media (max-width:900px){.two{grid-template-columns:1fr}}
 @media (max-width:560px){.cmp thead{display:none}.cmp tr{display:block;border-bottom:1px solid var(--line);padding:6px 0}.cmp td{display:block;border:0;padding:2px 2px}.cmp td:first-child{white-space:normal}}
 @media (max-width:900px){.arch{grid-template-columns:1fr}.zrow,.zrow.sim2{grid-template-columns:1fr;gap:6px}.ar2{transform:rotate(90deg);min-height:28px}}
 </style></head><body>
-<header class="top"><div class="in"><b><a href="../../index.html" style="text-decoration:none;color:inherit">Agentic Real2Sim2Real</a></b><nav><a href='../../index.html#overview'>Overview</a><a href='../../index.html#research'>Research</a><a href='../../index.html#infra'>Architecture</a><a href='../../index.html#feedback'>Feedback</a><a href='../../index.html#tools'>Tools</a><a href='../../index.html#tasks'>Tasks</a><a href='../../index.html#validation'>Validation</a><a href='../../index.html#resources'>Resources</a></nav>
-<span class="upd">Updated 2026-10-24 22:12 EDT (Pittsburgh)</span></div></header>
+<header class="top"><div class="in"><b><a href="../../index.html" style="text-decoration:none;color:inherit">Agentic Real2Sim2Real</a></b><nav><a href='../../index.html#overview'>Overview</a><a href='../../index.html#research'>Research</a><a href='../../index.html#infra'>Architecture</a><a href='../../index.html#feedback'>Feedback</a><a href='../../index.html#workflow'>Workflow</a><a href='../../index.html#tools'>Tools</a><a href='../../index.html#tasks'>Tasks</a><a href='../../index.html#validation'>Validation</a><a href='../../index.html#resources'>Resources</a></nav>
+<span class="upd">Updated 2026-10-24 22:17 EDT (Pittsburgh)</span></div></header>
 <main><div class='doc' style='max-width:1000px'><p class='muted' style='margin-top:28px'><a href='../../tasks/cube.html#docs'>← 2×2×2 Cube Solving</a></p>
 <h1 style='font-size:30px;margin:8px 0'>What an agent receives after a submission</h1>
 <p class='sub'>A complete example under feedback protocol v2 for 2×2×2 Cube Solving, recorded on the previous target model tm-1 (Wuji Hand 2 Beta 1) (the current model is tm-2, Wuji Hand 2.2 (Beta), right, passive fingertip pads; the response format is unchanged). Every response below was produced by the same target-environment API calls an agent
@@ -62,19 +64,21 @@ makes, on infrastructure-test submission s12 (a policy package from an earlier e
 Commands are written as in <code>REMOTE_API.md</code>. Long arrays are shortened for display (marked “… N more”) and hashes are abbreviated; nothing else is changed.
 Timestamps in responses are UTC (received 2026-10-22 20:14 EDT, Pittsburgh).</p>
 <div class='card'><div class='tw'><table class='cmdtab'><thead><tr><th></th><th>Returned</th><th>Command</th></tr></thead><tbody>
-<tr><td>1</td><td>acknowledgement with preflight timing</td><td><code>submit</code></td></tr>
+<tr><td>1</td><td>receipt with hashes, the bound research intent and preflight timing</td><td><code>submit</code></td></tr>
 <tr><td>2</td><td>state: queued → running → done</td><td><code>status</code></td></tr>
 <tr><td>3</td><td><b>Standard feedback, stored for every rollout and pulled with fetch:</b> three camera videos, robot log, calibration, official evaluation, object tracks, masks</td><td><code>fetch sNN</code></td></tr>
-<tr><td>4</td><td>optional query, not charged: RGB / depth frames at any instant and view</td><td><code>frames</code></td></tr>
-<tr><td>5</td><td>optional query, not charged: selected masks as PNG with metadata</td><td><code>masks</code></td></tr>
-<tr><td>6</td><td>optional: all submissions with official results, regression gate, best policy, notes</td><td><code>history</code>, <code>note</code></td></tr>
-<tr><td>7</td><td>optional: the exact package of any earlier submission</td><td><code>package sNN</code></td></tr></tbody></table></div>
+<tr><td>4</td><td><b>Standard research workflow:</b> all submissions with official results, best evaluated policy, regression comparisons and research records; the agent's intent and reflection</td><td><code>history</code>, <code>intent</code>, <code>note</code></td></tr>
+<tr><td>5</td><td>on-demand access, not charged: RGB / depth frames at any instant and view</td><td><code>frames</code></td></tr>
+<tr><td>6</td><td>on-demand access, not charged: selected masks as PNG with metadata</td><td><code>masks</code></td></tr>
+<tr><td>7</td><td>on-demand access, not charged: the exact package of any earlier submission</td><td><code>package sNN</code></td></tr></tbody></table></div>
 <p class='cap'>Only step 1 comes back with the submission; everything else the agent requests. The policy itself never sees images during the trial; everything is available after the rollout. The operator's private ground-truth comparison is never returned.</p></div>
 
-<h2>1. Submit</h2><pre><code>$ tar -C my_policy -czf - . | r2s2r-cube submit</code></pre><pre><code>{
+<h2>1. Submit</h2><pre><code>$ tar -C my_policy -czf - . | r2s2r-cube submit</code></pre><p class='cap'>Rebuilt from the stored receipt in the current response format.</p><pre><code>{
  &quot;submission_id&quot;: &quot;s12&quot;,
  &quot;policy_sha256&quot;: &quot;77e3d978…68da61&quot;,
+ &quot;archive_sha256&quot;: &quot;04441f90…5663f0&quot;,
  &quot;state&quot;: &quot;queued&quot;,
+ &quot;research_intent&quot;: &quot;none recorded before this submission (history lists it as missing)&quot;,
  &quot;preflight&quot;: {
   &quot;act_ms_mean&quot;: 0.007,
   &quot;act_ms_max&quot;: 0.026,
@@ -774,7 +778,844 @@ Timestamps in responses are UTC (received 2026-10-22 20:14 EDT, Pittsburgh).</p>
  ]
 }</code></pre></details>
 
-<h2>4. Frame query (optional)</h2><pre><code>$ r2s2r-cube frames s12 all 23.080 depth &gt; frames.tgz</code></pre>
+<h2>4. Standard research workflow</h2><pre><code>$ r2s2r-cube history</code></pre>
+<p class='cap'>Kept automatically by the target environment. Top-level fields: best_by_versions, best_evaluated, best_rule, comparison_rule, experiment, gate_rule, latest_candidate, official_metrics, protocol, research_summary, roles, submissions. The entry for this submission and the rules
+(<code>research_summary</code> shortened for display):</p>
+<pre><code>{
+ &quot;entry&quot;: {
+  &quot;submission_id&quot;: &quot;s12&quot;,
+  &quot;received&quot;: &quot;2026-10-23T00:14:50&quot;,
+  &quot;finished&quot;: &quot;2026-10-23T00:26:12&quot;,
+  &quot;state&quot;: &quot;done&quot;,
+  &quot;policy_sha256&quot;: &quot;77e3d978…68da61&quot;,
+  &quot;archive_sha256&quot;: &quot;04441f90…5663f0&quot;,
+  &quot;feedback_sha256&quot;: &quot;a6043fc5…5e956d&quot;,
+  &quot;official&quot;: {
+   &quot;status&quot;: &quot;failure&quot;,
+   &quot;task_status&quot;: &quot;failure&quot;,
+   &quot;score&quot;: 0.2,
+   &quot;score_bounds&quot;: [
+    0.2,
+    0.2
+   ],
+   &quot;confidence&quot;: 1.0,
+   &quot;stages&quot;: {
+    &quot;first_turn&quot;: 0.15,
+    &quot;turning&quot;: 0.05,
+    &quot;solving&quot;: 0.0,
+    &quot;hold&quot;: 0.0
+   },
+   &quot;hardware&quot;: &quot;unknown&quot;,
+   &quot;runtime&quot;: &quot;valid&quot;,
+   &quot;milestones&quot;: [
+    {
+     &quot;stage&quot;: &quot;first_turn&quot;,
+     &quot;label&quot;: &quot;a layer rotated &gt;= 45 deg&quot;,
+     &quot;reached&quot;: true,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;first_turn&quot;,
+     &quot;label&quot;: &quot;one complete layer turn&quot;,
+     &quot;reached&quot;: true,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;turning&quot;,
+     &quot;label&quot;: &quot;two complete layer turns&quot;,
+     &quot;reached&quot;: true,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;turning&quot;,
+     &quot;label&quot;: &quot;three or more complete layer turns&quot;,
+     &quot;reached&quot;: false,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;solving&quot;,
+     &quot;label&quot;: &quot;distance to solved reaches 2&quot;,
+     &quot;reached&quot;: false,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;solving&quot;,
+     &quot;label&quot;: &quot;distance to solved reaches 1&quot;,
+     &quot;reached&quot;: false,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;solving&quot;,
+     &quot;label&quot;: &quot;solved at some moment&quot;,
+     &quot;reached&quot;: false,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;hold&quot;,
+     &quot;label&quot;: &quot;solved and touching the hand at the final step&quot;,
+     &quot;reached&quot;: false,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;hold&quot;,
+     &quot;label&quot;: &quot;solved throughout the final 1.0 s, touching the hand at the end&quot;,
+     &quot;reached&quot;: false,
+     &quot;certain&quot;: true
+    }
+   ],
+   &quot;versions&quot;: {
+    &quot;verifier&quot;: &quot;sv-2.2&quot;,
+    &quot;rubric&quot;: &quot;rubric-1.3&quot;,
+    &quot;rig&quot;: &quot;rig-1.1&quot;,
+    &quot;hardware_spec&quot;: &quot;hwspec-1.0&quot;,
+    &quot;target_model&quot;: &quot;tm-1&quot;
+   }
+  },
+  &quot;role&quot;: &quot;unlabelled&quot;,
+  &quot;keep&quot;: null,
+  &quot;notes&quot;: [],
+  &quot;research&quot;: {
+   &quot;intent&quot;: null,
+   &quot;intent_timing&quot;: null,
+   &quot;evidence&quot;: {
+    &quot;state&quot;: &quot;done&quot;,
+    &quot;rollout&quot;: &quot;complete rollout&quot;,
+    &quot;feedback_sha256&quot;: &quot;a6043fc5…5e956d&quot;,
+    &quot;versions&quot;: {
+     &quot;verifier&quot;: &quot;sv-2.2&quot;,
+     &quot;rubric&quot;: &quot;rubric-1.3&quot;,
+     &quot;rig&quot;: &quot;rig-1.1&quot;,
+     &quot;hardware_spec&quot;: &quot;hwspec-1.0&quot;,
+     &quot;target_model&quot;: &quot;tm-1&quot;
+    }
+   },
+   &quot;reflections&quot;: [],
+   &quot;current_reflection&quot;: null,
+   &quot;amendments&quot;: 0,
+   &quot;decision&quot;: null,
+   &quot;next_hypothesis&quot;: null,
+   &quot;complete&quot;: false,
+   &quot;needs&quot;: [
+    &quot;intent: missing (no pre-submission record bound to this package)&quot;,
+    &quot;reflection: missing (no record after the result)&quot;
+   ]
+  },
+  &quot;gate&quot;: &quot;not_comparable&quot;,
+  &quot;comparison&quot;: {
+   &quot;versions&quot;: {
+    &quot;verifier&quot;: &quot;sv-2.2&quot;,
+    &quot;rubric&quot;: &quot;rubric-1.3&quot;,
+    &quot;rig&quot;: &quot;rig-1.1&quot;,
+    &quot;hardware_spec&quot;: &quot;hwspec-1.0&quot;,
+    &quot;target_model&quot;: &quot;tm-1&quot;
+   },
+   &quot;vs_previous&quot;: null,
+   &quot;vs_best_before&quot;: null,
+   &quot;earlier_not_comparable&quot;: [
+    &quot;s01&quot;,
+    &quot;s02&quot;,
+    &quot;s03&quot;,
+    &quot;s04&quot;,
+    &quot;s05&quot;,
+    &quot;s06&quot;,
+    &quot;s07&quot;,
+    &quot;s08&quot;,
+    &quot;s09&quot;,
+    &quot;s10&quot;,
+    &quot;s11&quot;
+   ]
+  }
+ },
+ &quot;protocol&quot;: &quot;r2s2r-feedback/2&quot;,
+ &quot;experiment&quot;: &quot;&lt;experiment&gt;&quot;,
+ &quot;best_evaluated&quot;: {
+  &quot;submission_id&quot;: &quot;s12&quot;,
+  &quot;versions&quot;: {
+   &quot;verifier&quot;: &quot;sv-2.2&quot;,
+   &quot;rubric&quot;: &quot;rubric-1.3&quot;,
+   &quot;rig&quot;: &quot;rig-1.1&quot;,
+   &quot;hardware_spec&quot;: &quot;hwspec-1.0&quot;,
+   &quot;target_model&quot;: &quot;tm-1&quot;
+  },
+  &quot;official&quot;: {
+   &quot;status&quot;: &quot;failure&quot;,
+   &quot;task_status&quot;: &quot;failure&quot;,
+   &quot;score&quot;: 0.2,
+   &quot;score_bounds&quot;: [
+    0.2,
+    0.2
+   ],
+   &quot;confidence&quot;: 1.0,
+   &quot;stages&quot;: {
+    &quot;first_turn&quot;: 0.15,
+    &quot;turning&quot;: 0.05,
+    &quot;solving&quot;: 0.0,
+    &quot;hold&quot;: 0.0
+   },
+   &quot;hardware&quot;: &quot;unknown&quot;,
+   &quot;runtime&quot;: &quot;valid&quot;,
+   &quot;milestones&quot;: [
+    {
+     &quot;stage&quot;: &quot;first_turn&quot;,
+     &quot;label&quot;: &quot;a layer rotated &gt;= 45 deg&quot;,
+     &quot;reached&quot;: true,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;first_turn&quot;,
+     &quot;label&quot;: &quot;one complete layer turn&quot;,
+     &quot;reached&quot;: true,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;turning&quot;,
+     &quot;label&quot;: &quot;two complete layer turns&quot;,
+     &quot;reached&quot;: true,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;turning&quot;,
+     &quot;label&quot;: &quot;three or more complete layer turns&quot;,
+     &quot;reached&quot;: false,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;solving&quot;,
+     &quot;label&quot;: &quot;distance to solved reaches 2&quot;,
+     &quot;reached&quot;: false,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;solving&quot;,
+     &quot;label&quot;: &quot;distance to solved reaches 1&quot;,
+     &quot;reached&quot;: false,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;solving&quot;,
+     &quot;label&quot;: &quot;solved at some moment&quot;,
+     &quot;reached&quot;: false,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;hold&quot;,
+     &quot;label&quot;: &quot;solved and touching the hand at the final step&quot;,
+     &quot;reached&quot;: false,
+     &quot;certain&quot;: true
+    },
+    {
+     &quot;stage&quot;: &quot;hold&quot;,
+     &quot;label&quot;: &quot;solved throughout the final 1.0 s, touching the hand at the end&quot;,
+     &quot;reached&quot;: false,
+     &quot;certain&quot;: true
+    }
+   ],
+   &quot;versions&quot;: {
+    &quot;verifier&quot;: &quot;sv-2.2&quot;,
+    &quot;rubric&quot;: &quot;rubric-1.3&quot;,
+    &quot;rig&quot;: &quot;rig-1.1&quot;,
+    &quot;hardware_spec&quot;: &quot;hwspec-1.0&quot;,
+    &quot;target_model&quot;: &quot;tm-1&quot;
+   }
+  },
+  &quot;archive_sha256&quot;: &quot;04441f90…5663f0&quot;,
+  &quot;feedback_sha256&quot;: &quot;a6043fc5…5e956d&quot;
+ },
+ &quot;best_by_versions&quot;: [
+  {
+   &quot;versions&quot;: {
+    &quot;verifier&quot;: &quot;sv-1.0&quot;,
+    &quot;rubric&quot;: &quot;rubric-1.0&quot;,
+    &quot;rig&quot;: &quot;rig-1.0&quot;,
+    &quot;hardware_spec&quot;: null,
+    &quot;target_model&quot;: &quot;tm-1&quot;
+   },
+   &quot;submission_id&quot;: &quot;s01&quot;,
+   &quot;official&quot;: {
+    &quot;status&quot;: &quot;failure&quot;,
+    &quot;task_status&quot;: &quot;failure&quot;,
+    &quot;score&quot;: 0.0,
+    &quot;score_bounds&quot;: [
+     0.0,
+     0.0
+    ],
+    &quot;confidence&quot;: 1.0,
+    &quot;stages&quot;: {
+     &quot;first_turn&quot;: 0.0,
+     &quot;turning&quot;: 0.0,
+     &quot;solving&quot;: 0.0,
+     &quot;hold&quot;: 0.0
+    },
+    &quot;hardware&quot;: &quot;compliant&quot;,
+    &quot;runtime&quot;: &quot;valid&quot;,
+    &quot;milestones&quot;: [
+     {
+      &quot;stage&quot;: &quot;first_turn&quot;,
+      &quot;label&quot;: &quot;a layer rotated &gt;= 45 deg&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;first_turn&quot;,
+      &quot;label&quot;: &quot;one complete layer turn&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;turning&quot;,
+      &quot;label&quot;: &quot;two complete layer turns&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;turning&quot;,
+      &quot;label&quot;: &quot;three or more complete layer turns&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;distance to solved reaches 2&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;distance to solved reaches 1&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;solved at some moment&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;hold&quot;,
+      &quot;label&quot;: &quot;solved and touching the hand at the final step&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;hold&quot;,
+      &quot;label&quot;: &quot;solved throughout the final 1.0 s, touching the hand at the end&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     }
+    ],
+    &quot;versions&quot;: {
+     &quot;verifier&quot;: &quot;sv-1.0&quot;,
+     &quot;rubric&quot;: &quot;rubric-1.0&quot;,
+     &quot;rig&quot;: &quot;rig-1.0&quot;,
+     &quot;hardware_spec&quot;: null,
+     &quot;target_model&quot;: &quot;tm-1&quot;
+    }
+   }
+  },
+  {
+   &quot;versions&quot;: {
+    &quot;verifier&quot;: &quot;sv-1.1&quot;,
+    &quot;rubric&quot;: &quot;rubric-1.1&quot;,
+    &quot;rig&quot;: &quot;rig-1.0&quot;,
+    &quot;hardware_spec&quot;: null,
+    &quot;target_model&quot;: &quot;tm-1&quot;
+   },
+   &quot;submission_id&quot;: &quot;s07&quot;,
+   &quot;official&quot;: {
+    &quot;status&quot;: &quot;failure&quot;,
+    &quot;task_status&quot;: &quot;failure&quot;,
+    &quot;score&quot;: 0.3,
+    &quot;score_bounds&quot;: [
+     0.3,
+     0.3
+    ],
+    &quot;confidence&quot;: 1.0,
+    &quot;stages&quot;: {
+     &quot;first_turn&quot;: 0.15,
+     &quot;turning&quot;: 0.15,
+     &quot;solving&quot;: 0.0,
+     &quot;hold&quot;: 0.0
+    },
+    &quot;hardware&quot;: &quot;unknown&quot;,
+    &quot;runtime&quot;: &quot;valid&quot;,
+    &quot;milestones&quot;: [
+     {
+      &quot;stage&quot;: &quot;first_turn&quot;,
+      &quot;label&quot;: &quot;a layer rotated &gt;= 45 deg&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;first_turn&quot;,
+      &quot;label&quot;: &quot;one complete layer turn&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;turning&quot;,
+      &quot;label&quot;: &quot;two complete layer turns&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;turning&quot;,
+      &quot;label&quot;: &quot;three or more complete layer turns&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;distance to solved reaches 2&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;distance to solved reaches 1&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;solved at some moment&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;hold&quot;,
+      &quot;label&quot;: &quot;solved and touching the hand at the final step&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;hold&quot;,
+      &quot;label&quot;: &quot;solved throughout the final 1.0 s, touching the hand at the end&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     }
+    ],
+    &quot;versions&quot;: {
+     &quot;verifier&quot;: &quot;sv-1.1&quot;,
+     &quot;rubric&quot;: &quot;rubric-1.1&quot;,
+     &quot;rig&quot;: &quot;rig-1.0&quot;,
+     &quot;hardware_spec&quot;: null,
+     &quot;target_model&quot;: &quot;tm-1&quot;
+    }
+   }
+  },
+  {
+   &quot;versions&quot;: {
+    &quot;verifier&quot;: &quot;sv-1.2&quot;,
+    &quot;rubric&quot;: &quot;rubric-1.2&quot;,
+    &quot;rig&quot;: &quot;rig-1.0&quot;,
+    &quot;hardware_spec&quot;: null,
+    &quot;target_model&quot;: &quot;tm-1&quot;
+   },
+   &quot;submission_id&quot;: &quot;s09&quot;,
+   &quot;official&quot;: {
+    &quot;status&quot;: &quot;failure&quot;,
+    &quot;task_status&quot;: &quot;failure&quot;,
+    &quot;score&quot;: 0.2,
+    &quot;score_bounds&quot;: [
+     0.2,
+     0.2
+    ],
+    &quot;confidence&quot;: 1.0,
+    &quot;stages&quot;: {
+     &quot;first_turn&quot;: 0.15,
+     &quot;turning&quot;: 0.05,
+     &quot;solving&quot;: 0.0,
+     &quot;hold&quot;: 0.0
+    },
+    &quot;hardware&quot;: &quot;unknown&quot;,
+    &quot;runtime&quot;: &quot;valid&quot;,
+    &quot;milestones&quot;: [
+     {
+      &quot;stage&quot;: &quot;first_turn&quot;,
+      &quot;label&quot;: &quot;a layer rotated &gt;= 45 deg&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;first_turn&quot;,
+      &quot;label&quot;: &quot;one complete layer turn&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;turning&quot;,
+      &quot;label&quot;: &quot;two complete layer turns&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;turning&quot;,
+      &quot;label&quot;: &quot;three or more complete layer turns&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;distance to solved reaches 2&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;distance to solved reaches 1&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;solved at some moment&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;hold&quot;,
+      &quot;label&quot;: &quot;solved and touching the hand at the final step&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;hold&quot;,
+      &quot;label&quot;: &quot;solved throughout the final 1.0 s, touching the hand at the end&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     }
+    ],
+    &quot;versions&quot;: {
+     &quot;verifier&quot;: &quot;sv-1.2&quot;,
+     &quot;rubric&quot;: &quot;rubric-1.2&quot;,
+     &quot;rig&quot;: &quot;rig-1.0&quot;,
+     &quot;hardware_spec&quot;: null,
+     &quot;target_model&quot;: &quot;tm-1&quot;
+    }
+   }
+  },
+  {
+   &quot;versions&quot;: {
+    &quot;verifier&quot;: &quot;sv-2.0&quot;,
+    &quot;rubric&quot;: &quot;rubric-1.3&quot;,
+    &quot;rig&quot;: &quot;rig-1.1&quot;,
+    &quot;hardware_spec&quot;: &quot;hwspec-1.0&quot;,
+    &quot;target_model&quot;: &quot;tm-1&quot;
+   },
+   &quot;submission_id&quot;: &quot;s10&quot;,
+   &quot;official&quot;: {
+    &quot;status&quot;: &quot;failure&quot;,
+    &quot;task_status&quot;: &quot;failure&quot;,
+    &quot;score&quot;: 0.2,
+    &quot;score_bounds&quot;: [
+     0.2,
+     0.2
+    ],
+    &quot;confidence&quot;: 1.0,
+    &quot;stages&quot;: {
+     &quot;first_turn&quot;: 0.15,
+     &quot;turning&quot;: 0.05,
+     &quot;solving&quot;: 0.0,
+     &quot;hold&quot;: 0.0
+    },
+    &quot;hardware&quot;: &quot;unknown&quot;,
+    &quot;runtime&quot;: &quot;valid&quot;,
+    &quot;milestones&quot;: [
+     {
+      &quot;stage&quot;: &quot;first_turn&quot;,
+      &quot;label&quot;: &quot;a layer rotated &gt;= 45 deg&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;first_turn&quot;,
+      &quot;label&quot;: &quot;one complete layer turn&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;turning&quot;,
+      &quot;label&quot;: &quot;two complete layer turns&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;turning&quot;,
+      &quot;label&quot;: &quot;three or more complete layer turns&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;distance to solved reaches 2&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;distance to solved reaches 1&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;solved at some moment&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;hold&quot;,
+      &quot;label&quot;: &quot;solved and touching the hand at the final step&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;hold&quot;,
+      &quot;label&quot;: &quot;solved throughout the final 1.0 s, touching the hand at the end&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     }
+    ],
+    &quot;versions&quot;: {
+     &quot;verifier&quot;: &quot;sv-2.0&quot;,
+     &quot;rubric&quot;: &quot;rubric-1.3&quot;,
+     &quot;rig&quot;: &quot;rig-1.1&quot;,
+     &quot;hardware_spec&quot;: &quot;hwspec-1.0&quot;,
+     &quot;target_model&quot;: &quot;tm-1&quot;
+    }
+   }
+  },
+  {
+   &quot;versions&quot;: {
+    &quot;verifier&quot;: &quot;sv-2.1&quot;,
+    &quot;rubric&quot;: &quot;rubric-1.3&quot;,
+    &quot;rig&quot;: &quot;rig-1.1&quot;,
+    &quot;hardware_spec&quot;: &quot;hwspec-1.0&quot;,
+    &quot;target_model&quot;: &quot;tm-1&quot;
+   },
+   &quot;submission_id&quot;: &quot;s11&quot;,
+   &quot;official&quot;: {
+    &quot;status&quot;: &quot;failure&quot;,
+    &quot;task_status&quot;: &quot;failure&quot;,
+    &quot;score&quot;: 0.2,
+    &quot;score_bounds&quot;: [
+     0.2,
+     0.2
+    ],
+    &quot;confidence&quot;: 1.0,
+    &quot;stages&quot;: {
+     &quot;first_turn&quot;: 0.15,
+     &quot;turning&quot;: 0.05,
+     &quot;solving&quot;: 0.0,
+     &quot;hold&quot;: 0.0
+    },
+    &quot;hardware&quot;: &quot;unknown&quot;,
+    &quot;runtime&quot;: &quot;valid&quot;,
+    &quot;milestones&quot;: [
+     {
+      &quot;stage&quot;: &quot;first_turn&quot;,
+      &quot;label&quot;: &quot;a layer rotated &gt;= 45 deg&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;first_turn&quot;,
+      &quot;label&quot;: &quot;one complete layer turn&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;turning&quot;,
+      &quot;label&quot;: &quot;two complete layer turns&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;turning&quot;,
+      &quot;label&quot;: &quot;three or more complete layer turns&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;distance to solved reaches 2&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;distance to solved reaches 1&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;solved at some moment&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;hold&quot;,
+      &quot;label&quot;: &quot;solved and touching the hand at the final step&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;hold&quot;,
+      &quot;label&quot;: &quot;solved throughout the final 1.0 s, touching the hand at the end&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     }
+    ],
+    &quot;versions&quot;: {
+     &quot;verifier&quot;: &quot;sv-2.1&quot;,
+     &quot;rubric&quot;: &quot;rubric-1.3&quot;,
+     &quot;rig&quot;: &quot;rig-1.1&quot;,
+     &quot;hardware_spec&quot;: &quot;hwspec-1.0&quot;,
+     &quot;target_model&quot;: &quot;tm-1&quot;
+    }
+   }
+  },
+  {
+   &quot;versions&quot;: {
+    &quot;verifier&quot;: &quot;sv-2.2&quot;,
+    &quot;rubric&quot;: &quot;rubric-1.3&quot;,
+    &quot;rig&quot;: &quot;rig-1.1&quot;,
+    &quot;hardware_spec&quot;: &quot;hwspec-1.0&quot;,
+    &quot;target_model&quot;: &quot;tm-1&quot;
+   },
+   &quot;submission_id&quot;: &quot;s12&quot;,
+   &quot;official&quot;: {
+    &quot;status&quot;: &quot;failure&quot;,
+    &quot;task_status&quot;: &quot;failure&quot;,
+    &quot;score&quot;: 0.2,
+    &quot;score_bounds&quot;: [
+     0.2,
+     0.2
+    ],
+    &quot;confidence&quot;: 1.0,
+    &quot;stages&quot;: {
+     &quot;first_turn&quot;: 0.15,
+     &quot;turning&quot;: 0.05,
+     &quot;solving&quot;: 0.0,
+     &quot;hold&quot;: 0.0
+    },
+    &quot;hardware&quot;: &quot;unknown&quot;,
+    &quot;runtime&quot;: &quot;valid&quot;,
+    &quot;milestones&quot;: [
+     {
+      &quot;stage&quot;: &quot;first_turn&quot;,
+      &quot;label&quot;: &quot;a layer rotated &gt;= 45 deg&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;first_turn&quot;,
+      &quot;label&quot;: &quot;one complete layer turn&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;turning&quot;,
+      &quot;label&quot;: &quot;two complete layer turns&quot;,
+      &quot;reached&quot;: true,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;turning&quot;,
+      &quot;label&quot;: &quot;three or more complete layer turns&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;distance to solved reaches 2&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;distance to solved reaches 1&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;solving&quot;,
+      &quot;label&quot;: &quot;solved at some moment&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;hold&quot;,
+      &quot;label&quot;: &quot;solved and touching the hand at the final step&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     },
+     {
+      &quot;stage&quot;: &quot;hold&quot;,
+      &quot;label&quot;: &quot;solved throughout the final 1.0 s, touching the hand at the end&quot;,
+      &quot;reached&quot;: false,
+      &quot;certain&quot;: true
+     }
+    ],
+    &quot;versions&quot;: {
+     &quot;verifier&quot;: &quot;sv-2.2&quot;,
+     &quot;rubric&quot;: &quot;rubric-1.3&quot;,
+     &quot;rig&quot;: &quot;rig-1.1&quot;,
+     &quot;hardware_spec&quot;: &quot;hwspec-1.0&quot;,
+     &quot;target_model&quot;: &quot;tm-1&quot;
+    }
+   }
+  }
+ ],
+ &quot;latest_candidate&quot;: &quot;s12&quot;,
+ &quot;best_rule&quot;: &quot;official sensor results only, comparable versions only; order: runtime valid, then no hardware violation, then task status success, then score (point), then score lower bound; ties: the earlier submission&quot;,
+ &quot;gate_rule&quot;: &quot;each evaluated submission against the best comparable submission before it: improved (ranks higher), equal, regressed (ranks lower) or not_comparable (different verifier, rubric, rig, hardware-spec or target model version)&quot;,
+ &quot;comparison_rule&quot;: &quot;comparable submissions only (same verifier, rubric, rig, hardware-spec and target model version); categorical order runtime valid &gt; no hardware violation &gt; task status success decides when the categories differ and none of them is unknown; otherwise improved / regressed only when the score bounds do not overlap, tied when status and score bounds are identical, inconclusive otherwise; one trial per submission, so success is compared as a status, not a rate; evidence only: it never selects, restores or rejects a policy&quot;,
+ &quot;roles&quot;: &quot;from the latest note of each submission: improvement (candidate), diagnostic, experimental; unlabelled counts as a candidate&quot;,
+ &quot;research_summary&quot;: {
+  &quot;submissions&quot;: 12,
+  &quot;with_intent&quot;: 0,
+  &quot;with_reflection&quot;: 0,
+  &quot;incomplete&quot;: [
+   {
+    &quot;submission_id&quot;: &quot;s01&quot;,
+    &quot;needs&quot;: [
+     &quot;intent: missing (no pre-submission record bound to this package)&quot;,
+     &quot;reflection: missing (no record after the result)&quot;
+    ]
+   },
+   {
+    &quot;submission_id&quot;: &quot;s02&quot;,
+    &quot;needs&quot;: [
+     &quot;intent: missing (no pre-submission record bound to this package)&quot;,
+     &quot;reflection: missing (no record after the result)&quot;
+    ]
+   },
+   {
+    &quot;submission_id&quot;: &quot;s03&quot;,
+    &quot;needs&quot;: [
+     &quot;intent: missing (no pre-submission record bound to this package)&quot;,
+     &quot;reflection: missing (no record after the result)&quot;
+    ]
+   },
+   &quot;… 9 more&quot;
+  ],
+  &quot;unbound_intents&quot;: [],
+  &quot;record_chain&quot;: &quot;intact (0 entries)&quot;,
+  &quot;record_rule&quot;: &quot;intent: recorded before the submission (target timestamps), bound to the first later submission with the same archive SHA-256; a submission without a plain note takes its role from its intent&#x27;s kind; reflection: recorded after the result; a later reflection amends, never replaces, an earlier one; auto fields are captured on the agent host and not verified by the target; missing agent-authored fields are listed, never filled in&quot;
+ },
+ &quot;official_metrics&quot;: &quot;computed by the target-side evaluator; notes cannot change them&quot;
+}</code></pre>
+<p class='cap'>This infrastructure-test submission has no research intent or reflection, so <code>research.needs</code> lists them as missing: missing parts are listed, never filled in, and never block a submission.
+An agent records them with the harness, which wraps <code>intent &lt; intent.json</code> and <code>note sNN &lt; note.json</code> (<code>REMOTE_API.md</code> section 5):</p>
+<pre><code>$ r2s2r-harness submit my_policy/ --hypothesis "..." --change "..."    # intent with git revision and code diff, then submit
+$ r2s2r-harness reflect sNN --diagnosis "..." --evidence "..." --keep keep|reject|undecided --next "..."</code></pre>
+<p class='cap'>Records are append-only and hash-chained, and cannot change official results. <code>comparison</code> sets each submission against the previous and the best earlier comparable submission; <code>best_evaluated</code> follows official results only.</p>
+
+<h2>5. On-demand access</h2>
+<h3>Frame query</h3><pre><code>$ r2s2r-cube frames s12 all 23.080 depth &gt; frames.tgz</code></pre>
 <p class='cap'>Returned files: frames/frames.json, frames/left_t023.080_depth.png, frames/left_t023.080_rgb.png, frames/right_t023.080_depth.png, frames/right_t023.080_rgb.png, frames/top_t023.080_depth.png, frames/top_t023.080_rgb.png</p><div class='grid3'><figure class='vid'><img src='v2_example/top_rgb.jpg' alt='top rgb' loading='lazy' style='width:100%;border-radius:8px;display:block'><figcaption>top · RGB, as returned</figcaption></figure><figure class='vid'><img src='v2_example/left_rgb.jpg' alt='left rgb' loading='lazy' style='width:100%;border-radius:8px;display:block'><figcaption>left · RGB, as returned</figcaption></figure><figure class='vid'><img src='v2_example/right_rgb.jpg' alt='right rgb' loading='lazy' style='width:100%;border-radius:8px;display:block'><figcaption>right · RGB, as returned</figcaption></figure></div><div class='grid3'><figure class='vid'><img src='v2_example/top_depth.png' alt='top depth' loading='lazy' style='width:100%;border-radius:8px;display:block'><figcaption>top · depth (16-bit PNG, 0.1 mm units; shown here in false colour, near = yellow)</figcaption></figure><figure class='vid'><img src='v2_example/left_depth.png' alt='left depth' loading='lazy' style='width:100%;border-radius:8px;display:block'><figcaption>left · depth (16-bit PNG, 0.1 mm units; shown here in false colour, near = yellow)</figcaption></figure><figure class='vid'><img src='v2_example/right_depth.png' alt='right depth' loading='lazy' style='width:100%;border-radius:8px;display:block'><figcaption>right · depth (16-bit PNG, 0.1 mm units; shown here in false colour, near = yellow)</figcaption></figure></div>
 <details><summary>frames/frames.json</summary><pre><code>{
  &quot;protocol&quot;: &quot;r2s2r-feedback/2&quot;,
@@ -814,7 +1655,7 @@ Timestamps in responses are UTC (received 2026-10-22 20:14 EDT, Pittsburgh).</p>
  &quot;depth_png&quot;: &quot;16-bit, 0.1 mm per unit, 0 = no return&quot;
 }</code></pre></details>
 
-<h2>5. Mask query (optional)</h2><pre><code>$ r2s2r-cube masks s12 all 577 &gt; masks.tgz</code></pre>
+<h3 style='margin-top:18px'>Mask query</h3><pre><code>$ r2s2r-cube masks s12 all 577 &gt; masks.tgz</code></pre>
 <p class='cap'>Returned files: masks/left_f00577.png, masks/masks.json, masks/right_f00577.png, masks/top_f00577.png. Frame 577 of <code>video/frames.json</code> (t = 23.08 s), the same instant as the frame query above.</p>
 <div class='grid3'><figure class='vid'><img src='v2_example/top_mask.png' alt='top mask' loading='lazy' style='width:100%;border-radius:8px;display:block'><figcaption>top · mask PNG, as returned</figcaption></figure><figure class='vid'><img src='v2_example/left_mask.png' alt='left mask' loading='lazy' style='width:100%;border-radius:8px;display:block'><figcaption>left · mask PNG, as returned</figcaption></figure><figure class='vid'><img src='v2_example/right_mask.png' alt='right mask' loading='lazy' style='width:100%;border-radius:8px;display:block'><figcaption>right · mask PNG, as returned</figcaption></figure></div><div class='grid3'><figure class='vid'><img src='v2_example/top_overlay.jpg' alt='top overlay' loading='lazy' style='width:100%;border-radius:8px;display:block'><figcaption>top · mask drawn over the RGB frame (display only; not returned)</figcaption></figure><figure class='vid'><img src='v2_example/left_overlay.jpg' alt='left overlay' loading='lazy' style='width:100%;border-radius:8px;display:block'><figcaption>left · mask drawn over the RGB frame (display only; not returned)</figcaption></figure><figure class='vid'><img src='v2_example/right_overlay.jpg' alt='right overlay' loading='lazy' style='width:100%;border-radius:8px;display:block'><figcaption>right · mask drawn over the RGB frame (display only; not returned)</figcaption></figure></div>
 <pre><code>{
@@ -868,70 +1709,10 @@ Timestamps in responses are UTC (received 2026-10-22 20:14 EDT, Pittsburgh).</p>
  ]
 }</code></pre>
 
-<h2>6. History and notes (optional)</h2><pre><code>$ r2s2r-cube history</code></pre>
-<p class='cap'>Top-level fields: best_evaluated, best_rule, experiment, gate_rule, latest_candidate, official_metrics, protocol, roles, submissions. The entry for this submission and the rules:</p>
-<pre><code>{
- &quot;entry&quot;: {
-  &quot;submission_id&quot;: &quot;s12&quot;,
-  &quot;received&quot;: &quot;2026-10-23T00:14:50&quot;,
-  &quot;finished&quot;: &quot;2026-10-23T00:26:12&quot;,
-  &quot;state&quot;: &quot;done&quot;,
-  &quot;policy_sha256&quot;: &quot;77e3d978…68da61&quot;,
-  &quot;archive_sha256&quot;: &quot;04441f90…5663f0&quot;,
-  &quot;feedback_sha256&quot;: &quot;a6043fc5…5e956d&quot;,
-  &quot;official&quot;: {
-   &quot;status&quot;: &quot;failure&quot;,
-   &quot;task_status&quot;: &quot;failure&quot;,
-   &quot;score&quot;: 0.2,
-   &quot;score_bounds&quot;: [
-    0.2,
-    0.2
-   ],
-   &quot;confidence&quot;: 1.0,
-   &quot;stages&quot;: {
-    &quot;first_turn&quot;: 0.15,
-    &quot;turning&quot;: 0.05,
-    &quot;solving&quot;: 0.0,
-    &quot;hold&quot;: 0.0
-   },
-   &quot;hardware&quot;: &quot;unknown&quot;,
-   &quot;runtime&quot;: &quot;valid&quot;,
-   &quot;versions&quot;: {
-    &quot;verifier&quot;: &quot;sv-2.2&quot;,
-    &quot;rubric&quot;: &quot;rubric-1.3&quot;,
-    &quot;rig&quot;: &quot;rig-1.1&quot;,
-    &quot;hardware_spec&quot;: &quot;hwspec-1.0&quot;
-   }
-  },
-  &quot;role&quot;: &quot;unlabelled&quot;,
-  &quot;keep&quot;: null,
-  &quot;notes&quot;: [],
-  &quot;gate&quot;: &quot;not_comparable&quot;
- },
- &quot;protocol&quot;: &quot;r2s2r-feedback/2&quot;,
- &quot;experiment&quot;: &quot;&lt;experiment&gt;&quot;,
- &quot;best_evaluated&quot;: {
-  &quot;submission_id&quot;: &quot;s12&quot;,
-  &quot;versions&quot;: {
-   &quot;verifier&quot;: &quot;sv-2.2&quot;,
-   &quot;rubric&quot;: &quot;rubric-1.3&quot;,
-   &quot;rig&quot;: &quot;rig-1.1&quot;,
-   &quot;hardware_spec&quot;: &quot;hwspec-1.0&quot;
-  }
- },
- &quot;latest_candidate&quot;: &quot;s12&quot;,
- &quot;best_rule&quot;: &quot;official sensor results only, comparable versions only; order: runtime valid, then no hardware violation, then task status success, then score (point), then score lower bound; ties: the earlier submission&quot;,
- &quot;gate_rule&quot;: &quot;each evaluated submission against the best comparable submission before it: improved (ranks higher), equal, regressed (ranks lower) or not_comparable (different verifier, rubric, rig or hardware-spec version)&quot;,
- &quot;roles&quot;: &quot;from the latest note of each submission: improvement (candidate), diagnostic, experimental; unlabelled counts as a candidate&quot;,
- &quot;official_metrics&quot;: &quot;computed by the target-side evaluator; notes cannot change them&quot;
-}</code></pre>
-<p class='cap'><code>r2s2r-cube note sNN &lt; note.json</code> appends the agent's own record (kind, hypothesis, change, evidence, decision, optional keep/reject,
-source revision, sim config, checkpoint, analysis) to a submission. Notes are append-only and hash-chained, and cannot change official metrics; see <code>REMOTE_API.md</code> section 6.</p>
-
-<h2>7. Package (optional)</h2><pre><code>$ r2s2r-cube package s12 &gt; s12_package.tgz</code></pre>
+<h3 style='margin-top:18px'>Package</h3><pre><code>$ r2s2r-cube package s12 &gt; s12_package.tgz</code></pre>
 <p class='cap'>1,218,614 bytes, SHA-256 04441f90…5663f0 — identical to the archive received at submission.</p>
 
 </div>
 <footer>Public research page. Agents run on AWS and interact with the target environment only through its submission API. The target environment is a black box treated as the real system in this setup;
 it is not a physical robot deployment. Official results come from the sensor verifier sv-2.3 with hardware specification hwspec-1.1; privileged simulator state and the operator's ground-truth comparison are never published or returned to agents.
-Generated 2026-10-24 22:12 EDT. All times are Pittsburgh time (EDT).</footer></main></body></html>
+Generated 2026-10-24 22:17 EDT. All times are Pittsburgh time (EDT).</footer></main></body></html>

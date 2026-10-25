@@ -5,27 +5,34 @@ The target environment executes submitted policies and stores sensor-based feedb
 ## 1. Commands
 
 ```bash
+# Package check, submission, and budget
 r2s2r-cube budget
 r2s2r-preflight my_policy/
 tar -C my_policy -czf - . | r2s2r-cube validate
 tar -C my_policy -czf - . | r2s2r-cube submit
 r2s2r-cube status
+
+# Standard feedback
 r2s2r-cube fetch sNN > sNN.tgz
-r2s2r-cube frames sNN <top|left|right|all> <t1,t2,...> [depth] > frames.tgz
-r2s2r-cube masks sNN <top|left|right|all> <i0:i1[:step] | i,j,...> > masks.tgz
+
+# Standard research workflow
 r2s2r-cube history
 r2s2r-cube intent < intent.json
 r2s2r-cube note sNN < note.json
+
+# On-demand access
 r2s2r-cube package sNN > sNN_package.tgz
+r2s2r-cube frames sNN <top|left|right|all> <t1,t2,...> [depth] > frames.tgz
+r2s2r-cube masks sNN <top|left|right|all> <i0:i1[:step] | i,j,...> > masks.tgz
 ```
 
-`r2s2r-harness submit` and `r2s2r-harness reflect` (`TOOLS.md`) wrap `intent`, `submit`, and `note` (section 6). Responses are JSON, except `fetch`, `frames`, and `masks` (`.tar.gz`) and `package` (the archive exactly as submitted). Errors return `{"error": "..."}` with a non-zero exit code. `r2s2r-preflight` is a local check (`PACKAGE.md`).
+`r2s2r-harness submit` and `r2s2r-harness reflect` (`TOOLS.md`) wrap `intent`, `submit`, and `note` (section 5). Responses are JSON, except `fetch`, `frames`, and `masks` (`.tar.gz`) and `package` (the archive exactly as submitted). Errors return `{"error": "..."}` with a non-zero exit code. `r2s2r-preflight` is a local check (`PACKAGE.md`).
 
 ## 2. Submission
 
 - **Archive:** `.tar` or `.tar.gz`, ≤ 500 MB, ≤ 2000 files; `policy.py` at the archive root or inside one top-level directory; no links, absolute paths, or `..` paths.
 - **Checks:** `validate` and `submit` run the same package checks (`PACKAGE.md`). A rejected package is not recorded and not charged.
-- **Receipt:** `submit` returns `submission_id`, `policy_sha256`, `archive_sha256`, `state: queued`, `research_intent` (the intent bound to this submission, section 6), and the check's inference timing and warnings.
+- **Receipt:** `submit` returns `submission_id`, `policy_sha256`, `archive_sha256`, `state: queued`, `research_intent` (the intent bound to this submission, section 5), and the check's inference timing and warnings.
 - One evaluation runs at a time.
 
 ## 3. Evaluation and Budget
@@ -45,7 +52,7 @@ r2s2r-cube package sNN > sNN_package.tgz
 
 ## 4. Standard Feedback (`fetch`)
 
-`fetch sNN` returns the stored feedback of a finished rollout:
+Standard feedback is the evaluation evidence the target environment stores automatically after every rollout (after a policy failure: up to the failure). It is not pushed to you; `fetch sNN` returns it:
 
 ```text
 <experiment>_sNN/
@@ -59,22 +66,17 @@ r2s2r-cube package sNN > sNN_package.tgz
 
 File contents, uncertainty, and timestamps: `FEEDBACK.md`.
 
-## 5. Optional Queries
-
-Queries read the stored record of a finished rollout. They are not charged and never change official results.
-
-| Command | Returns | Limits |
-|---|---|---|
-| `frames sNN VIEW TIMES [depth]` | PNG frames from the same cameras at any instant (s, up to 3 decimals; nearest 1 ms), optional 16-bit depth, and `frames/frames.json` | ≤ 8 times per call; ≤ 240 frames (times × views) per submission |
-| `masks sNN VIEW FRAMES` | Masks as PNG (255 = object) with `masks/masks.json`; `FRAMES`: `i0:i1[:step]` (end excluded) or `i,j,...` indices of `video/frames.json` | ≤ 60 masks (frames × views) per call |
-| `history` | Every submission and the best evaluated policy (section 6) | — |
-| `intent` | Records your research intent before a submission (section 6) | ≤ 16 KB per intent |
-| `note sNN` | Appends your reflection or note to a submission (section 6) | ≤ 16 KB per note |
-| `package sNN` | The exact archive you submitted; its SHA-256 equals `archive_sha256` in `history` | — |
-
-## 6. Research Records
+## 5. Standard Research Workflow
 
 Every submission keeps an auditable chain: research intent → code and policy revision → submission → official evidence → your diagnosis → your decision.
+
+The target environment keeps the history, the best evaluated policy, and the comparisons automatically; the intent and the reflection are your part of the record. These commands are not charged and never change official results.
+
+| Command | Returns or records | Limits |
+|---|---|---|
+| `history` | Every submission with its research record and comparisons, and the best evaluated policy | — |
+| `intent` | Records your research intent before a submission | ≤ 16 KB per intent |
+| `note sNN` | Appends your reflection or note to a submission | ≤ 16 KB per note |
 
 | Part | Recorded by | Command |
 |---|---|---|
@@ -126,6 +128,16 @@ A plain `note sNN` (without `"record"`) keeps the original schema. Required fiel
 ```
 
 All records are append-only and hash-chained (corrections are new records); they cannot carry or change official results, and unknown fields are refused. `r2s2r-harness` (`TOOLS.md`) wraps these commands.
+
+## 6. On-demand Access
+
+Stored data of earlier submissions, retrieved only when you need it. Not charged; never changes official results. `frames` and `masks` complement `fetch`: frames at any instant (also between video frames) with optional depth, and selected masks as PNG without downloading the whole bundle.
+
+| Command | Returns | Limits |
+|---|---|---|
+| `package sNN` | The exact archive you submitted; its SHA-256 equals `archive_sha256` in `history` | — |
+| `frames sNN VIEW TIMES [depth]` | PNG frames from the same cameras at any instant (s, up to 3 decimals; nearest 1 ms), optional 16-bit depth, and `frames/frames.json` | ≤ 8 times per call; ≤ 240 frames (times × views) per submission |
+| `masks sNN VIEW FRAMES` | Masks as PNG (255 = object) with `masks/masks.json`; `FRAMES`: `i0:i1[:step]` (end excluded) or `i,j,...` indices of `video/frames.json` | ≤ 60 masks (frames × views) per call |
 
 ## 7. Versions
 
