@@ -1,7 +1,7 @@
 {
  "title": "Agentic Real2Sim2Real",
- "generated_utc": "2026-10-25T05:32:30Z",
- "exported_utc": "2026-10-25T05:32:29Z",
+ "generated_utc": "2026-10-25T05:42:32Z",
+ "exported_utc": "2026-10-25T05:42:29Z",
  "current": {
   "baseball": {
    "used": 6,
@@ -9,7 +9,7 @@
    "best": "s03",
    "latest_candidate": "s05",
    "activity": {
-    "time": "2026-10-25T05:28:00",
+    "time": "2026-10-25T05:35:46",
     "verb": "history"
    },
    "record_chain": "intact (13 entries)",
@@ -1022,10 +1022,10 @@
    "best": "s01",
    "latest_candidate": "s07",
    "activity": {
-    "time": "2026-10-25T05:12:36",
-    "verb": "submit"
+    "time": "2026-10-25T05:36:00",
+    "verb": "frames"
    },
-   "record_chain": "intact (13 entries)",
+   "record_chain": "intact (14 entries)",
    "submissions": [
     {
      "id": "s01",
@@ -2017,7 +2017,7 @@
      },
      "gate": "equal",
      "role": "improvement",
-     "keep": null,
+     "keep": "reject",
      "policy": "cf6dc86859ab",
      "package": "04be411dfa0e",
      "vs_previous": {
@@ -2037,9 +2037,7 @@
       "lost": []
      },
      "rollout": "complete rollout",
-     "needs": [
-      "reflection: missing (no record after the result)"
-     ],
+     "needs": [],
      "intent": {
       "id": "i07",
       "kind": "improvement",
@@ -2054,7 +2052,18 @@
       "diff_base": "59cf447c5f37…",
       "code_change": "h/object_free_hand_fit.json          | 1379 +++++++++++++++++++++++++++\n research/optimize.py                        |    3 +-\n research/prepare_contact_probe.py           |   34 +\n research/search_actor.py                    |    2 +-\n research/sim.py                             |   19 +-\n research/static_contact_identification.json |   46 +\n research/static_identify.py                 |   49 +\n research/static_parameters_elliptic.json    |   85 ++\n research/static_parameters_pyramidal.json   |   85 ++\n research/train_ppo.py                       |   58 +-\n research/validate_policy.py                 |   15 +-\n research/warp_env.py                        |   30 +-\n 19 files changed, 1905 insertions(+), 39 deletions(-)\nuntracked: MUJOCO_LOG.TXT, candidate_actor_s03/, candidate_contact_probe_s06/, candidate_gait_s05/, candidate_native_full_s07/, candidate_probe/, candidate_seed_u670/, candidate_teacher_scale_105/, candidate_teacher_scale_108/, candidate_teacher_scale_110/, candidate_teacher_scale_115/, candidate_transfer_350/, candidate_transfer_400/, local_hold_620/, local_hold_640/, local_hold_660/, local_hold_680/, local_hold_700/, local_hold_720/, local_hold_740/, local_hold_760/, local_hold_780/, local_hold_800/, local_native_teacher/, local_teacher_replay/, research/actor_s03_self_validation.json, research/actor_s03_validation.json, research/anchor_s03_plan.npz.json, research/contact_fit_s02.json, research/contact_fit_s03.json, research/contact_probe_elliptic_config.json, research/contact_probe_elliptic_hw.json, research/contact_probe_pyramidal_config.json, research/c…"
      },
-     "reflection": null,
+     "reflection": {
+      "what_worked": "Continuous native local replay achieved all three revolutions and final hold, with ample hardware margins. Official runtime and hardware checks passed.",
+      "what_failed": "Official retention was lost at 0.49 s due to tilt beyond 45 degrees, before the first rotation milestone; score 0.",
+      "diagnosis": "Correcting solver-history validation fixed a real local bug but did not close the contact dynamics gap. The early target failure rules out using local complete replay alone as sufficient transfer evidence.",
+      "evidence": "feedback/s07/<experiment>4_s07/sensor/sensor_report.json",
+      "decision": "Preserve the native validator and successful local teacher as development tools; reject this trajectory as a target solution.",
+      "next_hypothesis": "Use measured flight dynamics and object-free contact identification to constrain the local physical model before another long replay.",
+      "limitation": null,
+      "analysis": null,
+      "keep": "reject",
+      "recorded": "2026-10-25T05:34:36"
+     },
      "amendments": 0,
      "notes": [],
      "target_video": {
@@ -2076,10 +2085,10 @@
    "best": "s04",
    "latest_candidate": "s04",
    "activity": {
-    "time": "2026-10-25T05:32:18",
+    "time": "2026-10-25T05:42:15",
     "verb": "status"
    },
-   "record_chain": "intact (10 entries)",
+   "record_chain": "intact (11 entries)",
    "submissions": [
     {
      "id": "s01",
@@ -2631,18 +2640,18 @@
       "code_change": "policies/auto_u_quarter/manifest.json   |   9 +++\n policies/auto_u_quarter/policy.py       |  24 ++++++++\n policies/auto_u_quarter/trajectory.npz  | Bin 0 -> 2610 bytes\n policies/force_u_quarter/manifest.json  |   9 +++\n policies/force_u_quarter/policy.py      |  35 +++++++++++\n policies/force_u_quarter/trajectory.npz | Bin 0 -> 4880 bytes\n research/mechanism.py                   |  82 ++++++++++++++++++++++++++\n research/model.py                       |  21 +++++--\n research/package.py                     |  19 +++++-\n research/prepare_force_candidate.py     |  26 +++++++++\n research/refine_force_grip.py           |  27 +++++++++\n research/search_auto_grip.py            |  73 +++++++++++++++++++++++\n research/search_pinch_joint.py          |  57 ++++++++++++++++++\n research/solver.py                      |  99 ++++++++++++++++++++++++++++++++\n research/validate_auto_grip.py          |  34 +++++++++++\n 15 files changed, 506 insertions(+), 9 deletions(-)"
      },
      "reflection": {
-      "what_worked": "Valid 20000-step run, hardware compliant, estimated PD demand at most 50 percent effort with no saturation. Some uncertain first-turn progress, official point score 0.05.",
-      "what_failed": "No completed layer turn or solving progress. Retention becomes invalid at 6.28 seconds because the mechanism is forced more than 15 degrees from a legal configuration; maximum reported deviation 98.05 degrees. Score bounds [0,0.05].",
-      "diagnosis": "The optimized gait exploits a permissive transition in the local multi-axis model and is unsafe for the target cube. In addition, clipping total PD demand can clip away velocity damping during large tracking errors; target ring-joint speed peaks at 69 percent of its limit despite slow planned commands.",
-      "evidence": "Official not_retained event at 6.28 s; max layer angle 43.822, max mechanism deviation 98.054, zero complete turns, distance remains 3. Hardware measured speed max ratio 0.6911; torque demand max ratio 0.5. Videos and encoder log retrieved.",
-      "decision": "Reject both this prefix and its U2 continuation for target use. Return to the intact s03 grasp, require other cubies aligned before switching axes in local physics, and preserve velocity damping outside the proportional-effort cap.",
-      "next_hypothesis": "A safe evaluated grasp plus a retargeted, damped middle-finger turn should advance U without simultaneous incompatible layer motion.",
+      "what_worked": "Documented RGB-D fits show an intact U-axis partial turn through 6.1s, with a brief near-quarter alignment around 6.16-6.24s; hardware remains compliant.",
+      "what_failed": "Official report still counts no complete turn and retention is lost at 6.28s. The original local model failed to predict this transition.",
+      "diagnosis": "Amendment after per-corner RGB-D fitting: the transition to near-quarter alignment is very fast, and the ring PIP continues closing against the cube afterward. Sustained off-axis force and uncertain visual registration through the fast transition remain plausible causes; the official jam result is authoritative.",
+      "evidence": "Official s04 sensor report and logs; selected RGB-D at 6.1,6.12,6.16,6.2,6.24,6.28,6.3,6.4; research/cubie_pose.py gives 0.19-0.21mm surface residuals with occluded corners regularized. World pose/command identification reaches 0.65mm position and 3.86deg orientation RMSE before jam. Post-turn simulation tests a low-force encoder latch as a counterfactual, not proof of transfer.",
+      "decision": "Keep s04 rejected. Only reuse its documented intact prefix in a separately evaluated controller.",
+      "next_hypothesis": "Inspect pending s05 braking/clearance result; test an encoder-triggered settling controller if sustained closure remains the failure.",
       "limitation": null,
       "analysis": null,
       "keep": "reject",
-      "recorded": "2026-10-25T05:09:35"
+      "recorded": "2026-10-25T05:37:15"
      },
-     "amendments": 0,
+     "amendments": 1,
      "notes": [],
      "target_video": {
       "views": [
