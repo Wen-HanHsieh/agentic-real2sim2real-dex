@@ -1,7 +1,7 @@
 {
  "title": "Agentic Real2Sim2Real",
- "generated_utc": "2026-10-25T06:52:54Z",
- "exported_utc": "2026-10-25T06:52:30Z",
+ "generated_utc": "2026-10-25T07:02:32Z",
+ "exported_utc": "2026-10-25T07:02:29Z",
  "current": {
   "baseball": {
    "used": 8,
@@ -9,8 +9,8 @@
    "best": "s03",
    "latest_candidate": "s05",
    "activity": {
-    "time": "2026-10-25T06:52:25",
-    "verb": "note"
+    "time": "2026-10-25T06:58:17",
+    "verb": "history"
    },
    "record_chain": "intact (17 entries)",
    "submissions": [
@@ -1351,15 +1351,15 @@
    ]
   },
   "pen": {
-   "used": 10,
+   "used": 11,
    "limit": 100,
    "best": "s09",
    "latest_candidate": "s09",
    "activity": {
-    "time": "2026-10-25T06:50:29",
-    "verb": "frames"
+    "time": "2026-10-25T07:01:19",
+    "verb": "submit"
    },
-   "record_chain": "intact (19 entries)",
+   "record_chain": "intact (21 entries)",
    "submissions": [
     {
      "id": "s01",
@@ -2815,7 +2815,7 @@
      },
      "gate": "regressed",
      "role": "experimental",
-     "keep": null,
+     "keep": "keep",
      "policy": "42b1d07eb6dd",
      "package": "7625a9dd55e0",
      "vs_previous": {
@@ -2839,9 +2839,7 @@
       "lost": []
      },
      "rollout": "complete rollout",
-     "needs": [
-      "reflection: missing (no record after the result)"
-     ],
+     "needs": [],
      "intent": {
       "id": "i10",
       "kind": "experimental",
@@ -2856,7 +2854,18 @@
       "diff_base": "6c168832ce26…",
       "code_change": "ntact_damping_fit.json, research/dynamic_contact_e4.json, research/dynamic_contact_p3.json, research/dynamic_contact_p6.json, research/dynamic_contact_single_materials.json, research/ensemble_replay0_native.json, research/ensemble_stop_180_validation.json, research/ensemble_stop_200_hw.json, research/ensemble_stop_200_validation.json, research/ensemble_stop_220_validation.json, research/ensemble_stop_240_validation.json, research/equilibrium_fit.json, research/equilibrium_single_fit.json, research/equilibrium_v2_fit.json, research/feedback_replay.cpp, research/feedback_replay.so, research/full_hand_contact_fit.json, research/full_orientation_contact_fit.json, research/gait_s05_validation.json, research/generate_anchored_replays.py, research/grasp_bank.npz.json, research/hold_620_validation.json, research/hold_640_validation.json, research/hold_660_validation.json, research/hold_680_validation.json, research/hold_700_validation.json, research/hold_720_validation.json, research/hold_740_validation.json, research/hold_760_validation.json, research/hold_780_validation.json, research/hold_800_validation.json, research/kinematic_fit7_s03.json, research/kinematic_fit_s03.json, research/kinematic_replay.so, research/local_evaluations.jsonl, research/local_hold_check.json, research/local_initial.png, research/native_noself_replay.json, research/native_noself_replay_with_self.json, research/native_teacher_replay_hw.json, research/observer_current_eval.json, research/observer_direct_nominal/, research/observer_direct_nominal_current.json, research/observer_direct_random/, research/ob…"
      },
-     "reflection": null,
+     "reflection": {
+      "what_worked": "Offline observed-state continuation extended target retention from1.49 to3.86s, preserved the first revolution at1.51s, and reached540degrees at3.65s. Official task score0.45, exact bounds.",
+      "what_failed": "The second revolution was not completed. Rotation reversed after1.7s, then tilt exceeded45degrees at3.86s. A later ring MCP abduction speed violation occurred at4.008s (ratio1.0346), so this is not a hardware-compliant solution.",
+      "diagnosis": "Replanning from public camera and encoder evidence materially extended the motion despite nominal-model fragility. Coarse temporal interpolation biased the initial vertical velocity; dense1.085-1.12s RGB-D reconstruction fits near-ballistic acceleration and gives a better velocity estimate. The unsafe tail requires a joint-encoder braking supervisor.",
+      "evidence": "feedback/s10/<experiment>4_s10/sensor/sensor_report.json",
+      "decision": "Keep the retained, hardware-compliant prefix as evidence and a branch point; reject the full policy as a final solution. Best fully compliant official policy remains s09.",
+      "next_hypothesis": "Validate an encoder-based speed guard; reconstruct the post-first-revolution state before the reversal and generate a new continuation with dense local kinematics.",
+      "limitation": null,
+      "analysis": null,
+      "keep": "keep",
+      "recorded": "2026-10-25T06:57:39"
+     },
      "amendments": 0,
      "notes": [],
      "target_video": {
@@ -2869,6 +2878,41 @@
       "duration": 12.0
      },
      "training_video": null
+    },
+    {
+     "id": "s11",
+     "received": "2026-10-25T07:01:19",
+     "finished": null,
+     "state": "running",
+     "official": null,
+     "gate": null,
+     "role": "diagnostic",
+     "keep": null,
+     "policy": "57e301a000be",
+     "package": "e2a41934e23b",
+     "vs_previous": null,
+     "vs_best": null,
+     "rollout": "pending: evaluation not finished",
+     "needs": [],
+     "intent": {
+      "id": "i11",
+      "kind": "diagnostic",
+      "hypothesis": "An encoder-triggered braking supervisor can remove the late hardware speed violation of s10 while preserving its retained540degree prefix.",
+      "change": "Keep the s10 replay unchanged until any measured joint speed exceeds80percent of its published limit; then brake all joints with the published PD gains and latch a safe hold once speeds settle.",
+      "rationale": "The supervisor would first trigger at3.972s on the public s10 encoder trace,36ms before its first violation and after all scored motion. Exact native12s hardware checks pass. A local step-response stress test is limited to86.5percent of joint speed with the guard versus an over-limit unprotected response. This diagnostic tests hardware compliance; it does not claim the full task is solved.",
+      "parent": "s10",
+      "local": "{\"local_only\": true, \"source\": \"s10 documented measured encoder replay; controller counterfactual only\", \"first_guard_trigger_seconds\": 3.972, \"original_first_hardware_violation_seconds\": 4.008, \"first_braking_command_opposes_every_joint_velocity\": true, \"all_braking_targets_within_limits\": true, \"limitation\": \"Replay does not predict the counterfactual target dynamics after activation.\", \"native_guard_step_stress_max_speed_ratio\": 0.864597989922516, \"unprotected_step_stress_max_speed_ratio_500Hz\": 2.3124956059663977, \"native_full_12s_max_speed_ratio\": 0.6841153505671735, \"native_hardware_checks\": \"both stress and full12s exact1kHz compliant\"}",
+      "recorded": "2026-10-25T07:01:19",
+      "revision": "85f0cbde6f69",
+      "dirty": true,
+      "diff_base": "85f0cbde6f69…",
+      "code_change": "uilibrium_fit.json, research/equilibrium_single_fit.json, research/equilibrium_v2_fit.json, research/feedback_replay.cpp, research/feedback_replay.so, research/full_hand_contact_fit.json, research/full_orientation_contact_fit.json, research/gait_s05_validation.json, research/generate_anchored_replays.py, research/grasp_bank.npz.json, research/grip_regions_config.json, research/guard_s11_evidence.json, research/guard_s11_fixed_validation.json, research/guard_s11_hw.json, research/guard_stress_config.json, research/guard_stress_hw.json, research/guard_stress_validation.json, research/hold_620_validation.json, research/hold_640_validation.json, research/hold_660_validation.json, research/hold_680_validation.json, research/hold_700_validation.json, research/hold_720_validation.json, research/hold_740_validation.json, research/hold_760_validation.json, research/hold_780_validation.json, research/hold_800_validation.json, research/kinematic_fit7_s03.json, research/kinematic_fit_s03.json, research/kinematic_replay.so, research/local_evaluations.jsonl, research/local_hold_check.json, research/local_initial.png, research/native_noself_replay.json, research/native_noself_replay_with_self.json, research/native_teacher_replay_hw.json, research/observer_current_eval.json, research/observer_direct_nominal/, research/observer_direct_nominal_current.json, research/observer_direct_random/, research/observer_direct_random_current.json, research/observer_fixed_mixture/, research/observer_prior/, research/observer_prior_current.json, research/observer_prior_initial.json, research/observer_v1/…"
+     },
+     "reflection": null,
+     "amendments": 0,
+     "notes": [],
+     "target_video": null,
+     "training_video": null
     }
    ]
   },
@@ -2878,8 +2922,8 @@
    "best": "s05",
    "latest_candidate": "s04",
    "activity": {
-    "time": "2026-10-25T06:52:11",
-    "verb": "status"
+    "time": "2026-10-25T06:56:18",
+    "verb": "fetch"
    },
    "record_chain": "intact (13 entries)",
    "submissions": [
@@ -3613,18 +3657,113 @@
     {
      "id": "s06",
      "received": "2026-10-25T06:32:58",
-     "finished": null,
-     "state": "running",
-     "official": null,
-     "gate": null,
+     "finished": "2026-10-25T06:56:04",
+     "state": "done",
+     "official": {
+      "status": "failure",
+      "score": 0.15,
+      "bounds": [
+       0.15,
+       0.15
+      ],
+      "confidence": 1.0,
+      "stages": {
+       "first_turn": 0.15,
+       "turning": 0.0,
+       "solving": 0.0,
+       "hold": 0.0
+      },
+      "milestones": [
+       {
+        "stage": "first_turn",
+        "label": "a layer rotated >= 45 deg",
+        "reached": true,
+        "certain": true
+       },
+       {
+        "stage": "first_turn",
+        "label": "one complete layer turn",
+        "reached": true,
+        "certain": true
+       },
+       {
+        "stage": "turning",
+        "label": "two complete layer turns",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "turning",
+        "label": "three or more complete layer turns",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "solving",
+        "label": "distance to solved reaches 2",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "solving",
+        "label": "distance to solved reaches 1",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "solving",
+        "label": "solved at some moment",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "hold",
+        "label": "solved and touching the hand at the final step",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "hold",
+        "label": "solved throughout the final 1.0 s, touching the hand at the end",
+        "reached": false,
+        "certain": true
+       }
+      ],
+      "hardware": "compliant",
+      "runtime": "valid",
+      "versions": {
+       "verifier": "sv-2.3",
+       "rubric": "rubric-1.3",
+       "rig": "rig-1.1",
+       "hardware_spec": "hwspec-1.1",
+       "target_model": "tm-2"
+      }
+     },
+     "gate": "equal",
      "role": "diagnostic",
      "keep": null,
      "policy": "91c8b269bf34",
      "package": "30e807ddfc9f",
-     "vs_previous": null,
-     "vs_best": null,
-     "rollout": "pending: evaluation not finished",
-     "needs": [],
+     "vs_previous": {
+      "id": "s05",
+      "outcome": "tied",
+      "basis": "identical status and score bounds",
+      "score_delta": 0.0,
+      "gained": [],
+      "lost": []
+     },
+     "vs_best": {
+      "id": "s05",
+      "outcome": "tied",
+      "basis": "identical status and score bounds",
+      "score_delta": 0.0,
+      "gained": [],
+      "lost": []
+     },
+     "rollout": "complete rollout",
+     "needs": [
+      "reflection: missing (no record after the result)"
+     ],
      "intent": {
       "id": "i06",
       "kind": "diagnostic",
@@ -3642,7 +3781,15 @@
      "reflection": null,
      "amendments": 0,
      "notes": [],
-     "target_video": null,
+     "target_video": {
+      "views": [
+       "top",
+       "left",
+       "right"
+      ],
+      "fps": 25.0,
+      "duration": 40.0
+     },
      "training_video": null
     }
    ]
