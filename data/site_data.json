@@ -1,7 +1,7 @@
 {
  "title": "Agentic Real2Sim2Real",
- "generated_utc": "2026-10-25T15:22:35Z",
- "exported_utc": "2026-10-25T15:22:30Z",
+ "generated_utc": "2026-10-25T15:32:34Z",
+ "exported_utc": "2026-10-25T15:32:29Z",
  "current": {
   "baseball": {
    "used": 21,
@@ -7115,15 +7115,15 @@
    ]
   },
   "cube": {
-   "used": 16,
+   "used": 17,
    "limit": 100,
    "best": "s08",
    "latest_candidate": "s13",
    "activity": {
-    "time": "2026-10-25T15:22:25",
+    "time": "2026-10-25T15:32:11",
     "verb": "status"
    },
-   "record_chain": "intact (33 entries)",
+   "record_chain": "intact (35 entries)",
    "submissions": [
     {
      "id": "s01",
@@ -9353,17 +9353,112 @@
     {
      "id": "s16",
      "received": "2026-10-25T14:58:54",
-     "finished": null,
-     "state": "running",
-     "official": null,
-     "gate": null,
+     "finished": "2026-10-25T15:23:55",
+     "state": "done",
+     "official": {
+      "status": "failure",
+      "score": 0.15,
+      "bounds": [
+       0.15,
+       0.15
+      ],
+      "confidence": 1.0,
+      "stages": {
+       "first_turn": 0.15,
+       "turning": 0.0,
+       "solving": 0.0,
+       "hold": 0.0
+      },
+      "milestones": [
+       {
+        "stage": "first_turn",
+        "label": "a layer rotated >= 45 deg",
+        "reached": true,
+        "certain": true
+       },
+       {
+        "stage": "first_turn",
+        "label": "one complete layer turn",
+        "reached": true,
+        "certain": true
+       },
+       {
+        "stage": "turning",
+        "label": "two complete layer turns",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "turning",
+        "label": "three or more complete layer turns",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "solving",
+        "label": "distance to solved reaches 2",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "solving",
+        "label": "distance to solved reaches 1",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "solving",
+        "label": "solved at some moment",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "hold",
+        "label": "solved and touching the hand at the final step",
+        "reached": false,
+        "certain": true
+       },
+       {
+        "stage": "hold",
+        "label": "solved throughout the final 1.0 s, touching the hand at the end",
+        "reached": false,
+        "certain": true
+       }
+      ],
+      "hardware": "compliant",
+      "runtime": "valid",
+      "versions": {
+       "verifier": "sv-2.3",
+       "rubric": "rubric-1.3",
+       "rig": "rig-1.1",
+       "hardware_spec": "hwspec-1.1",
+       "target_model": "tm-2"
+      }
+     },
+     "gate": "regressed",
      "role": "diagnostic",
-     "keep": null,
+     "keep": "reject",
      "policy": "a4a91b7d749e",
      "package": "9f8b899b48b3",
-     "vs_previous": null,
-     "vs_best": null,
-     "rollout": "pending: evaluation not finished",
+     "vs_previous": {
+      "id": "s15",
+      "outcome": "tied",
+      "basis": "identical status and score bounds",
+      "score_delta": 0.0,
+      "gained": [],
+      "lost": []
+     },
+     "vs_best": {
+      "id": "s08",
+      "outcome": "regressed",
+      "basis": "score bounds do not overlap",
+      "score_delta": -0.05,
+      "gained": [],
+      "lost": [
+       "turning: two complete layer turns"
+      ]
+     },
+     "rollout": "complete rollout",
      "needs": [],
      "intent": {
       "id": "i16",
@@ -9378,6 +9473,60 @@
       "dirty": false,
       "diff_base": "a4f0999b0a8e…",
       "code_change": "policies/replay_grasp_upper/manifest.json  |  10 ++\n policies/replay_grasp_upper/policy.py      | 122 ++++++++++++++\n policies/replay_grasp_upper/trajectory.npz | Bin 0 -> 15370 bytes\n research/audit_anchored_mechanism.py       |  42 +++++\n research/audit_approach_velocity.py        |  15 ++\n research/direct_upper_ensemble.json        | 246 +++++++++++++++++++++++++++++\n research/dynamics_fits.json                |  73 +++++++++\n research/export_direct_upper.py            |  27 ++++\n research/fit_start_velocity.py             |  27 ++--\n research/gpu_progress.json                 |  11 +-\n research/identify_cube_inertia.py          |  19 +++\n research/mechanism.py                      |  12 +-\n research/model.py                          |  10 +-\n research/normalize_stop_guard.py           |   9 ++\n research/replay_prefix.py                  |  27 ++++\n research/run_after.py                      |  12 ++\n research/s14_specialist_ensemble.json      | 246 +++++++++++++++++++++++++++++\n research/search_front_regrasp.py           |  30 ++++\n 18 files changed, 917 insertions(+), 21 deletions(-)"
+     },
+     "reflection": {
+      "what_worked": "Exact6800 q/qd command pairs reproduced s10 approach: camera13.6 centre difference0.028mm and orientation0.283deg, encoder-prefix RMS0.002826rad consistent with independent measurement noise. First quarter6.8s; retained40s; hardware compliant peak speed0.2781.",
+      "what_failed": "New U2 continuation still completed no second turn or distance improvement; official score0.15 exact. Five own models predicted a turn from this grasp.",
+      "diagnosis": "Prefix replay successfully fixes incoming grasp, but the later contact/dynamics model gap remains. The failure cannot be attributed to the s14/s15 alternate grasp.",
+      "evidence": "s16 sensor_report and full robot logs; q_target/qd_target[:6800] exactly equal s10; s16_aligned_poses.json vs s10_composed_poses.json at13.6; first quarter6.8s, no loss, no hardware/runtime violation.",
+      "decision": "Reject continuation as transferred U2. Retain recorded-prefix method because physical grasp reproduction is confirmed by documented camera/encoder evidence. Best score remains s08 at0.20.",
+      "next_hypothesis": "Test a separately trained alternate-grasp specialist using recorded s14 prefix; its60 CPU trials hold U2 across five fits and two measured poses, with four20ms solver-contact gaps reported. Continue F-prime and contact-model investigation.",
+      "limitation": null,
+      "analysis": null,
+      "keep": "reject",
+      "recorded": "2026-10-25T15:29:19"
+     },
+     "amendments": 0,
+     "notes": [],
+     "target_video": {
+      "views": [
+       "top",
+       "left",
+       "right"
+      ],
+      "fps": 25.0,
+      "duration": 40.0
+     },
+     "training_video": null
+    },
+    {
+     "id": "s17",
+     "received": "2026-10-25T15:29:21",
+     "finished": null,
+     "state": "running",
+     "official": null,
+     "gate": null,
+     "role": "diagnostic",
+     "keep": null,
+     "policy": "e22082afc577",
+     "package": "3ab017829188",
+     "vs_previous": null,
+     "vs_best": null,
+     "rollout": "pending: evaluation not finished",
+     "needs": [],
+     "intent": {
+      "id": "i17",
+      "kind": "diagnostic",
+      "hypothesis": "The alternate-grasp U2 specialist will transfer from the s14 grasp reproduced by its recorded prefix, even though the nominal-grasp stroke failed from a now-reproducible s10 grasp.",
+      "change": "Replay exact first6800 s14 q/qd commands; replace post13.6s controller with alternate-grasp specialist frozen around generation13. Hold last target through40s, native effort saturation and soft pinky stop recovery preserved.",
+      "rationale": "s16 confirms command replay reproduces a known grasp within0.028mm/0.283deg. New body holds U2 in60/60 registered CPU trials across five fits and s14/s15 poses, all60 hardware checks compliant.56/60 suffixes maintain uninterrupted solver contact; four have20ms gaps without floor/height loss. Target U2 transfer remains unproven; no full solve claimed.",
+      "parent": "s16",
+      "local": "{\"scope\": \"Registered13.6–40s independent CPU suffixes, not continuous0–40 simulation. Both documented alternate s14/s15 grasps; five contact/mechanism fits5/6/7/8/10.\", \"cohorts\": [{\"name\": \"s14_measured_motion\", \"N\": 20, \"U2_held\": 20, \"uninterrupted_solver_contact\": 20, \"max_goal_corner_error_deg\": 0.6933127028739288, \"max_deviation_deg\": 8.271731552422365, \"max_speed_ratio\": 0.3954944406753098, \"max_solver_contact_gap_s\": 0.0}, {\"name\": \"s15_zero_object_velocity\", \"N\": 20, \"U2_held\": 20, \"uninterrupted_solver_contact\": 20, \"max_goal_corner_error_deg\": 0.693476357876921, \"max_deviation_deg\": 7.874446289332158, \"max_speed_ratio\": 0.3923173438829882, \"max_solver_contact_gap_s\": 0.0}, {\"name\": \"s15_measured_motion\", \"N\": 20, \"U2_held\": 20, \"uninterrupted_solver_contact\": 16, \"max_goal_corner_error_deg\": 0.696807747872007, \"max_deviation_deg\": 7.9050528693254485, \"max_speed_ratio\": 0.39050552940978345, \"max_solver_contact_gap_s\": 0.02}], \"replay\": {\"prefix_source\": \"s14 official command log, first6800 controls\", \"prefix_commands_exact_for_arbitrary_observations\": 6800, \"suffix_commands_exact_to_frozen_body\": 13200, \"hardware_full_suffix_passes\": 60}, \"hardware\": \"All60 complete suffix exact-state hardware reports compliant; source s14 prefix officially hardware compliant. Runtime preflight0.029ms mean.\", \"retention\": \"All60 hold U2 and avoid floor/height loss.56/60 maintain uni…",
+      "recorded": "2026-10-25T15:29:20",
+      "revision": "0ee28c2d226c",
+      "dirty": false,
+      "diff_base": "d10c59adc9f7…",
+      "code_change": "policies/replay_alternate_upper/manifest.json  |  10 +\n policies/replay_alternate_upper/policy.py      | 122 ++++++++++\n policies/replay_alternate_upper/trajectory.npz | Bin 0 -> 15370 bytes\n policies/replay_two_turn_repair/manifest.json  |  10 +\n policies/replay_two_turn_repair/policy.py      | 134 ++++++++++\n policies/replay_two_turn_repair/trajectory.npz | Bin 0 -> 21210 bytes\n research/alternate_front_ensemble.json         | 325 +++++++++++++++++++++++++\n research/fit_start_velocity.py                 |   8 +-\n research/gpu_progress.json                     |   8 +-\n research/prepare_alternate_front.py            |  21 ++\n research/prepare_replay_repair.py              |  22 ++\n research/s08_repair_ensemble.json              | 245 +++++++++++++++++++\n research/search_front_regrasp.py               |  10 +-\n 13 files changed, 904 insertions(+), 11 deletions(-)"
      },
      "reflection": null,
      "amendments": 0,
