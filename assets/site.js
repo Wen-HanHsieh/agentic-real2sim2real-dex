@@ -113,14 +113,25 @@
     setSrc("target", tv && tv.views[view] ? tv.views[view] : null, tv && tv.posters[view]);
     $("[data-source='target']", root).textContent = tv ? "Source: official target rollout of " + cur.id + " · " + view + " camera · rendered at " + (tv.fps || "?") + " fps, web copy 30 fps · " + (tv.duration || "?") + " s" : "";
   }
+  function showNow(e, newest) {
+    var id = $("[data-now-id]", root), m = $("[data-now-meta]", root), tag = $("[data-now-tag]", root);
+    id.textContent = e ? e.id : "–";
+    m.textContent = e ? "submitted " + e.when + " · " + e.result + (e.score != null ? " " + e.score.toFixed(2) : "") : "";
+    tag.className = "chip" + (e && newest && e.id !== newest.id ? " undecided" : "");
+    tag.textContent = !e || !newest ? "" : e.id === newest.id ? "newest submission" : "not the newest submission · newest is " + newest.id + " (" + newest.when + ")";
+  }
   function load(task, sid) {
     stop(); t = 0;
     var list = DATA[task] || [];
     if (selTask.tagName === "SELECT") selTask.value = task;
-    selSub.innerHTML = list.map(function (e) { return "<option value='" + e.id + "'>" + e.id + " · " + e.when + " · " + e.result + (e.train ? " · training video" : "") + "</option>"; }).join("");
-    if (!list.length) { selSub.innerHTML = "<option>no submissions yet</option>"; cur = null; setSrc("train", null); setSrc("target", null); meta.textContent = ""; sync(true); return; }
-    cur = list.filter(function (e) { return e.id === sid; })[0] || list[0];
+    var opt = function (e) { return "<option value='" + e.id + "'>" + e.id + (e.train ? " ● training video" : "") + " · " + e.when + " · " + e.result + "</option>"; };
+    var withTv = list.filter(function (e) { return e.train; }), noTv = list.filter(function (e) { return !e.train; });
+    selSub.innerHTML = (withTv.length ? "<optgroup label='With training video (" + withTv.length + ")'>" + withTv.map(opt).join("") + "</optgroup>" : "") +
+      (noTv.length ? "<optgroup label='" + (withTv.length ? "Without training video" : "No training videos yet") + " (" + noTv.length + ")'>" + noTv.map(opt).join("") + "</optgroup>" : "");
+    if (!list.length) { selSub.innerHTML = "<option>no submissions yet</option>"; cur = null; setSrc("train", null); setSrc("target", null); meta.textContent = ""; showNow(null, null); sync(true); return; }
+    cur = list.filter(function (e) { return e.id === sid; })[0] || list.filter(function (e) { return e.train && e.target; })[0] || list[0];
     selSub.value = cur.id;
+    showNow(cur, list[0]);
     var views = cur.target ? Object.keys(cur.target.views) : [];
     var keep = selView.value;
     selView.innerHTML = views.map(function (v) { return "<option value='" + v + "'>" + v + "</option>"; }).join("") || "<option>–</option>";
