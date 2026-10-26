@@ -143,7 +143,9 @@
     var tr = cur.train;
     setSrc("train", tr ? tr.src : null, tr && tr.poster);
     $("[data-gone='train'] [data-reason]", root).textContent = "No video for " + cur.id + ": " + cur.train_reason + ".";
-    $("[data-source='train']", root).textContent = tr ? "Source: agent-registered training rollout of " + cur.id + (tr.simulator ? " · " + tr.simulator : "") + (tr.local_run ? " · local run " + tr.local_run : "") + (tr.match === "verified" ? " · package verified (same SHA-256 as " + cur.id + ")" : "") + " · video " + (tr.sha || "") + " · registered " + tr.recorded + " (" + (tr.timing === "after_result" ? "after" : "before") + " the target result)" : "";
+    var ext = !tr ? "" : tr.rollout === "full" ? " · full rollout (agent-stated)" : tr.rollout === "partial" ? " · partial rollout (agent-stated): starts " + (tr.start || "?") + ", " + (tr.stated != null ? tr.stated + " s" : "?") + "; limitations: " + (tr.limits || "?") : " · rollout extent not stated";
+    var len = tr && tr.measured != null ? " · video " + tr.measured.toFixed(1) + " s" + (cur.target && cur.target.duration ? " (target episode " + (+cur.target.duration).toFixed(1) + " s)" : "") : "";
+    $("[data-source='train']", root).textContent = tr ? "Source: agent-registered training rollout of " + cur.id + (tr.simulator ? " · " + tr.simulator : "") + (tr.local_run ? " · local run " + tr.local_run : "") + (tr.match === "verified" ? " · package verified (same SHA-256 as " + cur.id + ")" : " · package not verified") + ext + len + " · file " + (tr.sha || "") + " · registered " + tr.recorded + " (" + (tr.timing === "after_result" ? "after" : "before") + " the target result)" : "";
     meta.textContent = cur.id + " · policy " + (cur.policy || "–") + " · package " + (cur.package || "–") + " · submitted " + cur.when;
     sync(true);
   }
