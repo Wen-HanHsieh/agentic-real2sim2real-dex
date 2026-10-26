@@ -170,8 +170,8 @@ Stored data of earlier submissions, retrieved only when you need it. Not charged
 |---|---|---|
 | Policy interface | `v1` | `manifest.json` `contract_version` (`PACKAGE.md`) |
 | Feedback protocol | `r2s2r-feedback/2` | `feedback.json` `protocol` |
-| Official evaluation | `sv-2.3` (rubric `rubric-1.3`, camera rig `rig-1.1`) | `sensor_report.json` `version`, `rubric_version`, `rig_version` |
+| Official evaluation | `sv-2.3` (rubric `rubric-1.4`, camera rig `rig-1.1`) | `sensor_report.json` `version`, `rubric_version`, `rig_version` |
 | Hardware specification | `hwspec-1.1` | `hardware/hardware_spec.json`; `sensor_report.json` `hardware.spec_version` |
 | Target model | `tm-2` (Wuji Hand 2.2) | `feedback.json` `target_model_version`, `robot`; `history` `official.versions.target_model` |
 
-The components are versioned separately; all three tasks currently use the same versions. The target model version names the simulated robot revision and physics configuration of the target environment; earlier records ran `tm-1` (Wuji Hand 2 Beta 1). Every record keeps the versions it was produced with, and `gate` and `best_evaluated` compare only submissions whose evaluation, rubric, rig, hardware-spec, and target model versions match.
+The components are versioned separately; this task's rubric is `rubric-1.4` since 2026-10-26 (toss apex 5 cm instead of 20 cm), and submissions evaluated before keep `rubric-1.3`. The target model version names the simulated robot revision and physics configuration of the target environment; earlier records ran `tm-1` (Wuji Hand 2 Beta 1). Every record keeps the versions it was produced with, and `gate` and `best_evaluated` compare only submissions whose evaluation, rubric, rig, hardware-spec, and target model versions match.

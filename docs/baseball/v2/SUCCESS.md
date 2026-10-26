@@ -1,11 +1,12 @@
 # Target Environment: Success Criteria and Task Progress Rubric
 
-**Task:** Toss → Catch → Spin → Hold
+**Task:** 5 cm Toss → Catch → Spin → Hold
 
 The target environment evaluates each rollout against these criteria. The total score ranges from **0 to 1.0**.
 
 - **Episode:** 10 s (5,000 control steps at 500 Hz).
 - **Stage dependency:** Later-stage progress is credited only after the preceding stage is fully completed.
+- **Rubric version:** `rubric-1.4` (since 2026-10-26: toss apex at least 5 cm instead of 20 cm; nothing else changed). Earlier submissions keep their `rubric-1.3` results.
 - **Official success:** the official evaluation reports `status: success`. This requires a score of 1.0 even when every unobservable moment counts against the policy, hardware compliance (`hardware/SPECS.md` section 6), and a valid run (all 5,000 steps executed without a policy failure).
 
 ## 1. Toss (0–0.25)
@@ -13,7 +14,7 @@ The target environment evaluates each rollout against these criteria. The total 
 | Score | Milestone |
 |---|---|
 | 0.10 | Upward release with at least 0.05 s of contact-free flight |
-| 0.25 | Upward release with at least 0.10 s of contact-free flight, an apex at least 20 cm above the release point, and a physically consistent free-fall arc |
+| 0.25 | Upward release with at least 0.10 s of contact-free flight, an apex at least 5 cm above the release point, and a physically consistent free-fall arc |
 
 ## 2. Catch (0–0.30)
 
