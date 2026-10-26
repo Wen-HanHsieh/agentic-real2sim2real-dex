@@ -83,11 +83,11 @@ Evaluation evidence produced and stored automatically after every rollout (after
 
 | Category | Commands and tools | Use |
 |---|---|---|
-| Standard research workflow | `history`, `intent`, `note` (`r2s2r-harness submit`, `reflect`) | Experiment history, best evaluated policy, comparisons with earlier comparable submissions; your research intent before and reflection after each submission |
+| Standard research workflow | `history`, `intent`, `note`, `training-video` (`r2s2r-harness submit`, `reflect`, `video`) | Experiment history, best evaluated policy, comparisons with earlier comparable submissions; your research intent before and reflection after each submission; your training-simulation video of each submitted policy |
 | On-demand access | `package`, `frames`, `masks` | Exact earlier packages; RGB frames at any instant of a finished rollout, optionally with depth; selected masks as PNG |
 | Optional analysis tools | `r2s2r-maskiou`, `r2s2r-hwcheck`, your own diagnostics | Compare your simulation's masks with the target's; check trajectories against the hardware rules |
 
-None of them changes official results. Syntax and limits: `REMOTE_API.md` sections 5 and 6; tools: `TOOLS.md`. Optionally, you may also link a video of your own training-simulation rollout of a submitted policy for display next to its target rollout (`training-video`, `r2s2r-harness video`); it is never evaluated.
+None of them changes official results. Syntax and limits: `REMOTE_API.md` sections 5 and 6; tools: `TOOLS.md`. For every submission, also link a video of your own training-simulation rollout of the submitted policy and state whether it is a full or partial rollout (`REMOTE_API.md` section 5); it is shown next to the target rollout and never evaluated.
 
 ## 6. Research Use
 

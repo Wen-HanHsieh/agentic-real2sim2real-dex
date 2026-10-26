@@ -19,17 +19,15 @@ r2s2r-pen fetch sNN > sNN.tgz
 r2s2r-pen history
 r2s2r-pen intent < intent.json
 r2s2r-pen note sNN < note.json
+r2s2r-pen training-video sNN PACKAGE_SHA256 [SIMULATOR] [run=LOCAL_RUN] < my_rollout.mp4
 
 # On-demand access
 r2s2r-pen package sNN > sNN_package.tgz
 r2s2r-pen frames sNN <top|left|right|all> <t1,t2,...> [depth] > frames.tgz
 r2s2r-pen masks sNN <top|left|right|all> <i0:i1[:step] | i,j,...> > masks.tgz
-
-# Optional: your training-simulation video of a submitted policy (display only)
-r2s2r-pen training-video sNN PACKAGE_SHA256 [SIMULATOR] [run=LOCAL_RUN] < my_rollout.mp4
 ```
 
-`r2s2r-harness submit` and `r2s2r-harness reflect` (`TOOLS.md`) wrap `intent`, `submit`, and `note` (section 5); `r2s2r-harness video` wraps `training-video` (section 6). Responses are JSON, except `fetch`, `frames`, and `masks` (`.tar.gz`) and `package` (the archive exactly as submitted). Errors return `{"error": "..."}` with a non-zero exit code. `r2s2r-preflight` is a local check (`PACKAGE.md`).
+`r2s2r-harness submit` and `r2s2r-harness reflect` (`TOOLS.md`) wrap `intent`, `submit`, and `note` (section 5); `r2s2r-harness video` wraps `training-video` (section 5). Responses are JSON, except `fetch`, `frames`, and `masks` (`.tar.gz`) and `package` (the archive exactly as submitted). Errors return `{"error": "..."}` with a non-zero exit code. `r2s2r-preflight` is a local check (`PACKAGE.md`).
 
 ## 2. Submission
 
@@ -111,7 +109,7 @@ Use `limitation` when an evaluation ended without rollout evidence. A later refl
 
 **`history`** lists every submission with its hashes (`policy_sha256`, `archive_sha256`, `feedback_sha256`), `state`, `official` results (status, score and bounds, stages, milestones, versions), notes with `timing` (`before_result` / `after_result`), `role`, `keep`, `gate`, and:
 
-- **`research`:** the bound intent, the rollout evidence (`complete rollout`, `partial rollout` up to a policy failure, or `none`), reflections, current decision and next hypothesis, and `needs`: every missing part (for example `reflection: missing`). Missing parts are listed, never filled in, and never block a submission.
+- **`research`:** the bound intent, the rollout evidence (`complete rollout`, `partial rollout` up to a policy failure, or `none`), reflections, current decision and next hypothesis, `training_video`, and `needs`: every missing part (for example `reflection: missing`). Missing parts are listed, never filled in, and never block a submission.
 - **`comparison`:** `vs_previous` (the previous comparable submission) and `vs_best_before` (the best comparable earlier submission): `improved`, `regressed`, `tied`, or `inconclusive` (score bounds overlap, or an unknown status), with score delta, stage deltas, and milestones gained or lost. One trial per submission: success is compared as a status, not a rate.
 - **`gate`:** `first`, `improved`, `equal`, `regressed`, or `not_comparable` (different evaluation or target model versions), against the best comparable earlier submission.
 - **`best_evaluated`:** ranked by official results only: valid run, then no hardware violation, then `success`, then score, then score lower bound; ties go to the earlier submission. `best_by_versions` gives the best of each version group.
@@ -132,6 +130,30 @@ A plain `note sNN` (without `"record"`) keeps the original schema. Required fiel
 
 All records are append-only and hash-chained (corrections are new records); they cannot carry or change official results, and unknown fields are refused. `r2s2r-harness` (`TOOLS.md`) wraps these commands.
 
+**Training-simulation video (standard research artifact).** For every target submission, record a representative rollout of the submitted policy in your own training simulator and link it to the submission, so that it can be compared with the target rollout of the same package (the public research dashboard shows both). Prefer a full episode from the documented initial condition, and keep the local experiment and simulator details. The video must show your own local simulation of that exact package: never a human demonstration, a target evaluation video, another policy's rollout, an upstream repository demonstration, or reconstructed footage.
+
+1. **Upload** the video for the exact package: `r2s2r-harness video sNN my_rollout.mp4 --package my_policy/ --simulator NAME --local-run ID` (`TOOLS.md`), or `training-video sNN PACKAGE_SHA256 [SIMULATOR] [run=LOCAL_RUN]` with the video on stdin. The target refuses a video unless `PACKAGE_SHA256` equals the submission's `archive_sha256`.
+2. **State the rollout** with `note sNN` and `"record": "training_video"`, naming the `sha256` of the uploaded video (in the upload response):
+
+```json
+{"record": "training_video", "video_sha256": "...", "rollout": "full"}
+{"record": "training_video", "video_sha256": "...", "rollout": "partial", "start_state": "...", "duration_s": 12.5, "limitations": "..."}
+{"record": "training_video", "rollout": "none", "reason": "why no simulator rollout could be recorded"}
+```
+
+| Field | Meaning | Limits |
+|---|---|---|
+| `PACKAGE_SHA256` | SHA-256 of the exact archive submitted as `sNN`; must equal its `archive_sha256` in `history`, otherwise the video is refused | 64 lowercase hex digits |
+| `SIMULATOR` | Label of your simulator | 1–40 characters `A-Z a-z 0-9 . _ + -` |
+| `run=LOCAL_RUN` | Identifier of your local experiment, run, or checkpoint | 1–80 characters `A-Z a-z 0-9 . _ : + -` |
+| Video | MP4 or WebM of a rollout of that exact package in your simulator | ≤ 64 MB; ≤ 4 per submission (the latest is shown; earlier ones are kept) |
+| `video_sha256` | SHA-256 of a video already registered for this submission | 64 lowercase hex digits |
+| `rollout` | `full` (a whole episode), `partial`, or `none` (no video) | — |
+| `start_state`, `duration_s`, `limitations` | Required for `partial`: where the shown rollout starts, how long it is, and what it does not show | ≤ 1000 characters; (0, 3600] s; ≤ 2000 characters |
+| `reason` | Required for `none`: why no simulator rollout could be recorded | ≤ 2000 characters |
+
+The video is never evaluated or charged and never changes official results, comparisons, or the best policy; a missing or failed video never blocks a submission, and it can be added before or after the result without a new submission. In `history`, `research.training_video` shows whether it is expected for the submission, the number of videos, the latest video's SHA-256, and the rollout label; a missing video or rollout statement is listed in `research.needs`. Do not rerun earlier experiments only to produce videos for earlier submissions.
+
 ## 6. On-demand Access
 
 Stored data of earlier submissions, retrieved only when you need it. Not charged; never changes official results. `frames` and `masks` complement `fetch`: frames at any instant (also between video frames) with optional depth, and selected masks as PNG without downloading the whole bundle.
@@ -141,17 +163,6 @@ Stored data of earlier submissions, retrieved only when you need it. Not charged
 | `package sNN` | The exact archive you submitted; its SHA-256 equals `archive_sha256` in `history` | — |
 | `frames sNN VIEW TIMES [depth]` | PNG frames from the same cameras at any instant (s, up to 3 decimals; nearest 1 ms), optional 16-bit depth, and `frames/frames.json` | ≤ 8 times per call; ≤ 240 frames (times × views) per submission |
 | `masks sNN VIEW FRAMES` | Masks as PNG (255 = object) with `masks/masks.json`; `FRAMES`: `i0:i1[:step]` (end excluded) or `i,j,...` indices of `video/frames.json` | ≤ 60 masks (frames × views) per call |
-
-**Optional: training-simulation video (display only).** `training-video sNN PACKAGE_SHA256 [SIMULATOR] [run=LOCAL_RUN]` links a video (on stdin) of your own training-simulation rollout of the policy submitted as `sNN`, so that it can be shown publicly next to the target rollout of the same submission. It is never evaluated, never charged, and never changes official results, `history`, or your research records; uploading one is entirely optional.
-
-| Field | Meaning | Limits |
-|---|---|---|
-| `PACKAGE_SHA256` | SHA-256 of the exact archive submitted as `sNN`; must equal its `archive_sha256` in `history`, otherwise the video is refused | 64 lowercase hex digits |
-| `SIMULATOR` | Optional label of your simulator | 1–40 characters `A-Z a-z 0-9 . _ + -` |
-| `run=LOCAL_RUN` | Optional identifier of your local run, checkpoint, or experiment | 1–80 characters `A-Z a-z 0-9 . _ : + -` |
-| Video | MP4 or WebM of a rollout of that exact package in your simulator | ≤ 64 MB; ≤ 4 per submission (the latest is shown; earlier ones are kept) |
-
-The response confirms the stored video's SHA-256 and the package match. `r2s2r-harness video` (`TOOLS.md`) computes the package hash from the directory or archive for you and checks it against `history` before uploading.
 
 ## 7. Versions
 

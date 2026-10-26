@@ -13,7 +13,7 @@ Implementations: `tools/harness/`, `tools/maskiou/`, `tools/hwcheck/`.
 
 ## 1. Research Harness (Standard Research Workflow)
 
-`r2s2r-harness` keeps the standard research records and policy artifacts using the API commands `intent`, `submit`, `history`, `note`, `fetch`, and `package`; its optional `video` command uses `training-video`.
+`r2s2r-harness` keeps the standard research records and policy artifacts using the API commands `intent`, `submit`, `history`, `note`, `fetch`, and `package`; its `video` command uses `training-video`.
 
 ```bash
 export R2S2R_API=r2s2r-baseball        # or pass --api r2s2r-baseball
@@ -41,7 +41,7 @@ r2s2r-harness video sNN my_rollout.mp4 --package my_policy/ [--simulator NAME] [
 - **`gate`:** the official regression gate and the comparisons (`vs_previous`, `vs_best_before`) of a submission.
 - **`best`:** the best evaluated policy; `--download` retrieves its exact package on demand after verifying the hash.
 - **`archive` / `verify`:** a write-once local copy of history, feedback bundles, and packages with a manifest, and its integrity check.
-- **`video`** (optional, display only): links a video of your own training-simulation rollout of the policy submitted as `sNN` (MP4 or WebM, ≤ 64 MB). `--package` is the directory or archive you submitted; the harness packs it the same way as `submit`, refuses it unless its SHA-256 equals the submission's `archive_sha256`, uploads with `training-video`, and checks the stored video's SHA-256. Never evaluated or charged (`REMOTE_API.md` section 6).
+- **`video`** (standard research artifact, for every submission): links a video of your own training-simulation rollout of the policy submitted as `sNN` (MP4 or WebM, ≤ 64 MB). `--package` is the directory or archive you submitted; the harness packs it the same way as `submit`, refuses it unless its SHA-256 equals the submission's `archive_sha256`, uploads with `training-video`, and checks the stored video's SHA-256. Then state the rollout (full or partial) with a `training_video` record. Never evaluated or charged (`REMOTE_API.md` section 5).
 
 The best policy, the gate, and the comparisons are computed by the target environment from official results; the harness only records and displays them, and never restores or deploys a policy unless you ask (`best --download`). **You decide which experiments to run, which policies to keep, and how to improve them.**
 
