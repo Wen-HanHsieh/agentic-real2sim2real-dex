@@ -103,7 +103,7 @@ The target binds an intent to the first later submission whose `archive_sha256` 
  "keep": "keep | reject | undecided", "decision": "...", "next_hypothesis": "...", "limitation": "...", "analysis": "..."}
 ```
 
-Use `limitation` when an evaluation ended without rollout evidence. A later reflection on the same submission is an amendment; earlier records remain.
+Use `limitation` when an evaluation ended without rollout evidence. After each target evaluation, the reflection also carries the sim-to-target calibration outcome (`TOOLS.md` section 2): discrepancies and simulator changes in `analysis` and `evidence`, the repair screened in simulation in `next_hypothesis`. A later reflection on the same submission is an amendment; earlier records remain.
 
 **`history`** lists every submission with its hashes (`policy_sha256`, `archive_sha256`, `feedback_sha256`), `state`, `official` results (status, score and bounds, stages, milestones, versions), notes with `timing` (`before_result` / `after_result`), `role`, `keep`, `gate`, and:
 

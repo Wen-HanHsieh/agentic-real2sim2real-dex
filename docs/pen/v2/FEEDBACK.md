@@ -93,7 +93,8 @@ Not provided: explanations of failures or suggested fixes, segmentation masks, a
 |---|---|---|
 | Standard research workflow | `history`, `intent`, `note`, `training-video` (`r2s2r-harness submit`, `reflect`, `video`) | Experiment history, best evaluated policy, comparisons with earlier comparable submissions; your research intent before and reflection after each submission; your training-simulation video of each submitted policy |
 | On-demand access | `package`, `frames` | Exact earlier packages; RGB frames at any instant of a finished rollout, optionally with depth |
-| Optional analysis tools | `r2s2r-hwcheck`, your own diagnostics | Check trajectories against the hardware rules; your own comparisons of target and simulation |
+| Sim-to-target calibration (required after each target evaluation) | `r2s2r-calib` | Replay the target's action sequence in your simulator, compare the observable behavior, diagnose the discrepancies, update your simulator, screen repairs in simulation before the next submission, record the evidence (`TOOLS.md` section 2) |
+| Optional analysis tools | `r2s2r-hwcheck`, your own diagnostics | Check trajectories against the hardware rules; your own diagnostics |
 
 None of them changes official results. Syntax and limits: `REMOTE_API.md` sections 5 and 6; tools: `TOOLS.md`. For every submission, also link a video of your own training-simulation rollout of the submitted policy and state whether it is a full or partial rollout (`REMOTE_API.md` section 5); it is shown next to the target rollout and never evaluated.
 
