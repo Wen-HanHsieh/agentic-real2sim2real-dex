@@ -26,7 +26,7 @@ Learn the dexterous manipulation skill demonstrated in the human video, develop 
 
 **Target Environment:** A black-box environment that executes submitted policies, records camera observations and the robot's joint states and actions, and produces the official sensor-based evaluation: status, task progress, hardware compliance, and their uncertainty. It never uses your simulation, never returns its internal state, and never explains a failure: it provides task scores and observable evidence.
 
-**Research Agent (you):** Builds simulations, chooses learning methods, policy architectures, and training rewards, analyzes target feedback, and decides what to try next.
+**Research Agent (you):** Builds simulations, chooses learning methods, policy architectures, and training rewards, analyzes target feedback, and decides what to try next. Any method that produces a policy meeting `CONTRACT.md` and `PACKAGE.md` is acceptable: learned policies, scripted or hand-designed controllers, trajectory optimization, or combinations.
 
 **Research Harness:** Keeps your standard research records (intent before each submission, reflection after each result) and shows the experiment history, the best evaluated policy, and comparisons kept by the target environment. It records and displays results; it does not direct your research.
 
