@@ -24,10 +24,9 @@ r2s2r-baseball training-video sNN PACKAGE_SHA256 [SIMULATOR] [run=LOCAL_RUN] < m
 # On-demand access
 r2s2r-baseball package sNN > sNN_package.tgz
 r2s2r-baseball frames sNN <top|left|right|all> <t1,t2,...> [depth] > frames.tgz
-r2s2r-baseball masks sNN <top|left|right|all> <i0:i1[:step] | i,j,...> > masks.tgz
 ```
 
-`r2s2r-harness submit` and `r2s2r-harness reflect` (`TOOLS.md`) wrap `intent`, `submit`, and `note` (section 5); `r2s2r-harness video` wraps `training-video` (section 5). Responses are JSON, except `fetch`, `frames`, and `masks` (`.tar.gz`) and `package` (the archive exactly as submitted). Errors return `{"error": "..."}` with a non-zero exit code. `r2s2r-preflight` is a local check (`PACKAGE.md`).
+`r2s2r-harness submit` and `r2s2r-harness reflect` (`TOOLS.md`) wrap `intent`, `submit`, and `note` (section 5); `r2s2r-harness video` wraps `training-video` (section 5). Responses are JSON, except `fetch` and `frames` (`.tar.gz`) and `package` (the archive exactly as submitted). Errors return `{"error": "..."}` with a non-zero exit code. `r2s2r-preflight` is a local check (`PACKAGE.md`).
 
 ## 2. Submission
 
@@ -61,11 +60,10 @@ Standard feedback is the evaluation evidence the target environment stores autom
 ├── calibration.json
 ├── logs/trial_0.npz
 ├── video/   top.mp4  left.mp4  right.mp4  frames.json  video.json
-├── sensor/  sensor_report.json  sensor_tracks.npz
-└── masks/   top.npz  left.npz  right.npz  masks.json
+└── sensor/  sensor_report.json  sensor_tracks.npz
 ```
 
-File contents, uncertainty, and timestamps: `FEEDBACK.md`.
+The feedback contains task scores and observable evidence in three categories: verifier results, rollout observations, and hardware diagnostics (`FEEDBACK.md` section 4). It does not explain failures and contains no segmentation masks. `feedback.json` lists the SHA-256 of every returned file; `feedback_sha256` in `history` is the SHA-256 of that `feedback.json`. File contents, uncertainty, and timestamps: `FEEDBACK.md`.
 
 ## 5. Standard Research Workflow
 
@@ -156,13 +154,12 @@ The video is never evaluated or charged and never changes official results, comp
 
 ## 6. On-demand Access
 
-Stored data of earlier submissions, retrieved only when you need it. Not charged; never changes official results. `frames` and `masks` complement `fetch`: frames at any instant (also between video frames) with optional depth, and selected masks as PNG without downloading the whole bundle.
+Stored data of earlier submissions, retrieved only when you need it. Not charged; never changes official results. `frames` complements `fetch`: RGB frames at any instant (also between video frames), optionally with depth.
 
 | Command | Returns | Limits |
 |---|---|---|
 | `package sNN` | The exact archive you submitted; its SHA-256 equals `archive_sha256` in `history` | — |
 | `frames sNN VIEW TIMES [depth]` | PNG frames from the same cameras at any instant (s, up to 3 decimals; nearest 1 ms), optional 16-bit depth, and `frames/frames.json` | ≤ 8 times per call; ≤ 240 frames (times × views) per submission |
-| `masks sNN VIEW FRAMES` | Masks as PNG (255 = object) with `masks/masks.json`; `FRAMES`: `i0:i1[:step]` (end excluded) or `i,j,...` indices of `video/frames.json` | ≤ 60 masks (frames × views) per call |
 
 ## 7. Versions
 
@@ -170,8 +167,25 @@ Stored data of earlier submissions, retrieved only when you need it. Not charged
 |---|---|---|
 | Policy interface | `v1` | `manifest.json` `contract_version` (`PACKAGE.md`) |
 | Feedback protocol | `r2s2r-feedback/2` | `feedback.json` `protocol` |
+| Feedback contents | `agent-view-1` | `feedback.json` `feedback_view`; `sensor_report.json` `feedback_view` |
 | Official evaluation | `sv-2.3` (rubric `rubric-1.4`, camera rig `rig-1.1`) | `sensor_report.json` `version`, `rubric_version`, `rig_version` |
 | Hardware specification | `hwspec-1.1` | `hardware/hardware_spec.json`; `sensor_report.json` `hardware.spec_version` |
 | Target model | `tm-2` (Wuji Hand 2.2) | `feedback.json` `target_model_version`, `robot`; `history` `official.versions.target_model` |
 
 The components are versioned separately; this task's rubric is `rubric-1.4` since 2026-10-26 (toss apex 5 cm instead of 20 cm), and submissions evaluated before keep `rubric-1.3`. The target model version names the simulated robot revision and physics configuration of the target environment; earlier records ran `tm-1` (Wuji Hand 2 Beta 1). Every record keeps the versions it was produced with, and `gate` and `best_evaluated` compare only submissions whose evaluation, rubric, rig, hardware-spec, and target model versions match.
+
+## 8. Access Boundaries
+
+The target environment provides task scores and observable evidence. Diagnosing failures and improving the policy is your task.
+
+| Available to you | Not available |
+|---|---|
+| Task definition, success criteria, robot and object specifications, demonstration (this bundle) | The target environment's simulator, its physics parameters, and its internal state during a rollout |
+| Official results: status, score with bounds, stage scores, milestones (`fetch`, `history`) | Ground-truth object and contact states |
+| Rollout observations: camera videos, RGB and depth frames on demand (`frames`), sensor-estimated object tracks, joint states and actions (`logs/trial_0.npz`) | Explanations of failures or suggested fixes |
+| Hardware and runtime diagnostics: joint position and speed limits, action validity, estimated torque demand, policy errors, run validity | Segmentation masks |
+| Your own packages, research records, and training-simulation videos | The verifier's implementation and configuration, and operator diagnostics |
+
+- Your key reaches only the commands in section 1, for this task's experiment; anything else is refused and no shell is started.
+- No command changes success criteria, scoring rules, official results, or the budget; your records and videos never change official results.
+- The deployed policy receives joint-only observations (`CONTRACT.md`) and runs in a sandbox (`PACKAGE.md`).

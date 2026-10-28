@@ -1,15 +1,14 @@
 # Research Tools
 
-These tools run on your machine and never compute or change official results. `r2s2r-harness` is the client of the standard research workflow (`README.md`, `REMOTE_API.md` section 5). `r2s2r-maskiou` and `r2s2r-hwcheck` are optional analysis tools, as are your own diagnostics. `r2s2r-preflight` checks a package before you send it. Only `r2s2r-harness` contacts the target environment, and only through the commands of `REMOTE_API.md`.
+These tools run on your machine and never compute or change official results. `r2s2r-harness` is the client of the standard research workflow (`README.md`, `REMOTE_API.md` section 5). `r2s2r-hwcheck` is an optional analysis tool, as are your own diagnostics. `r2s2r-preflight` checks a package before you send it. Only `r2s2r-harness` contacts the target environment, and only through the commands of `REMOTE_API.md`.
 
 | Tool | Category | Purpose | Reference |
 |---|---|---|---|
 | `r2s2r-harness` | Standard research workflow | Research records (intent, reflection), history, comparisons, best evaluated policy, local archives | Section 1 |
-| `r2s2r-maskiou` | Optional analysis | Compare target segmentation masks with masks from your simulation | Section 2 |
 | `r2s2r-hwcheck` | Optional analysis | Check local trajectories against the hardware rules | `HARDWARE_CHECK.md` |
 | `r2s2r-preflight` | Package check | Check a policy package before `validate` / `submit` | `PACKAGE.md` |
 
-Implementations: `tools/harness/`, `tools/maskiou/`, `tools/hwcheck/`.
+Implementations: `tools/harness/`, `tools/hwcheck/`.
 
 ## 1. Research Harness (Standard Research Workflow)
 
@@ -44,25 +43,3 @@ r2s2r-harness video sNN my_rollout.mp4 --package my_policy/ [--simulator NAME] [
 - **`video`** (standard research artifact, for every submission): links a video of your own training-simulation rollout of the policy submitted as `sNN` (MP4 or WebM, ≤ 64 MB). `--package` is the directory or archive you submitted; the harness packs it the same way as `submit`, refuses it unless its SHA-256 equals the submission's `archive_sha256`, uploads with `training-video`, and checks the stored video's SHA-256. Then state the rollout (full or partial) with a `training_video` record. Never evaluated or charged (`REMOTE_API.md` section 5).
 
 The best policy, the gate, and the comparisons are computed by the target environment from official results; the harness only records and displays them, and never restores or deploys a policy unless you ask (`best --download`). **You decide which experiments to run, which policies to keep, and how to improve them.**
-
-## 2. Sim-to-Target Mask IoU (Optional Analysis)
-
-`r2s2r-maskiou` compares the masks of a fetched feedback bundle (`masks/`) with masks rendered by your simulation, per frame and view. It is an optional diagnostic, not an official reward or success criterion.
-
-```bash
-r2s2r-maskiou sNN_bundle/ my_sim_masks.npz --json iou.json --vis overlays/
-```
-
-**Simulation input (`.npz`):**
-
-- `top`, `left`, `right`: `(n, H, W)` binary masks (any subset of views).
-- `t` (seconds since control step 0) or `control_step`: `(n,)`.
-- The camera you rendered with: `calibration_sha256` of the bundle's `calibration.json`, or `K_<view>` and `T_world_cam_<view>`.
-
-**Rules:**
-
-- Each frame is matched to the target frame at the same control step (within 1 ms; `--max-time-error` to change); nothing is interpolated or warped. `--time-offset` shifts your clock by a constant you choose and is reported.
-- A view whose camera or image size does not match is refused (with `--allow-calibration-mismatch`: compared but marked unreliable).
-- Both masks empty gives an undefined IoU, not 1. Frames where the target mask is invalid, occluded (`visible_fraction` < 0.5; render your hand as an occluder too), or has low colour agreement are reported.
-
-**Output:** per-frame IoU, per-view mean, median and minimum, multi-view mean, warnings, and optional overlays (green: target only, magenta: yours only, white: both).

@@ -53,4 +53,4 @@ The target environment scores these criteria from sensor-observable evidence: ca
 
 ## 6. Research Freedom
 
-These criteria define the **official target evaluation**, not a required training reward. You may design your own training rewards, intermediate objectives, curricula, optimization methods, simulators, and policy architectures. Your own metrics do not replace official results.
+These criteria define the **official target evaluation**, not a required training reward. The target score (`score`, also reported as `progress` and `reward` in `sensor_report.json`) is an evaluation metric. You may design your own training rewards, intermediate objectives, curricula, optimization methods, simulators, and policy architectures; your training reward need not resemble the target score. Your own metrics do not replace official results.

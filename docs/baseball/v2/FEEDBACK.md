@@ -26,7 +26,7 @@ Three fixed, synchronized RGB-D cameras (global shutter, 848 × 480, pinhole wit
 | `status` | Official result: `success`, `failure`, or `unknown` (rule below and in `status_rule`) |
 | `task_status` | The same decision for the task rubric alone |
 | `score`, `score_bounds` | Task progress 0–1 (stages: toss, catch, spin, hold) and its uncertainty interval |
-| `progress`, `reward` (and `_bounds`) | The same quantity as `score` |
+| `progress`, `reward` (and `_bounds`) | The same quantity as `score`: an evaluation metric, not a training reward (`SUCCESS.md`) |
 | `stages` | Per-stage scores; per milestone `reached`, `reached_bounds`, `certain`, time |
 | `events` | Timestamped observations (release, landing, rest, rotation milestones, loss of retention) |
 | `object_motion` | Measured summary quantities |
@@ -34,6 +34,7 @@ Three fixed, synchronized RGB-D cameras (global shutter, 848 × 480, pinhole wit
 | `runtime` | `valid` / `invalid`, steps run and expected, policy error, inference time |
 | `confidence`, `observability`, `unobservable` | Observed fraction, measurement margins, what cannot be observed |
 | `version`, `rubric_version`, `rig_version`, `code_sha256` | Evaluation versions (`REMOTE_API.md` section 7) |
+| `sections`, `feedback_view` | Index of these fields by category (section 4) and the version of the feedback contents |
 
 **Status rule:**
 
@@ -41,9 +42,9 @@ Three fixed, synchronized RGB-D cameras (global shutter, 848 × 480, pinhole wit
 - `failure`: the score is below 1.0 even when all of them count for the policy, a hardware limit is clearly exceeded, or the run is invalid (policy failure or missing steps).
 - `unknown`: otherwise; the evidence cannot decide.
 
-**Sensor estimates, not ground truth.** Every value is measured from the cameras and the joint log; the target's internal state is never read or returned. A joint measurement within encoder noise of a limit is `uncertain`; torque is only estimated (`hardware/SPECS.md` section 6). The evaluation reports what happened, not why; diagnosing causes is your task.
+**Sensor estimates, not ground truth.** Every value is measured from the cameras and the joint log; the target's internal state is never read or returned. A joint measurement within encoder noise of a limit is `uncertain`; torque is only estimated (`hardware/SPECS.md` section 6). The evaluation reports what happened, not why: a stage that scored 0 is not explained, and a loss of retention gives its time, not the condition that ended it. Diagnosing causes from the videos, frames, tracks, and logs is your task.
 
-## 3. Object Tracking and Segmentation
+## 3. Object Tracking
 
 **Measurements**
 
@@ -61,33 +62,40 @@ A milestone is certain only when the measurement clears the `SUCCESS.md` thresho
 
 **Object tracks** (`sensor/sensor_tracks.npz`, one row per video frame): `t`, `hand_contact`, `environment_contact` (1 / 0 / NaN), `hand_contact_uncertain`, `environment_contact_uncertain`, `hand_gap_m`, and `ball_centre` (n, 3) [m], `ball_speed` (n,) [m/s], `ball_rotation_z_rad` (n,) cumulative signed rotation about +Z. NaN means not observed.
 
-**Segmentation masks** (`masks/<view>.npz`): the `ball` mask of every frame and view, pixel-aligned with the RGB and depth images and indexed like `video/frames.json`. Each is the object's camera-estimated pose rendered with its public geometry, kept where the observed depth agrees within 8 mm; pixels hidden by the hand are excluded. Run-length encoded, with per-frame `valid`, `visible_fraction`, `colour_agreement`, and other fields described in `masks/masks.json`. A mask can be invalid or partly occluded.
-
 ## 4. Standard Feedback
 
 Evaluation evidence produced and stored automatically after every rollout (after a policy failure: up to the failure), never changed afterwards. It is not pushed to you; retrieve it with `fetch sNN` (`REMOTE_API.md` section 4).
 
 | File | Contents |
 |---|---|
-| `feedback.json` | Protocol, task, policy SHA-256, target model version and robot revision, evaluation versions, and the SHA-256 of every file |
+| `feedback.json` | Protocol, task, policy SHA-256, target model version and robot revision, evaluation versions, feedback categories (`contents`), and the SHA-256 of every returned file |
 | `calibration.json` | Camera intrinsics, extrinsics, conventions, depth model |
 | `logs/trial_0.npz` | `joint_names`; measured `q`, `qd`; commanded `q_target`, `qd_target` (5,000 rows) |
 | `video/top.mp4`, `video/left.mp4`, `video/right.mp4` | Synchronized RGB videos |
 | `video/frames.json`, `video/video.json` | Per-frame time and control step; video metadata |
 | `sensor/sensor_report.json` | Official evaluation (section 2) |
 | `sensor/sensor_tracks.npz` | Sensor-estimated object tracks and contact (section 3) |
-| `masks/top.npz`, `masks/left.npz`, `masks/right.npz`, `masks/masks.json` | Segmentation masks and their encoding (section 3) |
+
+**Feedback categories** (`feedback.json` `contents`; `sensor_report.json` `sections`):
+
+| Category | Contents |
+|---|---|
+| Verifier results | `status`, `task_status`, `score` and `progress` with bounds, `stages` and milestones, `confidence`, versions |
+| Rollout observations | Videos, `calibration.json`, `sensor/sensor_tracks.npz`, `logs/trial_0.npz`; `events`, `object_motion`, `observability`, `unobservable`; RGB and depth frames on demand (`frames`) |
+| Hardware diagnostics | `hardware` (joint position and speed limits, action validity, estimated torque demand) and `runtime` (validity, steps, policy error, inference time); `status` reports a policy failure |
+
+Not provided: explanations of failures or suggested fixes, segmentation masks, and the target's internal state (`REMOTE_API.md` section 8).
 
 ## 5. Research Workflow, On-demand Access, and Analysis Tools
 
 | Category | Commands and tools | Use |
 |---|---|---|
 | Standard research workflow | `history`, `intent`, `note`, `training-video` (`r2s2r-harness submit`, `reflect`, `video`) | Experiment history, best evaluated policy, comparisons with earlier comparable submissions; your research intent before and reflection after each submission; your training-simulation video of each submitted policy |
-| On-demand access | `package`, `frames`, `masks` | Exact earlier packages; RGB frames at any instant of a finished rollout, optionally with depth; selected masks as PNG |
-| Optional analysis tools | `r2s2r-maskiou`, `r2s2r-hwcheck`, your own diagnostics | Compare your simulation's masks with the target's; check trajectories against the hardware rules |
+| On-demand access | `package`, `frames` | Exact earlier packages; RGB frames at any instant of a finished rollout, optionally with depth |
+| Optional analysis tools | `r2s2r-hwcheck`, your own diagnostics | Check trajectories against the hardware rules; your own comparisons of target and simulation |
 
 None of them changes official results. Syntax and limits: `REMOTE_API.md` sections 5 and 6; tools: `TOOLS.md`. For every submission, also link a video of your own training-simulation rollout of the submitted policy and state whether it is a full or partial rollout (`REMOTE_API.md` section 5); it is shown next to the target rollout and never evaluated.
 
 ## 6. Research Use
 
-You may use videos, joint logs, object tracks, masks, and official results to diagnose failures and improve your simulation and policy. Your own diagnostic metrics do not replace the official evaluation.
+You may use videos, frames, joint logs, object tracks, and official results to diagnose failures and improve your simulation and policy. Your own diagnostic metrics do not replace the official evaluation.
