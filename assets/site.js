@@ -25,7 +25,8 @@
       panels.forEach(function (p) { p.hidden = p.getAttribute("data-panel") !== k; });
     }
     btns.forEach(function (b) { b.addEventListener("click", function () { show(b.getAttribute("data-tab")); }); });
-    if (btns.length) show(btns[0].getAttribute("data-tab"));
+    var d = box.getAttribute("data-default");
+    if (btns.length) show(btns.some(function (b) { return b.getAttribute("data-tab") === d; }) ? d : btns[0].getAttribute("data-tab"));
     tabsets[g] = show;
   });
 

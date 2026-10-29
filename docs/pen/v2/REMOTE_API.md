@@ -168,11 +168,11 @@ Stored data of earlier submissions, retrieved only when you need it. Not charged
 | Policy interface | `v1` | `manifest.json` `contract_version` (`PACKAGE.md`) |
 | Feedback protocol | `r2s2r-feedback/2` | `feedback.json` `protocol` |
 | Feedback contents | `agent-view-1` | `feedback.json` `feedback_view`; `sensor_report.json` `feedback_view` |
-| Official evaluation | `sv-2.3` (rubric `rubric-1.3`, camera rig `rig-1.1`) | `sensor_report.json` `version`, `rubric_version`, `rig_version` |
+| Official evaluation | `sv-2.4` (rubric `rubric-1.3`, camera rig `rig-1.2`) | `sensor_report.json` `version`, `rubric_version`, `rig_version` |
 | Hardware specification | `hwspec-1.1` | `hardware/hardware_spec.json`; `sensor_report.json` `hardware.spec_version` |
 | Target model | `tm-2` (Wuji Hand 2.2) | `feedback.json` `target_model_version`, `robot`; `history` `official.versions.target_model` |
 
-The components are versioned separately; all three tasks currently use the same versions. The target model version names the simulated robot revision and physics configuration of the target environment; earlier records ran `tm-1` (Wuji Hand 2 Beta 1). Every record keeps the versions it was produced with, and `gate` and `best_evaluated` compare only submissions whose evaluation, rubric, rig, hardware-spec, and target model versions match.
+The components are versioned separately; all four tasks currently use the same evaluation versions, and this task's object is environment version `env-2` (the pen reconstructed from the demonstration video, see the object specification; records produced before 2026-10-28 ran `env-1`, a plain 140 mm capsule), where the environment version names the object a record was run with and the geometry its cameras and evaluation assume, reported as `environment_version` in the feedback manifest and in the sensor report. The target model version names the simulated robot revision and physics configuration of the target environment; earlier records ran `tm-1` (Wuji Hand 2 Beta 1). Every record keeps the versions it was produced with, and `gate` and `best_evaluated` compare only submissions whose evaluation, rubric, rig, hardware-spec, and target model versions match.
 
 ## 8. Access Boundaries
 
