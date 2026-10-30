@@ -89,7 +89,7 @@
   function txt(x, y, s, cls, parent, anchor) { var e = el("text", { x: x, y: y, "class": cls, "text-anchor": anchor || "middle" }, parent); e.textContent = s; return e; }
   function niceStep(span, n) { var r = span / n, s = [1, 2, 5, 10, 20, 25, 50, 100]; for (var i = 0; i < s.length; i++) if (s[i] >= r) return s[i]; return 100; }
   function tipLines(p, s) {
-    var L = [[p.id, " · " + s.label, true], ["Progress score: ", p.score == null ? "no score" : p.score.toFixed(2)], ["Status: ", p.status + (p.best ? " · best of its version group" : "")], ["Submitted: ", p.date]];
+    var L = [[p.id, " · " + s.label, true], ["Progress score: ", p.score == null ? "N/A (" + (p.why ? p.why + "; " : "") + "not ranked)" : p.score.toFixed(2)], ["Status: ", p.status + (p.best ? " · best of its version group" : "")], ["Submitted: ", p.date]];
     var st = Object.keys(p.stages || {}).map(function (k) { return k + " " + (+p.stages[k]).toFixed(2); }).join(" · ");
     if (st) L.push(["Stages: ", st]);
     if (p.hw || p.rt) L.push(["Run: ", (p.rt ? "run " + p.rt : "") + (p.hw && p.rt ? " · " : "") + (p.hw ? "hardware " + p.hw : "")]);
@@ -116,7 +116,7 @@
     txt((m.l + W - m.r) / 2, H - 4, "Submission number", "axt", svg);
     var yl = el("text", { x: 12, y: m.t + ph / 2, "class": "axt", "text-anchor": "middle", transform: "rotate(-90 12 " + (m.t + ph / 2) + ")" }, svg);
     yl.textContent = "Progress score";
-    if (hasNS) { el("rect", { x: m.l, y: m.t + ph + 4, width: W - m.l - m.r, height: ns - 6, rx: 4, "class": "nsband" }, svg); txt(m.l - 8, m.t + ph + ns / 2 + 4, "no score", "ax", svg, "end"); }
+    if (hasNS) { el("rect", { x: m.l, y: m.t + ph + 4, width: W - m.l - m.r, height: ns - 6, rx: 4, "class": "nsband" }, svg); txt(m.l - 8, m.t + ph + ns / 2 + 4, "N/A", "ax", svg, "end"); }
     if (!all.some(function (p) { return p.score != null; })) txt((m.l + W - m.r) / 2, m.t + ph / 2, (data.criteria_undefined || all.every(function (p) { return p.undefined; })) ? "Not scored: success criteria undefined" : "No scored submission yet", "axt", svg);
     var tip = document.createElement("div"); tip.className = "ctip"; tip.hidden = true; plot.appendChild(tip);
     function show(p, s, x, y) {
