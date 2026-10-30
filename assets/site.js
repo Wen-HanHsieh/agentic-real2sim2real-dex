@@ -57,6 +57,17 @@
   // toss-height chart on narrow screens: open scrolled to the newest submissions
   $$(".toss .cw").forEach(function (c) { c.scrollLeft = c.scrollWidth; });
 
+  // Demo-to-Sim reconstruction preview: playback speed buttons
+  $$("[data-recon]").forEach(function (box) {
+    var v = $("video", box), btns = $$("[data-rate]", box);
+    btns.forEach(function (b) {
+      b.addEventListener("click", function () {
+        v.playbackRate = +b.getAttribute("data-rate");
+        btns.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      });
+    });
+  });
+
   // synchronized training-sim / target-sim player
   var dataEl = $("#r2s2r-data");
   var root = $("[data-player]");

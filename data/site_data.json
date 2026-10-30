@@ -1,7 +1,7 @@
 {
  "title": "Agentic Real2Sim2Real",
- "generated_utc": "2026-10-30T02:32:30Z",
- "exported_utc": "2026-10-30T02:32:30Z",
+ "generated_utc": "2026-10-30T02:34:01Z",
+ "exported_utc": "2026-10-30T02:34:00Z",
  "current": {
   "tennis": {
    "used": 0,
@@ -375,5 +375,208 @@
     }
    }
   ]
+ },
+ "recon": {
+  "staged_utc": "2026-10-30T02:34:01Z",
+  "tasks": {
+   "tennis": {
+    "status": "partial",
+    "panels": [
+     "Input video",
+     "HaWoR MANO hands on the input (camera view)",
+     "3D view, camera frame (static camera) (camera path, hands; objects)"
+    ],
+    "components": {
+     "hand": {
+      "method": "HaWoR world-space MANO tracking from one phone video; masks SAM 2.1; intrinsics MoGe",
+      "status": "ok",
+      "note": "right hand, 98.7 % of frames, precision 0.84/0.79; fingertips partly occluded by the ball"
+     },
+     "camera": {
+      "method": "camera held fixed (static shot; monocular SLAM discarded as divergent)",
+      "status": "partial",
+      "note": "static shot; SLAM diverged on the featureless wall, world frame = camera frame"
+     },
+     "object_motion": {
+      "method": "known-geometry render-and-compare v1 (SAM 2.1 masks, MoGe intrinsics, pytorch3d silhouette fit with hand pixels as don't-care)",
+      "status": "ok",
+      "note": "ball: tracked 99 % of frames, median mask IoU 0.96; orientation unobservable; free flights fit gravity within 7 %"
+     },
+     "geometry": {
+      "method": "from the task's object specification",
+      "status": "from_specification",
+      "note": null
+     }
+    },
+    "limitations": [
+     "The world frame is the camera frame: monocular SLAM diverged on the featureless wall, so the camera is held fixed (the shot is static).",
+     "Hand scale comes from the MANO hand model, not from the scene.",
+     "Fingertips are partly occluded by the ball, so finger poses are less reliable than the palm.",
+     "Object depth from the known ball size and hand depth from the hand model disagree (ratio about 0.76, object-pose consistency check); the ball may appear offset from the hand in the 3D view. No rescaling is applied."
+    ],
+    "caption": "Hand motion: HaWoR world-space MANO tracking from one phone video; masks: SAM 2.1; intrinsics: MoGe; invalid hand frames are greyed, nothing is cut.",
+    "producer": "recon-tools",
+    "versions": "HaWoR@66c7d41 (hawor.ckpt 4d1cc438, infiller.pt 30715e7e) + masked DROID-SLAM (droid.pth 46476ef6) + Metric3D ViT-L (15328ffc) | camera held FIXED (static shot; the DROID-SLAM trajectory for this clip was discarded as divergent)",
+    "frames": 315,
+    "fps_real": 30.0,
+    "sha256": "471fd7753d57bca9114ca5e7269854a34f92e955417f95e9cf6f937ff5b4f80e",
+    "source_sha256": "56278543bdb8c7db16ec2168c8233c1b93b3f0c8e7c166e71d92b06eae1ffb19",
+    "sidecar_sha256": "edc01e8c93dcd2badaf8a895d5322eab353bf1258175b01c335e707790146154",
+    "width": 1350,
+    "height": 720,
+    "fps": 30.0,
+    "duration_s": 10.5,
+    "size_bytes": 1327819,
+    "staged_utc": "2026-10-30T02:33:51Z"
+   },
+   "plug": {
+    "status": "partial",
+    "panels": [
+     "Input video",
+     "HaWoR MANO hands on the input (camera view)",
+     "3D view, SLAM world frame (camera path, hands; objects)"
+    ],
+    "components": {
+     "hand": {
+      "method": "HaWoR world-space MANO tracking from one phone video; masks SAM 2.1; intrinsics MoGe",
+      "status": "ok",
+      "note": "right hand present in 82.1 % of frames (the whole manipulation), precision 0.85/0.80"
+     },
+     "camera": {
+      "method": "masked DROID-SLAM camera trajectory with Metric3D metric scale",
+      "status": "ok",
+      "note": "near-static camera, 3.5 cm translation range"
+     },
+     "object_motion": {
+      "method": "known-geometry render-and-compare v1 (SAM 2.1 masks, MoGe intrinsics, pytorch3d silhouette fit with hand pixels as don't-care)",
+      "status": "partial",
+      "note": "plug_white: tracked 100 % of frames, median mask IoU 0.85; 23 % of frames occluded in the hand (orientation weakly constrained there); plug_black: tracked 89 % of frames, median mask IoU 0.88; 11 % of frames fully covered by the hand (pose extrapolated)"
+     },
+     "geometry": {
+      "method": "from the task's object specification",
+      "status": "from_specification",
+      "note": null
+     }
+    },
+    "limitations": [
+     "The metric scale of the small camera motion is uncertain by about a factor of two; hand scale comes from the MANO hand model.",
+     "The hand is absent from the frame before and after the manipulation (82 % of frames contain it).",
+     "Object depth from the known plug sizes and hand depth from the hand model agree to within about 10 % (ratios 0.90-1.05, object-pose consistency check); small offsets between plugs and hand can still appear in the 3D view. No rescaling is applied."
+    ],
+    "caption": "Hand motion: HaWoR world-space MANO tracking from one phone video; masks: SAM 2.1; intrinsics: MoGe; invalid hand frames are greyed, nothing is cut.",
+    "producer": "recon-tools",
+    "versions": "HaWoR@66c7d41 (hawor.ckpt 4d1cc438, infiller.pt 30715e7e) + masked DROID-SLAM (droid.pth 46476ef6) + Metric3D ViT-L (15328ffc)",
+    "frames": 436,
+    "fps_real": 30.0,
+    "sha256": "3cebc67ccc22067d46b7ea30b49e19a6f53a2ba8c5a12956ae345c1bd83ed028",
+    "source_sha256": "0369320b6b4397064ffc3c202b04aeb471c1603fd3db20cc3e205f6abc509943",
+    "sidecar_sha256": "f0b9583a18c1c57fcbd3b2a7a94afe7da3341fa1cba998e99fe0294e465dd71b",
+    "width": 1920,
+    "height": 444,
+    "fps": 30.0,
+    "duration_s": 14.533,
+    "size_bytes": 1678117,
+    "staged_utc": "2026-10-30T02:33:53Z"
+   },
+   "pen": {
+    "status": "partial",
+    "panels": [
+     "Input video",
+     "HaWoR MANO hands on the input (camera view)",
+     "3D view, SLAM world frame (camera path, hands; objects)"
+    ],
+    "components": {
+     "hand": {
+      "method": "HaWoR world-space MANO tracking from one phone video; masks SAM 2.1; intrinsics MoGe",
+      "status": "partial",
+      "note": "right hand in 100.0 % of frames, palm precision 0.88/0.80; index/middle fingers holding the pen are offset by about half a finger width in part of the clip (fingertip-to-mask distance median 5.2 px, p90 11.9 px at 720 px width)"
+     },
+     "camera": {
+      "method": "masked DROID-SLAM camera trajectory with Metric3D metric scale",
+      "status": "ok",
+      "note": "static camera"
+     },
+     "object_motion": {
+      "method": "known-geometry render-and-compare v1 (SAM 2.1 masks, MoGe intrinsics, pytorch3d silhouette fit with hand pixels as don't-care)",
+      "status": "partial",
+      "note": "pen: tracked 100 % of frames, median mask IoU 0.68; roll unobservable, tip end from the ring colours; fast spins flagged uncertain"
+     },
+     "geometry": {
+      "method": "from the task's object specification",
+      "status": "from_specification",
+      "note": null
+     }
+    },
+    "limitations": [
+     "The source is a 6 s social-media clip.",
+     "While the pen is held, the index and middle fingers of the fitted hand are offset by about half a finger width (fingertip-to-mask distance median 5 px, 90th percentile 12 px at 720 px width); the palm is aligned.",
+     "Object depth from the known pen length and hand depth from the hand model disagree (ratio about 0.61, object-pose consistency check), so the pen visibly floats apart from the hand that holds it in the 3D view. No rescaling is applied."
+    ],
+    "caption": "Hand motion: HaWoR world-space MANO tracking from one phone video; masks: SAM 2.1; intrinsics: MoGe; invalid hand frames are greyed, nothing is cut.",
+    "producer": "recon-tools",
+    "versions": "HaWoR@66c7d41 (hawor.ckpt 4d1cc438, infiller.pt 30715e7e) + masked DROID-SLAM (droid.pth 46476ef6) + Metric3D ViT-L (15328ffc)",
+    "frames": 180,
+    "fps_real": 30.0,
+    "sha256": "48cf704a5fcd0a992bb6f9f1e2a3b46cfc31021eb55b32c8a990e72e06df86a1",
+    "source_sha256": "070ee2e39d2fbf94040aed3e2bfa9cb542ca4937239332ffe8f66e8e874a5371",
+    "sidecar_sha256": "f248b3bd90e57cf3324bb3ebced304348e4e26efbebaf01318f6d9434941e1cf",
+    "width": 1350,
+    "height": 720,
+    "fps": 30.0,
+    "duration_s": 6.0,
+    "size_bytes": 973396,
+    "staged_utc": "2026-10-30T02:33:56Z"
+   },
+   "cube": {
+    "status": "partial",
+    "panels": [
+     "Input video",
+     "HaWoR MANO hands on the input (camera view)",
+     "3D view, SLAM world frame (camera path, hands; objects)"
+    ],
+    "components": {
+     "hand": {
+      "method": "HaWoR world-space MANO tracking from one phone video; masks SAM 2.1; intrinsics MoGe",
+      "status": "partial",
+      "note": "manipulating left hand valid in 75.2 % of frames, precision 0.57/0.05, invalid frames (fast blurred turns, occlusion) greyed; right hand FAILED: only fingertips at the frame edge, its mesh is marked invalid and drawn grey"
+     },
+     "camera": {
+      "method": "masked DROID-SLAM camera trajectory with Metric3D metric scale",
+      "status": "ok",
+      "note": "static camera, 2 cm translation range"
+     },
+     "object_motion": {
+      "method": "known-geometry render-and-compare v1 (SAM 2.1 masks, MoGe intrinsics, pytorch3d silhouette fit with hand pixels as don't-care)",
+      "status": "ok",
+      "note": "cube: tracked 100 % of frames, median mask IoU 0.90; orientation up to the cube's 24 symmetries; layer turns not modelled"
+     },
+     "geometry": {
+      "method": "from the task's object specification",
+      "status": "from_specification",
+      "note": null
+     }
+    },
+    "limitations": [
+     "The source is a 2x slowed clip shown here at real time; a 30 fps capture is assumed and verified by the on-screen timer to within 1 %.",
+     "The right hand is not reconstructed: only its fingertips appear at the frame edge, so its mesh is marked invalid and drawn grey.",
+     "The left hand is invalid in 25 % of frames (fast blurred turns, occlusion by the cube); those frames are drawn grey.",
+     "Object depth from the known cube size and hand depth from the hand model disagree (ratio about 0.39, object-pose consistency check), so the cube may appear far from the hand in the 3D view. No rescaling is applied."
+    ],
+    "caption": "Hand motion: HaWoR world-space MANO tracking from one phone video; masks: SAM 2.1; intrinsics: MoGe; invalid hand frames are greyed, nothing is cut.",
+    "producer": "recon-tools",
+    "versions": "HaWoR@66c7d41 (hawor.ckpt 4d1cc438, infiller.pt 30715e7e) + masked DROID-SLAM (droid.pth 46476ef6) + Metric3D ViT-L (15328ffc)",
+    "frames": 395,
+    "fps_real": 30.0,
+    "sha256": "9e25435b4c7c6effbc5bbbed2c47f5c4e9e1f66382073defa247bc90e07c6974",
+    "source_sha256": "aa4a34a27eff9acba9daf01f1bdbc3fff72c2e1636e6ddb02444146c7ffdf3f6",
+    "sidecar_sha256": "e230cf29af44f5960f77f27b2293e4bb8d0831a88503390d98551413b971ca6c",
+    "width": 1350,
+    "height": 720,
+    "fps": 30.0,
+    "duration_s": 13.167,
+    "size_bytes": 2741338,
+    "staged_utc": "2026-10-30T02:33:57Z"
+   }
+  }
  }
 }
