@@ -22,7 +22,7 @@
     var g = box.getAttribute("data-tabs"), btns = $$("[data-tab]", box), panels = $$("[data-panel-group='" + g + "']");
     function show(k) {
       btns.forEach(function (b) { b.setAttribute("aria-selected", b.getAttribute("data-tab") === k ? "true" : "false"); });
-      panels.forEach(function (p) { p.hidden = p.getAttribute("data-panel") !== k; });
+      panels.forEach(function (p) { p.hidden = p.getAttribute("data-panel") !== k; if (p.hidden) $$("video", p).forEach(function (v) { if (!v.paused) v.pause(); }); });
     }
     btns.forEach(function (b) { b.addEventListener("click", function () { show(b.getAttribute("data-tab")); }); });
     var d = box.getAttribute("data-default");
