@@ -161,6 +161,25 @@
     });
     svg.appendChild(hits);
   }
+  // 3D hand-object viewer (comparison page): imported on first open; one mounted at a time; unmounted when closed
+  var v3 = $$("details[data-v3d]"), v3mod = null, v3open = null;
+  function v3close() { if (v3open && v3mod) { try { v3mod.unmount(); } catch (e) {} var mt = $("[data-v3d-mount]", v3open); if (mt) mt.textContent = ""; } v3open = null; }
+  v3.forEach(function (d) {
+    d.addEventListener("toggle", function () {
+      var mt = $("[data-v3d-mount]", d);
+      if (!d.open) { if (v3open === d) v3close(); return; }
+      v3.forEach(function (o) { if (o !== d && o.open) o.open = false; });
+      v3close();
+      mt.textContent = "Loading the 3D viewer…";
+      import(new URL(d.getAttribute("data-module"), document.baseURI).href).then(function (m) {
+        v3mod = m;
+        if (!d.open) { mt.textContent = ""; return; }
+        v3close(); mt.textContent = ""; v3open = d;
+        return m.mount(mt, { task: d.getAttribute("data-task"), base: new URL(d.getAttribute("data-base"), document.baseURI).href, defaultMethod: "agentic" });
+      }).catch(function () { mt.textContent = "The 3D viewer could not be loaded."; });
+    });
+  });
+
   var charts = $$("[data-chart]");
   function drawAll() { charts.forEach(drawChart); }
   drawAll();
