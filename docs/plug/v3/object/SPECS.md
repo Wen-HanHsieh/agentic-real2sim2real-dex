@@ -20,7 +20,7 @@ Surface and contact properties of the plugs and the table are not given.
 
 ## Table
 
-- **Tabletop:** the plane z = 0 (world frame, `hardware/SPECS.md` section 3), the top face of a static block 1.20 × 1.20 m and 0.03 m thick centred at (0.10, 0.00); matte white laminate (videos). It is large enough that neither plug nor the hand reaches an edge within the wrist workspace.
+- **Tabletop:** the plane z = 0 (world frame, `TASK_CONFIG.md` section 3), the top face of a static block 1.20 × 1.20 m and 0.03 m thick centred at (0.10, 0.00); matte white laminate (videos). It is large enough that neither plug nor the hand reaches an edge within the wrist workspace.
 - **Floor:** z = −0.75 m. A plug pushed off the table falls to it and is not retrieved.
 
 ## Initial Arrangement
@@ -32,7 +32,7 @@ Both plugs lie at rest on the table in the arrangement of the demonstration's fi
 | `plug_white` | (0.042, 0.031, 0.015) | its wide face (body +x face, the 29 mm thickness axis, down) | horizontal, yaw +24° from world +X (forward-left) | side by side (gap axis horizontal) |
 | `plug_black` | (−0.043, −0.041, 0.018) | the body +y face down (a face normal to the blade-gap axis) | horizontal, yaw −109° from world +X (to the right, slightly backward) | stacked one above the other |
 
-The hand starts 0.2–0.3 m behind the plugs on the −X, −Y side (`hardware/SPECS.md` section 3) and touches neither.
+The hand starts 0.2–0.3 m behind the plugs on the −X, −Y side (`TASK_CONFIG.md` section 3) and touches neither.
 
 ## State Frame (object state `objstate-1`)
 

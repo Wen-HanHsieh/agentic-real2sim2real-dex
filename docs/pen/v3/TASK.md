@@ -4,7 +4,7 @@ Reproduce the dexterous manipulation skill demonstrated in the human video using
 
 Rotation is the heading of the pen (back end to red tip) about the world vertical axis; rotating the pen about its own long axis does not count.
 
-The hand starts palm up with the pen lying across the fingers, and its wrist is free to move within the workspace of `hardware/SPECS.md` section 3. The policy observes the exact position, orientation and velocities of the pen (`CONTRACT.md`).
+The hand starts palm up with the pen lying across the fingers, and its wrist is free to move within the workspace of `TASK_CONFIG.md` section 3. The policy observes the exact position, orientation and velocities of the pen (`CONTRACT.md`).
 
 Develop your policy in your own simulation and evaluate it in the provided target environment.
 

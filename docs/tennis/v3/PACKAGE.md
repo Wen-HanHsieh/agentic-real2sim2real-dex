@@ -62,7 +62,7 @@ Check locally before submitting:
 r2s2r-preflight my_policy/
 ```
 
-The remote `validate` command (`REMOTE_API.md`) is authoritative and is never charged. It checks: manifest, SHA-256 hashes and the declared contract version, Python 3.12 syntax, no compiled code, `load_policy()` and `reset()` in the sandbox, five `act()` calls on synthetic observations with exactly this task's keys, shapes and dtypes (`CONTRACT.md` section 3), each returning a valid action dictionary (section 4 of `CONTRACT.md`), determinism (`reset()` and replay give bit-identical actions), and inference time. `submit` runs the same checks first; a rejected package is not charged.
+The remote `validate` command (`REMOTE_API.md`) is authoritative and is never charged. It checks: manifest, SHA-256 hashes and the declared contract version, Python 3.12 syntax, no compiled code, `load_policy()` and `reset()` in the sandbox, five `act()` calls on synthetic observations with exactly your task's keys, shapes and dtypes (`CONTRACT.md` section 3, `TASK_CONFIG.md` section 4), each returning a valid action dictionary (section 4 of `CONTRACT.md`), determinism (`reset()` and replay give bit-identical actions), and inference time. `submit` runs the same checks first; a rejected package is not charged.
 
 Passing validation does not guarantee a successful rollout.
 
@@ -89,5 +89,7 @@ Passing validation does not guarantee a successful rollout.
 ```bash
 tar -C my_policy -czf my_policy.tgz .
 ```
+
+macOS metadata is ignored: archive members whose name starts with `._` (AppleDouble files that macOS `tar` adds) and anything under `__MACOSX/` are dropped before the package is checked and are never unpacked. Do not use file names starting with `._` in your package; a manifest that lists one is refused. On macOS, `COPYFILE_DISABLE=1 tar …` avoids these members altogether. `r2s2r-preflight` applies the same rule to the package directory: it skips such files with a warning and refuses a manifest that lists one.
 
 Archive rules, submission, and feedback retrieval: `REMOTE_API.md`. A working example (a hold policy for the fingers and the wrist): `example_package/`.

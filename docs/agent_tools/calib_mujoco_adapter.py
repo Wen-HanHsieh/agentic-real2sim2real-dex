@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Example simulator adapter for r2s2r-calib built on MuJoCo (a real dynamics model; needs `pip install mujoco`).
 
-It builds a scene from public information only: the vendor URDF of the hand (hardware/wuji_hand2_right/urdf/right.urdf)
-with its root link `r_mount` made a free body (the floating wrist of hardware/SPECS.md section 3), the finger PD
+It builds a scene from public information only: the vendor URDF of the hand (hardware/wuji_hand2_right/urdf/right.urdf,
+or hardware/wuji_hand2_left/urdf/left.urdf for the left-hand environment) with its root link (`r_mount`, left `l_mount`) made a free body (the floating wrist of hardware/SPECS.md section 3), the finger PD
 controller of section 5 (gains, effort saturation, armature of section 2), the wrist impedance controller of section 4
 (gains, force/torque saturation, gravity compensation of the hand's own mass), the public command limiter when commanded
 targets are replayed, and rigid objects with the dimensions and masses of object/SPECS.md:
@@ -55,6 +55,7 @@ SCENES = {
 }
 CUBE_HOME = np.array([[1, 1, -1], [-1, 1, -1], [1, -1, -1], [-1, -1, -1], [1, 1, 1], [-1, 1, 1], [1, -1, 1], [-1, -1, 1]], float) * 0.0125  # e/4 slots (object/SPECS.md)
 FRICTION_DEFAULT = 1.0
+MOUNTS = ("r_mount", "l_mount")  # wrist frame = the URDF root link: right hand, left hand
 
 
 def _quat_mul(a, b):
@@ -99,9 +100,10 @@ class MujocoAdapter(A.SimAdapter):
         spec = mj.MjSpec.from_file(str(urdf))
         spec.option.timestep = DT_PHYSICS
         spec.option.gravity = GRAVITY.tolist()
-        mount = spec.body("r_mount")
-        if mount is None:
-            raise A.AdapterError("URDF has no link r_mount")
+        self.mount_name = next((n for n in MOUNTS if spec.body(n) is not None), None)
+        if self.mount_name is None:
+            raise A.AdapterError(f"URDF has no root link {' or '.join(MOUNTS)}")
+        mount = spec.body(self.mount_name)
         mount.add_freejoint(name="wrist_free")
         fz = float(self.scene.get("floor_z", 0.0))
         spec.worldbody.add_geom(name="floor", type=mj.mjtGeom.mjGEOM_PLANE, size=[3.0, 3.0, 0.1], pos=[0.0, 0.0, fz], friction=[FRICTION_DEFAULT, 0.005, 0.0001])
@@ -134,7 +136,7 @@ class MujocoAdapter(A.SimAdapter):
         self.model = spec.compile()
         self.data = mj.MjData(self.model)
         m = self.model
-        self.bid_mount = mj.mj_name2id(m, mj.mjtObj.mjOBJ_BODY, "r_mount")
+        self.bid_mount = mj.mj_name2id(m, mj.mjtObj.mjOBJ_BODY, self.mount_name)
         self.bid_obj = [mj.mj_name2id(m, mj.mjtObj.mjOBJ_BODY, n) for n in self.obj_bodies]
         self.jid_wrist = mj.mj_name2id(m, mj.mjtObj.mjOBJ_JOINT, "wrist_free")
         self.qadr_wrist, self.vadr_wrist = int(m.jnt_qposadr[self.jid_wrist]), int(m.jnt_dofadr[self.jid_wrist])
@@ -144,7 +146,8 @@ class MujocoAdapter(A.SimAdapter):
         self.joint_names = names
         jids = [mj.mj_name2id(m, mj.mjtObj.mjOBJ_JOINT, n) for n in names]
         if any(j < 0 for j in jids):
-            raise A.AdapterError(f"joint names not in the URDF: {[n for n, j in zip(names, jids) if j < 0]}")
+            raise A.AdapterError(f"joint names not in the URDF: {[n for n, j in zip(names, jids) if j < 0]} (the log's hand must be the "
+                                 "URDF's hand: r_* joints = right.urdf, l_* joints = left.urdf)")
         self.fq = np.array([m.jnt_qposadr[j] for j in jids]); self.fv = np.array([m.jnt_dofadr[j] for j in jids])
         self.lower, self.upper = m.jnt_range[jids, 0].copy(), m.jnt_range[jids, 1].copy()
         m.dof_armature[self.fv] = ARMATURE
@@ -300,13 +303,15 @@ def selftest(urdf: Path) -> int:
     meta = {"task": "tennis", "object_names": ["tennis_ball"], "replay": {"joint_names": []}}
     ad = MujocoAdapter(meta, urdf)
     q0 = [0.6, -0.3, 0.3, 0.2] + [0.6, 0.0, 1.4, 0.3] * 4
-    st = {"q": q0, "qd": [0.0] * 20, "wrist_position": [0.027681, -0.00208, 0.307114], "wrist_orientation": [0.553986, 0.421314, 0.439445, 0.567875],
+    wp, wq = ([0.02761, 0.001998, 0.307144], [0.555339, -0.420012, 0.441195, -0.566159]) if ad.mount_name == "l_mount" else \
+        ([0.027681, -0.00208, 0.307114], [0.553986, 0.421314, 0.439445, 0.567875])  # initial wrist pose (hardware/SPECS.md section 3)
+    st = {"q": q0, "qd": [0.0] * 20, "wrist_position": wp, "wrist_orientation": wq,
           "wrist_linear_velocity": [0.1, -0.2, 0.05], "wrist_angular_velocity": [0.3, 0.1, -0.2],
           "object_position": [[0.2, 0.2, 0.5]], "object_orientation": [[1.0, 0, 0, 0]], "object_linear_velocity": [[0.0, 0.0, 0.0]], "object_angular_velocity": [[0.0, 0.0, 0.0]]}
     ad.reset(st)
     s = ad.read_state()
     ok = True
-    print("hand mass (subtree of r_mount):", round(ad.hand_mass, 4), "(hardware/SPECS.md: 0.6878)")
+    print(f"hand mass (subtree of {ad.mount_name}):", round(ad.hand_mass, 4), "(hardware/SPECS.md: 0.6878)")
     ok &= abs(ad.hand_mass - 0.6878) < 1e-3
     ev = np.abs(np.array(s["wrist_linear_velocity"]) - st["wrist_linear_velocity"]).max(); ew = np.abs(np.array(s["wrist_angular_velocity"]) - st["wrist_angular_velocity"]).max()
     print("velocity round trip set->read: linear err", ev, "angular err", ew)

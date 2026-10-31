@@ -4,7 +4,7 @@
 - **Mass:** 0.0577 kg (standard tennis-ball range 56.0–59.4 g; the mass is not measurable from the video).
 - **Mass distribution:** Hollow ball (thin rubber shell under felt), centred at the geometric centre; moment of inertia about any axis ≈ 4.1 × 10⁻⁵ kg·m² (thin-shell value 2/3 · m · r²; a real ball with a thick shell may be up to about 20 % lower).
 - **Surface:** Felt, uniform yellow-green, no markings. The ball's rotation is not part of the task; the observation nevertheless reports it exactly.
-- **Initial state:** the ball rests in the cupped palm of the hand at its initial pose (`hardware/SPECS.md` section 3); the exact initial state is the observation of step 0.
+- **Initial state:** the ball rests in the cupped palm of the hand at its initial pose (`TASK_CONFIG.md` section 3); the exact initial state is the observation of step 0.
 
 Other surface and contact properties are not given.
 

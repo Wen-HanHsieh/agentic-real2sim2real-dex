@@ -1,53 +1,33 @@
-# Wuji Hand 2.2: Hardware Specification
+# Wuji Hand 2.2: Common Hardware and Control Specification
+
+This document covers what every task's robot has in common: the hand family and its configuration, the floating wrist, the controllers and their rates, the encoders, the frame conventions, and the hardware rules. The two hand variants have their own files: `hardware/RIGHT_HAND.md` and `hardware/LEFT_HAND.md` (model files, joint names and order, axes, limits, actuator parameters). Your task uses the variant named in `TASK_CONFIG.md` section 1; its initial wrist pose, initial finger configuration and wrist workspace are in `TASK_CONFIG.md` section 3.
 
 ## 1. Robot
 
-- **Robot:** Wuji Hand 2.2 (Beta), right hand, 20 actuated revolute joints, carried by a free-floating 6-DoF wrist (section 3).
+- **Robot:** Wuji Hand 2.2 (Beta), 20 actuated revolute joints, carried by a free-floating 6-DoF wrist (section 3). The hand exists as a right and a left variant; each task uses one of them (`TASK_CONFIG.md` section 1).
+- **Hand variants:**
+
+| Variant | Specification | Model files (in `hardware/`) |
+|---|---|---|
+| Right hand | `hardware/RIGHT_HAND.md` | `wuji_hand2_right/` |
+| Left hand | `hardware/LEFT_HAND.md` | `wuji_hand2_left/` |
+
 - **Actuation:** Direct-drive, back-drivable motors with field-oriented control (FOC); no gearbox.
-- **Fingertip pads:** passive soft rubber pads, modelled as rigid links `r_*_tip_sensor_frame` fixed to each distal link (2.9 g fingers, 6.0 g thumb). The link name is the vendor's; there is no tactile sensing.
-- **URDF:** `wuji_hand2_right/urdf/right.urdf` (joint names, order, axes, position, speed, and effort limits; link masses and inertias). Root link: `r_mount` (the wrist frame); `r_wrist` is the palm frame.
-- **Meshes:** `wuji_hand2_right/meshes/right/`
-- **License:** `wuji_hand2_right/LICENSE`
-- **Source:** wuji-technology/wuji-description, release v2026.10.12, commit `829c9aa`, `hand2/hand2_2`.
+- **Fingertip pads:** passive soft rubber pads, modelled as rigid links fixed to each distal link (link names in the hand files). The link name `*_tip_sensor_frame` is the vendor's; there is no tactile sensing.
+- **Source:** wuji-technology/wuji-description, release v2026.10.12, commit `829c9aa`, `hand2/hand2_2` (both variants).
 - **Torque–speed curve:** Not published.
 
-## 2. Joint Specifications
+## 2. Joints
 
-Joint vectors follow the vendor URDF order. Position, speed, and effort limits come from the URDF; armature values come from the vendor MJCF. `q₀` is this task's nominal initial configuration [rad].
-
-| # | Joint | Lower (rad) | Upper (rad) | Max speed (rad/s) | Effort (N·m) | Armature (kg·m²) | q₀ (rad) |
-|---|---|---|---|---|---|---|---|
-| 0 | r_thumb_cmc_flex | -1.187 | 1.291 | 8.587 | 0.6 | 5e-4 | 0.6 |
-| 1 | r_thumb_cmc_abd | -1.484 | 0.698 | 11.1 | 0.6 | 5e-4 | -0.3 |
-| 2 | r_thumb_mcp | -1.047 | 1.570 | 12.86 | 0.3 | 2e-4 | 0.3 |
-| 3 | r_thumb_ip | -1.047 | 1.570 | 13.5 | 0.3 | 2e-4 | 0.2 |
-| 4 | r_index_finger_mcp_flex | -1.047 | 1.570 | 8.203 | 2.0 | 5e-4 | 0.6 |
-| 5 | r_index_finger_mcp_abd | -0.698 | 0.698 | 8.11 | 0.2 | 2e-4 | 0.0 |
-| 6 | r_index_finger_pip | -1.047 | 2.094 | 12.86 | 0.3 | 2e-4 | 1.4 |
-| 7 | r_index_finger_dip | -1.047 | 1.570 | 13.5 | 0.3 | 2e-4 | 0.3 |
-| 8 | r_middle_finger_mcp_flex | -1.047 | 1.570 | 8.203 | 2.0 | 5e-4 | 0.6 |
-| 9 | r_middle_finger_mcp_abd | -0.698 | 0.698 | 8.11 | 0.2 | 2e-4 | 0.0 |
-| 10 | r_middle_finger_pip | -1.047 | 2.094 | 12.86 | 0.3 | 2e-4 | 1.4 |
-| 11 | r_middle_finger_dip | -1.047 | 1.570 | 13.5 | 0.3 | 2e-4 | 0.3 |
-| 12 | r_ring_finger_mcp_flex | -1.047 | 1.570 | 8.203 | 2.0 | 5e-4 | 0.6 |
-| 13 | r_ring_finger_mcp_abd | -0.698 | 0.698 | 8.11 | 0.2 | 2e-4 | 0.0 |
-| 14 | r_ring_finger_pip | -1.047 | 2.094 | 12.86 | 0.3 | 2e-4 | 1.4 |
-| 15 | r_ring_finger_dip | -1.047 | 1.570 | 13.5 | 0.3 | 2e-4 | 0.3 |
-| 16 | r_pinky_mcp_flex | -1.047 | 1.570 | 8.203 | 2.0 | 5e-4 | 0.6 |
-| 17 | r_pinky_mcp_abd | -0.698 | 0.698 | 8.11 | 0.2 | 2e-4 | 0.0 |
-| 18 | r_pinky_pip | -1.047 | 2.094 | 12.86 | 0.3 | 2e-4 | 1.4 |
-| 19 | r_pinky_dip | -1.047 | 1.570 | 13.5 | 0.3 | 2e-4 | 0.3 |
-
-`q₀` is the same in every trial. Measured initial positions may differ because of settling and encoder noise (`CONTRACT.md`).
+Each hand has 20 joints in the vendor URDF order: the thumb (`thumb_cmc_flex`, `thumb_cmc_abd`, `thumb_mcp`, `thumb_ip`), then the index, middle and ring fingers (`*_mcp_flex`, `*_mcp_abd`, `*_pip`, `*_dip` each) and the little finger (`pinky_mcp_flex`, `pinky_mcp_abd`, `pinky_pip`, `pinky_dip`). The full joint names carry the variant's prefix (`r_` right, `l_` left). Joint vectors in the observation, the actions and the feedback follow the joint order of your task's hand file. Position, speed and effort limits come from the URDF and armature values from the vendor MJCF; they are tabulated in the hand files. The initial finger configuration `q₀` of your task is in `TASK_CONFIG.md` section 3.
 
 ## 3. Floating Wrist and World Frame
 
-- **World frame:** X forward, Y left, Z up. The floor is the plane z = 0; the initial wrist pose (`hardware/SPECS.md` section 3) is about 0.31 m above it.
+- **World frame:** X forward, Y left, Z up. Where the origin lies and what the hand can touch (floor, table) depends on the task's scene: `TASK_CONFIG.md` section 3.
 - **Gravity:** `(0, 0, -9.81)` m/s².
-- **Wrist:** the hand is not attached to a fixed mount and has no arm. Its URDF root link `r_mount` (the *wrist frame*) is a free rigid body with 6 degrees of freedom, positioned and oriented by an ideal 6-axis wrist actuator (section 4). The URDF's own root has no joint to the world; treat `r_mount` as a floating base.
-- **Initial wrist pose** (every trial): position `(0.027681, -0.002080, 0.307114)` m, orientation (wxyz) `(0.553986, 0.421314, 0.439445, 0.567875)`. Palm up, fingertips tilted downward by 15°: the pose of the fixed mount of this task's previous environment, with the object resting in the hand. The executed wrist target starts at this pose (the three entries of the target histories at step 0); the measured wrist state at step 0 differs from it by the controller's steady-state offset under the object's weight (section 4, about 0.3 mm).
-- **Palm frame `r_wrist`** follows from the URDF joint `r_wrist_fixed`. In the world at the initial pose: position `(0.000075, -0.000002, 0.299715)` m, orientation (wxyz) `(0.553981, 0.421317, 0.439442, 0.567880)`.
-- **Wrist workspace:** the executed wrist position target is kept inside the box `x ∈ [−0.30, 0.35]`, `y ∈ [−0.30, 0.30]`, `z ∈ [0.05, 0.65]` m (world frame). The hand itself collides with the floor and the object.
+- **Wrist frame:** the hand is not attached to a fixed mount and has no arm. The root link of the hand's URDF (`r_mount` or `l_mount`, the *wrist frame*) is a free rigid body with 6 degrees of freedom, positioned and oriented by an ideal 6-axis wrist actuator (section 4). The URDF's own root has no joint to the world; treat the root link as a floating base.
+- **Palm frame** (`r_wrist` or `l_wrist`) follows from the URDF's fixed joint between the root link and the palm (hand files).
+- **Initial wrist pose** (every trial), **wrist workspace** (the box the executed wrist position target is kept in, world frame) and the palm frame's initial pose: `TASK_CONFIG.md` section 3.
 
 ## 4. Wrist Controller (version `wrist-1`)
 
@@ -62,7 +42,7 @@ F  ← F · min(1, F_max / |F|)
 T  ← T · min(1, T_max / |T|)
 ```
 
-`M` = 0.6878 kg is the total mass of the hand (all URDF links), `c` its current centre of mass (fingers included), `g_up = (0, 0, 9.81)` m/s²: the controller compensates the hand's own weight, not the weight of held objects. The force `F` and the torque `T` (about the wrist-frame origin) act on `r_mount`; the fingers are driven only by their own joint controllers (section 5).
+`M` = 0.6878 kg is the total mass of the hand (all URDF links; equal for both variants), `c` its current centre of mass (fingers included), `g_up = (0, 0, 9.81)` m/s²: the controller compensates the hand's own weight, not the weight of held objects. The force `F` and the torque `T` (about the wrist-frame origin) act on the root link; the fingers are driven only by their own joint controllers (section 5).
 
 | Parameter | Value |
 |---|---|
@@ -77,7 +57,7 @@ T  ← T · min(1, T_max / |T|)
 
 Command limits (rate limits, workspace box, feed-forward clipping) are applied once per policy step before the controller sees the target (`CONTRACT.md` section 4). The wrist's acceleration is limited by `F_max` and `T_max`; its speed follows the executed target and can exceed `V_MAX` / `W_MAX` by a few percent during transients (measured: 1.05 m/s peak after a 20 cm step command). There is no other wrist hardware limit.
 
-Measured tracking on the target (hand holding its task object, no contact with the environment): steady-state offset ≈ 0.3 mm and 0.2° (the unsupported object weight), ≤ 1.0 mm and 0.5° while following a 2 cm, 1 Hz circle with a ±10° yaw oscillation and matching feed-forward velocities.
+Measured tracking on the target with the right hand holding its task object, no contact with the environment: steady-state offset ≈ 0.3 mm and 0.2° (the unsupported object weight), ≤ 1.0 mm and 0.5° while following a 2 cm, 1 Hz circle with a ±10° yaw oscillation and matching feed-forward velocities. The same controller and gains drive the left hand; its tracking has not been measured separately.
 
 ## 5. Finger Joint Controller
 
@@ -87,13 +67,13 @@ A joint-space PD controller runs at 1 kHz. Policy commands arrive at 500 Hz and 
 tau_demand = kp (q_target − q) + kd (qd_target − qd)
 ```
 
-| Joints | kp (N·m/rad) | kd (N·m·s/rad) |
+| Joints (both variants) | kp (N·m/rad) | kd (N·m·s/rad) |
 |---|---|---|
 | Four long-finger `*_mcp_flex` | 10.0 | 0.10 |
-| `r_thumb_cmc_flex`, `r_thumb_cmc_abd` | 4.0 | 0.04 |
+| `*_thumb_cmc_flex`, `*_thumb_cmc_abd` | 4.0 | 0.04 |
 | All other joints | 2.0 | 0.02 |
 
-The applied torque is `tau_demand` saturated at each joint's effort limit. Motor speed limits apply. The finger controller is unchanged by the floating wrist: the wrist's motion back-drives the finger joints only through their inertia and contacts.
+The applied torque is `tau_demand` saturated at each joint's effort limit (hand files). Motor speed limits apply. The finger controller is unchanged by the floating wrist: the wrist's motion back-drives the finger joints only through their inertia and contacts.
 
 ## 6. Encoder Observations
 
@@ -108,7 +88,7 @@ The wrist state and the object state in the observation are exact (`CONTRACT.md`
 
 ## 7. Hardware Compliance (authoritative)
 
-This section is the single hardware specification. The target environment's evaluation (`FEEDBACK.md`) and the local tool `r2s2r-hwcheck` (`HARDWARE_CHECK.md`) apply it; `hardware/hardware_spec.json` (`hwspec-1.1`) is its machine-readable form. The rules concern the 20 finger joints and are unchanged from the fixed-wrist environment; the wrist has no rule beyond its controller (section 4): wrist commands are limited, never rejected, and the wrist's motion is never a violation.
+This section is the single hardware specification. The target environment's evaluation (`FEEDBACK.md`) and the local tool `r2s2r-hwcheck` (`HARDWARE_CHECK.md`) apply it; its machine-readable form is `hardware/hardware_spec.json` for the right hand (`hwspec-1.1`) and `hardware/hardware_spec_left.json` for the left hand (`hwspec-1.1L`): the same rules, limits and gains, each with its hand's joint names. The rules concern the 20 finger joints of either variant, with the limits of its hand file, and are unchanged from the fixed-wrist environment; the wrist has no rule beyond its controller (section 4): wrist commands are limited, never rejected, and the wrist's motion is never a violation.
 
 | Quantity | Requirement (every joint, every step) | Notes |
 |---|---|---|

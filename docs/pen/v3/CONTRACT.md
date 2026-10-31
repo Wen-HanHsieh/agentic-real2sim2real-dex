@@ -2,17 +2,17 @@
 
 ## 1. Control
 
-- **Robot:** Wuji Hand 2 on a free-floating 6-DoF wrist (`hardware/SPECS.md`): 20 finger joints in vendor URDF order plus the wrist pose.
+- **Robot:** Wuji Hand 2 on a free-floating 6-DoF wrist (`hardware/SPECS.md`): 20 finger joints in the vendor URDF order of the hand variant your task uses (`TASK_CONFIG.md` section 1; joint table in `hardware/RIGHT_HAND.md` or `hardware/LEFT_HAND.md`) plus the wrist pose.
 - **Policy frequency:** 500 Hz (2 ms per step).
 - **Controller frequency:** 1 kHz. The finger PD controller and the wrist controller hold each command for two controller ticks.
-- **Episode:** 12 s (6,000 policy steps). The episode is not ended by task events such as dropping an object; it ends early only on a policy failure (section 4).
+- **Episode:** `N` policy steps; the episode length and `N` of your task are in `TASK_CONFIG.md` section 2. The episode is not ended by task events such as dropping an object; it ends early only on a policy failure (section 4).
 - **Units:** SI (m, kg, s, rad, N, N·m). Quaternions are `(w, x, y, z)`.
 - **Contract version:** `v2`. Packages must declare `"contract_version": "v2"` (`PACKAGE.md`); packages written for an earlier contract are refused.
 
 ## 2. Frames and Time
 
-- **World frame:** X forward, Y left, Z up; gravity `(0, 0, −9.81)` m/s². The floor is the plane z = 0; the initial wrist pose (`hardware/SPECS.md` section 3) is about 0.31 m above it.
-- **Wrist frame:** the URDF root link `r_mount` of the hand (`hardware/SPECS.md` section 3).
+- **World frame:** X forward, Y left, Z up; gravity `(0, 0, −9.81)` m/s². The origin and the scene (floor or tabletop) of your task: `TASK_CONFIG.md` section 3.
+- **Wrist frame:** the URDF root link of the hand, `r_mount` (right hand) or `l_mount` (left hand) (`hardware/SPECS.md` section 3).
 - **Object state frames:** a geometric frame fixed to each object, defined in `object/SPECS.md`. Object positions refer to that frame's origin, never implicitly to the centre of mass.
 - **Orientation:** unit quaternion `(w, x, y, z)` that rotates frame vectors into the world frame. Every quaternion stream in the observation is sign-continuous: at step 0 `w ≥ 0`, afterwards each value takes the sign with a non-negative dot product with the previous step's value. Both signs describe the same rotation; canonicalize yourself if you need a unique sign.
 - **Velocities:** linear velocity of the frame origin and angular velocity, both in the world frame.
@@ -20,7 +20,7 @@
 
 ## 3. Observations
 
-At each step, `act(obs)` receives a dictionary. Arrays are NumPy `float64` unless stated otherwise.
+At each step, `act(obs)` receives a dictionary. Arrays are NumPy `float64` unless stated otherwise. Shapes below use `O`, the number of objects of your task; `TASK_CONFIG.md` section 4 gives `O`, the object order, every key's exact shape, and the keys your task adds to this list.
 
 **Robot**
 
@@ -36,20 +36,22 @@ At each step, `act(obs)` receives a dictionary. Arrays are NumPy `float64` unles
 | `wrist_angular_velocity` | `(3,)` | Wrist angular velocity, world frame [rad/s] |
 | `prev_wrist_position_target` | `(3, 3)` | Previous three **executed** wrist position targets (after the limits of section 4), oldest first [m] |
 | `prev_wrist_orientation_target` | `(3, 4)` | Previous three executed wrist orientation targets `(w, x, y, z)`, oldest first |
-| `step` | int | Control step, 0–5999 |
+| `step` | int | Control step, 0 to `N` − 1 |
 
-At step 0, `prev_q_target` holds three copies of the initial finger configuration `q₀`, `prev_qd_target` holds zeros, and the wrist target histories hold three copies of the initial wrist pose. The wrist state is exact (no noise); the finger encoders keep their noise.
+At step 0, `prev_q_target` holds three copies of the initial finger configuration `q₀`, `prev_qd_target` holds zeros, and the wrist target histories hold three copies of the initial wrist pose (both in `TASK_CONFIG.md` section 3). The wrist state is exact (no noise); the finger encoders keep their noise.
 
-**Objects** (one object: the pen; order and state frames in `object/SPECS.md`)
+**Objects** (`O` objects; order in `TASK_CONFIG.md` section 4, state frames in `object/SPECS.md`)
 
 | Key | Shape | Description |
 |---|---|---|
-| `object_position` | `(1, 3)` | State-frame origin of each object in the world [m] |
-| `object_orientation` | `(1, 4)` | State-frame orientation `(w, x, y, z)` |
-| `object_linear_velocity` | `(1, 3)` | Velocity of the state-frame origin, world frame [m/s] |
-| `object_angular_velocity` | `(1, 3)` | Angular velocity, world frame [rad/s] |
+| `object_position` | `(O, 3)` | State-frame origin of each object in the world [m] |
+| `object_orientation` | `(O, 4)` | State-frame orientation `(w, x, y, z)` |
+| `object_linear_velocity` | `(O, 3)` | Velocity of the state-frame origin, world frame [m/s] |
+| `object_angular_velocity` | `(O, 3)` | Angular velocity, world frame [rad/s] |
 
 Object values are the target's exact simulation state (no noise). The leading object axis is present even for a single object.
+
+**Task-specific keys.** A task may add keys to the observation: the per-part state of objects made of several parts (`part_*`), a discrete configuration index, a constant goal block, or a constant task setting. They follow the conventions of this section (exact values; quaternions `(w, x, y, z)`, sign-continuous; integer arrays `int64`). Your task's additional keys, their shapes and their meaning are in `TASK_CONFIG.md` section 4 and `object/SPECS.md`; a task without additional keys has none.
 
 **Not observed:** camera images or depth, estimated object states, contacts or contact forces, joint torques or motor currents, physical parameters (mass, friction, inertia, damping, stiffness) of the target, the evaluation's results, scores or rewards. Contact flags, videos and the official evaluation are available after the rollout (`FEEDBACK.md`). You may use any subset of the observation.
 
@@ -68,11 +70,11 @@ The policy may keep internal state; `reset()` initializes it.
 | `wrist_linear_velocity_target` | `(3,)` | no (`None` = zero) | Feed-forward velocity of the wrist-frame origin, world frame [m/s] |
 | `wrist_angular_velocity_target` | `(3,)` | no (`None` = zero) | Feed-forward angular velocity, world frame [rad/s] |
 
-Values must be finite `float32` or `float64`; finger arrays in vendor URDF joint order. Unknown keys are refused.
+Values must be finite `float32` or `float64`; finger arrays in the vendor URDF joint order of your task's hand. Unknown keys are refused.
 
-**Wrist command limits** (applied at every step, `hardware/SPECS.md` section 4): the executed position target moves from the previous executed target toward `wrist_position_target` by at most 1.0 m/s × 2 ms and is then clipped to the wrist workspace box; the executed orientation target rotates toward `wrist_orientation_target` along the shortest arc by at most 3.0 rad/s × 2 ms; the feed-forward velocities are clipped to norms of 1.0 m/s and 3.0 rad/s. A command is never applied instantaneously: the wrist moves only through the saturated wrist controller. Commands beyond the limits are not a failure; the executed targets and limit flags are in the rollout log (`FEEDBACK.md`).
+**Wrist command limits** (applied at every step, `hardware/SPECS.md` section 4): the executed position target moves from the previous executed target toward `wrist_position_target` by at most 1.0 m/s × 2 ms and is then clipped to the wrist workspace box (`TASK_CONFIG.md` section 3); the executed orientation target rotates toward `wrist_orientation_target` along the shortest arc by at most 3.0 rad/s × 2 ms; the feed-forward velocities are clipped to norms of 1.0 m/s and 3.0 rad/s. A command is never applied instantaneously: the wrist moves only through the saturated wrist controller. Commands beyond the limits are not a failure; the executed targets and limit flags are in the rollout log (`FEEDBACK.md`).
 
-The target environment initializes the hand and the pen, calls `reset()`, then calls `act(obs)` once per step and applies each command for 2 ms. A missing, non-finite or wrongly shaped value, a wrist orientation that is not a unit quaternion, an exception, or no answer within 5 s is a policy failure and ends the trial. Finger motor speed and effort limits apply, also to joints back-driven by contact; the hardware rules are in `hardware/SPECS.md` section 7.
+The target environment initializes the hand and the objects, calls `reset()`, then calls `act(obs)` once per step and applies each command for 2 ms. A missing, non-finite or wrongly shaped value, a wrist orientation that is not a unit quaternion, an exception, or no answer within 5 s is a policy failure and ends the trial. Finger motor speed and effort limits apply, also to joints back-driven by contact; the hardware rules are in `hardware/SPECS.md` section 7.
 
 ## 5. Determinism
 

@@ -5,7 +5,7 @@ The pen is the pen-spinning mod seen in the human demonstration (`demo/`), recon
 - **Geometry:** Body of revolution, total length 0.195 m. Barrel diameter 0.009 m. Back end: a cap piece 0.0095 m in diameter over the first 14 mm, ending in a rounded dome, with a short 0.0085 m neck where it meets the barrel. Heading end: a grip piece 0.0112 m in diameter from 173 mm to 187 mm, stepping down to 0.0085 m and tapering to the tip at 195 mm.
 - **Mass:** 0.022 kg
 - **Mass distribution:** Uniform over the body; centre of mass at mid-length. Moments of inertia about the centre: 2.2 × 10⁻⁷ kg·m² about the long axis, 7.3 × 10⁻⁵ kg·m² about any transverse axis.
-- **Initial state:** the pen lies across the fingers of the hand at its initial pose (`hardware/SPECS.md` section 3); the exact initial state is the observation of step 0.
+- **Initial state:** the pen lies across the fingers of the hand at its initial pose (`TASK_CONFIG.md` section 3); the exact initial state is the observation of step 0.
 
 | Distance from the back end (mm) | 0 | 0.8 | 2.3 | 13.7 | 14.8 | 16 | 171.6 | 172.6 | 187.2 | 188.8 | 194 | 195 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|

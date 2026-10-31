@@ -1,45 +1,47 @@
 # Remote Evaluation API
 
-The target environment executes submitted policies and stores ground-truth feedback after each rollout. Feedback contents: `FEEDBACK.md`. Packaging: `PACKAGE.md`. Your API key is bound to this task's experiment, `R2S2R-PS-TENNIS-1`.
+The target environment executes submitted policies and stores ground-truth feedback after each rollout. Feedback contents: `FEEDBACK.md`. Packaging: `PACKAGE.md`. Your API key is bound to your task's experiment; its id and your task's API command are in `TASK_CONFIG.md` section 1.
+
+The commands below are written with `$R2S2R_API`, the shell variable that holds your task's API command (`r2s2r-<task>`, set as `TASK_CONFIG.md` section 1 shows); `r2s2r-harness` reads the same variable.
 
 ## 1. Commands
 
 ```bash
 # Package check, submission, and budget
-r2s2r-tennis budget
+$R2S2R_API budget
 r2s2r-preflight my_policy/
-tar -C my_policy -czf - . | r2s2r-tennis validate
-tar -C my_policy -czf - . | r2s2r-tennis submit
-r2s2r-tennis status
+tar -C my_policy -czf - . | $R2S2R_API validate
+tar -C my_policy -czf - . | $R2S2R_API submit
+$R2S2R_API status
 
 # Standard feedback
-r2s2r-tennis fetch sNN > sNN.tgz
+$R2S2R_API fetch sNN > sNN.tgz
 
 # Standard research workflow
-r2s2r-tennis history
-r2s2r-tennis intent < intent.json
-r2s2r-tennis note sNN < note.json
-r2s2r-tennis training-video sNN PACKAGE_SHA256 [SIMULATOR] [run=LOCAL_RUN] < my_rollout.mp4
+$R2S2R_API history
+$R2S2R_API intent < intent.json
+$R2S2R_API note sNN < note.json
+$R2S2R_API training-video sNN PACKAGE_SHA256 [SIMULATOR] [run=LOCAL_RUN] < my_rollout.mp4
 
 # On-demand access
-r2s2r-tennis package sNN > sNN_package.tgz
-r2s2r-tennis frames sNN <top|left|right|all> <t1,t2,...> [depth] > frames.tgz
+$R2S2R_API package sNN > sNN_package.tgz
+$R2S2R_API frames sNN <top|left|right|all> <t1,t2,...> [depth] > frames.tgz
 ```
 
 `r2s2r-harness submit` and `r2s2r-harness reflect` (`TOOLS.md`) wrap `intent`, `submit`, and `note` (section 5); `r2s2r-harness video` wraps `training-video` (section 5). Responses are JSON, except `fetch` and `frames` (`.tar.gz`) and `package` (the archive exactly as submitted). Errors return `{"error": "..."}` with a non-zero exit code. `r2s2r-preflight` is a local check (`PACKAGE.md`).
 
 ## 2. Experiment Lifecycle and Submission
 
-- **Experiment:** your key is bound to `R2S2R-PS-TENNIS-1`, this task's experiment of the current environment generation (`env-3`, section 7). Earlier experiments of this task (other environment generations) are separate; their records are not visible here.
+- **Experiment:** your key is bound to your task's experiment of the current environment generation (`env-3`, or `env-3L` with the left hand, section 7; the id is in `TASK_CONFIG.md` section 1). Earlier experiments of your task (other environment generations) are separate; their records are not visible here.
 - **Staged:** while the experiment is staged (not yet opened), `budget`, `status`, `history`, `validate` and the record commands work, and `submit` is refused with `this experiment is staged and not open for submissions yet (nothing charged)`.
 - **Open:** submissions are accepted until the budget is used (then `evaluation budget exhausted`). One evaluation runs at a time; a second `submit` or `validate` while one runs is refused with `retry later` and nothing is charged.
-- **Archive:** `.tar` or `.tar.gz`, ≤ 500 MB, ≤ 2000 files; `policy.py` at the archive root or inside one top-level directory; regular files and directories only, no links, absolute paths, or `..` paths.
+- **Archive:** `.tar` or `.tar.gz`, ≤ 500 MB, ≤ 2000 files; `policy.py` at the archive root or inside one top-level directory; regular files and directories only, no links, absolute paths, or `..` paths. macOS metadata (members with a path component starting with `._`, anything under `__MACOSX/`) is dropped and never unpacked (`PACKAGE.md` section 6); the path check still applies to such members (an absolute or `..` path is refused), and the file limit counts every member as received.
 - **Checks:** `validate` and `submit` run the same package checks (`PACKAGE.md` section 4), including the declared contract version `v2`. A rejected package is not recorded and not charged; `validate` answers `{"valid": true, "charged": false, "policy_sha256": ..., "contract": "v2", "checks": [...], "act_ms_mean": ..., "act_ms_max": ..., "warnings": [...]}`.
 - **Receipt:** `submit` returns `submission_id` (`sNN`), `policy_sha256`, `archive_sha256`, `state: queued`, `research_intent` (the intent bound to this submission, section 5), and `preflight` (`act_ms_mean`, `act_ms_max`, `warnings`).
 
 ## 3. Evaluation, States, and Budget
 
-- **Trial:** one trial per submission, 10 s (5,000 steps at 500 Hz), from fixed initial conditions (`EVALUATION.md`).
+- **Trial:** one trial per submission of the task's episode length (`N` steps at 500 Hz, `TASK_CONFIG.md` section 2), from fixed initial conditions (`EVALUATION.md`).
 - **Budget:** 100 charged submissions; `budget` returns `{"mode": ..., "used": N, "limit": 100, "remaining": 100 − N}`.
 - **States:** `queued` → `running` → `done`, or `error` / `timeout`. `status` lists every submission with `submission_id`, `policy_sha256`, `received`, `state`, `started`, `finished`; an `error` row adds `error` (the public message, for a policy failure the step and the reason) and `charged`. Results are not available during a rollout and never appear in `status`.
 
@@ -47,17 +49,17 @@ r2s2r-tennis frames sNN <top|left|right|all> <t1,t2,...> [depth] > frames.tgz
 |---|---|---|---|
 | Rollout completed | `done` | yes | yes |
 | Policy failure: exception, invalid action, no answer within 5 s, or more than 64 MB written to `TMPDIR` | `error` | yes | yes, up to the failure (`status` says `policy failure after K of N control steps`) |
-| Evaluation exceeded 45 minutes | `timeout` | yes | no (`fetch` answers `no feedback for this submission`) |
+| Evaluation exceeded the task's wall-clock limit (`TASK_CONFIG.md` section 2) | `timeout` | yes | no (`fetch` answers `no feedback for this submission`) |
 | Target-side infrastructure error | `error` | no | no (`status`: `internal error (not charged)`) |
 
 Identical resubmissions are charged. A charged submission counts whether or not it produced feedback.
 
 ## 4. Standard Feedback (`fetch`)
 
-Standard feedback is the evaluation evidence the target environment stores automatically after every rollout (after a policy failure: up to the failure). It is not pushed to you; `fetch sNN` returns a `.tar.gz` with one top-level directory:
+Standard feedback is the evaluation evidence the target environment stores automatically after every rollout (after a policy failure: up to the failure). It is not pushed to you; `fetch sNN` returns a `.tar.gz` with one top-level directory named after your experiment id (`TASK_CONFIG.md` section 1):
 
 ```text
-R2S2R-PS-TENNIS-1_sNN/
+<experiment>_sNN/
 ├── feedback.json
 ├── calibration.json
 ├── verifier/  report.json
@@ -110,10 +112,10 @@ Use `limitation` when an evaluation ended without rollout evidence. After each t
 
 **`history`** lists every submission with its hashes (`policy_sha256`, `archive_sha256`, `feedback_sha256`), `state`, `official` results, notes with `timing` (`before_result` / `after_result`), `role`, `keep`, `gate`, and:
 
-- **`official`:** `status` (`success`, `failure`, `criteria_undefined`, or `not_evaluable`), `verifier_status` (the report's `status`), `score` (the report's `progress`; `null` unless evaluated and computed), `score_bounds` (equal to the score: the result is exact), `confidence`, `stages` (score per stage), `milestones`, `hardware`, `runtime` (`valid` / `invalid`), `versions`, `criteria`, and `rankable` (`false` while the task's criteria are undefined).
+- **`official`:** `status` (`success`, `failure`, `criteria_undefined`, or `not_evaluable`), `verifier_status` (the report's `status`), `score` (the report's `progress`; `null` unless evaluated and computed), `score_bounds` (equal to the score: the result is exact), `confidence`, `stages` (score per stage), `milestones`, `hardware`, `runtime` (`valid` / `invalid`), `versions`, `criteria`, `rankable` (`false` while the task's criteria are undefined, and for an evaluated failure whose progress could not be computed), and `unranked_reason` (`null`, `criteria_undefined`, `not_evaluable` or `progress_not_computed`).
 - **`research`:** the bound intent, the rollout evidence (`complete rollout`, `partial rollout` up to a policy failure, or `none`), reflections, current decision and next hypothesis, `training_video`, and `needs`: every missing part (for example `reflection: missing`). Missing parts are listed, never filled in, and never block a submission.
 - **`comparison`:** `vs_previous` (the previous comparable submission) and `vs_best_before` (the best comparable earlier submission): `improved`, `regressed`, or `tied`, with score delta, stage deltas, and milestones gained or lost. The categories runtime valid, no hardware violation and success decide first; otherwise the exact scores (scores are exact, so two different scores are never `inconclusive`). One trial per submission: success is compared as a status, not a rate.
-- **`gate`:** `first`, `improved`, `equal`, `regressed`, or `not_comparable` (different evaluation versions), against the best comparable earlier submission.
+- **`gate`:** `first`, `improved`, `equal`, `regressed`, or `not_comparable` (different evaluation versions), against the best comparable earlier submission. An unranked record (see `unranked_reason`) has no gate; one whose progress could not be computed still gets `comparison` (`ranked` `false`, `score_delta` `null` with its reason).
 - **`best_evaluated`:** ranked by official results only: valid run, then no hardware violation, then `success`, then score; ties go to the earlier submission. `best_by_versions` gives the best of each version group. Comparable means the same contract, verifier, criteria id and status, rubric, hardware-spec, target model and environment versions.
 - **`latest_candidate`:** the latest submission not labelled `diagnostic` or `experimental`.
 - **`research_summary`:** records with intent and reflection, incomplete records, intents not bound to a submission, and the record-chain check.
@@ -171,16 +173,16 @@ Stored data of earlier submissions, retrieved only when you need it. Not charged
 |---|---|---|
 | Policy interface | `v2` | `manifest.json` `contract_version` (`PACKAGE.md`); `feedback.json` and `report.json` `versions.contract` |
 | Object state schema | `objstate-1` | `state/schema.json` `schema`; `versions.state_schema` |
-| Environment | `env-3` | `feedback.json` `environment_version`; `versions.environment` |
+| Environment | `env-3` (right hand), `env-3L` (left hand); your task's: `TASK_CONFIG.md` section 1 | `feedback.json` `environment_version`; `versions.environment` |
 | Wrist | `wrist-1` | `versions.wrist` (`hardware/SPECS.md` section 4) |
-| Official evaluation | `gv-1` (criteria `tennis-v1`, rubric `rubric-1.5`, status `provisional`) | `report.json` `verifier_version`, `criteria`; `feedback.json` `verifier`, `criteria` |
+| Official evaluation | `gv-1` (the criteria of your task: `TASK_CONFIG.md` section 1, `SUCCESS.md`) | `report.json` `verifier_version`, `criteria`; `feedback.json` `verifier`, `criteria` |
 | Feedback protocol | `r2s2r-feedback/3` | `feedback.json` `protocol` |
 | Feedback contents | `agent-view-2` | `feedback.json` `feedback_view` |
 | Camera rig | `rig-1.3` | `calibration.json`, `frames.json` and `video.json` `rig_version`; `feedback.json` `versions.rig` |
-| Hardware specification | `hwspec-1.1` | `hardware/hardware_spec.json`; `report.json` `validity.hardware.spec_version` |
-| Target model | `tm-2` (Wuji Hand 2.2) | `feedback.json` `target_model_version`, `robot`; `history` `official.versions.target_model` |
+| Hardware specification | `hwspec-1.1` (right hand), `hwspec-1.1L` (left hand) | `hardware/hardware_spec.json`, `hardware/hardware_spec_left.json`; `report.json` `validity.hardware.spec_version` |
+| Target model | `tm-2` (Wuji Hand 2.2 right), `tm-2L` (Wuji Hand 2.2 left); your task's: `TASK_CONFIG.md` section 1 | `feedback.json` `target_model_version`, `robot`; `history` `official.versions.target_model` |
 
-The components are versioned separately. This task's criteria `tennis-v1` / `rubric-1.5` are those of its previous environment, carried over unchanged with status `provisional` (`SUCCESS.md`). The environment version `env-3` names this environment generation: the floating wrist, the ground-truth object state in the observation, and this task's object arrangement; earlier environment versions of this task (a fixed palm-up hand, joint-only observations) have separate experiments and records and are not compared with this one. The target model version names the simulated robot revision and physics configuration of the target environment. Every record keeps the versions it was produced with, and `gate` and `best_evaluated` compare only submissions whose contract, verifier, criteria id and status, rubric, hardware-spec, target model, and environment versions match. A change of the criteria status (`SUCCESS.md`) therefore starts a new comparison group.
+The components are versioned separately; the status of your task's criteria is stated in `TASK_CONFIG.md` section 1 and `SUCCESS.md`. The environment version `env-3` names this environment generation: the floating wrist, the ground-truth object state in the observation, and each task's scene and initial configuration (`TASK_CONFIG.md`); `env-3L` is the same generation with the left hand; earlier environment versions of a task (a fixed hand, joint-only observations) have separate experiments and records and are not compared with this one. The target model version names the simulated robot revision and physics configuration of the target environment. Every record keeps the versions it was produced with, and `gate` and `best_evaluated` compare only submissions whose contract, verifier, criteria id and status, rubric, hardware-spec, target model, and environment versions match. A change of the criteria status (`SUCCESS.md`) therefore starts a new comparison group.
 
 ## 8. Access Boundaries
 
@@ -188,13 +190,13 @@ The target environment provides the official evaluation and the rollout evidence
 
 | Available to you | Not available |
 |---|---|
-| Task definition, success criteria (or the statement that none are defined yet), robot and object specifications, demonstration (this bundle) | The target environment's simulator and its physics parameters (mass distribution beyond the published values, contact and surface properties, actuator internals) |
+| Task definition, success criteria (or the statement that none are defined yet), task configuration, robot and object specifications, demonstration (this bundle) | The target environment's simulator and its physics parameters (mass distribution beyond the published values, contact and surface properties, actuator internals) |
 | During the rollout: the observation of `CONTRACT.md` (finger encoders, exact wrist state, exact object states) | During the rollout: contacts, forces, torques, images, the evaluation's progress |
 | Official results: `status`, `success`, `progress`, stages, milestones, validity, versions (`fetch`, `history`) | Explanations of failures or suggested fixes; the verifier's implementation and configuration |
 | Rollout evidence: the ground-truth state record with contact flags (`state/trajectory.npz`), the rollout log with commanded and executed wrist targets (`logs/trial_0.npz`), rendered videos, RGB and depth frames on demand (`frames`) | Contact forces, contact depths, per-link contacts, joint torques, the evaluation condition, the target's diagnostics |
 | Hardware and runtime diagnostics: joint position, speed and torque compliance, action validity, policy errors, run validity | The record of any other submitter |
 | Your own packages, research records, and training-simulation videos | — |
 
-- Your key reaches only the commands in section 1, for this task's experiment; anything else is refused and no shell is started.
+- Your key reaches only the commands in section 1, for your task's experiment; anything else is refused and no shell is started.
 - No command changes success criteria, scoring rules, official results, or the budget; your records and videos never change official results.
 - The deployed policy receives the observation of `CONTRACT.md` and runs in a sandbox (`PACKAGE.md`).

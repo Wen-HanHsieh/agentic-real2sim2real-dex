@@ -5,7 +5,7 @@ The cube is the 2×2×2 puzzle seen in the human demonstration (`demo/`), recons
 - **Geometry:** Cube, edge 0.050 m, made of 8 corner cubies on a 0.025 m pitch. Each cubie is a 0.0246 m cube (0.2 mm gap on every cubie face) with its edges and corners bevelled by 1.5 mm; the three outward faces carry square stickers 19.6 mm on a side, 0.2 mm proud of the face, leaving a black border around each sticker. Contact geometry: the 0.0246 m cubie cubes.
 - **Mass:** 0.060 kg; 8 equal cubies, uniform
 - **Colours (solved):** U white, D yellow, F green, B blue, R red, L orange (`TASK.md`); black cubie bodies. The demonstration cube uses the same standard scheme.
-- **Initial state:** the scrambled cube rests in the cupped palm of the hand at its initial pose (`hardware/SPECS.md` section 3), U face up, F face toward the fingertips (`TASK.md`); the exact initial state is the observation of step 0.
+- **Initial state:** the scrambled cube rests in the cupped palm of the hand at its initial pose (`TASK_CONFIG.md` section 3), U face up, F face toward the fingertips (`TASK.md`); the exact initial state is the observation of step 0.
 
 ## Mechanism
 

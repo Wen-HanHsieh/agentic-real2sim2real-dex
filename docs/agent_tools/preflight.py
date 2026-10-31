@@ -1,7 +1,9 @@
 """r2s2r-preflight: local pre-check of a policy package (contract v2) for the target environment. Nothing is sent anywhere.
 
-Usage:  r2s2r-preflight [tennis|pen|plug|cube] <package_dir | package.tgz> [--steps N]
+Usage:  r2s2r-preflight [tennis|pen|plug|cube] <package_dir | package.tgz> [--steps N] [--hand right|left]
 The task may be omitted: it is taken from $R2S2R_TASK, else from the one r2s2r-<task> command on PATH.
+--hand left (default $R2S2R_HAND, else right): the cube environment with the left Wuji Hand 2.2 (its initial wrist pose
+and cube position; the observation keys, shapes and joint order are the same).
 Run it with the Python you use for the policy (the target runs Python 3.12, numpy 2.5.4, torch 2.14.1 CPU).
 
 Checks, in the order the target environment applies them:
@@ -89,6 +91,8 @@ V_MAX, W_MAX = 1.0, 3.0
 # approximate initial object positions (plausible synthetic values only; the target's exact ones are in the observation)
 OBJ_INIT = {"tennis": [(-0.071, 0.003, 0.318)], "pen": [(-0.109, 0.012, 0.287)], "cube": [(-0.075, 0.012, 0.318)],
             "plug": [(0.042, 0.031, 0.015), (-0.043, -0.041, 0.019)]}
+# the left-hand environment (cube only): initial wrist pose of the left hand's wrist frame l_mount and the cube in its palm
+LEFT = {"cube": {"wrist": ((0.027610, 0.001998, 0.307144), (0.555339, -0.420012, 0.441195, -0.566159)), "obj": [(-0.075, -0.012, 0.318)]}}
 SCRAMBLE = [[1.0, 3.0], [2.0, 1.0], [0.0, 2.0]]  # cube: TASK.md
 CUBE_IDENTITY = 23  # object/rotations24.json identity_index
 
@@ -195,9 +199,20 @@ def sha(p):
     return h.hexdigest()
 
 
+def macos_metadata(rel):
+    """macOS metadata ("._*" AppleDouble files, the __MACOSX directory): the target drops such archive members before
+    checking a package and never unpacks them, so they are skipped here too and a package cannot use these names."""
+    return any(p.startswith("._") or p == "__MACOSX" for p in rel.split("/"))
+
+
 def static_checks(pkg):
     errs, warns = [], []
     files = sorted(os.path.relpath(os.path.join(d, f), pkg).replace(os.sep, "/") for d, _, fs in os.walk(pkg) for f in fs)
+    skipped = [f for f in files if macos_metadata(f)]
+    if skipped:
+        warns.append(f"ignored {len(skipped)} macOS metadata file(s) (" + ", ".join(skipped[:3]) + (" ..." if len(skipped) > 3 else "")
+                     + "): the target drops them as well")
+    files = [f for f in files if not macos_metadata(f)]
     if "policy.py" not in files:
         return ["policy.py missing at the package root"], warns
     for f in files:
@@ -229,7 +244,9 @@ def static_checks(pkg):
                     errs.append(f"manifest.json does not list {f}")
                 elif str(listed[f]).lower() != sha(os.path.join(pkg, f)):
                     errs.append(f"SHA256 mismatch in manifest.json for {f} (recompute with sha256sum)")
-            errs += [f"manifest.json lists {f}, which is not in the package" for f in listed if f not in want]
+            errs += [f"manifest.json lists {f}: names starting with '._' and the __MACOSX directory are macOS archive metadata, which the "
+                     "target ignores; rename this file" if macos_metadata(f) else f"manifest.json lists {f}, which is not in the package"
+                     for f in listed if f not in want]
     local = {f[:-3].split("/")[0] for f in files if f.endswith(".py")} | {f.split("/")[0] for f in files if "/" in f}
     std = set(getattr(sys, "stdlib_module_names", ())) | set(sys.builtin_module_names)
     for f in files:
@@ -347,7 +364,8 @@ class SyntheticTarget:
         self.task, self.np, self.spec = task, np, OBS[task]
         self.rng = np.random.default_rng(seed)
         self.q0 = np.array(Q0[task])
-        p0, q0w = WRIST_INIT[task]
+        left = LEFT[task] if os.environ.get("R2S2R_HAND", "right") == "left" else None
+        p0, q0w = left["wrist"] if left else WRIST_INIT[task]
         self.lim = CommandLimiter(*WORKSPACE[task])
         self.lim.reset(p0, q0w)
         self.hq = [self.q0.copy() for _ in range(K_HIST)]
@@ -356,7 +374,7 @@ class SyntheticTarget:
         self.hwq = [np.array(self.lim.q) for _ in range(K_HIST)]
         self.wp, self.wq = np.array(self.lim.p), np.array(self.lim.q)
         O = len(OBJ_INIT[task])
-        self.obj_p = np.array(OBJ_INIT[task], dtype=float)
+        self.obj_p = np.array(left["obj"] if left else OBJ_INIT[task], dtype=float)
         self.obj_q = np.tile(np.array([1.0, 0.0, 0.0, 0.0]), (O, 1))
         self.const = {}
         if task == "cube":
@@ -504,6 +522,13 @@ def main():
             print("--steps needs an integer")
             return 2
         del argv[i:i + 2]
+    if "--hand" in argv:
+        i = argv.index("--hand")
+        if i + 1 >= len(argv) or argv[i + 1] not in ("right", "left"):
+            print("--hand needs right or left")
+            return 2
+        os.environ["R2S2R_HAND"] = argv[i + 1]  # the sandboxed child inherits it
+        del argv[i:i + 2]
     if len(argv) == 1:
         task = os.environ.get("R2S2R_TASK", "")
         if task not in STEPS:
@@ -517,6 +542,10 @@ def main():
         print(__doc__)
         return 2
     task, src = argv
+    hand = os.environ.get("R2S2R_HAND", "right")
+    if hand not in ("right", "left") or (hand == "left" and task not in LEFT):
+        print(f"R2S2R_HAND={hand!r}: the left hand exists for the {', '.join(LEFT)} task only; use right or unset it")
+        return 2
     steps = STEPS[task] if steps is None else max(1, steps)
     tmp = None
     if os.path.isfile(src):
@@ -536,7 +565,7 @@ def main():
             return 1
         src = tmp
     pkg = os.path.realpath(src)
-    print(f"r2s2r-preflight: task {task}, contract {CONTRACT}, package {src}, python {sys.version.split()[0]}")
+    print(f"r2s2r-preflight: task {task}, {hand} hand, contract {CONTRACT}, package {src}, python {sys.version.split()[0]}")
     try:
         import numpy
         vers = f"numpy {numpy.__version__}"

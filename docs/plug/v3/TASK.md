@@ -8,11 +8,11 @@ In the human video (`demo/`), two two-blade charger plugs, a white one and a bla
 
 ## The Target Scene
 
-The target environment reproduces this scene (`object/SPECS.md`, `hardware/SPECS.md` section 3): a flat tabletop (the plane z = 0), the white plug and the black plug lying on it at rest in the arrangement of the demonstration's first frame, and the Wuji Hand 2 on a free-floating wrist starting palm down above the near-right side of the table, 9 cm above it, with open fingers and touching nothing. The episode lasts 15 s (7,500 control steps); the policy observes the exact pose and velocities of both plugs at every step and commands the fingers and the wrist (`CONTRACT.md`).
+The target environment reproduces this scene (`object/SPECS.md`, `TASK_CONFIG.md` section 3): a flat tabletop (the plane z = 0), the white plug and the black plug lying on it at rest in the arrangement of the demonstration's first frame, and the Wuji Hand 2 on a free-floating wrist starting palm down above the near-right side of the table, 9 cm above it, with open fingers and touching nothing. The episode lasts 15 s (7,500 control steps); the policy observes the exact pose and velocities of both plugs at every step and commands the fingers and the wrist (`CONTRACT.md`).
 
 ## What the Environment Supports
 
-- The wrist can move anywhere inside the workspace box of `hardware/SPECS.md` section 3, which covers the table region around both plugs; its height is limited so that the wrist frame never goes below 3 cm above the tabletop.
+- The wrist can move anywhere inside the workspace box of `TASK_CONFIG.md` section 3, which covers the table region around both plugs; its height is limited so that the wrist frame never goes below 3 cm above the tabletop.
 - The hand can approach either plug from any direction, push it, grasp it, lift it, reorient it in the hand, carry it, release it, and set it down anywhere on the table, in any order and any number of times. Both plugs can be handled in the same episode.
 - The plugs are free rigid bodies: they slide, tip over, fall, and collide with the table, with the hand and with each other. A plug that leaves the table falls to the floor 0.75 m below and is not retrieved.
 - Nothing has to be inserted anywhere: the scene has no socket, outlet or cable.

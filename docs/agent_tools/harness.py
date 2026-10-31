@@ -73,10 +73,16 @@ def _outcome(c):
     return "-" if not c else f"{c['outcome']}({c['submission_id']})"
 
 
+NOT_COMPUTED = "N/A (not computed)"
+
+
 def _progress(o: dict) -> str:
-    """The official progress of a submission as text: a number, 'criteria not defined', or '-' while not evaluated."""
+    """The official progress of a submission as text: a number, 'criteria not defined', 'N/A (not computed)' for an
+    evaluated failure whose progress the target could not compute (not ranked), or '-' while not evaluated."""
     if not o:
         return "-"
+    if o.get("unranked_reason") == "progress_not_computed":
+        return NOT_COMPUTED
     vs = o.get("verifier_status") or o.get("status")
     if vs == "criteria_undefined":
         return UNDEFINED
@@ -104,7 +110,8 @@ def cmd_summary(a):
         refl = "yes" if rs.get("current_reflection") else ("-" if s.get("state") not in ("done", "error", "timeout") else "MISSING")
         print(f"{s['submission_id']:5s} {s['role']:12s} {str(s.get('keep') or '-'):9s} {str(s.get('state')):7s} {str(o.get('status', '-')):18s} "
               f"{_progress(o):20s} {_criteria(o):22s} {str(o.get('hardware', '-')):9s} "
-              f"{str(s.get('gate', '-')):14s} {_outcome(cmp_.get('vs_previous')):20s} {('yes' if rs.get('intent') else 'MISSING'):6s} {refl}")
+              f"{str(s.get('gate') or ('not ranked' if o.get('unranked_reason') == 'progress_not_computed' else '-')):14s} "
+              f"{_outcome(cmp_.get('vs_previous')):20s} {('yes' if rs.get('intent') else 'MISSING'):6s} {refl}")
     be = h.get("best_evaluated") or {}
     if be.get("official"):
         bo = be["official"]
@@ -147,7 +154,8 @@ def cmd_result(a):
             print("  milestones reached: " + (", ".join(f"{m['stage']}: {m['label']}" for m in ms if m.get("reached")) or "none"))
     else:
         print(f"success: n/a; progress: n/a (verifier status {vs})")
-    print(f"hardware: {o.get('hardware')}; runtime: {o.get('runtime')}; rankable: {o.get('rankable')}")
+    print(f"hardware: {o.get('hardware')}; runtime: {o.get('runtime')}; rankable: {o.get('rankable')}"
+          + (f" ({o['unranked_reason']})" if o.get("unranked_reason") else ""))
     print("versions:", json.dumps(o.get("versions")))
     print("evidence:", ((s.get("research") or {}).get("evidence") or {}).get("rollout"), "| feedback:", s.get("feedback_sha256"))
 
@@ -387,6 +395,9 @@ def cmd_gate(a):
            "rule": h["gate_rule"], "comparison_rule": h.get("comparison_rule")}
     if o.get("verifier_status") == "criteria_undefined":
         out["note"] = f"{UNDEFINED}: the target computes no gate and no comparison for this task until criteria are published"
+    elif o.get("unranked_reason") == "progress_not_computed":
+        out["note"] = (f"progress {NOT_COMPUTED}: this failure is listed and compared (score delta null) but not ranked: no gate, "
+                       "never the best evaluated submission")
     print(json.dumps(out, indent=1))
 
 

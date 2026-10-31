@@ -1,8 +1,8 @@
-# Wuji Hand 2: Pen Spinning
+# Wuji Hand 2: Learning a Dexterous Skill from a Human Demonstration
 
-Your goal is to reproduce the dexterous manipulation skill demonstrated in the provided reference video and develop a successful policy for the target robot: the Wuji Hand 2 on a free-floating wrist, in a black-box target environment that executes your policy and returns ground-truth feedback. In this environment the hand's wrist is free to move, and the policy observes the exact state of the pen.
+Your goal is to reproduce the dexterous manipulation skill demonstrated in the provided reference video and develop a successful policy for the target robot: the Wuji Hand 2 on a free-floating wrist, in a black-box target environment that executes your policy and returns ground-truth feedback. The policy observes the hand's joint encoders, the exact wrist state and the exact state of the task's objects.
 
-This workspace documents your task; the same environment generation runs four tasks (tennis ball toss and catch, plug handling on a table, pen spinning, one-handed 2×2×2 cube solving) with identical interfaces. Read the task documentation, the hardware and object specifications, and the evaluation API before starting.
+This workspace documents one task. The same environment generation runs several tasks with identical interfaces: the shared documents describe those interfaces, and everything specific to your task is in five documents: `TASK.md` (the task, or, where no objective has been defined yet, what the environment supports), `SUCCESS.md` (the official criteria, or the statement that none are defined yet), `TASK_CONFIG.md` (the hand variant, episode length, initial configuration, objects, observation shapes, experiment and API command), `object/SPECS.md` and `demo/README.md`. Read them first, then the hardware specification and the evaluation API.
 
 ## Autonomous Research
 
@@ -13,7 +13,7 @@ This workspace documents your task; the same environment generation runs four ta
 
 ## The Two Stages
 
-**Demo-to-Sim.** From the demonstration video (`demo/`) to a simulated reproduction of the skill. The object's geometry and physical properties are given (`object/SPECS.md`); what the video adds is motion: recover the hand's and the object's motion from it (`REFERENCE.md` states what such a reconstruction consists of and which tools are provided, `TOOLS.md` section 3), build your own simulation of the target robot and object from the public specifications (`hardware/SPECS.md`, `object/SPECS.md`), and develop a policy that meets the policy interface (`CONTRACT.md`, `PACKAGE.md`).
+**Demo-to-Sim.** From the demonstration video (`demo/`) to a simulated reproduction of the skill. The objects' geometry and physical properties are given (`object/SPECS.md`); how you use the video is your choice (`REFERENCE.md` describes what a reconstruction can consist of and which tools are provided, `TOOLS.md` section 3). Build your own simulation of the target robot and objects from the public specifications (`hardware/SPECS.md`, the hand file of your task, `object/SPECS.md`, `TASK_CONFIG.md`) and develop a policy that meets the policy interface (`CONTRACT.md`, `PACKAGE.md`).
 
 **Sim-to-Target.** Submit the policy to the target environment (`REMOTE_API.md`), inspect the official result and the rollout evidence (`FEEDBACK.md`, `EVALUATION.md`), calibrate your simulator against the target rollout (`TOOLS.md` section 2), diagnose, revise, and resubmit.
 
@@ -45,13 +45,15 @@ Each specification has one authoritative document; the others refer to it.
 
 | Resource | Description |
 |---|---|
-| `TASK.md` | Task objective |
-| `SUCCESS.md` | Official success criteria and task progress rubric (provisional) |
+| `TASK.md` | The task objective, or, where none is defined yet, the demonstration and what the environment supports |
+| `SUCCESS.md` | The official success criteria and progress rubric and their status, or the statement that none are defined yet |
+| `TASK_CONFIG.md` | Runtime configuration of your task: hand variant, experiment and API command, episode length, scene and initial configuration, objects, observation and record shapes |
 | `demo/` | Human demonstration video, sampled frames, and `demo/README.md`: the actual files, their time base, and the reconstruction inputs |
 | `REFERENCE.md` | What a reconstruction of the demonstration consists of (output contract, provisional) and the reconstruction tools provided |
-| `hardware/SPECS.md` | Wuji Hand 2.2 specification: floating wrist and its controller, finger controller, encoders, and hardware limits (authoritative) |
-| `hardware/` | Robot URDF and meshes (`hardware/wuji_hand2_right/`), machine-readable `hardware/hardware_spec.json` |
-| `object/SPECS.md` | Object geometry, mass, visual markings, and the state frame reported in the observation |
+| `hardware/SPECS.md` | Common Wuji Hand 2.2 specification: floating wrist and its controller, finger controller, encoders, frames, and the hardware rules (authoritative) |
+| `hardware/RIGHT_HAND.md`, `hardware/LEFT_HAND.md` | The two hand variants: model files, joint names and order, axes, limits, actuator parameters (your variant: `TASK_CONFIG.md` section 1) |
+| `hardware/` | Robot URDFs and meshes of both variants (`hardware/wuji_hand2_right/`, `hardware/wuji_hand2_left/`) and the machine-readable hardware specification |
+| `object/SPECS.md` | The task's objects (and scene items such as a table): geometry, mass, appearance, mechanism where there is one, and the state frames reported in the observation |
 | `CONTRACT.md` | Policy interface `v2`: observations (finger encoders, wrist state, exact object state), actions (finger and wrist targets), execution rules (authoritative) |
 | `PACKAGE.md` | Policy package format, runtime, resource limits and sandbox restrictions as enforced |
 | `REMOTE_API.md` | Remote evaluation API: commands, experiment lifecycle, submission, budget, feedback retrieval, research workflow, access boundaries |
