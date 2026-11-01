@@ -36,7 +36,7 @@ The hand starts 0.2–0.3 m behind the plugs on the −X, −Y side (`TASK_CONFI
 
 ## State Frame (object state `objstate-1`)
 
-The state frame is the frame whose pose and velocities the observation and the feedback report for this object (`CONTRACT.md` section 2, `FEEDBACK.md` section 3).
+The state frame is the frame whose pose and velocities the observation and the feedback report for this object (`sim2target/CONTRACT.md` section 2, `sim2target/FEEDBACK.md` section 3).
 
 Objects (order): `0 = plug_white`, `1 = plug_black`; every `object_*` array carries both in this order.
 
@@ -48,4 +48,4 @@ Objects (order): `0 = plug_white`, `1 = plug_black`; every `object_*` array carr
 
 ## Goal Block (`goal_defined`, `goal_position`, `goal_orientation`, `goal_free_axis`)
 
-The observation and the state record carry a per-plug goal block (`CONTRACT.md` section 3): `goal_defined` `(2,)` int64, `goal_position` `(2, 3)` (goal of the state-frame origin), `goal_orientation` `(2, 4)` `(w, x, y, z)`, `goal_free_axis` `(2, 3)` (a state-frame axis about which rotation is ignored; zeros = none). It is configurable per experiment, and it is **currently undefined**: `goal_defined` is `[0, 0]`, `goal_position` and `goal_orientation` are NaN, `goal_free_axis` is zero, constant through the episode. Criteria published later may define goals; until then there is none (`SUCCESS.md`).
+The observation and the state record carry a per-plug goal block (`sim2target/CONTRACT.md` section 3): `goal_defined` `(2,)` int64, `goal_position` `(2, 3)` (goal of the state-frame origin), `goal_orientation` `(2, 4)` `(w, x, y, z)`, `goal_free_axis` `(2, 3)` (a state-frame axis about which rotation is ignored; zeros = none). It is configurable per experiment, and it is **currently undefined**: `goal_defined` is `[0, 0]`, `goal_position` and `goal_orientation` are NaN, `goal_free_axis` is zero, constant through the episode. Criteria published later may define goals; until then there is none (`SUCCESS.md`).

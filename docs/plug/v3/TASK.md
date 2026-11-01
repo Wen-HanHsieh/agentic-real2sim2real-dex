@@ -8,7 +8,7 @@ In the human video (`demo/`), two two-blade charger plugs, a white one and a bla
 
 ## The Target Scene
 
-The target environment reproduces this scene (`object/SPECS.md`, `TASK_CONFIG.md` section 3): a flat tabletop (the plane z = 0), the white plug and the black plug lying on it at rest in the arrangement of the demonstration's first frame, and the Wuji Hand 2 on a free-floating wrist starting palm down above the near-right side of the table, 9 cm above it, with open fingers and touching nothing. The episode lasts 15 s (7,500 control steps); the policy observes the exact pose and velocities of both plugs at every step and commands the fingers and the wrist (`CONTRACT.md`).
+The target environment reproduces this scene (`object/SPECS.md`, `TASK_CONFIG.md` section 3): a flat tabletop (the plane z = 0), the white plug and the black plug lying on it at rest in the arrangement of the demonstration's first frame, and the Wuji Hand 2 on a free-floating wrist starting palm down above the near-right side of the table, 9 cm above it, with open fingers and touching nothing. The episode lasts 15 s (7,500 control steps); the policy observes the exact pose and velocities of both plugs at every step and commands the fingers and the wrist (`sim2target/CONTRACT.md`).
 
 ## What the Environment Supports
 
@@ -18,7 +18,7 @@ The target environment reproduces this scene (`object/SPECS.md`, `TASK_CONFIG.md
 - Nothing has to be inserted anywhere: the scene has no socket, outlet or cable.
 - The observation's goal block (`goal_defined`, `goal_position`, `goal_orientation`, `goal_free_axis`) is a reserved place for per-plug targets; it currently reports no goal for either plug (`goal_defined` all 0, NaN values). Criteria published later may define goals there; until then the policy should not rely on it.
 
-The feedback of every rollout (`FEEDBACK.md`) contains the exact trajectories of the hand and both plugs and the contact flags hand–plug, plug–table and plug–plug, so that any behaviour you train can be checked against the target record even before the criteria exist.
+The feedback of every rollout (`sim2target/FEEDBACK.md`) contains the exact trajectories of the hand and both plugs and the contact flags hand–plug, plug–table and plug–plug, so that any behaviour you train can be checked against the target record even before the criteria exist.
 
 - **Human demonstration:** `demo/`
 - **Target environment:** `target/screenshot.png`

@@ -24,7 +24,7 @@ Visual only: they change no physical property (mass, inertia, and collision geom
 
 ## State Frame (object state `objstate-1`)
 
-The state frame is the frame whose pose and velocities the observation and the feedback report for this object (`CONTRACT.md` section 2, `FEEDBACK.md` section 3).
+The state frame is the frame whose pose and velocities the observation and the feedback report for this object (`sim2target/CONTRACT.md` section 2, `sim2target/FEEDBACK.md` section 3).
 
 Objects (order): `0 = pen`.
 

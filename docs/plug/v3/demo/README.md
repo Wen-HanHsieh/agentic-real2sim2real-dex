@@ -11,11 +11,12 @@ A white USB-C charger and a black USB-A charger lie on their sides on a white de
 
 ## Reconstruction Inputs
 
-This file is the only demonstration input (`REFERENCE.md`). Metric scale anchor: the standard blade geometry of the plugs, 6.35 mm wide blades 12.7 mm apart (`object/SPECS.md`); the tabletop is a plane that fixes the world frame's vertical.
+This file is the only demonstration input (`demo2sim/REFERENCE.md`). Metric scale anchor: the standard blade geometry of the plugs, 6.35 mm wide blades 12.7 mm apart (`object/SPECS.md`); the tabletop is a plane that fixes the world frame's vertical.
 
-The demonstration is for offline analysis and policy development. During target execution the deployed policy receives only the observations in `../CONTRACT.md`.
+The demonstration is for offline analysis and policy development. During target execution the deployed policy receives only the observations in `sim2target/CONTRACT.md`.
 
 ## Reconstruction Notes
 
-- **Provided tracking tool on this demonstration** (`REFERENCE.md` section 3): mask agreement 0.86 (white) and 0.88 (black); the white plug is occluded in the hand in 23 % of the frames (orientation weakly constrained there), the black plug fully covered in 11 % (pose extrapolated, `valid` false); the two plugs are tracked independently with the other plug as an occluder.
+- **Provided tracking tool on this demonstration** (`demo2sim/REFERENCE.md` section 3): mask agreement 0.86 (white) and 0.88 (black); the white plug is occluded in the hand in 23 % of the frames (orientation weakly constrained there), the black plug fully covered in 11 % (pose extrapolated, `valid` false); the two plugs are tracked independently with the other plug as an occluder.
 - **Symmetry:** the plugs: 180° about the blade axis; symmetric objects are tracked on one symmetry branch kept by continuity.
+- **Hands:** the demonstrator's right hand.

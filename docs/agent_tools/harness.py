@@ -262,7 +262,7 @@ def _manifest_contract(path: Path) -> str | None:
 def cmd_submit(a):
     cv = _manifest_contract(Path(a.package))
     if cv is not None and cv != "v2":
-        print(f'WARNING: manifest.json declares contract_version {cv!r}; this experiment accepts "v2" only (PACKAGE.md) and will refuse the package')
+        print(f'WARNING: manifest.json declares contract_version {cv!r}; this experiment accepts "v2" only (sim2target/PACKAGE.md) and will refuse the package')
     data = build_archive(Path(a.package))
     digest = sha(data)
     parent_rev = None

@@ -33,7 +33,7 @@ Trajectory file `r2s2r-traj/3` (NumPy .npz, allow_pickle never needed). One time
   Constants: `joint_names` (20,), `object_names` (O,), `part_names` (P,), `part_object` (P,), `goal_*` when present.
   `meta` (JSON string): schema, source (target | sim), task, dt, steps, state_rows, submission, versions, object_names,
   the replay settings of a simulated file, and the target's own wrist tracking summary.
-Quaternions are (w, x, y, z), world frame, as in FEEDBACK.md; a sign flip is not a difference. Files of another schema
+Quaternions are (w, x, y, z), world frame, as in sim2target/FEEDBACK.md; a sign flip is not a difference. Files of another schema
 are refused with the reason.
 """
 

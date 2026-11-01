@@ -15,8 +15,8 @@ Checks, in the order the target environment applies them:
      no subprocesses, no signals to other processes, 8 GB address space, 600 s CPU, 256 open files, 64 MB per
      written file, 1 CPU thread, no GPU;
   3. load_policy(path), reset(), then act() for N steps (default: the full trial) on synthetic observations with
-     exactly this task's keys, shapes and dtypes (CONTRACT.md section 3: float64 arrays, int64 for the integer
-     fields, `step` an int). Each action must be a dict with the keys of CONTRACT.md section 4 (q_target (20,),
+     exactly this task's keys, shapes and dtypes (sim2target/CONTRACT.md section 3: float64 arrays, int64 for the integer
+     fields, `step` an int). Each action must be a dict with the keys of sim2target/CONTRACT.md section 4 (q_target (20,),
      wrist_position_target (3,), wrist_orientation_target (4,) with norm in [0.9, 1.1]; optional qd_target,
      wrist_linear_velocity_target, wrist_angular_velocity_target or None), all finite, no unknown keys; every call
      < 5 s; mean/max act() time against the 2 ms inference budget; total CPU time against 600 s;
@@ -52,7 +52,7 @@ K_HIST = 3
 DT = 0.002
 NAN = float("nan")
 
-# ---------------------------------------------------------------- the contract, per task (CONTRACT.md sections 3 and 4)
+# ---------------------------------------------------------------- the contract, per task (sim2target/CONTRACT.md sections 3 and 4)
 _ROBOT = {"q": ((20,), "float64"), "qd": ((20,), "float64"), "prev_q_target": ((3, 20), "float64"), "prev_qd_target": ((3, 20), "float64"),
           "prev_wrist_position_target": ((3, 3), "float64"), "prev_wrist_orientation_target": ((3, 4), "float64"),
           "wrist_position": ((3,), "float64"), "wrist_orientation": ((4,), "float64"), "wrist_linear_velocity": ((3,), "float64"),
@@ -134,7 +134,7 @@ def _clip_norm(x, m):
 
 
 class CommandLimiter:
-    """The target's wrist command limits (CONTRACT.md section 4): executed target from the commanded one.
+    """The target's wrist command limits (sim2target/CONTRACT.md section 4): executed target from the commanded one.
     __call__(p_cmd, q_cmd, v_cmd=None, w_cmd=None) -> {"position", "orientation", "linear_velocity", "angular_velocity", "limited"}."""
 
     def __init__(self, workspace_lo, workspace_hi, dt=DT, v_max=V_MAX, w_max=W_MAX):
@@ -220,7 +220,7 @@ def static_checks(pkg):
             if f.lower().endswith(COMPILED) or fh.read(4) == b"\x7fELF":
                 errs.append(f"{f}: compiled code is not allowed (Python source and data files only)")
     if "manifest.json" not in files:
-        errs.append("manifest.json missing at the package root (PACKAGE.md)")
+        errs.append("manifest.json missing at the package root (sim2target/PACKAGE.md)")
     else:
         try:
             man = json.load(open(os.path.join(pkg, "manifest.json")))
@@ -232,7 +232,7 @@ def static_checks(pkg):
         cv = man.get("contract_version")
         if cv != CONTRACT:
             errs.append(f'manifest.json: "contract_version" must be "{CONTRACT}" (got {cv!r}): this experiment evaluates policies under policy '
-                        f"contract {CONTRACT} (object-state and wrist observation, act() returning a dict of finger and wrist targets; see CONTRACT.md); "
+                        f"contract {CONTRACT} (object-state and wrist observation, act() returning a dict of finger and wrist targets; see sim2target/CONTRACT.md); "
                         "packages written for another contract are not accepted")
         listed = man.get("files")
         if not isinstance(listed, dict):
@@ -489,7 +489,7 @@ def child(task, pkg, steps):
         times.append(dt)
         why = validate_action(a, np)
         if why:
-            emit(ok=False, stage=f"act() at step {k}", error=f"invalid action: {why} (CONTRACT.md section 4)")
+            emit(ok=False, stage=f"act() at step {k}", error=f"invalid action: {why} (sim2target/CONTRACT.md section 4)")
         if k < n_rec:
             rec.append((obs, _canon(a, np)))
         if dt > ACT_TIMEOUT:
@@ -503,7 +503,7 @@ def child(task, pkg, steps):
             a = pol.act(obs)
             if not _same(_canon(a, np), a0, np):
                 emit(ok=False, stage=f"determinism replay at step {k}",
-                     error="after reset(), the same observations gave different actions (CONTRACT.md: bit-identical)")
+                     error="after reset(), the same observations gave different actions (sim2target/CONTRACT.md: bit-identical)")
     except BaseException:
         emit(ok=False, stage="determinism replay", error=traceback.format_exc(limit=6))
     emit(ok=True, steps=steps, replayed=len(rec), act_ms_mean=1e3 * float(np.mean(times)), act_ms_max=1e3 * float(np.max(times)),
@@ -610,7 +610,7 @@ def main():
     lim = {k: v for k, v in rep.get("limited", {}).items() if v}
     if lim:
         print("INFO  wrist commands changed by the command limits (steps): " + ", ".join(f"{k} {v}" for k, v in lim.items())
-              + " (not a failure; CONTRACT.md section 4)")
+              + " (not a failure; sim2target/CONTRACT.md section 4)")
     if rep["act_ms_mean"] > 1e3 * BUDGET:
         print("WARN  mean act() time exceeds the 2 ms inference budget (reported, not enforced)")
     if rep["cpu_s"] > 0.8 * CPU_LIMIT * rep["steps"] / STEPS[task]:

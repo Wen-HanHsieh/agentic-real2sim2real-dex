@@ -2,7 +2,7 @@
 
 **Task:** Spin-up → Sustain → Hold
 
-**Status of these criteria: provisional.** They are the success criteria of this task's previous environment (a fixed palm-up hand with joint-only observations), carried over unchanged to this environment (floating wrist, exact object state in the observation). They may change before the evaluation of this environment becomes final. Every official report names the criteria it was scored with (`criteria.id` `pen-v1`, `criteria.rubric` `rubric-1.3`, `criteria.status` `provisional`; `FEEDBACK.md` section 1), and a change of the criteria or of their status starts a new comparison group in `history` (`REMOTE_API.md` section 7); records are never re-scored.
+**Status of these criteria: provisional.** They are the success criteria of this task's previous environment (a fixed palm-up hand with joint-only observations), carried over unchanged to this environment (floating wrist, exact object state in the observation). They may change before the evaluation of this environment becomes final. Every official report names the criteria it was scored with (`criteria.id` `pen-v1`, `criteria.rubric` `rubric-1.3`, `criteria.status` `provisional`; `sim2target/FEEDBACK.md` section 1), and a change of the criteria or of their status starts a new comparison group in `history` (`sim2target/REMOTE_API.md` section 7); records are never re-scored.
 
 The target environment evaluates each rollout against these criteria. The total score ranges from **0 to 1.0**.
 
@@ -43,7 +43,7 @@ The target environment evaluates each rollout against these criteria. The total 
 
 ## 4. Ground-Truth Evaluation
 
-The target environment scores these criteria from its exact simulation state: the object's state frame (`object/SPECS.md`), the hand–object and object–environment contact flags of every control interval, and the robot's joint state and applied torques (`FEEDBACK.md`). There are no measurement margins, uncertainty intervals or `unknown` outcomes: every milestone is either reached or not, with its time, and `progress` is the exact score.
+The target environment scores these criteria from its exact simulation state: the object's state frame (`object/SPECS.md`), the hand–object and object–environment contact flags of every control interval, and the robot's joint state and applied torques (`sim2target/FEEDBACK.md`). There are no measurement margins, uncertainty intervals or `unknown` outcomes: every milestone is either reached or not, with its time, and `progress` is the exact score.
 
 ## 5. Research Freedom
 

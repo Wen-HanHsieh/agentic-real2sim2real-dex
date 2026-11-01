@@ -7,10 +7,10 @@ This document covers what every task's robot has in common: the hand family and 
 - **Robot:** Wuji Hand 2.2 (Beta), 20 actuated revolute joints, carried by a free-floating 6-DoF wrist (section 3). The hand exists as a right and a left variant; each task uses one of them (`TASK_CONFIG.md` section 1).
 - **Hand variants:**
 
-| Variant | Specification | Model files (in `hardware/`) |
+| Variant | Specification | Model files |
 |---|---|---|
-| Right hand | `hardware/RIGHT_HAND.md` | `wuji_hand2_right/` |
-| Left hand | `hardware/LEFT_HAND.md` | `wuji_hand2_left/` |
+| Right hand | `hardware/RIGHT_HAND.md` | `hardware/wuji_hand2_right/` |
+| Left hand | `hardware/LEFT_HAND.md` | `hardware/wuji_hand2_left/` |
 
 - **Actuation:** Direct-drive, back-drivable motors with field-oriented control (FOC); no gearbox.
 - **Fingertip pads:** passive soft rubber pads, modelled as rigid links fixed to each distal link (link names in the hand files). The link name `*_tip_sensor_frame` is the vendor's; there is no tactile sensing.
@@ -31,7 +31,7 @@ Each hand has 20 joints in the vendor URDF order: the thumb (`thumb_cmc_flex`, `
 
 ## 4. Wrist Controller (version `wrist-1`)
 
-A Cartesian impedance controller runs at 1 kHz and holds each policy command for two ticks. With `p`, `q`, `v`, `ω` the wrist frame's world position, orientation, linear velocity (of the frame origin) and angular velocity, and `p*`, `q*`, `v*`, `ω*` the executed target (`CONTRACT.md` section 4):
+A Cartesian impedance controller runs at 1 kHz and holds each policy command for two ticks. With `p`, `q`, `v`, `ω` the wrist frame's world position, orientation, linear velocity (of the frame origin) and angular velocity, and `p*`, `q*`, `v*`, `ω*` the executed target (`sim2target/CONTRACT.md` section 4):
 
 ```text
 e_p = p* − p
@@ -55,7 +55,7 @@ T  ← T · min(1, T_max / |T|)
 | `V_MAX` (executed-target translation speed, linear feed-forward norm) | 1.0 m/s |
 | `W_MAX` (executed-target rotation speed, angular feed-forward norm) | 3.0 rad/s |
 
-Command limits (rate limits, workspace box, feed-forward clipping) are applied once per policy step before the controller sees the target (`CONTRACT.md` section 4). The wrist's acceleration is limited by `F_max` and `T_max`; its speed follows the executed target and can exceed `V_MAX` / `W_MAX` by a few percent during transients (measured: 1.05 m/s peak after a 20 cm step command). There is no other wrist hardware limit.
+Command limits (rate limits, workspace box, feed-forward clipping) are applied once per policy step before the controller sees the target (`sim2target/CONTRACT.md` section 4). The wrist's acceleration is limited by `F_max` and `T_max`; its speed follows the executed target and can exceed `V_MAX` / `W_MAX` by a few percent during transients (measured: 1.05 m/s peak after a 20 cm step command). There is no other wrist hardware limit.
 
 Measured tracking on the target with the right hand holding its task object, no contact with the environment: steady-state offset ≈ 0.3 mm and 0.2° (the unsupported object weight), ≤ 1.0 mm and 0.5° while following a 2 cm, 1 Hz circle with a ±10° yaw oscillation and matching feed-forward velocities. The same controller and gains drive the left hand; its tracking has not been measured separately.
 
@@ -84,17 +84,17 @@ Joint encoders at 500 Hz with independent Gaussian noise:
 | Joint position | 0.002 rad |
 | Joint velocity | 0.05 rad/s |
 
-The wrist state and the object state in the observation are exact (`CONTRACT.md` section 3). The policy receives no tactile, force, motor-current, or camera observations.
+The wrist state and the object state in the observation are exact (`sim2target/CONTRACT.md` section 3). The policy receives no tactile, force, motor-current, or camera observations.
 
 ## 7. Hardware Compliance (authoritative)
 
-This section is the single hardware specification. The target environment's evaluation (`FEEDBACK.md`) and the local tool `r2s2r-hwcheck` (`HARDWARE_CHECK.md`) apply it; its machine-readable form is `hardware/hardware_spec.json` for the right hand (`hwspec-1.1`) and `hardware/hardware_spec_left.json` for the left hand (`hwspec-1.1L`): the same rules, limits and gains, each with its hand's joint names. The rules concern the 20 finger joints of either variant, with the limits of its hand file, and are unchanged from the fixed-wrist environment; the wrist has no rule beyond its controller (section 4): wrist commands are limited, never rejected, and the wrist's motion is never a violation.
+This section is the single hardware specification. The target environment's evaluation (`sim2target/FEEDBACK.md`) and the local tool `r2s2r-hwcheck` (`sim2target/HARDWARE_CHECK.md`) apply it; its machine-readable form is `hardware/hardware_spec.json` for the right hand (`hwspec-1.1`) and `hardware/hardware_spec_left.json` for the left hand (`hwspec-1.1L`): the same rules, limits and gains, each with its hand's joint names. The rules concern the 20 finger joints of either variant, with the limits of its hand file, and are unchanged from the fixed-wrist environment; the wrist has no rule beyond its controller (section 4): wrist commands are limited, never rejected, and the wrist's motion is never a violation.
 
 | Quantity | Requirement (every joint, every step) | Notes |
 |---|---|---|
 | Joint position | `lower − 0.02 ≤ q ≤ upper + 0.02` rad | Joint stops are compliant: pressing into a stop deflects slightly past the URDF limit; travel beyond the allowance is a violation |
 | Joint velocity | `abs(qd) ≤` URDF max speed, no allowance | Also applies to joints back-driven by contact or by the wrist's motion |
 | Applied torque | `abs(tau_applied) ≤` URDF effort, no allowance | The actuator saturates the PD torque at the effort limit, so the applied torque never exceeds it on the target; demand above the limit is saturation, reported but not a violation |
-| Actions | `q_target`: finite `(20,)`; `qd_target`: `None` or finite `(20,)`; wrist targets as in `CONTRACT.md` section 4 | Position targets are clipped to the URDF limits; a missing, non-finite or wrongly shaped action value, a policy error, or no answer within 5 s ends the trial |
+| Actions | `q_target`: finite `(20,)`; `qd_target`: `None` or finite `(20,)`; wrist targets as in `sim2target/CONTRACT.md` section 4 | Position targets are clipped to the URDF limits; a missing, non-finite or wrongly shaped action value, a policy error, or no answer within 5 s ends the trial |
 
-Nothing else is enforced; no torque–speed envelope is specified. If your simulator's actuator model can exceed the effort limit, check your trajectories with `HARDWARE_CHECK.md`.
+Nothing else is enforced; no torque–speed envelope is specified. If your simulator's actuator model can exceed the effort limit, check your trajectories with `sim2target/HARDWARE_CHECK.md`.

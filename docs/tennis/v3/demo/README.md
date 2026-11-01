@@ -11,11 +11,12 @@ One hand, palm up, holds one tennis ball and performs three consecutive vertical
 
 ## Reconstruction Inputs
 
-This file is the only demonstration input (`REFERENCE.md`). Metric scale anchor: the ball diameter (`object/SPECS.md`). The ball's free flight gives a gravity check of a reconstruction's scale and time base.
+This file is the only demonstration input (`demo2sim/REFERENCE.md`). Metric scale anchor: the ball diameter (`object/SPECS.md`). The ball's free flight gives a gravity check of a reconstruction's scale and time base.
 
-The demonstration is for offline analysis and policy development. During target execution the deployed policy receives only the observations in `../CONTRACT.md`.
+The demonstration is for offline analysis and policy development. During target execution the deployed policy receives only the observations in `sim2target/CONTRACT.md`.
 
 ## Reconstruction Notes
 
-- **Provided tracking tool on this demonstration** (`REFERENCE.md` section 3): ball mask agreement median 0.96, 99 % of frames tracked; the ball's orientation is unobservable (reported as identity); free flights fit gravity within 7 % in the camera frame.
-- **World frame:** The demonstration camera is fixed, so the reconstruction world frame is the camera frame.
+- **Provided tracking tool on this demonstration** (`demo2sim/REFERENCE.md` section 3): ball mask agreement median 0.96, 99 % of frames tracked; the ball's orientation is unobservable (reported as identity); free flights fit gravity within 7 % in the camera frame.
+- **Hands:** the demonstrator's right hand.
+- **World frame:** The demonstration camera is fixed.

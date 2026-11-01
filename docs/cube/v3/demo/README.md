@@ -11,13 +11,14 @@ The demonstrator holds and turns the cube with the left hand; the target hand of
 
 ## Reconstruction Inputs
 
-This file is the only demonstration input (`REFERENCE.md`). Metric scale anchor: the cube edge (`object/SPECS.md`); the demonstration cube's own edge is unknown, so the anchor is the target cube's.
+This file is the only demonstration input (`demo2sim/REFERENCE.md`). Metric scale anchor: the cube edge (`object/SPECS.md`); the demonstration cube's own edge is unknown, so the anchor is the target cube's.
 
-The demonstration is for offline analysis and policy development. During target execution the deployed policy receives only the observations in `../CONTRACT.md`.
+The demonstration is for offline analysis and policy development. During target execution the deployed policy receives only the observations in `sim2target/CONTRACT.md`.
 
 ## Reconstruction Notes
 
-- **Provided tracking tool on this demonstration** (`REFERENCE.md` section 3): mask agreement 0.90; orientation modulo the 24 cube rotations; layer turns are not modelled (the turn state is reported as unobserved).
+- **Provided tracking tool on this demonstration** (`demo2sim/REFERENCE.md` section 3): mask agreement 0.90; orientation modulo the 24 cube rotations; layer turns are not modelled (the turn state is reported as unobserved).
 - **Symmetry:** the cube: the 24 rotations; symmetric objects are tracked on one symmetry branch kept by continuity.
 - **Not done for this demonstration:** cube layer-turn detection.
+- **Hands:** the demonstrator's left hand turns the cube (the right hand is mostly outside the image); reconstruct the left hand as a left hand, never mirrored.
 - **Comparison videos:** The comparison videos show the slowed source at real time (13.17 s).

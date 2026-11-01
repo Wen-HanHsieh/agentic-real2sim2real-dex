@@ -11,11 +11,12 @@ The pen in the video differs from the target pen (`object/SPECS.md`). The target
 
 ## Reconstruction Inputs
 
-This file is the only demonstration input (`REFERENCE.md`). Metric scale anchor: the pen length (`object/SPECS.md`); the demonstration pen's own length is unknown, so the anchor is the target pen's.
+This file is the only demonstration input (`demo2sim/REFERENCE.md`). Metric scale anchor: the pen length (`object/SPECS.md`); the demonstration pen's own length is unknown, so the anchor is the target pen's.
 
-The demonstration is for offline analysis and policy development. During target execution the deployed policy receives only the observations in `../CONTRACT.md`.
+The demonstration is for offline analysis and policy development. During target execution the deployed policy receives only the observations in `sim2target/CONTRACT.md`.
 
 ## Reconstruction Notes
 
-- **Provided tracking tool on this demonstration** (`REFERENCE.md` section 3): mask agreement 0.68 for the thin pen; roll about the long axis is unobservable; the tip and cap ends are told apart from the ring colours with a per-frame confidence; fast spins are flagged uncertain.
+- **Provided tracking tool on this demonstration** (`demo2sim/REFERENCE.md` section 3): mask agreement 0.68 for the thin pen; roll about the long axis is unobservable; the tip and cap ends are told apart from the ring colours with a per-frame confidence; fast spins are flagged uncertain.
 - **Not done for this demonstration:** pen spin hypotheses from the markings.
+- **Hands:** the demonstrator's right hand.

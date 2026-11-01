@@ -1,6 +1,6 @@
 # Task Configuration: Tennis Ball Toss and Catch
 
-The runtime configuration of this task: which hand variant it uses, its experiment and API command, the episode and its timing, the scene, the initial configuration, the objects, and the exact shapes of the observation and the state record. The shared documents (`CONTRACT.md`, `EVALUATION.md`, `FEEDBACK.md`, `REMOTE_API.md`, `hardware/SPECS.md`, `TOOLS.md`) describe the interfaces with symbols that this document fixes: `N` (control steps), `O` (objects), `P` (parts), `R` (state-record rows) and `$R2S2R_API` (the API command).
+The runtime configuration of this task: which hand variant it uses, its experiment and API command, the episode and its timing, the scene, the initial configuration, the objects, and the exact shapes of the observation and the state record. The shared documents (`sim2target/CONTRACT.md`, `sim2target/EVALUATION.md`, `sim2target/FEEDBACK.md`, `sim2target/REMOTE_API.md`, `hardware/SPECS.md`, `TOOLS.md`) describe the interfaces with symbols that this document fixes: `N` (control steps), `O` (objects), `P` (parts), `R` (state-record rows) and `$R2S2R_API` (the API command).
 
 ## 1. Task, Robot Variant and Experiment
 
@@ -8,9 +8,9 @@ The runtime configuration of this task: which hand variant it uses, its experime
 |---|---|
 | Task | `tennis`: Tennis Ball Toss and Catch (`TASK.md`) |
 | Robot variant | **right hand**: Wuji Hand 2.2 right, `hardware/RIGHT_HAND.md`; model files `hardware/wuji_hand2_right/`; joint names `r_*` |
-| API command | `r2s2r-tennis` (`export R2S2R_API=r2s2r-tennis`; `REMOTE_API.md`) |
-| Experiment | `R2S2R-PS-TENNIS-1`: your key is bound to it; `fetch` returns `R2S2R-PS-TENNIS-1_sNN/` (`REMOTE_API.md` section 4) |
-| Environment version | `env-3` (`REMOTE_API.md` section 7) |
+| API command | `r2s2r-tennis` (`export R2S2R_API=r2s2r-tennis`; `sim2target/REMOTE_API.md`) |
+| Experiment | `R2S2R-PS-TENNIS-1`: your key is bound to it; `fetch` returns `R2S2R-PS-TENNIS-1_sNN/` (`sim2target/REMOTE_API.md` section 4) |
+| Environment version | `env-3` (`sim2target/REMOTE_API.md` section 7) |
 | Target model | `tm-2` (Wuji Hand 2.2 right) |
 | Hardware specification | `hwspec-1.1`, `hardware/hardware_spec.json` (`hardware/SPECS.md` section 7) |
 | Local tools for this hand | `r2s2r-preflight` and `r2s2r-hwcheck` use the right hand by default; the MuJoCo calibration adapter takes `--urdf hardware/wuji_hand2_right/urdf/right.urdf` (`TOOLS.md`) |
@@ -22,11 +22,11 @@ The runtime configuration of this task: which hand variant it uses, its experime
 |---|---|
 | Episode length | 10 s |
 | Control steps `N` | 5,000 policy steps at 500 Hz (`step` 0–4999) |
-| Settle phase before step 0 | 1 s, not controlled by the policy (`EVALUATION.md` section 1) |
+| Settle phase before step 0 | 1 s, not controlled by the policy (`sim2target/EVALUATION.md` section 1) |
 | State record `state/trajectory.npz` | `R` = 5,001 rows for a complete rollout (rows 0 to `N`) |
 | Rollout log `logs/trial_0.npz` | 5,000 rows for a complete rollout |
 | Videos | 100 fps, 1,001 frames per view for a complete rollout |
-| Wall-clock limit of an evaluation | 45 minutes (trial, verifier and video rendering; exceeded: state `timeout`, `REMOTE_API.md` section 3) |
+| Wall-clock limit of an evaluation | 45 minutes (trial, verifier and video rendering; exceeded: state `timeout`, `sim2target/REMOTE_API.md` section 3) |
 
 ## 3. Scene and Initial Configuration
 
@@ -37,7 +37,7 @@ The runtime configuration of this task: which hand variant it uses, its experime
 - **Contact flags:** the environment of `object_environment_contact` is the floor.
 - **Initial objects:** `object/SPECS.md`; the exact initial state is the observation of step 0.
 
-**Initial finger configuration `q₀`** (rad, the joint order of `hardware/RIGHT_HAND.md`). `q₀` is the same in every trial; measured initial positions differ by settling and encoder noise (`CONTRACT.md`).
+**Initial finger configuration `q₀`** (rad, the joint order of `hardware/RIGHT_HAND.md`). `q₀` is the same in every trial; measured initial positions differ by settling and encoder noise (`sim2target/CONTRACT.md`).
 
 | # | Joint | q₀ (rad) |
 |---|---|---|
@@ -62,7 +62,7 @@ The runtime configuration of this task: which hand variant it uses, its experime
 | 18 | r_pinky_pip | 1.4 |
 | 19 | r_pinky_dip | 0.3 |
 
-**Cameras** (`FEEDBACK.md` section 5):
+**Cameras** (`sim2target/FEEDBACK.md` section 5):
 
 | View | Perspective |
 |---|---|
@@ -75,35 +75,35 @@ The runtime configuration of this task: which hand variant it uses, its experime
 - **Objects** (`O` = 1), the order of every `object_*` array: `0 = tennis_ball`. Geometry and state frames: `object/SPECS.md`.
 - **Parts** (`P` = 0): none (`part_names` and `part_object` are empty).
 
-**Observation** (`act(obs)`, `CONTRACT.md` section 3): the exact key set, shapes and dtypes of this task, as `validate` and `r2s2r-preflight` check them.
+**Observation** (`act(obs)`, `sim2target/CONTRACT.md` section 3): the exact key set, shapes and dtypes of this task, as `validate` and `r2s2r-preflight` check them.
 
 | Key | Shape | dtype | Meaning |
 |---|---|---|---|
-| `q` | `(20,)` | float64 | `CONTRACT.md` section 3 |
-| `qd` | `(20,)` | float64 | `CONTRACT.md` section 3 |
-| `prev_q_target` | `(3, 20)` | float64 | `CONTRACT.md` section 3 |
-| `prev_qd_target` | `(3, 20)` | float64 | `CONTRACT.md` section 3 |
-| `wrist_position` | `(3,)` | float64 | `CONTRACT.md` section 3 |
-| `wrist_orientation` | `(4,)` | float64 | `CONTRACT.md` section 3 |
-| `wrist_linear_velocity` | `(3,)` | float64 | `CONTRACT.md` section 3 |
-| `wrist_angular_velocity` | `(3,)` | float64 | `CONTRACT.md` section 3 |
-| `prev_wrist_position_target` | `(3, 3)` | float64 | `CONTRACT.md` section 3 |
-| `prev_wrist_orientation_target` | `(3, 4)` | float64 | `CONTRACT.md` section 3 |
-| `step` | scalar | int | `CONTRACT.md` section 3 (0–4999) |
-| `object_position` | `(1, 3)` | float64 | `CONTRACT.md` section 3 |
-| `object_orientation` | `(1, 4)` | float64 | `CONTRACT.md` section 3 |
-| `object_linear_velocity` | `(1, 3)` | float64 | `CONTRACT.md` section 3 |
-| `object_angular_velocity` | `(1, 3)` | float64 | `CONTRACT.md` section 3 |
+| `q` | `(20,)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `qd` | `(20,)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `prev_q_target` | `(3, 20)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `prev_qd_target` | `(3, 20)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `wrist_position` | `(3,)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `wrist_orientation` | `(4,)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `wrist_linear_velocity` | `(3,)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `wrist_angular_velocity` | `(3,)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `prev_wrist_position_target` | `(3, 3)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `prev_wrist_orientation_target` | `(3, 4)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `step` | scalar | int | `sim2target/CONTRACT.md` section 3 (0–4999) |
+| `object_position` | `(1, 3)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `object_orientation` | `(1, 4)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `object_linear_velocity` | `(1, 3)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `object_angular_velocity` | `(1, 3)` | float64 | `sim2target/CONTRACT.md` section 3 |
 
-**State record** (`state/trajectory.npz`, `FEEDBACK.md` section 3): the object, contact and task-specific fields of this task (the step, time and wrist fields are as in `FEEDBACK.md`).
+**State record** (`state/trajectory.npz`, `sim2target/FEEDBACK.md` section 3): the object, contact and task-specific fields of this task (the step, time and wrist fields are as in `sim2target/FEEDBACK.md`).
 
 | Field | Shape | dtype | Meaning |
 |---|---|---|---|
-| `object_position`, `object_linear_velocity`, `object_angular_velocity` | `(R, 1, 3)` | float64 | `FEEDBACK.md` section 3 |
-| `object_orientation` | `(R, 1, 4)` | float64 | `FEEDBACK.md` section 3 |
-| `hand_object_contact`, `object_environment_contact` | `(R, 1)` | bool | `FEEDBACK.md` section 3 (environment: the floor) |
-| `object_object_contact` | `(R, 1, 1)` | bool | `FEEDBACK.md` section 3 |
+| `object_position`, `object_linear_velocity`, `object_angular_velocity` | `(R, 1, 3)` | float64 | `sim2target/FEEDBACK.md` section 3 |
+| `object_orientation` | `(R, 1, 4)` | float64 | `sim2target/FEEDBACK.md` section 3 |
+| `hand_object_contact`, `object_environment_contact` | `(R, 1)` | bool | `sim2target/FEEDBACK.md` section 3 (environment: the floor) |
+| `object_object_contact` | `(R, 1, 1)` | bool | `sim2target/FEEDBACK.md` section 3 |
 | `object_names` | `(1,)` | str | `tennis_ball` |
 | `part_names`, `part_object` | `(0,)` | str, int64 | empty: this task has no parts |
 
-**`measurements`** of `verifier/report.json` (`FEEDBACK.md` section 1): the releases, the complete cycles, and the flight, apex and retention quantities of each cycle.
+**`measurements`** of `verifier/report.json` (`sim2target/FEEDBACK.md` section 1): the releases, the complete cycles, and the flight, apex and retention quantities of each cycle.

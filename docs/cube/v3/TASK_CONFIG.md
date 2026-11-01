@@ -1,6 +1,6 @@
 # Task Configuration: One-handed 2×2×2 Rubik's Cube Solving
 
-The runtime configuration of this task: which hand variant it uses, its experiment and API command, the episode and its timing, the scene, the initial configuration, the objects, and the exact shapes of the observation and the state record. The shared documents (`CONTRACT.md`, `EVALUATION.md`, `FEEDBACK.md`, `REMOTE_API.md`, `hardware/SPECS.md`, `TOOLS.md`) describe the interfaces with symbols that this document fixes: `N` (control steps), `O` (objects), `P` (parts), `R` (state-record rows) and `$R2S2R_API` (the API command).
+The runtime configuration of this task: which hand variant it uses, its experiment and API command, the episode and its timing, the scene, the initial configuration, the objects, and the exact shapes of the observation and the state record. The shared documents (`sim2target/CONTRACT.md`, `sim2target/EVALUATION.md`, `sim2target/FEEDBACK.md`, `sim2target/REMOTE_API.md`, `hardware/SPECS.md`, `TOOLS.md`) describe the interfaces with symbols that this document fixes: `N` (control steps), `O` (objects), `P` (parts), `R` (state-record rows) and `$R2S2R_API` (the API command).
 
 ## 1. Task, Robot Variant and Experiment
 
@@ -8,12 +8,12 @@ The runtime configuration of this task: which hand variant it uses, its experime
 |---|---|
 | Task | `cube`: One-handed 2×2×2 Rubik's Cube Solving (`TASK.md`) |
 | Robot variant | **left hand**: Wuji Hand 2.2 left, `hardware/LEFT_HAND.md`; model files `hardware/wuji_hand2_left/`; joint names `l_*` |
-| API command | `r2s2r-cube` (`export R2S2R_API=r2s2r-cube`; `REMOTE_API.md`) |
-| Experiment | `R2S2R-PS-CUBE-1`: your key is bound to it; `fetch` returns `R2S2R-PS-CUBE-1_sNN/` (`REMOTE_API.md` section 4) |
-| Environment version | `env-3L` (`REMOTE_API.md` section 7) |
+| API command | `r2s2r-cube` (`export R2S2R_API=r2s2r-cube`; `sim2target/REMOTE_API.md`) |
+| Experiment | `R2S2R-PS-CUBE-1`: your key is bound to it; `fetch` returns `R2S2R-PS-CUBE-1_sNN/` (`sim2target/REMOTE_API.md` section 4) |
+| Environment version | `env-3L` (`sim2target/REMOTE_API.md` section 7) |
 | Target model | `tm-2L` (Wuji Hand 2.2 left) |
 | Hardware specification | `hwspec-1.1L`, `hardware/hardware_spec_left.json` (`hardware/SPECS.md` section 7) |
-| Local tools for this hand | set `export R2S2R_HAND=left` (or run `r2s2r-preflight --hand left`) so that `r2s2r-preflight` uses this hand's initial configuration; `r2s2r-hwcheck` selects `hardware/hardware_spec_left.json` for a trajectory with `l_*` joint names; the MuJoCo calibration adapter takes `--urdf hardware/wuji_hand2_left/urdf/left.urdf` (`TOOLS.md`) |
+| Local tools for this hand | `R2S2R_HAND=left` in your environment (if it is not set: `export R2S2R_HAND=left`, or `r2s2r-preflight --hand left`) makes `r2s2r-preflight` use this hand's initial configuration; `r2s2r-hwcheck` selects `hardware/hardware_spec_left.json` for a trajectory with `l_*` joint names; the MuJoCo calibration adapter takes `--urdf hardware/wuji_hand2_left/urdf/left.urdf` (`TOOLS.md`) |
 | Success criteria | criteria `cube-v1`, rubric `rubric-1.3`, status `provisional`: the criteria of this task's previous environment, carried over unchanged (`SUCCESS.md`). |
 
 ## 2. Episode and Timing
@@ -22,11 +22,11 @@ The runtime configuration of this task: which hand variant it uses, its experime
 |---|---|
 | Episode length | 40 s |
 | Control steps `N` | 20,000 policy steps at 500 Hz (`step` 0–19999) |
-| Settle phase before step 0 | 1 s, not controlled by the policy (`EVALUATION.md` section 1) |
+| Settle phase before step 0 | 1 s, not controlled by the policy (`sim2target/EVALUATION.md` section 1) |
 | State record `state/trajectory.npz` | `R` = 20,001 rows for a complete rollout (rows 0 to `N`) |
 | Rollout log `logs/trial_0.npz` | 20,000 rows for a complete rollout |
 | Videos | 25 fps, 1,001 frames per view for a complete rollout |
-| Wall-clock limit of an evaluation | 90 minutes (trial, verifier and video rendering; exceeded: state `timeout`, `REMOTE_API.md` section 3) |
+| Wall-clock limit of an evaluation | 90 minutes (trial, verifier and video rendering; exceeded: state `timeout`, `sim2target/REMOTE_API.md` section 3) |
 
 ## 3. Scene and Initial Configuration
 
@@ -37,7 +37,7 @@ The runtime configuration of this task: which hand variant it uses, its experime
 - **Contact flags:** the environment of `object_environment_contact` is the floor.
 - **Initial objects:** `object/SPECS.md`; the exact initial state is the observation of step 0. The fixed scramble of every evaluation is in `TASK.md` and in the observation (`scramble`).
 
-**Initial finger configuration `q₀`** (rad, the joint order of `hardware/LEFT_HAND.md`). `q₀` is the same in every trial; measured initial positions differ by settling and encoder noise (`CONTRACT.md`).
+**Initial finger configuration `q₀`** (rad, the joint order of `hardware/LEFT_HAND.md`). `q₀` is the same in every trial; measured initial positions differ by settling and encoder noise (`sim2target/CONTRACT.md`).
 
 | # | Joint | q₀ (rad) |
 |---|---|---|
@@ -62,7 +62,7 @@ The runtime configuration of this task: which hand variant it uses, its experime
 | 18 | l_pinky_pip | 1.4 |
 | 19 | l_pinky_dip | 0.3 |
 
-**Cameras** (`FEEDBACK.md` section 5):
+**Cameras** (`sim2target/FEEDBACK.md` section 5):
 
 | View | Perspective |
 |---|---|
@@ -75,25 +75,25 @@ The runtime configuration of this task: which hand variant it uses, its experime
 - **Objects** (`O` = 1), the order of every `object_*` array: `0 = cube`. Geometry and state frames: `object/SPECS.md`.
 - **Parts** (`P` = 8): `0..7 = cubie0 … cubie7`, all belonging to object 0 (`part_object`).
 
-**Observation** (`act(obs)`, `CONTRACT.md` section 3): the exact key set, shapes and dtypes of this task, as `validate` and `r2s2r-preflight` check them.
+**Observation** (`act(obs)`, `sim2target/CONTRACT.md` section 3): the exact key set, shapes and dtypes of this task, as `validate` and `r2s2r-preflight` check them.
 
 | Key | Shape | dtype | Meaning |
 |---|---|---|---|
-| `q` | `(20,)` | float64 | `CONTRACT.md` section 3 |
-| `qd` | `(20,)` | float64 | `CONTRACT.md` section 3 |
-| `prev_q_target` | `(3, 20)` | float64 | `CONTRACT.md` section 3 |
-| `prev_qd_target` | `(3, 20)` | float64 | `CONTRACT.md` section 3 |
-| `wrist_position` | `(3,)` | float64 | `CONTRACT.md` section 3 |
-| `wrist_orientation` | `(4,)` | float64 | `CONTRACT.md` section 3 |
-| `wrist_linear_velocity` | `(3,)` | float64 | `CONTRACT.md` section 3 |
-| `wrist_angular_velocity` | `(3,)` | float64 | `CONTRACT.md` section 3 |
-| `prev_wrist_position_target` | `(3, 3)` | float64 | `CONTRACT.md` section 3 |
-| `prev_wrist_orientation_target` | `(3, 4)` | float64 | `CONTRACT.md` section 3 |
-| `step` | scalar | int | `CONTRACT.md` section 3 (0–19999) |
-| `object_position` | `(1, 3)` | float64 | `CONTRACT.md` section 3 |
-| `object_orientation` | `(1, 4)` | float64 | `CONTRACT.md` section 3 |
-| `object_linear_velocity` | `(1, 3)` | float64 | `CONTRACT.md` section 3 |
-| `object_angular_velocity` | `(1, 3)` | float64 | `CONTRACT.md` section 3 |
+| `q` | `(20,)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `qd` | `(20,)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `prev_q_target` | `(3, 20)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `prev_qd_target` | `(3, 20)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `wrist_position` | `(3,)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `wrist_orientation` | `(4,)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `wrist_linear_velocity` | `(3,)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `wrist_angular_velocity` | `(3,)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `prev_wrist_position_target` | `(3, 3)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `prev_wrist_orientation_target` | `(3, 4)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `step` | scalar | int | `sim2target/CONTRACT.md` section 3 (0–19999) |
+| `object_position` | `(1, 3)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `object_orientation` | `(1, 4)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `object_linear_velocity` | `(1, 3)` | float64 | `sim2target/CONTRACT.md` section 3 |
+| `object_angular_velocity` | `(1, 3)` | float64 | `sim2target/CONTRACT.md` section 3 |
 | `part_position` | `(8, 3)` | float64 | State-frame origin of each cubie in the world [m] |
 | `part_orientation` | `(8, 4)` | float64 | Cubie orientation `(w, x, y, z)` |
 | `part_linear_velocity` | `(8, 3)` | float64 | Velocity of each cubie's state-frame origin, world frame [m/s] |
@@ -102,14 +102,14 @@ The runtime configuration of this task: which hand variant it uses, its experime
 | `cube_configuration` | `(8,)` | int64 | Index of the nearest of the 24 cube rotations to each cubie's relative orientation (`object/SPECS.md`) |
 | `scramble` | `(3, 2)` | float64 | The scramble applied to the solved cube, `[face, quarter_turns]` per move (`TASK.md`); constant |
 
-**State record** (`state/trajectory.npz`, `FEEDBACK.md` section 3): the object, contact and task-specific fields of this task (the step, time and wrist fields are as in `FEEDBACK.md`).
+**State record** (`state/trajectory.npz`, `sim2target/FEEDBACK.md` section 3): the object, contact and task-specific fields of this task (the step, time and wrist fields are as in `sim2target/FEEDBACK.md`).
 
 | Field | Shape | dtype | Meaning |
 |---|---|---|---|
-| `object_position`, `object_linear_velocity`, `object_angular_velocity` | `(R, 1, 3)` | float64 | `FEEDBACK.md` section 3 |
-| `object_orientation` | `(R, 1, 4)` | float64 | `FEEDBACK.md` section 3 |
-| `hand_object_contact`, `object_environment_contact` | `(R, 1)` | bool | `FEEDBACK.md` section 3 (environment: the floor) |
-| `object_object_contact` | `(R, 1, 1)` | bool | `FEEDBACK.md` section 3 |
+| `object_position`, `object_linear_velocity`, `object_angular_velocity` | `(R, 1, 3)` | float64 | `sim2target/FEEDBACK.md` section 3 |
+| `object_orientation` | `(R, 1, 4)` | float64 | `sim2target/FEEDBACK.md` section 3 |
+| `hand_object_contact`, `object_environment_contact` | `(R, 1)` | bool | `sim2target/FEEDBACK.md` section 3 (environment: the floor) |
+| `object_object_contact` | `(R, 1, 1)` | bool | `sim2target/FEEDBACK.md` section 3 |
 | `object_names` | `(1,)` | str | `cube` |
 | `part_names`, `part_object` | `(8,)` | str, int64 | `cubie0` … `cubie7`, all belonging to object 0 |
 | `part_position` | `(R, 8, 3)` | float64 | m, world: State-frame origin of each cubie (`part_names`) |
@@ -119,4 +119,4 @@ The runtime configuration of this task: which hand variant it uses, its experime
 | `cube_relative_orientation` | `(R, 8, 4)` | float64 | cubie 0 ← cubie j: `q₀⁻¹ ⊗ q_j` per cubie; row 0 = identity; sign-continuous |
 | `cube_configuration` | `(R, 8)` | int64 | index: Index into the 24 cube rotations (`object/SPECS.md`) nearest to each cubie's relative orientation |
 
-**`measurements`** of `verifier/report.json` (`FEEDBACK.md` section 1): `complete_layer_turns`, `min_distance_to_solved`, `start_distance`, `end_distance`, `max_mechanism_deviation_deg`, `retained_until_t`, `solved_at_end`.
+**`measurements`** of `verifier/report.json` (`sim2target/FEEDBACK.md` section 1): `complete_layer_turns`, `min_distance_to_solved`, `start_distance`, `end_distance`, `max_mechanism_deviation_deg`, `retained_until_t`, `solved_at_end`.

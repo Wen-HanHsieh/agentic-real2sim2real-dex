@@ -28,7 +28,7 @@ You implement ONE of the two forms; the tool never imports a simulator itself.
    lets it run in a different interpreter than the tool (for example the one your simulator is installed in).
 
 `meta` is the trajectory file's metadata (task, dt, joint and object names, versions, the replay mode). A `state` is a
-dict of the target's state record at one instant (lists, `(w, x, y, z)` quaternions, world frame; `FEEDBACK.md` section 3):
+dict of the target's state record at one instant (lists, `(w, x, y, z)` quaternions, world frame; `sim2target/FEEDBACK.md` section 3):
 
     q (20,), qd (20,)                                          finger joints, vendor URDF order (q, qd may be absent in set_state)
     wrist_position (3,), wrist_orientation (4,), wrist_linear_velocity (3,), wrist_angular_velocity (3,)
@@ -37,7 +37,7 @@ dict of the target's state record at one instant (lists, `(w, x, y, z)` quaterni
               hand_object_contact (O,), object_environment_contact (O,), object_object_contact (O, O)   (bools)
 
 Your reset()/read_state() return the same keys (at least the robot and object blocks; optional blocks are compared when
-present). An `action` is the dict of CONTRACT.md section 4 as lists: q_target (20,), qd_target (20,) or null,
+present). An `action` is the dict of sim2target/CONTRACT.md section 4 as lists: q_target (20,), qd_target (20,) or null,
 wrist_position_target (3,), wrist_orientation_target (4,), wrist_linear_velocity_target (3,) or null,
 wrist_angular_velocity_target (3,) or null, plus "targets": "executed" | "commanded" telling whether the wrist targets
 are the target's executed ones (after its command limits) or the commands the policy sent (apply the limits yourself,

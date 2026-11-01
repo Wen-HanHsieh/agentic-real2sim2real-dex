@@ -18,7 +18,7 @@ Turning resistance and surface properties are not given.
 
 ## State Frame (object state `objstate-1`)
 
-The state frame is the frame whose pose and velocities the observation and the feedback report for this object (`CONTRACT.md` section 2, `FEEDBACK.md` section 3).
+The state frame is the frame whose pose and velocities the observation and the feedback report for this object (`sim2target/CONTRACT.md` section 2, `sim2target/FEEDBACK.md` section 3).
 
 Object (order): `0 = cube`. Parts (order): `0..7 = cubie0 … cubie7`, all belonging to object 0 (`part_object`).
 
@@ -28,4 +28,4 @@ Object (order): `0 = cube`. Parts (order): `0..7 = cubie0 … cubie7`, all belon
 - **`cube_relative_orientation`** `(8, 4)`: each cubie's orientation relative to cubie 0, `q₀⁻¹ ⊗ q_j` `(w, x, y, z)` (row 0 is the identity), sign-continuous over time.
 - **`cube_configuration`** `(8,)` int64: for each cubie, the index of the nearest of the 24 cube rotations (largest `trace(Gᵀ R)`) to its relative orientation `R`. The table of the 24 rotations `G` (3 × 3 matrices with entries in {−1, 0, 1}, determinant +1) is sorted lexicographically by the nine row-major entries; index 0 is the first. Solved = every index equal to the identity's index (23). The full table is in `object/rotations24.json`.
 - **`scramble`** `(3, 2)`: unchanged meaning (`TASK.md`).
-- Feedback adds the complete layer turns, the distance to solved and the mechanism deviation (`FEEDBACK.md` section 1, `measurements`).
+- Feedback adds the complete layer turns, the distance to solved and the mechanism deviation (`sim2target/FEEDBACK.md` section 1, `measurements`).
