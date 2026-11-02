@@ -186,27 +186,52 @@
   var rz; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(drawAll, 150); });
   $$("[data-tab]").forEach(function (b) { b.addEventListener("click", function () { setTimeout(drawAll, 0); }); });
 
+  // Demo-to-Sim test page
+
+  // Demo-to-Sim test page: training curves as small multiples (one mini chart per CSV column, own axis; points embedded at build time)
+  $$("[data-d2curves]").forEach(function (box) {
+    var data = JSON.parse(box.getAttribute("data-d2curves")), grid = $(".cgrid", box), W = 300, H = 120, m = { l: 44, r: 8, t: 8, b: 20 };
+    var xs = data.x, xmax = Math.max.apply(null, xs) || 1;
+    var el = function (n, a, p) { var e = document.createElementNS("http://www.w3.org/2000/svg", n); for (var k in a) e.setAttribute(k, a[k]); p.appendChild(e); return e; };
+    data.series.forEach(function (s, i) {
+      var ymin = Infinity, ymax = -Infinity; s.y.forEach(function (v) { if (v != null) { ymin = Math.min(ymin, v); ymax = Math.max(ymax, v); } });
+      if (!isFinite(ymin)) return; if (ymax === ymin) ymax = ymin + 1;
+      var cell = document.createElement("figure"); cell.className = "ccell"; var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.setAttribute("viewBox", "0 0 " + W + " " + H); cell.appendChild(svg);
+      var X = function (v) { return m.l + (W - m.l - m.r) * v / xmax; }, Y = function (v) { return m.t + (H - m.t - m.b) * (1 - (v - ymin) / (ymax - ymin)); };
+      [0, 1].forEach(function (f) { var y = m.t + (H - m.t - m.b) * f; el("line", { x1: m.l, x2: W - m.r, y1: y, y2: y, "class": "tc-grid" }, svg); var t = el("text", { x: m.l - 5, y: y + 4, "class": "tc-tx", "text-anchor": "end" }, svg); t.textContent = (f ? ymin : ymax).toPrecision(3); });
+      var d = "", pen = false; s.y.forEach(function (v, j) { if (v == null) { pen = false; return; } d += (pen ? "L" : "M") + X(xs[j]).toFixed(1) + " " + Y(v).toFixed(1); pen = true; });
+      el("path", { d: d, fill: "none", stroke: i === 0 ? "#2b5cab" : "#15803d", "stroke-width": 1.8 }, svg);
+      var tx = el("text", { x: W - m.r, y: H - 6, "class": "tc-tx", "text-anchor": "end" }, svg); tx.textContent = "step → " + xmax;
+      var cap = document.createElement("figcaption"); cap.textContent = s.name + " (last " + (s.y[s.y.length - 1] == null ? "–" : (+s.y[s.y.length - 1]).toPrecision(3)) + ")"; cell.appendChild(cap); grid.appendChild(cell);
+    });
+  });
+
   // synchronized training-sim / target-sim player
   var dataEl = $("#r2s2r-data");
   var root = $("[data-player]");
   if (!dataEl || !root) return;
   var DATA = JSON.parse(dataEl.textContent).player;
   var P = function (k) { return $("[data-p='" + k + "']", root); };
-  var selTask = P("task"), selSub = P("sub"), selView = P("view"), selSync = P("sync"), selSpeed = P("speed");
+  var selTask = P("task"), selSub = P("sub"), selView = P("view"), selSync = P("sync"), selSpeed = P("speed"), selMode = P("mode");
   var btn = P("play"), seek = P("seek"), tm = P("time"), meta = $("[data-meta]", root);
-  var V = { train: $("video[data-v='train']", root), target: $("video[data-v='target']", root) };
+  var VIEWS = ["top", "left", "right"], V = {};
+  $$("video[data-v]", root).forEach(function (v) { V[v.getAttribute("data-v")] = v; });  // train, target, train_<view>, target_<view>
+  var panes1 = $(".panes", root), panes3 = $("[data-panes3]", root);
   var cur = null, t = 0, playing = false, last = 0, speed = 1;
 
-  function dur(k) { var v = V[k]; return v.getAttribute("src") && isFinite(v.duration) && v.duration > 0 ? v.duration : 0; }
+  function active() { return selMode && selMode.value === "all" ? VIEWS.map(function (v) { return "train_" + v; }).concat(VIEWS.map(function (v) { return "target_" + v; })) : ["train", "target"]; }
+  function dur(k) { var v = V[k]; return v && v.getAttribute("src") && isFinite(v.duration) && v.duration > 0 ? v.duration : 0; }
   function total() {
-    var a = cur && cur.train ? dur("train") : 0, b = cur && cur.target ? (dur("target") || cur.target.duration || 0) : 0;
+    var ks = active(), a = 0, b = 0;
+    ks.forEach(function (k) { var d = dur(k); if (k.indexOf("train") === 0) a = Math.max(a, d); else b = Math.max(b, d); });
+    if (!b && cur && cur.target && cur.target.duration) b = cur.target.duration;
     return selSync.value === "stretch" ? (b || a) : Math.max(a, b);
   }
   function clampRate(r) { return Math.min(16, Math.max(0.0625, r)); }
   function sync(force) {
     var T = total();
     seek.max = T > 0 ? T : 1;
-    ["train", "target"].forEach(function (k) {
+    active().forEach(function (k) {
       var v = V[k], d = dur(k);
       if (!d) return;
       var target = selSync.value === "stretch" && T > 0 ? t * d / T : Math.min(t, d);
@@ -237,14 +262,26 @@
   function stop() { playing = false; btn.textContent = "▶ Play"; }
   function setSrc(k, src, poster) {
     var v = V[k], gone = $("[data-gone='" + k + "']", root);
+    if (!v) return;
     v.hidden = !src; gone.hidden = !!src;
     if (src) { if (v.getAttribute("src") !== src) { v.setAttribute("src", src); if (poster) v.setAttribute("poster", poster); v.load(); } }
     else { v.removeAttribute("src"); v.removeAttribute("poster"); v.load(); }
   }
   function setTarget() {
-    var tv = cur && cur.target, view = selView.value;
+    var tv = cur && cur.target, view = selView.value, tr = cur && cur.train;
     setSrc("target", tv && tv.views[view] ? tv.views[view] : null, tv && tv.posters[view]);
     $("[data-source='target']", root).textContent = tv ? "Source: official target rollout of " + cur.id + " · " + view + " camera · rendered at " + (tv.fps || "?") + " fps, web copy 30 fps · " + (tv.duration || "?") + " s" : "";
+    // training pane: the matching view when the agent registered one, else the single training video
+    var tvw = tr && tr.views && tr.views[view];
+    setSrc("train", tr ? (tvw || tr.src) : null, tr && (tvw ? tr.vposters[view] : tr.poster));
+    var mode = $("[data-tvmode]", root);
+    mode.textContent = !tr ? "" : tvw ? view + " view" : (tr.views && Object.keys(tr.views).length ? "single view (no " + view + " view registered)" : "single view");
+    VIEWS.forEach(function (v) {
+      setSrc("train_" + v, tr && tr.views && tr.views[v] ? tr.views[v] : null, tr && tr.vposters && tr.vposters[v]);
+      setSrc("target_" + v, tv && tv.views[v] ? tv.views[v] : null, tv && tv.posters[v]);
+    });
+    var all = selMode && selMode.value === "all";
+    panes1.hidden = all; panes3.hidden = !all;
   }
   function showNow(e, newest) {
     var id = $("[data-now-id]", root), m = $("[data-now-meta]", root), tag = $("[data-now-tag]", root);
@@ -257,7 +294,7 @@
     stop(); t = 0;
     var list = DATA[task] || [];
     if (selTask.tagName === "SELECT") selTask.value = task;
-    var opt = function (e) { return "<option value='" + e.id + "'>" + e.id + (e.train ? " ● training video" : "") + " · " + e.when + " · " + e.result + "</option>"; };
+    var opt = function (e) { return "<option value='" + e.id + "'>" + e.id + (e.train ? (e.train.views && Object.keys(e.train.views).length === 3 ? " ● training video · 3 views" : " ● training video") : "") + " · " + e.when + " · " + e.result + "</option>"; };
     var withTv = list.filter(function (e) { return e.train; }), noTv = list.filter(function (e) { return !e.train; });
     selSub.innerHTML = (withTv.length ? "<optgroup label='With training video (" + withTv.length + ")'>" + withTv.map(opt).join("") + "</optgroup>" : "") +
       (noTv.length ? "<optgroup label='" + (withTv.length ? "Without training video" : "No training videos yet") + " (" + noTv.length + ")'>" + noTv.map(opt).join("") + "</optgroup>" : "");
@@ -271,7 +308,6 @@
     if (views.indexOf(keep) >= 0) selView.value = keep;
     setTarget();
     var tr = cur.train;
-    setSrc("train", tr ? tr.src : null, tr && tr.poster);
     $("[data-gone='train'] [data-reason]", root).textContent = "No video for " + cur.id + ": " + cur.train_reason + ".";
     var ext = !tr ? "" : tr.rollout === "full" ? " · full rollout (agent-stated)" : tr.rollout === "partial" ? " · partial rollout (agent-stated): starts " + (tr.start || "?") + ", " + (tr.stated != null ? tr.stated + " s" : "?") + "; limitations: " + (tr.limits || "?") : " · rollout extent not stated";
     var len = tr && tr.measured != null ? " · video " + tr.measured.toFixed(1) + " s" + (cur.target && cur.target.duration ? " (target episode " + (+cur.target.duration).toFixed(1) + " s)" : "") : "";
@@ -279,7 +315,8 @@
     meta.textContent = cur.id + " · policy " + (cur.policy || "–") + " · package " + (cur.package || "–") + " · submitted " + cur.when;
     sync(true);
   }
-  ["train", "target"].forEach(function (k) { V[k].addEventListener("loadedmetadata", function () { sync(true); }); });
+  Object.keys(V).forEach(function (k) { V[k].addEventListener("loadedmetadata", function () { sync(true); }); });
+  if (selMode) selMode.addEventListener("change", function () { setTarget(); t = Math.min(t, total()); sync(true); });
   btn.addEventListener("click", function () {
     if (!cur) return;
     if (!playing && t >= total() - 0.01) t = 0;
