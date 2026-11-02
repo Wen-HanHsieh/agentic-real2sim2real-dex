@@ -7,7 +7,7 @@ The video shows the scene the target environment reproduces: two two-blade charg
 - **Video:** `plug_IMG_0004_h264.mp4`: an H.264 copy (1280 × 720, no audio) of the original phone capture, 14.53 s, 30 fps, 436 frames, landscape orientation. The capture's frames are uniformly spaced: frame `k` is at `t_real = k / 30` s.
 - **Sampled frames:** `frames/` (12 frames at `(k + 0.5) / 12` of the duration).
 
-A white USB-C charger and a black USB-A charger lie on their sides on a white desk. A right hand enters from the near-right corner, palm down, picks up the white plug, reorients it in the hand until its blades point up, carries it about 25 cm to the left and stands it on the desk; it then does the same with the black plug and stands it beside the first (`TASK.md`). The target scene has the same two plugs on a table and the hand on a free-floating wrist starting palm down above the near-right side of the table (`object/SPECS.md`, `TASK_CONFIG.md` section 3). No task objective or success criteria are defined for the target yet (`SUCCESS.md`); the video documents the demonstrated behaviour, not a required one.
+A white USB-C charger and a black USB-A charger lie on their sides on a white desk. A right hand enters from the near-right corner, palm down, picks up the white plug, reorients it in the hand until its blades point up, carries it about 25 cm to the left and stands it on the desk; it then does the same with the black plug and stands it beside the first. The target scene has the same two plugs on a table and the hand on a free-floating wrist starting palm down above the near-right side of the table (`TASK_CONFIG.md` section 3). The stages the target environment evaluates are in `SUCCESS.md`.
 
 ## Reconstruction Inputs
 

@@ -1,122 +1,235 @@
-# Task Configuration: One-handed 2×2×2 Rubik's Cube Solving
+# TASK_CONFIG.md — One-Handed 2×2×2 Rubik's Cube Solving
 
-The runtime configuration of this task: which hand variant it uses, its experiment and API command, the episode and its timing, the scene, the initial configuration, the objects, and the exact shapes of the observation and the state record. The shared documents (`sim2target/CONTRACT.md`, `sim2target/EVALUATION.md`, `sim2target/FEEDBACK.md`, `sim2target/REMOTE_API.md`, `hardware/SPECS.md`, `TOOLS.md`) describe the interfaces with symbols that this document fixes: `N` (control steps), `O` (objects), `P` (parts), `R` (state-record rows) and `$R2S2R_API` (the API command).
-
-## 1. Task, Robot Variant and Experiment
+## 1. Task and Environment
 
 | Parameter | Value |
 |---|---|
-| Task | `cube`: One-handed 2×2×2 Rubik's Cube Solving (`TASK.md`) |
-| Robot variant | **left hand**: Wuji Hand 2.2 left, `hardware/LEFT_HAND.md`; model files `hardware/wuji_hand2_left/`; joint names `l_*` |
-| API command | `r2s2r-cube` (`export R2S2R_API=r2s2r-cube`; `sim2target/REMOTE_API.md`) |
-| Experiment | `R2S2R-PS-CUBE-1`: your key is bound to it; `fetch` returns `R2S2R-PS-CUBE-1_sNN/` (`sim2target/REMOTE_API.md` section 4) |
-| Environment version | `env-3L` (`sim2target/REMOTE_API.md` section 7) |
-| Target model | `tm-2L` (Wuji Hand 2.2 left) |
-| Hardware specification | `hwspec-1.1L`, `hardware/hardware_spec_left.json` (`hardware/SPECS.md` section 7) |
-| Local tools for this hand | `R2S2R_HAND=left` in your environment (if it is not set: `export R2S2R_HAND=left`, or `r2s2r-preflight --hand left`) makes `r2s2r-preflight` use this hand's initial configuration; `r2s2r-hwcheck` selects `hardware/hardware_spec_left.json` for a trajectory with `l_*` joint names; the MuJoCo calibration adapter takes `--urdf hardware/wuji_hand2_left/urdf/left.urdf` (`TOOLS.md`) |
-| Success criteria | criteria `cube-v1`, rubric `rubric-1.3`, status `provisional`: the criteria of this task's previous environment, carried over unchanged (`SUCCESS.md`). |
+| Task | `cube` |
+| Robot | Wuji Hand 2.2 — Left Hand |
+| Robot model | `hardware/wuji_hand2_left/` |
+| Hardware specification | `hwspec-1.1L` (`hardware/hardware_spec_left.json`) |
+| Target model | `tm-2L` |
+| Environment | `env-3L` |
+| Experiment | `R2S2R-PS-CUBE-1` |
+| API command | `r2s2r-cube` |
+| Success criteria | `SUCCESS.md` |
 
-## 2. Episode and Timing
+- **Hand specifications:** `hardware/LEFT_HAND.md`
+- **Joint naming:** `l_*`
+- **API setup:**
+  - `export R2S2R_API=r2s2r-cube`
+  - `export R2S2R_HAND=left`
+- **Policy interface:** `sim2target/CONTRACT.md`
+- **Evaluation interface:** `sim2target/REMOTE_API.md`
+- **Local tools:**
+  - `r2s2r-preflight` uses the left-hand initial configuration when `R2S2R_HAND=left` or `--hand left` is specified.
+  - `r2s2r-hwcheck` selects `hardware/hardware_spec_left.json` for trajectories with `l_*` joint names.
+- **MuJoCo URDF:** `hardware/wuji_hand2_left/urdf/left.urdf`
+- **Submission records:** The task-bound API key accesses this experiment; fetched submissions use the directory prefix `R2S2R-PS-CUBE-1_sNN/`.
+
+## 2. Episode Configuration
 
 | Parameter | Value |
 |---|---|
-| Episode length | 40 s |
-| Control steps `N` | 20,000 policy steps at 500 Hz (`step` 0–19999) |
-| Settle phase before step 0 | 1 s, not controlled by the policy (`sim2target/EVALUATION.md` section 1) |
-| State record `state/trajectory.npz` | `R` = 20,001 rows for a complete rollout (rows 0 to `N`) |
-| Rollout log `logs/trial_0.npz` | 20,000 rows for a complete rollout |
-| Videos | 25 fps, 1,001 frames per view for a complete rollout |
-| Wall-clock limit of an evaluation | 90 minutes (trial, verifier and video rendering; exceeded: state `timeout`, `sim2target/REMOTE_API.md` section 3) |
+| Episode duration | 40 s |
+| Control frequency | 500 Hz |
+| Control steps (`N`) | 20,000 |
+| Policy step index | 0–19999 |
+| Settle phase | 1 s before step 0 (not policy-controlled) |
+| State-record rows (`R`) | 20,001 (initial state + 20,000 steps) |
+| Rollout-log rows | 20,000 |
+| Video | 25 fps, 1,001 frames per view |
+| Evaluation wall-clock limit | 90 min |
 
-## 3. Scene and Initial Configuration
+- **State record:** `state/trajectory.npz`
+- **Rollout log:** `logs/trial_0.npz`
+- **Video views:** `top`, `left`, `right`
+- **Timeout:** Exceeding the wall-clock limit results in evaluation state `timeout` (`sim2target/REMOTE_API.md`).
 
-- **World frame:** X forward, Y left, Z up (`hardware/SPECS.md` section 3). The floor is the plane z = 0; the initial wrist pose below is about 0.31 m above it.
-- **Initial wrist pose** (every trial; the root link `l_mount`): position `(0.027610, 0.001998, 0.307144)` m, orientation (wxyz) `(0.555339, -0.420012, 0.441195, -0.566159)`. Palm up, fingertips tilted downward by 15°: the mirror image, in the world x–z plane, of the right hand's pose of this task's previous environment (the fixed mount; within 0.2 mm and 0.4°), with the object resting in the hand. The executed wrist target starts at this pose (the three entries of the target histories at step 0); the measured wrist state at step 0 differs from it by the controller's steady-state offset under the object's weight (`hardware/SPECS.md` section 4).
-- **Palm frame `l_wrist`** at the initial pose: position `(-0.000002, -0.000058, 0.299751)` m, orientation (wxyz) `(0.555334, -0.420015, 0.441191, -0.566164)`.
-- **Wrist workspace:** the executed wrist position target is kept inside the box `x ∈ [−0.30, 0.35]`, `y ∈ [−0.30, 0.30]`, `z ∈ [0.05, 0.65]` m (world frame). The hand itself collides with the floor and the object.
-- **Contact flags:** the environment of `object_environment_contact` is the floor.
-- **Initial objects:** `object/SPECS.md`; the exact initial state is the observation of step 0. The fixed scramble of every evaluation is in `TASK.md` and in the observation (`scramble`).
+## 3. Initial Configuration
 
-**Initial finger configuration `q₀`** (rad, the joint order of `hardware/LEFT_HAND.md`). `q₀` is the same in every trial; measured initial positions differ by settling and encoder noise (`sim2target/CONTRACT.md`).
+### World Frame
 
-| # | Joint | q₀ (rad) |
-|---|---|---|
-| 0 | l_thumb_cmc_flex | 0.6 |
-| 1 | l_thumb_cmc_abd | -0.3 |
-| 2 | l_thumb_mcp | 0.3 |
-| 3 | l_thumb_ip | 0.2 |
-| 4 | l_index_finger_mcp_flex | 0.6 |
-| 5 | l_index_finger_mcp_abd | 0.0 |
-| 6 | l_index_finger_pip | 1.4 |
-| 7 | l_index_finger_dip | 0.3 |
-| 8 | l_middle_finger_mcp_flex | 0.6 |
-| 9 | l_middle_finger_mcp_abd | 0.0 |
-| 10 | l_middle_finger_pip | 1.4 |
-| 11 | l_middle_finger_dip | 0.3 |
-| 12 | l_ring_finger_mcp_flex | 0.6 |
-| 13 | l_ring_finger_mcp_abd | 0.0 |
-| 14 | l_ring_finger_pip | 1.4 |
-| 15 | l_ring_finger_dip | 0.3 |
-| 16 | l_pinky_mcp_flex | 0.6 |
-| 17 | l_pinky_mcp_abd | 0.0 |
-| 18 | l_pinky_pip | 1.4 |
-| 19 | l_pinky_dip | 0.3 |
+- **X:** Forward
+- **Y:** Left
+- **Z:** Up
+- **Floor:** `z = 0`
 
-**Cameras** (`sim2target/FEEDBACK.md` section 5):
+See `hardware/SPECS.md` for coordinate conventions.
 
-| View | Perspective |
+### Initial Wrist Pose
+
+The left hand starts palm-up with fingertips tilted downward by 15°, with the cube resting in the hand.
+
+- **Root link:** `l_mount`
+- **Position (xyz, m):** `(0.027610, 0.001998, 0.307144)`
+- **Orientation (wxyz):** `(0.555339, -0.420012, 0.441195, -0.566159)`
+
+Initial palm frame (`l_wrist`):
+
+- **Position (xyz, m):** `(-0.000002, -0.000058, 0.299751)`
+- **Orientation (wxyz):** `(0.555334, -0.420015, 0.441191, -0.566164)`
+
+The initial pose is the mirror image, across the world X–Z plane, of the previous right-hand fixed-mount pose, within 0.2 mm and 0.4°.
+
+The executed wrist target starts at this initial root-link pose. The measured wrist state may differ slightly after settling because of controller steady-state offsets under object weight.
+
+The three initial wrist-target history entries contain this starting target.
+
+### Wrist Workspace
+
+The executed wrist position target is clipped to:
+
+- **X:** `[-0.30, 0.35]` m
+- **Y:** `[-0.30, 0.30]` m
+- **Z:** `[0.05, 0.65]` m
+
+These bounds apply to the executed wrist position target in the world frame. The hand can collide with the floor and the cube.
+
+### Initial Finger Configuration
+
+The initial joint targets `q₀` are fixed across trials.
+
+Joint order follows `hardware/LEFT_HAND.md`.
+
+| Joint | Initial angle (rad) |
+|---|---:|
+| `l_thumb_cmc_flex` | 0.6 |
+| `l_thumb_cmc_abd` | -0.3 |
+| `l_thumb_mcp` | 0.3 |
+| `l_thumb_ip` | 0.2 |
+| `l_index_finger_mcp_flex` | 0.6 |
+| `l_index_finger_mcp_abd` | 0.0 |
+| `l_index_finger_pip` | 1.4 |
+| `l_index_finger_dip` | 0.3 |
+| `l_middle_finger_mcp_flex` | 0.6 |
+| `l_middle_finger_mcp_abd` | 0.0 |
+| `l_middle_finger_pip` | 1.4 |
+| `l_middle_finger_dip` | 0.3 |
+| `l_ring_finger_mcp_flex` | 0.6 |
+| `l_ring_finger_mcp_abd` | 0.0 |
+| `l_ring_finger_pip` | 1.4 |
+| `l_ring_finger_dip` | 0.3 |
+| `l_pinky_mcp_flex` | 0.6 |
+| `l_pinky_mcp_abd` | 0.0 |
+| `l_pinky_pip` | 1.4 |
+| `l_pinky_dip` | 0.3 |
+
+Measured initial joint positions may differ slightly due to settling and encoder noise (`sim2target/CONTRACT.md`).
+
+### Initial Cube Scramble
+
+Every evaluation starts from the same scrambled configuration.
+
+- **Scramble:** `R' F U2`
+- **Encoded sequence:** `[[1, 3], [2, 1], [0, 2]]`
+- **Start distance to solved:** 3 face turns
+- **Initial cube pose and state:** Available in the observation at step 0.
+
+Encoding conventions:
+
+- **Face indices:** `0 = U`, `1 = R`, `2 = F`
+- **Quarter turns:**
+  - `1` = clockwise 90°
+  - `2` = 180°
+  - `3` = counterclockwise 90°
+- **Move notation:** Clockwise and counterclockwise are defined while looking at the corresponding face from outside the cube.
+- **Scramble application:** Apply `R'`, then `F`, then `U2` to a solved cube in its starting orientation.
+- **Starting orientation:** U faces up (world +Z) and F faces the fingertips (world −X), within about 12° of yaw and 6° of tilt; the exact initial pose is in the observation at step 0.
+
+The initial scramble is provided in the policy observation as `scramble`.
+
+Cube face conventions, cubie mechanics, solved-state definitions, and configuration encoding are documented in `object/SPECS.md`.
+
+The agent may choose any valid solving sequence; the shortest solution is not mandatory.
+
+## 4. Objects and Scene
+
+- **Number of objects (`O`):** 1
+- **Object index 0:** `cube`
+- **Articulated parts (`P`):** 8
+- **Part indices:** `0–7 = cubie0 … cubie7`
+- **Part ownership:** All eight cubies belong to object 0.
+- **Initial object and cubie states:** Available in the observation at step 0.
+- **Object geometry, physical properties, mechanics, and state frames:** `object/SPECS.md`
+- **Object–environment contact:** Contact with the floor.
+
+### Camera Views
+
+| View | Configuration |
 |---|---|
-| `top` | Above the wrist workspace, 1.6 m up, looking down: the whole workspace in view; contacts on the palm side |
-| `left` | From the hand's left (+Y), nearly level, 1.8 m away: the whole workspace and heights above the hand |
-| `right` | Close oblique view from the hand's right (−Y) and the fingertip side, 0.75 m away, aimed at the initial hand position: grasp and fingers |
+| `top` | 1.6 m above the workspace center, looking downward; shows the full workspace and palm-side contacts |
+| `left` | From the hand's left (+Y), nearly level, 1.8 m away; shows the workspace and heights above the hand |
+| `right` | Close oblique view from the hand's right (−Y), on the fingertip side, 0.75 m away; aimed at the initial hand position |
 
-## 4. Objects, Observation and State Record
+See `sim2target/FEEDBACK.md` for video and camera-record details.
 
-- **Objects** (`O` = 1), the order of every `object_*` array: `0 = cube`. Geometry and state frames: `object/SPECS.md`.
-- **Parts** (`P` = 8): `0..7 = cubie0 … cubie7`, all belonging to object 0 (`part_object`).
+## 5. Observation and State Record
 
-**Observation** (`act(obs)`, `sim2target/CONTRACT.md` section 3): the exact key set, shapes and dtypes of this task, as `validate` and `r2s2r-preflight` check them.
+The exact observation/action semantics are defined in `sim2target/CONTRACT.md`. This section specifies the Cube task's dimensions and record fields.
+
+### Policy Observation
+
+All floating-point arrays use `float64`.
+
+| Keys | Shape per key |
+|---|---|
+| `q`, `qd` | `(20,)` |
+| `prev_q_target`, `prev_qd_target` | `(3, 20)` |
+| `wrist_position`, `wrist_linear_velocity`, `wrist_angular_velocity` | `(3,)` |
+| `wrist_orientation` | `(4,)` |
+| `prev_wrist_position_target` | `(3, 3)` |
+| `prev_wrist_orientation_target` | `(3, 4)` |
+| `object_position`, `object_linear_velocity`, `object_angular_velocity` | `(1, 3)` |
+| `object_orientation` | `(1, 4)` |
+| `step` | Scalar integer (0–19999) |
+
+Additional task-specific observation fields:
 
 | Key | Shape | dtype | Meaning |
 |---|---|---|---|
-| `q` | `(20,)` | float64 | `sim2target/CONTRACT.md` section 3 |
-| `qd` | `(20,)` | float64 | `sim2target/CONTRACT.md` section 3 |
-| `prev_q_target` | `(3, 20)` | float64 | `sim2target/CONTRACT.md` section 3 |
-| `prev_qd_target` | `(3, 20)` | float64 | `sim2target/CONTRACT.md` section 3 |
-| `wrist_position` | `(3,)` | float64 | `sim2target/CONTRACT.md` section 3 |
-| `wrist_orientation` | `(4,)` | float64 | `sim2target/CONTRACT.md` section 3 |
-| `wrist_linear_velocity` | `(3,)` | float64 | `sim2target/CONTRACT.md` section 3 |
-| `wrist_angular_velocity` | `(3,)` | float64 | `sim2target/CONTRACT.md` section 3 |
-| `prev_wrist_position_target` | `(3, 3)` | float64 | `sim2target/CONTRACT.md` section 3 |
-| `prev_wrist_orientation_target` | `(3, 4)` | float64 | `sim2target/CONTRACT.md` section 3 |
-| `step` | scalar | int | `sim2target/CONTRACT.md` section 3 (0–19999) |
-| `object_position` | `(1, 3)` | float64 | `sim2target/CONTRACT.md` section 3 |
-| `object_orientation` | `(1, 4)` | float64 | `sim2target/CONTRACT.md` section 3 |
-| `object_linear_velocity` | `(1, 3)` | float64 | `sim2target/CONTRACT.md` section 3 |
-| `object_angular_velocity` | `(1, 3)` | float64 | `sim2target/CONTRACT.md` section 3 |
-| `part_position` | `(8, 3)` | float64 | State-frame origin of each cubie in the world [m] |
-| `part_orientation` | `(8, 4)` | float64 | Cubie orientation `(w, x, y, z)` |
-| `part_linear_velocity` | `(8, 3)` | float64 | Velocity of each cubie's state-frame origin, world frame [m/s] |
-| `part_angular_velocity` | `(8, 3)` | float64 | Angular velocity of each cubie, world frame [rad/s] |
-| `cube_relative_orientation` | `(8, 4)` | float64 | Orientation of each cubie relative to cubie 0, `q₀⁻¹ ⊗ q_j` `(w, x, y, z)`; row 0 is the identity; sign-continuous |
-| `cube_configuration` | `(8,)` | int64 | Index of the nearest of the 24 cube rotations to each cubie's relative orientation (`object/SPECS.md`) |
-| `scramble` | `(3, 2)` | float64 | The scramble applied to the solved cube, `[face, quarter_turns]` per move (`TASK.md`); constant |
+| `part_position` | `(8, 3)` | float64 | Cubie state-frame origins in world coordinates (m) |
+| `part_orientation` | `(8, 4)` | float64 | Cubie orientations (wxyz) |
+| `part_linear_velocity` | `(8, 3)` | float64 | Cubie state-frame linear velocities in world coordinates (m/s) |
+| `part_angular_velocity` | `(8, 3)` | float64 | Cubie angular velocities in world coordinates (rad/s) |
+| `cube_relative_orientation` | `(8, 4)` | float64 | Cubie orientations relative to cubie 0, `q₀⁻¹ ⊗ qⱼ`; row 0 is identity, sign-continuous |
+| `cube_configuration` | `(8,)` | int64 | Index of the nearest of 24 cube rotations for each cubie's relative orientation |
+| `scramble` | `(3, 2)` | float64 | Initial scramble encoded as `[face, quarter_turns]` per move; constant |
 
-**State record** (`state/trajectory.npz`, `sim2target/FEEDBACK.md` section 3): the object, contact and task-specific fields of this task (the step, time and wrist fields are as in `sim2target/FEEDBACK.md`).
+The exact key set, shapes, dtypes, and cubie-state semantics must match `sim2target/CONTRACT.md`, `object/SPECS.md`, and the validation tools.
 
-| Field | Shape | dtype | Meaning |
-|---|---|---|---|
-| `object_position`, `object_linear_velocity`, `object_angular_velocity` | `(R, 1, 3)` | float64 | `sim2target/FEEDBACK.md` section 3 |
-| `object_orientation` | `(R, 1, 4)` | float64 | `sim2target/FEEDBACK.md` section 3 |
-| `hand_object_contact`, `object_environment_contact` | `(R, 1)` | bool | `sim2target/FEEDBACK.md` section 3 (environment: the floor) |
-| `object_object_contact` | `(R, 1, 1)` | bool | `sim2target/FEEDBACK.md` section 3 |
-| `object_names` | `(1,)` | str | `cube` |
-| `part_names`, `part_object` | `(8,)` | str, int64 | `cubie0` … `cubie7`, all belonging to object 0 |
-| `part_position` | `(R, 8, 3)` | float64 | m, world: State-frame origin of each cubie (`part_names`) |
-| `part_orientation` | `(R, 8, 4)` | float64 | world ← part frame: Cubie orientation |
-| `part_linear_velocity` | `(R, 8, 3)` | float64 | m/s, world: Velocity of the cubie's state-frame origin |
-| `part_angular_velocity` | `(R, 8, 3)` | float64 | rad/s, world: Angular velocity of the cubie |
-| `cube_relative_orientation` | `(R, 8, 4)` | float64 | cubie 0 ← cubie j: `q₀⁻¹ ⊗ q_j` per cubie; row 0 = identity; sign-continuous |
-| `cube_configuration` | `(R, 8)` | int64 | index: Index into the 24 cube rotations (`object/SPECS.md`) nearest to each cubie's relative orientation |
+### State Record
 
-**`measurements`** of `verifier/report.json` (`sim2target/FEEDBACK.md` section 1): `complete_layer_turns`, `min_distance_to_solved`, `start_distance`, `end_distance`, `max_mechanism_deviation_deg`, `retained_until_t`, `solved_at_end`.
+File: `state/trajectory.npz`
+
+For a complete episode, `R = 20001`.
+
+| Fields | Shape | dtype |
+|---|---|---|
+| `object_position`, `object_linear_velocity`, `object_angular_velocity` | `(R, 1, 3)` | float64 |
+| `object_orientation` | `(R, 1, 4)` | float64 |
+| `hand_object_contact`, `object_environment_contact` | `(R, 1)` | bool |
+| `object_object_contact` | `(R, 1, 1)` | bool |
+| `object_names` | `(1,)` | str |
+| `part_names` | `(8,)` | str |
+| `part_object` | `(8,)` | int64 |
+
+Additional task-specific state-record fields:
+
+| Field | Shape | dtype |
+|---|---|---|
+| `part_position` | `(R, 8, 3)` | float64 |
+| `part_orientation` | `(R, 8, 4)` | float64 |
+| `part_linear_velocity` | `(R, 8, 3)` | float64 |
+| `part_angular_velocity` | `(R, 8, 3)` | float64 |
+| `cube_relative_orientation` | `(R, 8, 4)` | float64 |
+| `cube_configuration` | `(R, 8)` | int64 |
+
+- **Object name:** `cube`
+- **Part names:** `cubie0` … `cubie7`
+- **Part ownership:** `part_object = [0, 0, 0, 0, 0, 0, 0, 0]`
+- **Relative orientation:** Computed as `q₀⁻¹ ⊗ qⱼ`, where the quaternions refer to cubie 0 and cubie j; row 0 is identity.
+- **Shared time, step, robot, wrist, and control fields:** `sim2target/FEEDBACK.md`.
+- **Task measurements:** The active verifier reports `valid_layer_turns`, `start_distance`, `min_distance_to_solved`, `end_distance`, `solved_at_end`, `hand_contact_at_end`, and `full_length` through `verifier/report.json`.
+
+All state-record field semantics follow `sim2target/FEEDBACK.md`.

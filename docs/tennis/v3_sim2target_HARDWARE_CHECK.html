@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Cache-Control" content="no-cache"><title>Hardware Validation Tool · Tennis Ball Toss and Catch</title>
+<meta http-equiv="Cache-Control" content="no-cache"><title>Hardware Validation Tool · Tennis Ball Juggling</title>
 <meta name="description" content="Autonomous research agents build their own simulations, train dexterous-hand policies and improve them from the ground-truth feedback of a black-box target."><meta name="theme-color" content="#0b2a55">
 <style>
 :root{--bg:#ffffff;--band:#f4f7fb;--fg:#1c2433;--navy:#0b2a55;--muted:#55627a;--faint:#7d899c;--line:#e1e7f0;--card:#fff;--soft:#eef3fa;--accent:#1d4ed8;--accentbg:#e8effd;
@@ -159,29 +159,106 @@ footer .fp{font:700 13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;co
 .tstat{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;margin:0 0 12px;font-size:14px}.tstat a{margin-left:auto;font-size:14px;font-weight:600}.tstat .stat{margin:0}
 @media (max-width:1000px){.tlb{grid-template-columns:1fr 1fr}.tlr>summary{grid-template-columns:44px 1fr auto;grid-auto-rows:auto}.tlr>summary .hyp{grid-column:1/-1;white-space:normal}.tlr>summary .tags{grid-column:1/-1}.tlr>summary .sc{grid-column:2/-1}}
 @media (max-width:640px){section{padding:44px 0}.hero{padding:44px 0 36px}.panes,.tlb{grid-template-columns:1fr}.blk.w2{grid-column:auto}.upd{margin-left:0}.steps{grid-template-columns:repeat(2,minmax(0,1fr))}.tstat a{margin-left:0}.sub{font-size:16px}}
-</style></head><body data-exported='2026-11-02T01:12:30Z' data-feed='../../data/site_data.json'>
-<header class="top"><div class="in"><a class="brand" href="../../index.html">agentic-dex-iterative-sim2real</a><nav><a href='../../index.html#framework'>Framework</a><a href='../../index.html#tasks'>Tasks</a><a href='../../index.html#results'>Results</a><a href='../../reconstruction-benchmark.html'>Reconstruction</a><a href='../../docs/index.html'>Docs</a></nav><span class="upd">data as of <time datetime='2026-11-02T01:12:30Z'>Nov 01, 20:12 EST</time> <span class='lk' data-rel='2026-11-02T01:12:30Z'></span></span></div></header>
+</style></head><body data-exported='2026-11-02T01:13:38Z' data-feed='../../data/site_data.json'>
+<header class="top"><div class="in"><a class="brand" href="../../index.html">agentic-dex-iterative-sim2real</a><nav><a href='../../index.html#framework'>Framework</a><a href='../../index.html#tasks'>Tasks</a><a href='../../index.html#results'>Results</a><a href='../../reconstruction-benchmark.html'>Reconstruction</a><a href='../../docs/index.html'>Docs</a></nav><span class="upd">data as of <time datetime='2026-11-02T01:13:38Z'>Nov 01, 20:13 EST</time> <span class='lk' data-rel='2026-11-02T01:13:38Z'></span></span></div></header>
 <main><div class='banner warn' id='stale'>Data last refreshed <span>–</span> ago; the publisher may be delayed. Values are last-known.</div>
 <div class='banner info' id='newer'>Newer results are available. <button class='btn' type='button'>Reload</button></div>
 <div class='wrap dlay'><nav class='toc' aria-label='Contents'><h4>Contents</h4><ol><li class='l2'><a href='#hardware-validation-tool'>Hardware Validation Tool</a></li><li class='l3'><a href='#1-usage'>1. Usage</a></li><li class='l3'><a href='#2-input-npz'>2. Input (.npz)</a></li><li class='l3'><a href='#3-results'>3. Results</a></li></ol></nav><div class='doc'><p class='cap'><a href='../index.html#tennis'>← Tennis documentation</a> · <a href='v3/sim2target/HARDWARE_CHECK.md'>raw Markdown</a> · <code>sim2target/HARDWARE_CHECK.md</code></p><h2 id='hardware-validation-tool'>Hardware Validation Tool</h2>
-<p><code>r2s2r-hwcheck</code> checks finger joint trajectories against the hardware rules of <code>hardware/SPECS.md</code> section 7, using the machine-readable specification of the trajectory&#x27;s hand: <code>hardware/hardware_spec.json</code> (right hand, <code>hwspec-1.1</code>) or <code>hardware/hardware_spec_left.json</code> (left hand, <code>hwspec-1.1L</code>). With <code>joint_names</code> in the input, the tool picks the specification of that hand (<code>r_*</code> right, <code>l_*</code> left) when both files are next to each other; the names must be those of one hand. The target environment&#x27;s evaluation applies the same rules (<code>sim2target/FEEDBACK.md</code> section 2). The tool is simulator-independent and needs only NumPy. The wrist has no hardware rule beyond its controller and is not checked.</p>
+<p><code>r2s2r-hwcheck</code> checks finger joint trajectories against the hardware rules of <code>hardware/SPECS.md</code> section 7, using the machine-readable specification of the trajectory&#x27;s hand: <code>hardware/hardware_spec.json</code> (right hand, <code>hwspec-1.1</code>) or <code>hardware/hardware_spec_left.json</code> (left hand, <code>hwspec-1.1L</code>).</p>
+<p>With <code>joint_names</code> in the input, the tool picks the specification of that hand (<code>r_*</code> right, <code>l_*</code> left) when both files are next to each other; the names must be those of one hand.</p>
+<p>The target environment&#x27;s evaluation applies the same rules (<code>sim2target/FEEDBACK.md</code> section 2).</p>
+<p>The tool is simulator-independent and needs only NumPy. The wrist has no hardware rule beyond its controller and is not checked.</p>
 <p>Passing a local check does not guarantee compliance during target execution: the target rollout is a different trajectory.</p>
+<p><strong>Important:</strong> Exit code 0 does not necessarily mean hardware compliant. Results marked <code>uncertain</code> or <code>incomplete</code> are not violations confirmed by the tool, but they are also not evidence of complete compliance. Automated research and submission gates must inspect the reported overall status and the completeness of individual checks.</p>
 <h3 id='1-usage'>1. Usage</h3>
 <pre><code>r2s2r-hwcheck traj.npz                    # simulator state (exact)
 r2s2r-hwcheck traj.npz --measured         # noisy encoder readings
 r2s2r-hwcheck traj.npz --dt 0.001         # sample spacing when traj.npz has no t
 r2s2r-hwcheck traj.npz --json report.json
+
 python tools/hwcheck/hwcheck.py traj.npz --spec hardware/hardware_spec.json        # right hand
 python tools/hwcheck/hwcheck.py traj.npz --spec hardware/hardware_spec_left.json   # left hand</code></pre>
-<p>Exit code 1 if a violation or an invalid action is found; otherwise 0, including for <code>uncertain</code> and <code>incomplete</code> results.</p>
+<p><strong>Exit codes:</strong></p>
+<ul><li><code>1</code>: a hardware violation or invalid action was found.</li><li><code>0</code>: no confirmed violation or invalid action was found, including results classified as <code>compliant</code>, <code>uncertain</code>, or <code>incomplete</code>.</li></ul>
+<p>The exit code indicates whether the checker found a violation; it does not independently certify full hardware compliance.</p>
+<h4 id='automated-validation'>Automated Validation</h4>
+<p>For automated research and submission decisions:</p>
+<ul><li><strong><code>compliant</code>:</strong> All applicable required checks have sufficient evidence and pass.</li><li><strong><code>uncertain</code>:</strong> Available measurements cannot establish whether a limit was exceeded.</li><li><strong><code>incomplete</code>:</strong> One or more required checks lack sufficient input data.</li><li><strong><code>violation</code>:</strong> At least one hardware limit or action-validity requirement was violated.</li></ul>
+<p>Only a complete <code>compliant</code> result may be treated as a passed local hardware check.</p>
+<p>An <code>uncertain</code> or <code>incomplete</code> result must be reported explicitly and investigated before claiming compliance. Do not silently reinterpret either status as <code>compliant</code>.</p>
+<p>Preserve the existing exit-code behavior for compatibility with scripts that use <code>r2s2r-hwcheck</code>.</p>
+<h4 id='hand-selection'>Hand Selection</h4>
+<p>Use the hardware specification for the task&#x27;s hand variant:</p>
+<ul><li><strong>Right hand:</strong> <code>hardware/hardware_spec.json</code>, <code>hwspec-1.1</code>.</li><li><strong>Left hand:</strong> <code>hardware/hardware_spec_left.json</code>, <code>hwspec-1.1L</code>.</li></ul>
+<p>The current Cube task uses the left-hand variant. Tennis, Plug, and Pen use the right-hand variant, as specified by their respective <code>TASK_CONFIG.md</code>.</p>
+<p>When <code>joint_names</code> is present, it must identify exactly one hand variant and match the corresponding specification.</p>
+<p>If <code>joint_names</code> is absent, the caller must explicitly select or verify the correct hardware specification using the task configuration and documented tool behavior.</p>
+<p>Do not infer that the right-hand specification is correct merely because it is the default.</p>
+<p>The input joint-vector columns must follow the vendor URDF order of the selected hand.</p>
 <h3 id='2-input-npz'>2. Input (<code>.npz</code>)</h3>
 <p>One row per sample:</p>
 <div class='tw'><table><tr><th>Key</th><th>Shape</th><th>Purpose</th></tr><tr><td><code>q</code></td><td><code>(n, 20)</code></td><td>Joint positions [rad] (required)</td></tr><tr><td><code>qd</code></td><td><code>(n, 20)</code></td><td>Joint velocities [rad/s]</td></tr><tr><td><code>tau_applied</code></td><td><code>(n, 20)</code></td><td>Torque applied by your actuator model [N·m], not the PD demand</td></tr><tr><td><code>q_target</code>, <code>qd_target</code></td><td><code>(n, 20)</code></td><td>Action validity and PD torque-demand estimate</td></tr><tr><td><code>t</code></td><td><code>(n,)</code></td><td>Sample times [s], or <code>--dt</code></td></tr><tr><td><code>joint_names</code></td><td><code>(20,)</code></td><td>Column order and hand; default: the URDF order of the specification&#x27;s hand</td></tr></table></div>
-<p>Sample at your physics rate (for example 1 kHz) to cover every PD tick. Missing inputs are reported as not checked. The target&#x27;s <code>logs/trial_0.npz</code> (<code>sim2target/FEEDBACK.md</code> section 4) can be checked directly: its finger keys have these names.</p>
+<p>Sample at your physics or controller rate (for example, 1 kHz) to cover every PD tick.</p>
+<p>Missing inputs are reported as not checked.</p>
+<h4 id='sampling-requirements'>Sampling Requirements</h4>
+<p>The policy operates at 500 Hz, while the finger PD controller operates at 1 kHz.</p>
+<p>Hardware compliance applies at every controller tick, including intermediate ticks between policy commands.</p>
+<p>For local simulation:</p>
+<ul><li>Prefer exact joint position, velocity, and applied torque sampled at 1 kHz or finer.</li><li>Preserve the timestamps or specify the correct sampling interval with <code>--dt</code>.</li><li>Include the actual applied torque, not only the PD torque demand.</li><li>Include the executed joint trajectory, not only the policy command sequence.</li><li>Ensure the selected joint ordering matches the correct hand specification.</li></ul>
+<p>A trajectory sampled only at 500 Hz may miss violations between consecutive policy steps.</p>
+<p>A passing check on a lower-rate trajectory establishes compliance only for the samples checked; it does not certify compliance at unobserved controller ticks.</p>
+<p>Do not interpolate missing samples and treat the interpolation as measured hardware evidence.</p>
+<h4 id='checking-target-rollout-logs'>Checking Target Rollout Logs</h4>
+<p>The target&#x27;s <code>logs/trial_0.npz</code> (<code>sim2target/FEEDBACK.md</code> section 4) can be checked directly, but its finger <code>q</code> and <code>qd</code> values are noisy encoder observations.</p>
+<p>When checking these logs, use:</p>
+<pre><code>r2s2r-hwcheck trial_0.npz --measured</code></pre>
+<p>The target rollout log does not expose the exact applied motor torque.</p>
+<p>Consequently:</p>
+<ul><li>Treat <code>q</code> and <code>qd</code> as noisy measurements, not exact ground-truth joint trajectories.</li><li>Use the tool&#x27;s measured-data uncertainty handling.</li><li>Do not infer exact hardware compliance from these noisy observations alone.</li><li>Missing <code>tau_applied</code> must remain <code>not checked</code>.</li><li>Estimated PD torque demand is not a substitute for exact applied torque.</li><li>The log&#x27;s 500 Hz sampling may miss intermediate 1 kHz controller events.</li></ul>
+<p>The official target hardware verifier remains authoritative. It evaluates the target&#x27;s exact joint states and applied torques at the controller rate (<code>sim2target/FEEDBACK.md</code> section 2).</p>
+<p>The local checker is a diagnostic tool and does not override the official hardware result.</p>
+<h4 id='missing-inputs'>Missing Inputs</h4>
+<p>The checker evaluates only the quantities supported by the input data.</p>
+<p>If <code>qd</code>, <code>tau_applied</code>, or action-related fields are absent, the corresponding checks are reported as not checked according to the existing implementation.</p>
+<p>A result with missing evidence must not be described as complete hardware compliance.</p>
+<p>In particular, without exact applied torque, the checker cannot independently verify applied-torque compliance.</p>
+<p>Do not replace missing applied torque with estimated PD demand and label it as measured or exact.</p>
 <h3 id='3-results'>3. Results</h3>
 <div class='tw'><table><tr><th>Kind</th><th>Meaning</th></tr><tr><td><code>simulated (exact)</code></td><td>Simulator state; a value beyond a limit is a violation</td></tr><tr><td><code>measured (noisy)</code></td><td>With <code>--measured</code>: decided against encoder noise; may be <code>uncertain</code>; torque is not measurable</td></tr><tr><td><code>estimated</code></td><td>PD torque demand from the published gains; demand above the effort limit is saturation, reported but not a violation</td></tr><tr><td><code>not checked</code></td><td>The required input was not provided</td></tr></table></div>
 <p><strong>Overall status:</strong> <code>violation</code>, <code>compliant</code>, <code>uncertain</code> (measured data within noise of a limit), or <code>incomplete</code> (inputs missing).</p>
-<p>How the target environment reports hardware compliance: <code>sim2target/FEEDBACK.md</code> section 2.</p></div></div>
-</main><footer><div class='wrap'><span class='fp'>agentic-dex-iterative-sim2real</span><span>Data as of <time datetime='2026-11-02T01:12:30Z'>Nov 01, 20:12 EST</time> (Pittsburgh time); refreshed about every 10 minutes.</span><span data-versions>policy interface v2 · environment env-3 (Cube: env-3L) · wrist wrist-1 · official evaluation gv-1 · feedback protocol r2s2r-feedback/3 · camera rig rig-1.3 · hardware specification hwspec-1.1 (Cube: hwspec-1.1L) · target model tm-2 (Cube: tm-2L)</span>
+<h4 id='interpreting-hardware-compliance'>Interpreting Hardware Compliance</h4>
+<div class='tw'><table><tr><th>Overall status</th><th>Interpretation</th><th>Automated research decision</th></tr><tr><td><code>compliant</code></td><td>Available required checks are complete and pass</td><td>Passed local hardware check</td></tr><tr><td><code>uncertain</code></td><td>Measurement uncertainty prevents a definite compliance decision</td><td>Do not claim compliance; investigate</td></tr><tr><td><code>incomplete</code></td><td>Required evidence is missing</td><td>Do not claim compliance; obtain missing evidence</td></tr><tr><td><code>violation</code></td><td>A hardware or action-validity violation was detected</td><td>Failed local hardware check</td></tr></table></div>
+<p><strong>A successful process exit is not the same as a successful hardware validation.</strong></p>
+<p>Always inspect the structured result when making automated decisions.</p>
+<p>If the checker reports <code>uncertain</code> or <code>incomplete</code>, preserve that status and the supporting evidence. Do not convert it to a pass merely because the command returned exit code 0.</p>
+<h4 id='authoritative-hardware-rules'>Authoritative Hardware Rules</h4>
+<p>The actual limits are defined by <code>hardware/SPECS.md</code> section 7 and the corresponding hand specification.</p>
+<div class='tw'><table><tr><th>Quantity</th><th>Compliance Rule</th></tr><tr><td>Joint position</td><td><code>lower − 0.02 ≤ q ≤ upper + 0.02</code> rad</td></tr><tr><td>Joint velocity</td><td><code>abs(qd) ≤ URDF max speed</code>, no allowance</td></tr><tr><td>Applied torque</td><td><code>abs(tau_applied) ≤ URDF effort limit</code>, no allowance</td></tr><tr><td>Finger actions</td><td><code>q_target</code> must be finite <code>(20,)</code>; <code>qd_target</code> must be <code>None</code> or finite <code>(20,)</code></td></tr></table></div>
+<p>The checks apply to every joint at every controller tick.</p>
+<h4 id='saturation-versus-violation'>Saturation Versus Violation</h4>
+<p>Distinguish requested actuator commands from executed hardware behavior.</p>
+<p><strong>Finger position targets:</strong></p>
+<p><code>q_target</code> values outside the URDF joint limits are clipped to those limits by the target controller. An otherwise finite, correctly shaped out-of-range position target is not itself a hardware violation.</p>
+<p>Actual joint position beyond the allowed <code>0.02</code> rad tolerance is a violation.</p>
+<p><strong>PD torque demand:</strong></p>
+<p>The finger controller computes:</p>
+<pre><code>tau_demand = kp * (q_target - q) + kd * (qd_target - qd)</code></pre>
+<p>The target actuator saturates this demand at the joint&#x27;s effort limit.</p>
+<p>PD demand above the effort limit indicates torque saturation, not automatically a hardware violation.</p>
+<p>Hardware compliance is determined by the actual applied torque.</p>
+<p><strong>Joint velocity:</strong></p>
+<p>Actual joint velocity beyond the URDF speed limit is a violation, including motion caused by contact or back-driving from wrist movement.</p>
+<p><strong>Invalid actions:</strong></p>
+<p>Missing, non-finite, or wrongly shaped finger actions are invalid according to <code>sim2target/CONTRACT.md</code> section 4.</p>
+<p>These action-validity failures are distinct from ordinary clipping or torque saturation.</p>
+<h4 id='finger-only-validation-boundary'>Finger-Only Validation Boundary</h4>
+<p><code>r2s2r-hwcheck</code> validates the documented finger-joint hardware limits and supported finger action fields.</p>
+<p>It does not validate:</p>
+<ul><li>The complete Contract v2 wrist action dictionary.</li><li>Wrist position or orientation command validity.</li><li>Wrist workspace and command-rate limiting.</li><li>Wrist impedance-controller behavior.</li><li>Task success or progress.</li><li>Target rollout validity as a whole.</li></ul>
+<p>The wrist has no additional hardware compliance rule beyond its controller (<code>hardware/SPECS.md</code> section 4).</p>
+<p>Wrist actions remain governed by <code>sim2target/CONTRACT.md</code>, and their execution is checked by the target runtime.</p>
+<p>Passing <code>r2s2r-hwcheck</code> does not guarantee that a policy package passes preflight, that the target rollout will be valid, or that the task will succeed.</p>
+<p>The official hardware result is reported in <code>sim2target/FEEDBACK.md</code> section 2.</p></div></div>
+</main><footer><div class='wrap'><span class='fp'>agentic-dex-iterative-sim2real</span><span>Data as of <time datetime='2026-11-02T01:13:38Z'>Nov 01, 20:13 EST</time> (Pittsburgh time); refreshed about every 10 minutes.</span><span data-versions>policy interface v2 · environment env-3 (Cube: env-3L) · wrist wrist-1 · official evaluation gv-2 · feedback protocol r2s2r-feedback/3 · camera rig rig-1.3 · hardware specification hwspec-1.1 (Cube: hwspec-1.1L) · target model tm-2 (Cube: tm-2L)</span>
 <span>Read-only: no submission or research control from this site.</span></div></footer>
 <script src='../../assets/site.js' defer></script></body></html>

@@ -1,35 +1,60 @@
 # Object Specification: Pen
 
-The pen is the pen-spinning mod seen in the human demonstration (`demo/`), reconstructed from the video: a long, thin body of revolution with thicker end pieces. Dimensions are the reconstruction's estimates (length ± 0.015 m).
+## 1. Geometry and Physical Properties
 
-- **Geometry:** Body of revolution, total length 0.195 m. Barrel diameter 0.009 m. Back end: a cap piece 0.0095 m in diameter over the first 14 mm, ending in a rounded dome, with a short 0.0085 m neck where it meets the barrel. Heading end: a grip piece 0.0112 m in diameter from 173 mm to 187 mm, stepping down to 0.0085 m and tapering to the tip at 195 mm.
-- **Mass:** 0.022 kg
-- **Mass distribution:** Uniform over the body; centre of mass at mid-length. Moments of inertia about the centre: 2.2 × 10⁻⁷ kg·m² about the long axis, 7.3 × 10⁻⁵ kg·m² about any transverse axis.
-- **Initial state:** the pen lies across the fingers of the hand at its initial pose (`TASK_CONFIG.md` section 3); the exact initial state is the observation of step 0.
+A pen-spinning mod reconstructed from the demonstration video, consisting of a long cylindrical barrel with thicker end pieces.
 
-| Distance from the back end (mm) | 0 | 0.8 | 2.3 | 13.7 | 14.8 | 16 | 171.6 | 172.6 | 187.2 | 188.8 | 194 | 195 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Diameter (mm) | 0 | 7.6 | 9.5 | 9.5 | 8.5 | 9.0 | 9.0 | 11.2 | 11.2 | 8.5 | 2.6 | 0 |
+| Parameter | Value |
+|---|---|
+| Object | `pen` |
+| Geometry | Body of revolution with thicker end pieces |
+| Total length | 0.195 m (±0.015 m) |
+| Barrel diameter | 0.009 m |
+| Maximum diameter | 0.0112 m |
+| Mass | 0.022 kg |
+| Center of mass | Mid-length (97.5 mm from either end) |
+| Mass distribution | Uniform along the body |
+| Axial moment of inertia | 2.2 × 10⁻⁷ kg·m² |
+| Transverse moment of inertia | 7.3 × 10⁻⁵ kg·m² |
 
-The profile is linear between the listed points. The red tip is a visual marker only; it defines the heading direction used in `SUCCESS.md`.
+### Geometry Profile
 
-## Visual Markings (videos)
+Diameter along the pen's longitudinal axis, measured from the back end:
 
-Visual only: they change no physical property (mass, inertia, and collision geometry are as above). The demonstration pen is white with grey end pieces and red and blue rings; the target pen carries these markings instead:
+| Distance (mm) | Diameter (mm) |
+|---:|---:|
+| 0 | 0 |
+| 0.8 | 7.6 |
+| 2.3 | 9.5 |
+| 13.7 | 9.5 |
+| 14.8 | 8.5 |
+| 16.0 | 9.0 |
+| 171.6 | 9.0 |
+| 172.6 | 11.2 |
+| 187.2 | 11.2 |
+| 188.8 | 8.5 |
+| 194.0 | 2.6 |
+| 195.0 | 0 |
 
-- **Blue body:** everything that is not a marking below.
-- **Red tip:** the last 18 mm at the heading end.
-- **White band:** 8 mm wide at the centre.
-- **Roll markers:** two longitudinal stripes along the barrel on opposite sides, each 70° of the circumference: yellow and green. They make the pen's rotation about its own long axis visible in the rendered videos; the observation reports that rotation exactly in any case.
+- The profile is linearly interpolated between the listed points.
+- Dimensions are estimated from the demonstration video.
+- **Unspecified:** Surface friction, restitution, and contact compliance.
 
-## State Frame (object state `objstate-1`)
+### Visual Appearance
 
-The state frame is the frame whose pose and velocities the observation and the feedback report for this object (`sim2target/CONTRACT.md` section 2, `sim2target/FEEDBACK.md` section 3).
+- **Body:** Blue.
+- **Tip:** Red, covering the last 18 mm at the heading end.
+- **Center band:** White, 8 mm wide.
+- **Roll markers:** Yellow and green longitudinal stripes on opposite sides of the barrel, each covering 70° of its circumference.
+- **Visual only:** Markings do not affect mass, inertia, or collision geometry.
 
-Objects (order): `0 = pen`.
+The demonstration pen has different colors (white body, grey ends, red/blue rings); the specifications above describe the target pen.
 
-- **Origin:** the pen's geometric centre: the midpoint of its long axis, 97.5 mm from each end.
-- **+x:** along the long axis toward the red tip.
-- **+y:** perpendicular to the long axis, toward the centre of the yellow roll stripe.
-- **+z:** `x × y`, completing a right-handed frame.
-- The pen's heading for `SUCCESS.md` is the projection of +x on the horizontal plane.
+## 2. Object State Frame (`objstate-1`)
+
+- **Object index:** `0 = pen`
+- **Origin:** Geometric center, 97.5 mm from either end.
+- **+X:** Along the pen's longitudinal axis toward the red tip.
+- **+Y:** Perpendicular to the longitudinal axis, toward the center of the yellow stripe.
+- **+Z:** `X × Y`, completing the right-handed frame.
+- **Heading direction:** Projection of local +X onto the world horizontal plane.

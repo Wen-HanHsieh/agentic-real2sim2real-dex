@@ -20,7 +20,7 @@
 
 ## 3. Observations
 
-At each step, `act(obs)` receives a dictionary. Arrays are NumPy `float64` unless stated otherwise. Shapes below use `O`, the number of objects of your task; `TASK_CONFIG.md` section 4 gives `O`, the object order, every key's exact shape, and the keys your task adds to this list.
+At each step, `act(obs)` receives a dictionary. Arrays are NumPy `float64` unless stated otherwise. Shapes below use `O`, the number of objects of your task; `TASK_CONFIG.md` section 4 gives `O` and the object order, and section 5 every key's exact shape and the keys your task adds to this list.
 
 **Robot**
 
@@ -51,9 +51,11 @@ At step 0, `prev_q_target` holds three copies of the initial finger configuratio
 
 Object values are the target's exact simulation state (no noise). The leading object axis is present even for a single object.
 
-**Task-specific keys.** A task may add keys to the observation: the per-part state of objects made of several parts (`part_*`), a discrete configuration index, a constant goal block, or a constant task setting. They follow the conventions of this section (exact values; quaternions `(w, x, y, z)`, sign-continuous; integer arrays `int64`). Your task's additional keys, their shapes and their meaning are in `TASK_CONFIG.md` section 4 and `object/SPECS.md`; a task without additional keys has none.
+**Task-specific keys.** A task may add keys to the observation: the per-part state of objects made of several parts (`part_*`), a discrete configuration index, a constant goal block, or a constant task setting. They follow the conventions of this section (exact values; quaternions `(w, x, y, z)`, sign-continuous; integer arrays `int64`). Your task's additional keys, their shapes and their meaning are in `TASK_CONFIG.md` section 5 and `object/SPECS.md`; a task without additional keys has none.
 
-**Not observed:** camera images or depth, estimated object states, contacts or contact forces, joint torques or motor currents, physical parameters (mass, friction, inertia, damping, stiffness) of the target, the evaluation's results, scores or rewards. Contact flags, videos and the official evaluation are available after the rollout (`sim2target/FEEDBACK.md`). You may use any subset of the observation.
+**Undefined task-specific values.** Some task-specific observation fields may explicitly contain `NaN` when their values are undefined, provided this behavior is documented in `TASK_CONFIG.md`. For example, Plug goal-position and goal-orientation fields may be undefined while their associated `goal_defined` indicator is false. Check the documented validity indicator before using such values. This exception applies only to explicitly documented observation fields; it does not permit non-finite actions.
+
+**Not observed:** camera images or depth, estimated object states, contacts or contact forces, joint torques or motor currents, the target's internal physical parameters (mass, friction, inertia, damping, stiffness), or the evaluation's results, scores or rewards. Nominal object properties provided in `object/SPECS.md` are available as task documentation but do not reveal all internal target dynamics. Contact flags, videos and the official evaluation are available after the rollout (`sim2target/FEEDBACK.md`). You may use any subset of the observation.
 
 The policy may keep internal state; `reset()` initializes it.
 
@@ -74,7 +76,15 @@ Values must be finite `float32` or `float64`; finger arrays in the vendor URDF j
 
 **Wrist command limits** (applied at every step, `hardware/SPECS.md` section 4): the executed position target moves from the previous executed target toward `wrist_position_target` by at most 1.0 m/s × 2 ms and is then clipped to the wrist workspace box (`TASK_CONFIG.md` section 3); the executed orientation target rotates toward `wrist_orientation_target` along the shortest arc by at most 3.0 rad/s × 2 ms; the feed-forward velocities are clipped to norms of 1.0 m/s and 3.0 rad/s. A command is never applied instantaneously: the wrist moves only through the saturated wrist controller. Commands beyond the limits are not a failure; the executed targets and limit flags are in the rollout log (`sim2target/FEEDBACK.md`).
 
-The target environment initializes the hand and the objects, calls `reset()`, then calls `act(obs)` once per step and applies each command for 2 ms. A missing, non-finite or wrongly shaped value, a wrist orientation that is not a unit quaternion, an exception, or no answer within 5 s is a policy failure and ends the trial. Finger motor speed and effort limits apply, also to joints back-driven by contact; the hardware rules are in `hardware/SPECS.md` section 7.
+The target environment initializes the hand and the objects, calls `reset()`, then calls `act(obs)` once per step and applies each command for 2 ms.
+
+**Policy execution failure.** A missing, non-finite or wrongly shaped action value, a wrist orientation target with norm outside `[0.9, 1.1]`, an unknown action key, an exception, or no response within 5 seconds is a policy failure and ends the trial. A wrist orientation target with norm inside the accepted range is normalized before execution.
+
+**Runtime requirements.** The 5-second response timeout is a hard failure watchdog, not the expected policy inference latency. The policy operates at 500 Hz, and packages must satisfy the performance and execution requirements in `sim2target/PACKAGE.md`. The watchdog does not relax those requirements.
+
+**Task failure versus policy failure.** A physical task failure, such as dropping an object, failing to complete the manipulation, or achieving zero task progress, does not terminate an otherwise valid rollout and does not by itself make the evaluation unrankable. The task continues until the scheduled episode end unless a policy execution failure occurs. Evaluation rankability, hardware compliance, and runtime validity are determined separately by the official evaluation rules. Valid rollouts with progress `0.0` remain rankable.
+
+Finger motor speed and effort limits apply, also to joints back-driven by contact; the hardware rules are in `hardware/SPECS.md` section 7.
 
 ## 5. Determinism
 

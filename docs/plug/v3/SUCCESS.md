@@ -1,18 +1,36 @@
-# Target Environment: Success Criteria
+# SUCCESS.md — Plug Manipulation
 
-**Task success criteria are not yet defined for this task.**
+## Task Objective
 
-The tabletop environment with two plugs is new, and no success criteria, task progress rubric, placement targets or required sequence have been published for it. Until they are, the official evaluation of every rollout reports `status: criteria_undefined` with `success: null`, `progress: null`, no milestones and no stages (`sim2target/FEEDBACK.md` section 1); `criteria.id` and `criteria.rubric` are `null` and `criteria.status` is `undefined`. The validity of the run (policy runtime, hardware compliance, the target's run checks) is still reported. Nothing is scored, nothing is ranked in `history`, and the target makes no comparison between submissions (`sim2target/REMOTE_API.md` section 5).
+Reproduce the demonstrated plug manipulation task using the Wuji Hand 2:
 
-When criteria are published, they will appear here with a criteria id, a rubric version and a status (`provisional` or `approved`); from then on every report names them, and the records evaluated under them form their own comparison group. Records made before that are never re-scored.
+Pick Up White → Place White → Pick Up Black → Place Black
 
-- **Episode:** 15 s (7,500 control steps at 500 Hz). The episode length is provisional and may change together with the criteria.
-- **Validity:** a valid run executes all 7,500 steps without a policy failure, with hardware compliance (`hardware/SPECS.md` section 7) and with the target's run checks passed (`sim2target/FEEDBACK.md` section 1).
+## Success Criteria
 
-## 1. What Is Recorded
+Complete all four stages in order:
 
-Every rollout's feedback contains the exact trajectory of the wrist and of both plugs at every control step and the contact flags hand–plug, plug–table and plug–plug of every control interval (`sim2target/FEEDBACK.md` section 3). Any criteria published later will be scored from this record; the record of a rollout made now is not re-scored.
+1. Pick Up White: Grasp and lift the white plug from the right side of the table.
+2. Place White: Move the white plug to the left side of the table and place it standing upright, with its blades pointing upward.
+3. Pick Up Black: Grasp and lift the black plug from the right side of the table.
+4. Place Black: Move the black plug to the left side of the table and place it standing upright, with its blades pointing upward.
 
-## 2. Research Freedom
+Requirements:
 
-No training reward is prescribed. You may design your own objectives, rewards, intermediate goals, curricula, optimization methods, simulators, and policy architectures; your own metrics are not official results, and no official score exists for this task until criteria are published.
+* Both plugs must remain on the table.
+* The white plug must remain upright while manipulating the black plug.
+* Both plugs must remain upright on the left side of the table at the end of the episode.
+
+## Task Progress
+
+* Progress ranges from `0.0` to `1.0`.
+* Each completed stage contributes `0.25`.
+* Stages are credited sequentially; incomplete stages receive no credit.
+* `success = true` requires all four stages, the final placement requirements, hardware compliance, and a valid rollout.
+
+## Evaluation Rules
+
+* Episode: 20 s (10,000 steps at 500 Hz).
+* Verifier: Uses exact object positions, orientations, velocities, robot states, and contact information from the target environment.
+* Research freedom: The agent may independently design training rewards, curricula, and optimization methods.
+* Integrity: The agent must not modify or bypass the verifier or evaluation constraints.

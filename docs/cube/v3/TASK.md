@@ -1,18 +1,32 @@
-# Task: One-handed 2×2×2 Rubik's Cube Solving
+# Task: One-Handed Rubik's Cube Manipulation
 
-Reproduce the dexterous manipulation skill demonstrated in the human video using the left Wuji Hand 2 (the demonstrator turns the cube with the left hand; `TASK_CONFIG.md` section 1): **solve a scrambled 2×2×2 cube by turning its layers with the hand only, keep it in the hand throughout, and hold it solved**.
+Analyze the human demonstration in `demo/` and the success criteria in `SUCCESS.md`.
 
-The hand starts palm up with the cube resting in it, and its wrist is free to move within the workspace of `TASK_CONFIG.md` section 3. The policy observes the exact state of the cube and of each of its eight cubies, including the discrete configuration index of every cubie (`sim2target/CONTRACT.md`, `object/SPECS.md`).
+Your goal is to understand and reproduce the demonstrated manipulation task using the Wuji Hand 2 in the target environment.
 
-Develop your policy in your own simulation and evaluate it in the provided target environment.
+## Task Understanding and Decomposition
 
-- **Human demonstration:** `demo/`
-- **Target environment:** `target/screenshot.png`
-- **Success criteria:** `SUCCESS.md` (provisional)
+Before developing your training simulation and policy:
 
-## Cube Conventions
+1. Understand the task.
+   * Identify the intended manipulation goal from the human video.
+   * Identify the objects involved, their interactions, and the desired final outcome.
+   * Use `SUCCESS.md` to understand the evaluation requirements.
+2. Decompose the task.
+   * Break down the demonstrated task into a clear, ordered TODO list of meaningful manipulation subgoals.
+   * Identify the key actions, object motions, contact transitions, and intermediate outcomes.
+   * Distinguish what is directly observed in the video from what is inferred or specified by `SUCCESS.md`.
+3. Document and refine.
+   * Record your task understanding and TODO list in your research workspace.
+   * Identify ambiguities and assumptions.
+   * Revise your task decomposition as new evidence becomes available.
 
-- **Faces at the start:** U faces world +Z (up), F faces the fingertips (world −X), R faces world −Y (the thumb side of the left hand), L world +Y (the little-finger side), D the palm, B the wrist. Face names are fixed by this start orientation; the cube may be reoriented freely afterwards.
-- **Solved colours:** U white, D yellow, F green, B blue, R red, L orange.
-- **Moves (WCA):** X = 90° clockwise looking at face X from outside, X2 = 180°, X' = 90° counterclockwise. A 2×2×2 has no fixed centres: L equals R' plus a whole-cube rotation; likewise D = U' and B = F'.
-- **Scramble:** fixed for every evaluation: **R' F U2**, encoded `[[1, 3], [2, 1], [0, 2]]` (face 0 = U, 1 = R, 2 = F; quarter_turns 1 = X, 2 = X2, 3 = X'). Applying the moves in order to a solved cube held in the start orientation gives the start state shown in `target/screenshot.png`. The policy receives it in every observation as `obs["scramble"]` (`sim2target/CONTRACT.md`), and the observation's `cube_configuration` reports the resulting cubie orientations directly (`object/SPECS.md`).
+Treat the TODO list as a high-level task plan, not a prescribed robot trajectory or control strategy. Independently determine how to achieve each subgoal with the robot.
+
+## Resources
+
+* Human demonstration: `demo/`
+* Success criteria: `SUCCESS.md`
+* Target environment: `target/`
+* Task configuration: `TASK_CONFIG.md`
+* Object specifications: `object/SPECS.md`

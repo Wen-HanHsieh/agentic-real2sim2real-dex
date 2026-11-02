@@ -1,113 +1,257 @@
-# Research Tools
+# TOOLS.md — Research Tools
 
-These tools run on your machine and never compute or change official results. `r2s2r-harness` is the client of the standard research workflow (`README.md`, `sim2target/REMOTE_API.md` section 5). `r2s2r-calib` serves the sim-to-target calibration required after each target evaluation (section 2); `r2s2r-hwcheck` and your own diagnostics are optional. `r2s2r-preflight` checks a package before you send it. Only `r2s2r-harness` contacts the target environment, and only through the commands of `sim2target/REMOTE_API.md`.
+The following tools are available to support autonomous robot research.
 
-| Tool | Category | Purpose | Reference |
-|---|---|---|---|
-| `r2s2r-harness` | Standard research workflow | Research records (intent, reflection), history, comparisons, best evaluated policy, local archives | Section 1 |
-| `r2s2r-hwcheck` | Optional analysis | Check local finger trajectories against the hardware rules | `sim2target/HARDWARE_CHECK.md` |
-| `r2s2r-calib` | Sim-to-target calibration (required after each target evaluation) | Compare your simulation with a target rollout: extract, replay through your simulator adapter, compare wrist, objects, parts and joints step by step, diagnose by contact phase, plots, side-by-side video, experiment records | Section 2 |
-| `r2s2r-preflight` | Package check | Check a policy package (contract `v2`) before `validate` / `submit`, with the initial configuration of your task's hand (`--hand left` or `R2S2R_HAND=left` for the left hand, `TASK_CONFIG.md` section 1) | `sim2target/PACKAGE.md` |
-| Reconstruction tools | Demo-to-Sim | Segment the demonstration video, track the hand, reconstruct the object and its motion (`demo2sim/REFERENCE.md`) | Section 3 |
+All tools run locally, except `r2s2r-harness`, which communicates with the target through the official API defined in `sim2target/REMOTE_API.md`.
 
-Implementations: `tools/harness/`, `tools/hwcheck/`, `tools/calib/`, `tools/preflight/`, `tools/recon/`. Where a tool takes the task name, it is the task name of `TASK_CONFIG.md` section 1.
+## 1. Available Tools
 
-## 1. Research Harness (Standard Research Workflow)
-
-`r2s2r-harness` keeps the standard research records and policy artifacts using the API commands `intent`, `submit`, `history`, `note`, `fetch`, and `package`; its `video` command uses `training-video`.
-
-```bash
-export R2S2R_API=r2s2r-<task>   # your task's API command (TASK_CONFIG.md section 1), or pass --api
-
-r2s2r-harness submit my_policy/ --hypothesis ... --change ... [--rationale ...] [--parent sMM] \
-    [--kind improvement|diagnostic|experimental] [--repo .] [--local result.json] [--sim-config cfg.json] \
-    [--checkpoint REF] [--records DIR] [--dry-run]
-r2s2r-harness reflect sNN --diagnosis ... --evidence ... --keep keep|reject|undecided [--worked ...] \
-    [--failed ...] [--decision ...] [--next ...] [--limitation ...] [--analysis ...]
-r2s2r-harness summary
-r2s2r-harness result sNN
-r2s2r-harness record sNN --kind improvement --hypothesis ... --change ... --evidence ... --decision ... \
-    [--keep keep|reject|undecided] [--repo .] [--sim-config cfg.json] [--checkpoint REF] [--analysis TEXT] \
-    [--local result.json] [--parent sMM]
-r2s2r-harness gate sNN
-r2s2r-harness best --download best/
-r2s2r-harness archive ~/records
-r2s2r-harness verify ~/records
-r2s2r-harness video sNN my_rollout.mp4 --package my_policy/ [--simulator NAME] [--local-run ID]
-```
-
-- **`submit`:** packs the directory deterministically (or uses an existing `.tar` / `.tar.gz`), captures the git revision, uncommitted changes, and the diff against the parent submission's revision (else the previous commit) from `--repo` (default: the current directory), records the intent, then submits the same archive. It keeps a write-once local copy (intent, receipt, full diff, package) under `--records` (default `~/r2s2r_records`). Missing fields are reported; a failed intent does not stop the submission. `--dry-run` prints the intent without contacting the target.
-- **`reflect`:** after the result, appends your reflection (`sim2target/REMOTE_API.md` section 5); refused while the evaluation is still running.
-- **`summary`:** every submission with role, keep, state, official status, verifier status, progress, criteria status, hardware, gate, comparison with the previous comparable submission, intent and reflection status, and the incomplete records. While the task's criteria are undefined it shows `criteria not defined` instead of a score. An evaluated failure whose progress could not be computed shows progress `N/A (not computed)` and gate `not ranked` (`sim2target/REMOTE_API.md` section 5).
-- **`result`:** the official result of one submission as recorded in `history`: status, criteria id and status, success and progress (or `criteria not defined`, or `N/A (not computed)` with `rankable: False (progress_not_computed)`), stage scores, milestones reached, hardware and runtime validity, versions.
-- **`record`:** appends a plain note (original schema); `--repo` adds the source revision and the latest commit's diff stat.
-- **`gate`:** the official regression gate and the comparisons (`vs_previous`, `vs_best_before`) of a submission.
-- **`best`:** the best evaluated policy and the ranking rule; `--download` retrieves its exact package on demand after verifying the hash.
-- **`archive` / `verify`:** a write-once local copy of history, feedback bundles, and packages with a manifest, and its integrity check.
-- **`video`** (standard research artifact, for every submission): links a video of your own training-simulation rollout of the policy submitted as `sNN` (MP4 or WebM, ≤ 64 MB). `--package` is the directory or archive you submitted; the harness packs it the same way as `submit`, refuses it unless its SHA-256 equals the submission's `archive_sha256`, uploads with `training-video`, and checks the stored video's SHA-256. Then state the rollout (full or partial) with a `training_video` record. Never evaluated or charged (`sim2target/REMOTE_API.md` section 5).
-
-The best policy, the gate, and the comparisons are computed by the target environment from official results; the harness only records and displays them, and never restores or deploys a policy unless you ask (`best --download`). **You decide which experiments to run, which policies to keep, and how to improve them.**
-
-## 2. Sim-to-Target Calibration (required after each target evaluation)
-
-After each target evaluation, and before your next submission, calibrate your simulator against that rollout; no calibration is required before your first target rollout. `r2s2r-calib` works on the feedback you fetched (the ground-truth state record, the rollout log with the commanded and executed finger and wrist targets, timestamps, videos). The target's state record is exact, so every discrepancy between it and your replay is a property of your simulator, your controller model, or your contact model, not of a measurement. Local only; it never contacts the target and never changes official results. The simulator, physics parameters, calibration algorithm, policy, controller, and learning method are your choice; the tool aligns, compares and attributes.
-
-1. **Extract, replay, compare:** `extract` the target trajectory, `replay` its action sequence in your own simulator through an adapter you write, and `compare` the wrist, object, part and joint trajectories step by step (plus a side-by-side `video`).
-2. **Diagnose:** `diagnose` segments the episode by the target's contact phases and charges the error growth to your wrist controller model, finger actuator model, free object motion or contact model where the evidence supports it, and says "cannot determine" otherwise. Turn the discrepancies into testable failure hypotheses.
-3. **Update:** change your simulator accordingly, or state why a discrepancy cannot be modeled.
-4. **Screen:** test candidate repairs in simulation before the next target submission.
-5. **Record:** the calibration evidence, modifications, and results (`record` below; summarize them in your reflection and next intent, `sim2target/REMOTE_API.md` section 5).
-
-If replay is genuinely infeasible, record the reason and validate the next candidate in another documented way.
-
-```bash
-r2s2r-calib extract <bundle.tgz|dir> -o <target.npz>                     # fetched feedback -> trajectory file (r2s2r-traj/3)
-r2s2r-calib replay <target.npz> --driver <adapter.py> -o <sim.npz>        # your simulator, in-process Python adapter
-r2s2r-calib replay <target.npz> --adapter-cmd "<command>" -o <sim.npz>    # your simulator, any interpreter (JSON-lines protocol)
-    [--mode action|state-step|state-segment] [--targets executed|commanded] [--steps N]
-r2s2r-calib compare <target.npz> <sim.npz> -o <dir> [--lag N] [--threshold RAD]
-r2s2r-calib diagnose <target.npz> <sim.npz> -o <dir>                      # metrics.json + report.md (+ PNG plots with matplotlib)
-r2s2r-calib video <target.mp4> <sim.mp4> -o <out.mp4> [--sim-offset S]   # side-by-side video (needs ffmpeg)
-r2s2r-calib record <dir> --hypothesis TEXT [--notes TEXT] [--config <cfg.json>] [--files ...]
-```
-
-| Command | What it does |
-|---|---|
-| `extract` | Writes a trajectory file (`r2s2r-traj/3`, NumPy `.npz`): the rollout log (`step`, `t`, `joint_names`, measured `q` and `qd`, the finger commands `q_target` and `qd_target`, the wrist commands `wrist_*_command`, the executed wrist targets `wrist_*_target`, `wrist_command_limited`) and the state record (`state_step`, `state_t`, `wrist_position` … `object_angular_velocity`, `part_*` and the other task-specific fields of `TASK_CONFIG.md` section 4 where the task has them, the contact flags, `object_names`, `part_names`), with `meta` (task, submission, versions, rates, the target's own wrist and finger tracking). Frames and quaternion conventions are those of `sim2target/FEEDBACK.md`. A bundle of another feedback protocol, a missing file or a misaligned record is refused with the reason |
-| `replay` | Drives your simulator with the target's action sequence through an adapter (`tools/calib/calib_adapter.py`): a Python class `reset(initial_state)`, `apply(action)`, `read_state()`, optional `set_state(state)`, created by `make(meta)` in the `--driver` module, or any program speaking the JSON-lines protocol (`hello`, `reset`, `set_state`, `apply`, `read_state`, `close`) given as `--adapter-cmd`. `--mode action`: reset to the target's step-0 state, then apply every action open loop (the standard replay). `--mode state-step`: before each action, teleport to the target's recorded state of that step, so every row is a one-step prediction error (no accumulation). `--mode state-segment`: teleport only at the start of each contact phase of the target. `--targets executed` (default) feeds the wrist targets the target actually tracked; `--targets commanded` feeds the policy's commands, so your adapter must apply the command limits itself (`tools/preflight/preflight.py` `CommandLimiter`). Your adapter's states use the keys and conventions of the state record; optional blocks (parts, contacts) are compared when present |
-| `compare` | Aligns by control step (state row `k` versus your row `k`; a simulated file at a higher rate is resampled onto the target's rows, a slower one is refused): per-joint RMSE, maximum and mean error, first step over the threshold, best time shift when one reduces the RMSE; wrist position error, geodesic orientation error, linear and angular velocity error per step; per object position, geodesic orientation, linear and angular velocity errors per step with maxima and the first step over 1 cm / 10°; per part (tasks with parts) the same plus the agreement of the configuration indices; contact-flag agreement where your adapter provides contacts; writes `metrics.json` and plain-SVG plots (joints, wrist, objects) into `<dir>` |
-| `diagnose` | `compare` plus: segments from the target's contact flags (free / hand / environment / both, per object), per segment the error at its start and end, its growth and maxima for the wrist, the fingers and every object, the tracking of the same executed targets on both sides, and an attribution per segment and object: `free-body dynamics`, `inherited velocity error`, `contact model`, `none (reproduced)`, or `cannot determine` (the hand itself moved differently), plus the wrist controller / finger actuator attribution over the whole rollout; `report.md` with the thresholds used and, with matplotlib installed, PNG plots (`errors.png`, `positions.png`, `fingers.png`) |
-| `video` | Scales both videos to the same height and plays them side by side, start-aligned (`--sim-offset` shifts yours) |
-| `record` | Saves a calibration experiment: hypothesis, notes, your configuration, copies and hashes of the given files, a summary; appends one line to `<dir>/index.jsonl` |
-
-**Adapters shipped with the tool** (`tools/calib/`): `calib_kinematic_adapter.py`, a NumPy-only reference without physics (the hand follows its targets ideally, objects stay frozen) for testing the pipeline and as a template; `calib_mujoco_adapter.py`, a working example on MuJoCo that builds a scene from public information only: the vendor URDF of your task's hand with its root link (`r_mount` or `l_mount`) as a free body, the finger PD controller and the wrist impedance controller of `hardware/SPECS.md`, and rigid objects with the dimensions and masses of `object/SPECS.md` (an object made of several parts as one rigid block, without its mechanism). Its contact properties are MuJoCo defaults: calibrating them against the target record is exactly the work this section asks for. Run it with `--selftest` first; `--scene scene.json` overrides the objects, their contact properties, the table and the floor. Both adapters run in process (`--driver`) or as a subprocess (`--adapter-cmd "python tools/calib/calib_mujoco_adapter.py --urdf URDF"`, with `URDF` = `hardware/wuji_hand2_right/urdf/right.urdf` or `hardware/wuji_hand2_left/urdf/left.urdf`, the hand of `TASK_CONFIG.md` section 1; the log's joint names must be that hand's), so your simulator may live in its own interpreter.
-
-On the provided machine `r2s2r-calib` runs by default in a calibration environment with Python 3.12.3, NumPy 2.5.4, SciPy 1.18.1, Pillow 12.3.0, MuJoCo 3.17.0 and matplotlib 3.11.2, so the MuJoCo example adapter and the PNG plots of `diagnose` work as shipped; you may install other versions in your own environments. The tool itself needs NumPy only (plots are written as SVG without a plotting library; `diagnose` adds PNG plots when matplotlib is available); `video` needs `ffmpeg`. `frames` (`sim2target/REMOTE_API.md` section 6) gives RGB and depth frames of the target rollout at any instant for visual comparison.
-
-## 3. Reconstruction Tools (Demo-to-Sim)
-
-The reconstruction tools of `demo2sim/REFERENCE.md` section 3 are scripts under `tools/recon/`, the read-only installed copy (`$R2S2R_RECON_HOME/tools/recon`; your workspace's `tools/recon` links to it). They run on your machine in the pre-installed, read-only reconstruction environment: `source $R2S2R_RECON_HOME/env.sh` puts `recon-python` (SAM 3, HaWoR with its hand detector, MANO, MuJoCo, PyTorch, trimesh, python-fcl), `aux-python` (SAM 2.1, MoGe, pytorch3d), Blender 4.2 LTS (`blender`, headless `bpy`), `uv` and `micromamba` on `PATH` and sets the model paths (`MANO_DIR`, `SAM3_CHECKPOINT`, `HAWOR_CHECKPOINT`, `HAND_DETECTOR`, `SAM2_CHECKPOINT`, `MOGE_MODEL`). Versions, revisions and SHA-256 of every model and package: `$R2S2R_RECON_HOME/manifest.json`; licences: the licence file of the same directory. A GPU is needed for the segmentation and hand models. The tools never contact the target and write under directories you choose; the default sequence is `demo2sim/RECONSTRUCTION.md`. You may use any of them, all of them, or your own methods.
-
-| Entry point | Stage | Inputs → outputs |
+| Tool | Purpose | Reference |
 |---|---|---|
-| `recon-python frames.py --video <demo file> --out <work>/frames` | Frames on the display-orientation grid | demonstration → `%06d.jpg`, `frames.json` |
-| `recon-python sam3_seg.py --frames <work>/frames --out <work>/sam3 --prompt <name>="<text>" [--prompt hand=hand] [--box <name>=cx,cy,w,h]` | Object and hand masks on every frame (SAM 3, text prompts) | frames → `<name>/%06d.png` (+ every hand instance in `hand/%06d.npz`) |
-| `aux-python sam2_video_seg.py --video <demo file> --prompts <prompts.json> --out <recon>/seg --sam2-ckpt $SAM2_CHECKPOINT` | Object and hand masks propagated from point prompts (SAM 2.1; `--sam2-ckpt` defaults to `$SAM2_CHECKPOINT`; you write `prompts.json` yourself, format in the script's docstring) | demonstration → `seg/` |
-| `aux-python moge_intrinsics.py --frames <frame> ... --model $MOGE_MODEL --out <work>/moge` | Focal length and metric pointmaps from single frames (MoGe; `--model` defaults to `$MOGE_MODEL`): a learned prior only, not a calibration (on a flat-shaded synthetic render with a true focal of 600 px it returns 970–1102 px) | frames → `intrinsics.json` |
-| `recon-python camera_calib.py pnp --points3d p3.json --points2d p2.json --image-size W H [--profile f0:f1:step]` | Focal length and object pose from 2D–3D correspondences of known geometry; RMS error over a focal grid. Calibrate the focal this way (or against other known geometry) rather than taking a monocular prior: on the same synthetic render it recovers 599.8 px for 600 | correspondences → `calib.json` |
-| `recon-python camera_calib.py rotation --frames <work>/frames --K calib.json --exclude <mask dir> ...` | Camera rotation per frame from background flow | frames → `rotations.npz` |
-| `recon-python camera_calib.py world --K calib.json --gravity-cam0 gx gy gz --frames-count T [--rotations rotations.npz] --out <recon>/transforms` | The world frame `W`, camera poses and time base | → `transforms/` |
-| `recon-python pose_track.py --mesh <mesh.obj> --masks <mask dir> --transforms <recon>/transforms --init init.json --out track.npz [--dontcare <hand mask dir>]` | 6D tracking of a rigid object of known geometry from its masks | masks → per-frame `T_cam_obj`, `T_world_obj`, agreement |
-| `aux-python objpose_track.py --task <task> --object <object> --root <dir> --mesh <mesh.obj>` | Render-and-compare 6D tracking with symmetry handling and re-initialisation (`objpose_validate.py`: its checks) | SAM 2.1 masks, intrinsics → `objects/<object>/` (camera-frame track `T_cam_obj`; with `transforms/` it gives `T_world_obj`) |
-| `recon-python hawor_cam.py --frames <work>/frames --intrinsics <recon>/transforms/camera_intrinsics.json --out <work>/hawor_cam [--sides left,right]` | Hand detection and HaWoR hand initialisation in your camera frame, with your focal length | frames → `detections.npz`, `hawor_cam.npz` |
-| `recon-python handfit_inputs.py --frames ... --transforms <recon>/transforms --hawor <work>/hawor_cam --hand-masks <work>/sam3/hand --scene <recon>/scene --contacts <recon>/interaction/contacts.json --out <work>/handfit/inputs [--occluders <dir> ...] [--assign detector\|image_side]` | The input folder of the MANO fit (cameras, hand masks with left/right assignment, HaWoR in `W`, your scene posed per frame, contact events) | → `mano_fit` inputs |
-| `recon-python mano_fit/handlib/fit.py --inputs <work>/handfit/inputs --out <work>/handfit/fit [--config cfg.json] [--init <dir>]`, then `handlib/score.py --inputs ... --result ... --out .../score.json` | The MANO hand fit against your object scene (package `README.md`: method, configuration, inputs, outputs) | → `hands.npz`, `fit_log.json`, `score.json` |
-| `recon-python handfit_export.py --result <work>/handfit/fit --inputs <work>/handfit/inputs --recon <recon> --demo-hands <left,right>` | Validity rule and the hand part of the contract | → `hand/` |
-| `recon-python export_reference.py --src <per-task dir> --out <recon> --task <task> --task-dir . --video <demo file> --fps-real 30 --demo-hands <...> --labels labels.json [--no-hands]` | Converts the per-task file layout of the default workflow (`camera.npz`, `objects/`, `tracking/`, `hands.npz`, `hand_object.json`, `analysis.json`) into the contract; `labels_template.json` lists the labels it needs | → `<recon>` |
-| `recon-python render_compare.py --recon <recon> --frames <work>/frames` | The comparison video | → `compare/compare.mp4`, `compare.json` |
-| `recon-python validate_reconstruction.py --recon <recon> [--masks <mask dir>] [--flight <object>=a:b] [--rest <object>=a:b]` | The validation of `demo2sim/REFERENCE.md` section 4 (`--focal-prior PX` or `transforms/moge/intrinsics.json`: flags a focal that disagrees with the monocular prior by more than 1.25×) | → `validation/report.json` |
-| `recon-python check_reference.py <recon> --task-dir . --video <demo file>` | The format check of `demo2sim/REFERENCE.md` section 2 (0 errors required) | → findings, exit code |
-| `recon-python build_viewer.py --recon <recon> --frames <work>/frames --out <work>/viewer` | A local 3D viewer of hands, objects and fingertip distances; serve the directory (`python3 -m http.server`) and open it in a browser | → static web page |
-| `blender -b --factory-startup --python <script.py> -- <args>` | Object models in Blender (`demo2sim/RECONSTRUCTION.md` section 2); EEVEE renders from your cameras | → meshes, renders |
+| `r2s2r-harness` | Research records, submission workflow, history, comparisons, best policy | Section 2 |
+| `r2s2r-calib` | Mandatory simulation-to-target calibration after each target evaluation with available feedback | Section 3 |
+| `r2s2r-preflight` | Validate policy packages before submission | `sim2target/PACKAGE.md` |
+| `r2s2r-hwcheck` | Check local trajectories against hardware limits | `sim2target/HARDWARE_CHECK.md` |
+| Reconstruction tools | Video segmentation, camera calibration, hand/object reconstruction, tracking, validation | Section 4 |
 
-`recon-python fixture/run_e2e.py --work <empty dir> --gpu-models` runs the whole chain on a synthetic demonstration (a MANO hand lifting a sphere) and scores it against that scene's ground truth: a quick check that your environment works.
+**Implementations:** `tools/harness/`, `tools/calib/`, `tools/preflight/`, `tools/hwcheck/`, `tools/recon/`.
+
+**Task-specific API:**
+
+`export R2S2R_API=r2s2r-<task>`
+
+Use the exact command defined in `TASK_CONFIG.md`.
+
+## 2. Research Harness
+
+`r2s2r-harness` manages experiment records, submissions, comparisons, and policy artifacts.
+
+### Commands
+
+| Command | Purpose |
+|---|---|
+| `submit` | Record experiment intent, package a policy, and submit |
+| `reflect` | Record diagnosis and decisions after evaluation |
+| `summary` | Show submission history and progress |
+| `result` | Inspect an individual evaluation result |
+| `record` | Add research notes and evidence |
+| `gate` | Inspect regression checks and comparisons |
+| `best` | Retrieve the best evaluated policy |
+| `archive` / `verify` | Archive records and verify integrity |
+| `video` | Link a local training-simulation rollout to a submission |
+
+**Examples:**
+
+- Submit: `r2s2r-harness submit my_policy/ --hypothesis "..." --change "..."`
+- Dry run: `r2s2r-harness submit my_policy/ --hypothesis "..." --change "..." --dry-run`
+- Reflect: `r2s2r-harness reflect sNN --diagnosis "..." --evidence "..." --keep keep|reject|undecided`
+- Summary: `r2s2r-harness summary`
+- Result: `r2s2r-harness result sNN`
+- Regression gate: `r2s2r-harness gate sNN`
+- Best policy: `r2s2r-harness best --download best/`
+- Archive: `r2s2r-harness archive ~/records`
+- Verify archive: `r2s2r-harness verify ~/records`
+- Training video: `r2s2r-harness video sNN my_rollout.mp4 --package my_policy/`
+
+### Progress and Ranking
+
+- Official success, progress, stage scores, ranking, and regression comparisons are computed by the target's active Ground-Truth Verifier, not by the harness.
+- A valid rollout is rankable even if the task fails immediately or its progress is `0.0`.
+- Early task failure alone does not make a rollout unrankable.
+- Technically invalid rollouts are unranked according to the official evaluation rules.
+- Missing progress (`null` or unavailable) is not equivalent to valid zero progress.
+- The harness must preserve and display the target's actual criteria version, success, progress, milestones, rankability, and regression-gate results.
+- Comparisons must use compatible criteria versions; results evaluated under different rubrics must not be silently compared.
+- The harness must not manufacture progress values or independently override official verifier decisions.
+
+The exact ranking and regression-gate rules are defined in `sim2target/REMOTE_API.md`.
+
+### Important Behavior
+
+- `submit` captures the policy package, Git revision, source changes, experiment intent, and submission receipt.
+- Local research records are write-once. The submitted package is hashed for reproducibility.
+- `--dry-run` does not contact the target.
+- `reflect` records post-evaluation diagnosis, evidence, and the next research direction.
+- `video` links a local training rollout to the exact submitted policy package. The archive hash must match; uploading the video does not trigger target evaluation.
+- The harness does not automatically restore or deploy the best policy.
+- The agent independently chooses which experiments to run, which policies to keep, and how to improve them.
+
+See `sim2target/REMOTE_API.md` and `sim2target/EXPERIMENT.md` for workflow and record requirements.
+
+## 3. Sim-to-Target Calibration
+
+`r2s2r-calib` compares a target rollout with the agent's own simulator.
+
+**Calibration is mandatory after every target evaluation with accessible feedback and before the next target submission.**
+
+Calibration is not required before the first target evaluation.
+
+The agent must use `r2s2r-calib` to analyze simulation-to-target discrepancies. It may choose its own simulator, physics parameters, calibration algorithm, controller, and learning method.
+
+### Required Workflow
+
+1. **Extract:** Extract target states, actions, and contacts from the fetched feedback.
+2. **Replay:** Replay the target action sequence in the agent's own simulator.
+3. **Compare:** Quantify errors between the target and simulation trajectories.
+4. **Diagnose:** Identify discrepancies in robot motion, object dynamics, and contact behavior.
+5. **Update:** Modify the simulation or explicitly document why no modification is justified.
+6. **Validate:** Test the next candidate policy in the updated simulation.
+7. **Record:** Save the calibration evidence and summarize the findings in the research reflection before the next submission.
+
+The agent must attempt and document this workflow for every applicable evaluation.
+
+If target feedback is unavailable, sealed, or technically unusable, the agent must record the blocker. It must not claim calibration was completed or fabricate target measurements.
+
+If replay is genuinely infeasible, the agent must preserve the failed tool evidence, document the reason, and record a calibration exception (see Exception Procedure) before proceeding without replay-based calibration.
+
+### Exception Procedure
+
+A calibration exception is self-declared; no human approval is required. It is allowed only when the target feedback is unavailable or sealed, or when replay is genuinely infeasible. Inconvenience is never grounds for an exception.
+
+An exception record must contain:
+
+- the actual tool error logs, or the evidence that the feedback is unavailable (for example the `fetch` output);
+- a written explanation of why calibration cannot be completed;
+- any feasible alternative diagnosis;
+- the status `exception`, never `completed`.
+
+### Recording a Calibration
+
+Record every calibration or exception with `r2s2r-calib record DIR --hypothesis TEXT --notes TEXT --config cfg.json --files ...`, then cite it in the research reflection with `r2s2r-harness reflect sNN --calibration DIR`.
+
+- **Completed calibration (`cfg.json`):** `status` = `completed`, `submission_id` (sNN), `feedback_sha256` (the submission's feedback hash in `history`), `replay_mode` (`commanded` or `executed`), `simulator_revision`, and `simulator_changes` or `no_change_reason`. `--files` includes the `metrics.json` of `r2s2r-calib compare` or `diagnose` on that feedback.
+- **Exception (`cfg.json`):** `status` = `exception`, `submission_id`, `feedback_sha256` (the hash, or `unavailable`), `exception_reason_class` (`feedback_unavailable`, `feedback_sealed`, or `replay_infeasible`), `explanation`, and `alternative_diagnosis`. `--files` includes at least one evidence file. `replay_infeasible` requires accessible feedback.
+- **Optional keys:** `experiment`, `archive_sha256`, `policy_sha256`, `simulator_config`, `local_validation`, `calib_mode` (`action`, `state-step`, or `state-segment`). Other keys are refused.
+- **Record location:** The harness looks for records under `--calib-records DIR`, else `$R2S2R_CALIB_RECORDS`, else `<records>/<api>/calibration`.
+
+### Submission Check
+
+By default, `r2s2r-harness submit` refuses the next submission when the latest finished submission has neither a valid completed calibration record nor a valid exception record. The first submission is exempt. No option or environment variable skips this check. It is a local check of the harness, not a server-side gate: the target never blocks a submission for a missing research record.
+
+### Commands
+
+| Command | Purpose |
+|---|---|
+| `extract` | Extract target trajectory and actions from feedback |
+| `replay` | Replay target actions in the agent's simulator |
+| `compare` | Quantify simulation-to-target trajectory errors |
+| `diagnose` | Analyze error growth and contact phases |
+| `video` | Generate a side-by-side target/simulation video |
+| `record` | Save calibration hypotheses, evidence, and changes |
+
+**Examples:**
+
+- Extract: `r2s2r-calib extract <bundle.tgz|dir> -o target.npz`
+- Replay: `r2s2r-calib replay target.npz --driver adapter.py -o sim.npz`
+- Compare: `r2s2r-calib compare target.npz sim.npz -o comparison/`
+- Diagnose: `r2s2r-calib diagnose target.npz sim.npz -o diagnosis/`
+- Video: `r2s2r-calib video target.mp4 sim.mp4 -o comparison.mp4`
+- Record: `r2s2r-calib record diagnosis/ --hypothesis "..."`
+
+### Replay Modes
+
+- **`action`:** Open-loop replay from the target's initial state.
+- **`state-step`:** Reset to the target state before every action, measuring one-step prediction errors.
+- **`state-segment`:** Reset at the start of each target contact phase.
+- **`--targets executed`:** Replay the targets actually executed by the target controller (default).
+- **`--targets commanded`:** Replay the policy's original commands; the simulator adapter must model command limits.
+
+The agent provides its own simulator adapter:
+
+- Python adapter: `--driver adapter.py`
+- External process: `--adapter-cmd "<command>"`
+
+The adapter interface is defined in `tools/calib/calib_adapter.py`.
+
+### Available Adapters
+
+- `tools/calib/calib_kinematic_adapter.py` — NumPy-only reference; ideal hand motion, frozen objects, no physics.
+- `tools/calib/calib_mujoco_adapter.py` — MuJoCo example using the public robot URDF, hardware controllers, and object specifications.
+
+The MuJoCo example uses default contact parameters and does not reproduce articulated object mechanisms such as Cube layer turns.
+
+### Calibration Requirements
+
+- Compare robot joints, wrist, objects, articulated parts, and contact phases when available.
+- Investigate controller, actuator, free-body dynamics, and contact-model discrepancies.
+- Use the actual target rollout and the agent's own simulator for comparison.
+- Test candidate corrections locally before another target submission.
+- Preserve calibration evidence and record remaining limitations.
+- Summarize the calibration results in the next experiment hypothesis and reflection.
+- Do not substitute a successful local simulation for the required sim-to-target comparison.
+
+`r2s2r-calib` operates locally and does not contact the target or change official evaluation results.
+
+## 4. Reconstruction Tools
+
+Reconstruction tools are provided under `tools/recon/`.
+
+**Environment setup:**
+
+`source $R2S2R_RECON_HOME/env.sh`
+
+This provides:
+
+- `recon-python` — SAM 3, HaWoR, MANO, MuJoCo, PyTorch, trimesh, python-fcl.
+- `aux-python` — SAM 2.1, MoGe, PyTorch3D.
+- `blender` — Blender 4.2 LTS, headless rendering.
+- `uv` and `micromamba`.
+
+Model paths and dependencies are configured by the environment.
+
+**Manifest:** `$R2S2R_RECON_HOME/manifest.json`
+
+**Licenses:** `$R2S2R_RECON_HOME/`
+
+The reconstruction environment and installed tools are read-only. Output files should be written to the agent's research workspace. GPU acceleration is needed for the segmentation and hand models.
+
+### Available Reconstruction Tools
+
+| Tool | Purpose |
+|---|---|
+| `frames.py` | Extract demonstration frames |
+| `sam3_seg.py` | Segment objects and hands using SAM 3 |
+| `sam2_video_seg.py` | Propagate segmentation masks through video |
+| `moge_intrinsics.py` | Estimate camera intrinsics and pointmaps using a learned prior |
+| `camera_calib.py` | Calibrate camera intrinsics, rotation, and world transforms |
+| `pose_track.py` | Track rigid-object 6D poses |
+| `objpose_track.py` | Track object poses with render-and-compare optimization |
+| `hawor_cam.py` | Estimate initial 3D hand poses using HaWoR |
+| `handfit_inputs.py` | Prepare hand-fit inputs using camera, scene, masks, and contacts |
+| `mano_fit/handlib/fit.py` | Fit MANO hands to the reconstructed scene |
+| `mano_fit/handlib/score.py` | Evaluate hand-fit quality |
+| `handfit_export.py` | Export validated hand reconstruction |
+| `export_reference.py` | Convert reconstructed data into the reference contract |
+| `render_compare.py` | Compare reconstruction renders with demonstration |
+| `validate_reconstruction.py` | Validate geometry, tracking, and motion reconstruction |
+| `check_reference.py` | Validate reconstruction output format |
+| `build_viewer.py` | Build an interactive 3D reconstruction viewer |
+| `fixture/run_e2e.py` | Test the reconstruction toolchain using a synthetic demonstration |
+| `blender` | Build object meshes and render reconstructed scenes |
+
+### Important Notes
+
+- The default reconstruction workflow is defined in `demo2sim/RECONSTRUCTION.md`.
+- Reconstruction outputs and validation requirements are defined in `demo2sim/REFERENCE.md`.
+- The agent may modify, extend, or replace individual reconstruction tools while following the required workflow and output contract.
+- Learned monocular camera estimates are priors, not guaranteed calibrations. Prefer geometric calibration when reliable correspondences are available.
+- Tool scripts document their command-line arguments and expected input/output formats.
+- The agent is responsible for checking reconstruction quality against the human video.
+
+### Reconstruction Validation
+
+- `recon-python validate_reconstruction.py --recon <recon>`
+- `recon-python check_reference.py <recon> --task-dir . --video <demo file>`
+- `recon-python fixture/run_e2e.py --work <empty dir> --gpu-models`
+
+A reconstruction must satisfy the checks defined in `demo2sim/REFERENCE.md`.
+
+## 5. Research Freedom and Tool Boundaries
+
+- Tools are provided to assist research, not to prescribe the agent's learning algorithm.
+- The agent may develop additional local tools and diagnostics.
+- The agent must complete the required sim-to-target calibration workflow before subsequent submissions.
+- Use only the documented remote API to interact with the target.
+- Never inspect, modify, or bypass protected target internals.
+- Preserve experiment evidence and reproducibility.
+- Follow `README.md` for the overall workflow, `SUCCESS.md` for evaluation criteria, and the shared interface documents for technical contracts.

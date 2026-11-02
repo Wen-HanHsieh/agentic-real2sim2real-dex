@@ -2,8 +2,9 @@
 
 Usage:  r2s2r-preflight [tennis|pen|plug|cube] <package_dir | package.tgz> [--steps N] [--hand right|left]
 The task may be omitted: it is taken from $R2S2R_TASK, else from the one r2s2r-<task> command on PATH.
---hand left (default $R2S2R_HAND, else right): the cube environment with the left Wuji Hand 2.2 (its initial wrist pose
-and cube position; the observation keys, shapes and joint order are the same).
+--hand left|right (default $R2S2R_HAND, else the hand of the task's experiment: left for the cube, right otherwise; the
+hand used is printed): the left-hand environment of the cube task (left Wuji Hand 2.2: its initial wrist pose and cube
+position; the observation keys, shapes and the positional joint order are the same, joint names l_* instead of r_*).
 Run it with the Python you use for the policy (the target runs Python 3.12, numpy 2.5.4, torch 2.14.1 CPU).
 
 Checks, in the order the target environment applies them:
@@ -44,7 +45,7 @@ import tempfile
 import time
 
 CONTRACT = "v2"
-STEPS = {"tennis": 5000, "pen": 6000, "plug": 7500, "cube": 20000}  # 500 Hz x 10 s / 12 s / 15 s / 40 s
+STEPS = {"tennis": 7500, "pen": 6000, "plug": 10000, "cube": 20000}  # 500 Hz x 15 s / 12 s / 20 s / 40 s
 ALLOWED_THIRD_PARTY = {"numpy", "torch"}
 COMPILED = (".so", ".pyd", ".dll", ".dylib")
 ACT_TIMEOUT, BUDGET, CPU_LIMIT = 5.0, 0.002, 600
@@ -93,6 +94,11 @@ OBJ_INIT = {"tennis": [(-0.071, 0.003, 0.318)], "pen": [(-0.109, 0.012, 0.287)],
             "plug": [(0.042, 0.031, 0.015), (-0.043, -0.041, 0.019)]}
 # the left-hand environment (cube only): initial wrist pose of the left hand's wrist frame l_mount and the cube in its palm
 LEFT = {"cube": {"wrist": ((0.027610, 0.001998, 0.307144), (0.555339, -0.420012, 0.441195, -0.566159)), "obj": [(-0.075, -0.012, 0.318)]}}
+# the hand of each task's experiment (TASK_CONFIG.md): the cube runs on the left hand, so without --hand / $R2S2R_HAND the
+# cube preflight uses the left configuration and says so; --hand right selects the right-hand cube environment explicitly
+DEFAULT_HAND = {"cube": "left"}
+LOAD_TIMEOUT = 60.0  # [s] load_policy() + reset() on the target (refused when slower)
+JOINT_ORDER_NOTE = "vendor URDF joint order: thumb cmc_flex, cmc_abd, mcp, ip; then index, middle, ring, pinky: mcp_flex, mcp_abd, pip, dip (r_* right, l_* left)"
 SCRAMBLE = [[1.0, 3.0], [2.0, 1.0], [0.0, 2.0]]  # cube: TASK.md
 CUBE_IDENTITY = 23  # object/rotations24.json identity_index
 
@@ -164,7 +170,8 @@ class CommandLimiter:
 
 # ---------------------------------------------------------------- action validation (the target's rules)
 def validate_action(a, np):
-    """None if `a` is a valid contract v2 action, else the reason. Arrays are flattened as the target's policy host does."""
+    """None if `a` is a valid contract v2 action, else the reason. Shapes are checked as returned (the target's policy host keeps
+    them: a (4, 5) q_target or a (1, 3) wrist position is not a (20,) / (3,) array)."""
     if not isinstance(a, dict):
         return "act(obs) must return a dict (contract v2)"
     extra = set(a) - set(ACTION)
@@ -179,15 +186,15 @@ def validate_action(a, np):
             out[k] = None
             continue
         try:
-            x = np.asarray(x, dtype=np.float64).ravel()
+            x = np.asarray(x, dtype=np.float64)
         except (TypeError, ValueError):
             return f"{k} must be a finite {shape} array"
         if x.shape != shape or not np.all(np.isfinite(x)):
             return f"{k} must be a finite {shape} array (got shape {x.shape})"
         out[k] = x
     nq = float(np.linalg.norm(out["wrist_orientation_target"]))
-    if not 0.9 <= nq <= 1.1:
-        return f"wrist_orientation_target must be a unit quaternion (w, x, y, z); norm {nq:.3f}"
+    if not 0.9 <= nq <= 1.1:  # the target's wording (wrist.validate_command); float64 before the norm, as the target's host casts
+        return f"wrist_orientation_target norm outside [0.9, 1.1] (w, x, y, z; normalized before use); norm {nq:.3f}"
     return None
 
 
@@ -466,6 +473,7 @@ def child(task, pkg, steps):
     import importlib.util
     import traceback
     t0 = time.process_time()
+    t_load0 = time.perf_counter()
     try:
         sys.path.insert(0, pkg)
         spec = importlib.util.spec_from_file_location("student_policy", os.path.join(pkg, "policy.py"))
@@ -475,6 +483,9 @@ def child(task, pkg, steps):
         pol.reset()
     except BaseException:
         emit(ok=False, stage="load_policy/reset", error=traceback.format_exc(limit=6))
+    t_load = time.perf_counter() - t_load0
+    if t_load > LOAD_TIMEOUT:
+        emit(ok=False, stage="load_policy/reset", error=f"load_policy() and reset() took {t_load:.1f} s (> {LOAD_TIMEOUT:.0f} s: the target refuses the package)")
     tgt = SyntheticTarget(task, np)
     times, rec, limited = [], [], {}
     n_rec = min(steps, 200)
@@ -507,7 +518,7 @@ def child(task, pkg, steps):
     except BaseException:
         emit(ok=False, stage="determinism replay", error=traceback.format_exc(limit=6))
     emit(ok=True, steps=steps, replayed=len(rec), act_ms_mean=1e3 * float(np.mean(times)), act_ms_max=1e3 * float(np.max(times)),
-         cpu_s=time.process_time() - t0, limited=limited)
+         cpu_s=time.process_time() - t0, limited=limited, load_s=round(t_load, 3), hand=os.environ.get("R2S2R_HAND", "right"))
 
 
 def main():
@@ -522,13 +533,16 @@ def main():
             print("--steps needs an integer")
             return 2
         del argv[i:i + 2]
+    hand_given = False
     if "--hand" in argv:
         i = argv.index("--hand")
         if i + 1 >= len(argv) or argv[i + 1] not in ("right", "left"):
             print("--hand needs right or left")
             return 2
         os.environ["R2S2R_HAND"] = argv[i + 1]  # the sandboxed child inherits it
+        hand_given = True
         del argv[i:i + 2]
+    hand_given = hand_given or bool(os.environ.get("R2S2R_HAND"))
     if len(argv) == 1:
         task = os.environ.get("R2S2R_TASK", "")
         if task not in STEPS:
@@ -542,10 +556,15 @@ def main():
         print(__doc__)
         return 2
     task, src = argv
+    if not hand_given:
+        os.environ["R2S2R_HAND"] = DEFAULT_HAND.get(task, "right")
     hand = os.environ.get("R2S2R_HAND", "right")
     if hand not in ("right", "left") or (hand == "left" and task not in LEFT):
         print(f"R2S2R_HAND={hand!r}: the left hand exists for the {', '.join(LEFT)} task only; use right or unset it")
         return 2
+    if not hand_given and task in DEFAULT_HAND:
+        print(f"INFO  no --hand / $R2S2R_HAND given: the {task} experiment runs the {hand} hand (TASK_CONFIG.md), using its configuration; "
+              f"--hand right selects the right-hand {task} environment explicitly")
     steps = STEPS[task] if steps is None else max(1, steps)
     tmp = None
     if os.path.isfile(src):
@@ -602,8 +621,8 @@ def main():
         print(f"FAIL  {rep['stage']}:\n{rep['error']}")
         print("RESULT: REJECT")
         return 1
-    print(f"PASS  load_policy(), reset(), act() x{rep['steps']} on synthetic {task} observations (exact key set, shapes, dtypes): "
-          "valid action dict every step, < 5 s per call")
+    print(f"PASS  load_policy(), reset() ({rep.get('load_s', 0):.2f} s, limit {LOAD_TIMEOUT:.0f} s), act() x{rep['steps']} on synthetic {task} observations "
+          f"({rep.get('hand', hand)} hand: exact key set, shapes, dtypes; {JOINT_ORDER_NOTE}): valid action dict every step, < 5 s per call")
     print(f"PASS  determinism: reset() + replay of the first {rep['replayed']} steps gives bit-identical actions")
     print(f"INFO  act() mean {rep['act_ms_mean']:.3f} ms, max {rep['act_ms_max']:.3f} ms (budget 2 ms, reported); "
           f"CPU {rep['cpu_s']:.1f} s of {CPU_LIMIT} s for {rep['steps']} steps; wall {time.time() - t:.1f} s")

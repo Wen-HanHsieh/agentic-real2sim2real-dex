@@ -28,29 +28,66 @@ $R2S2R_API package sNN > sNN_package.tgz
 $R2S2R_API frames sNN <top|left|right|all> <t1,t2,...> [depth] > frames.tgz
 ```
 
-`r2s2r-harness submit` and `r2s2r-harness reflect` (`TOOLS.md`) wrap `intent`, `submit`, and `note` (section 5); `r2s2r-harness video` wraps `training-video` (section 5). Responses are JSON, except `fetch` and `frames` (`.tar.gz`) and `package` (the archive exactly as submitted). Errors return `{"error": "..."}` with a non-zero exit code. `r2s2r-preflight` is a local check (`sim2target/PACKAGE.md`).
+`r2s2r-harness submit` and `r2s2r-harness reflect` (`TOOLS.md` section 2) wrap `intent`, `submit`, and `note` (section 5); `r2s2r-harness video` wraps `training-video` (section 5).
+
+Responses are JSON, except `fetch` and `frames` (`.tar.gz`) and `package` (the archive exactly as submitted). Errors return `{"error": "..."}` with a non-zero exit code. `r2s2r-preflight` is a local check (`sim2target/PACKAGE.md`).
 
 ## 2. Experiment Lifecycle and Submission
 
-- **Experiment:** your key is bound to your task's experiment of the current environment generation (`env-3`, or `env-3L` with the left hand, section 7; the id is in `TASK_CONFIG.md` section 1). Earlier experiments of your task (other environment generations) are separate; their records are not visible here.
-- **Staged:** while the experiment is staged (not yet opened), `budget`, `status`, `history`, `validate` and the record commands work, and `submit` is refused with `this experiment is staged and not open for submissions yet (nothing charged)`.
-- **Open:** submissions are accepted until the budget is used (then `evaluation budget exhausted`). One evaluation runs at a time; a second `submit` or `validate` while one runs is refused with `retry later` and nothing is charged.
-- **Archive:** `.tar` or `.tar.gz`, ≤ 500 MB, ≤ 2000 files; `policy.py` at the archive root or inside one top-level directory; regular files and directories only, no links, absolute paths, or `..` paths. macOS metadata (members with a path component starting with `._`, anything under `__MACOSX/`) is dropped and never unpacked (`sim2target/PACKAGE.md` section 6); the path check still applies to such members (an absolute or `..` path is refused), and the file limit counts every member as received.
-- **Checks:** `validate` and `submit` run the same package checks (`sim2target/PACKAGE.md` section 4), including the declared contract version `v2`. A rejected package is not recorded and not charged; `validate` answers `{"valid": true, "charged": false, "policy_sha256": ..., "contract": "v2", "checks": [...], "act_ms_mean": ..., "act_ms_max": ..., "warnings": [...]}`.
-- **Receipt:** `submit` returns `submission_id` (`sNN`), `policy_sha256`, `archive_sha256`, `state: queued`, `research_intent` (the intent bound to this submission, section 5), and `preflight` (`act_ms_mean`, `act_ms_max`, `warnings`).
+**Experiment:** Your key is bound to your task's experiment of the current environment generation (`env-3`, or `env-3L` with the left hand, section 7; the id is in `TASK_CONFIG.md` section 1). Earlier experiments of your task (other environment generations) are separate; their records are not visible here.
+
+**Staged:** While the experiment is staged (not yet opened), `budget`, `status`, `history`, `validate` and the record commands work, and `submit` is refused with `this experiment is staged and not open for submissions yet` (nothing charged).
+
+**Open:** Submissions are accepted until the budget is used (then `evaluation budget exhausted`). One evaluation runs at a time; a second `submit` or `validate` while one runs is refused with `retry later` and nothing is charged.
+
+**Archive:** `.tar` or `.tar.gz`, ≤ 500 MB, ≤ 2000 files; `policy.py` at the archive root or inside one top-level directory; regular files and directories only, no links, absolute paths, or `..` paths. macOS metadata (members with a path component starting with `._`, anything under `__MACOSX/`) is dropped and never unpacked (`sim2target/PACKAGE.md` section 6); the path check still applies to such members (an absolute or `..` path is refused), and the file limit counts every member as received.
+
+**Checks:** `validate` and `submit` run the same package checks (`sim2target/PACKAGE.md` section 4), including the declared contract version `v2`. A rejected package is not recorded and not charged; `validate` answers:
+
+```json
+{
+  "valid": true,
+  "charged": false,
+  "policy_sha256": "...",
+  "contract": "v2",
+  "checks": [],
+  "act_ms_mean": 0.0,
+  "act_ms_max": 0.0,
+  "warnings": []
+}
+```
+
+**Receipt:** `submit` returns `submission_id` (`sNN`), `policy_sha256`, `archive_sha256`, `state: queued`, `research_intent` (the intent bound to this submission, section 5), and `preflight` (`act_ms_mean`, `act_ms_max`, `warnings`).
 
 ## 3. Evaluation, States, and Budget
 
-- **Trial:** one trial per submission of the task's episode length (`N` steps at 500 Hz, `TASK_CONFIG.md` section 2), from fixed initial conditions (`sim2target/EVALUATION.md`).
-- **Budget:** 100 charged submissions; `budget` returns `{"mode": ..., "used": N, "limit": 100, "remaining": 100 − N}`.
-- **States:** `queued` → `running` → `done`, or `error` / `timeout`. `status` lists every submission with `submission_id`, `policy_sha256`, `received`, `state`, `started`, `finished`; an `error` row adds `error` (the public message, for a policy failure the step and the reason) and `charged`. Results are not available during a rollout and never appear in `status`.
+**Trial:** One trial per submission of the task's episode length (`N` steps at 500 Hz, `TASK_CONFIG.md` section 2), from fixed initial conditions (`sim2target/EVALUATION.md`).
+
+**Budget:** 100 charged submissions; `budget` returns:
+
+```json
+{
+  "mode": "...",
+  "used": 0,
+  "limit": 100,
+  "remaining": 100
+}
+```
+
+The example illustrates the response structure; `used` and `remaining` reflect the current experiment budget.
+
+**States:** `queued` → `running` → `done`, or `error` / `timeout`. `status` lists every submission with `submission_id`, `policy_sha256`, `received`, `state`, `started`, `finished`; an error row adds `error` (the public message, for a policy failure the step and the reason) and `charged`. Results are not available during a rollout and never appear in `status`.
 
 | Outcome | State | Charged | Standard feedback |
 |---|---|---|---|
 | Rollout completed | `done` | yes | yes |
-| Policy failure: exception, invalid action, no answer within 5 s, or more than 64 MB written to `TMPDIR` | `error` | yes | yes, up to the failure (`status` says `policy failure after K of N control steps`) |
-| Evaluation exceeded the task's wall-clock limit (`TASK_CONFIG.md` section 2) | `timeout` | yes | no (`fetch` answers `no feedback for this submission`) |
-| Target-side infrastructure error | `error` | no | no (`status`: `internal error (not charged)`) |
+| Policy failure: exception, invalid action, no answer within 5 s, or more than 64 MB written to `TMPDIR` | `error` | yes | yes, up to the failure (`status` says policy failure after K of N control steps) |
+| Evaluation exceeded the task's wall-clock limit (`TASK_CONFIG.md` section 2) | `timeout` | yes | no (`fetch` answers no feedback for this submission) |
+| Target-side infrastructure error | `error` | no | no (`status`: internal error (not charged)) |
+
+An invalid action includes a missing, non-finite or wrongly shaped value, an unknown key, or a wrist orientation target whose norm is outside `[0.9, 1.1]`. Accepted orientation targets are normalized before execution (`sim2target/CONTRACT.md` section 4).
+
+**Physical task failure is not policy failure.** Dropping an object, failing a grasp, or achieving zero task progress does not terminate an otherwise valid rollout. Such a rollout continues to the scheduled episode end and remains eligible for ranking if all technical validity requirements are met.
 
 Identical resubmissions are charged. A charged submission counts whether or not it produced feedback.
 
@@ -62,19 +99,40 @@ Standard feedback is the evaluation evidence the target environment stores autom
 <experiment>_sNN/
 ├── feedback.json
 ├── calibration.json
-├── verifier/  report.json
-├── state/     trajectory.npz  schema.json
-├── logs/      trial_0.npz
-└── video/     top.mp4  left.mp4  right.mp4  frames.json  video.json
+├── verifier/
+│   └── report.json
+├── state/
+│   ├── trajectory.npz
+│   └── schema.json
+├── logs/
+│   └── trial_0.npz
+└── video/
+    ├── top.mp4
+    ├── left.mp4
+    ├── right.mp4
+    ├── frames.json
+    └── video.json
 ```
 
-The feedback contains the official evaluation and the rollout evidence (`sim2target/FEEDBACK.md` section 6). It does not explain failures. `feedback.json` lists the SHA-256 of every returned file; `feedback_sha256` in `history` is the SHA-256 of that `feedback.json`. File contents, conventions, and timestamps: `sim2target/FEEDBACK.md`. `frames sNN ...` (section 6) returns a `.tar.gz` with `frames/<view>_t<seconds>_rgb.png`, optional `_depth.png`, and `frames/frames.json`.
+The feedback contains the official evaluation and the rollout evidence (`sim2target/FEEDBACK.md` section 6). It does not explain failures. `feedback.json` lists the SHA-256 of every returned file; `feedback_sha256` in `history` is the SHA-256 of that `feedback.json`.
+
+File contents, conventions, and timestamps: `sim2target/FEEDBACK.md`.
+
+`frames sNN ...` (section 6) returns a `.tar.gz` with `frames/<view>_t<seconds>_rgb.png`, optional `_depth.png`, and `frames/frames.json`.
+
+**Important:** The returned `calibration.json` describes the target camera rig and rendering calibration. It is not the research agent's sim-to-target calibration result.
+
+After an evaluation with accessible rollout feedback, the agent must perform the mandatory `r2s2r-calib` workflow defined in `TOOLS.md` section 3 before its next submission. The comparison uses the returned rollout evidence and the agent's own simulator.
+
+If feedback is unavailable or sealed, record that limitation. Do not fabricate calibration or claim the requirement was completed.
 
 ## 5. Standard Research Workflow
 
-Every submission keeps an auditable chain: research intent → code and policy revision → submission → official evidence → your diagnosis → your decision.
+Every submission keeps an auditable chain:
 
-The target environment keeps the history, the best evaluated policy, and the comparisons automatically; the intent and the reflection are your part of the record. These commands are not charged and never change official results.
+**Research intent → code and policy revision → submission → official evidence → calibration and diagnosis → research decision.**
+
+The target environment keeps the history, the best evaluated policy, and the comparisons automatically; the intent, calibration evidence and reflection are your part of the research record. These commands are not charged and never change official results.
 
 | Command | Returns or records | Limits |
 |---|---|---|
@@ -86,103 +144,329 @@ The target environment keeps the history, the best evaluated policy, and the com
 |---|---|---|
 | Package, hashes, timestamps, state, official results with versions, feedback; best evaluated policy; comparisons | Target environment, automatically | `history` |
 | Research intent: hypothesis, planned change, rationale, parent, local evidence | You, before submitting | `intent` |
-| Source revision and code diff (`auto`) | `r2s2r-harness submit`, on your machine (not verified by the target) | `intent` |
+| Source revision and code diff (auto) | `r2s2r-harness submit`, on your machine (not verified by the target) | `intent` |
+| Sim-to-target calibration: replay, comparison, diagnosis, evidence and simulator changes | You, after an evaluation with accessible feedback | `r2s2r-calib` and `note sNN` |
 | Reflection: what worked and failed, diagnosis, evidence, keep / reject / undecided, next hypothesis | You, after the result | `note sNN` |
 
-**Intent (before submitting).** One JSON object; `package_sha256`, the SHA-256 of the exact archive you will submit, is required:
+### Research Intent
+
+Record before submitting. One JSON object; `package_sha256`, the SHA-256 of the exact archive you will submit, is required:
 
 ```json
-{"package_sha256": "64 hex digits", "hypothesis": "...", "change": "...", "rationale": "...",
- "kind": "improvement | diagnostic | experimental", "parent": "sNN", "checkpoint": "...",
- "local": {"...": "≤ 4 KB"}, "sim_config": {"...": "≤ 8 KB"},
- "auto": {"source_revision": "...", "source_dirty": false, "diff_base": "...", "code_diff_sha256": "...",
-          "code_change": "...", "git": "...", "captured_utc": "...", "captured_by": "..."}}
+{
+  "package_sha256": "64 hex digits",
+  "hypothesis": "...",
+  "change": "...",
+  "rationale": "...",
+  "kind": "improvement | diagnostic | experimental",
+  "parent": "sNN",
+  "checkpoint": "...",
+  "local": {
+    "...": "≤ 4 KB"
+  },
+  "sim_config": {
+    "...": "≤ 8 KB"
+  },
+  "auto": {
+    "source_revision": "...",
+    "source_dirty": false,
+    "diff_base": "...",
+    "code_diff_sha256": "...",
+    "code_change": "...",
+    "git": "...",
+    "captured_utc": "...",
+    "captured_by": "..."
+  }
+}
 ```
 
 The target binds an intent to the first later submission whose `archive_sha256` equals `package_sha256` (if several intents name the same archive, the latest one before the submission); an intent recorded after a submission never binds to it.
 
-**Reflection (after the result).** `note sNN` with `"record": "reflection"`:
+### Reflection
+
+After the result, use `note sNN` with `"record": "reflection"`:
 
 ```json
-{"record": "reflection", "what_worked": "...", "what_failed": "...", "diagnosis": "...", "evidence": "...",
- "keep": "keep | reject | undecided", "decision": "...", "next_hypothesis": "...", "limitation": "...", "analysis": "..."}
+{
+  "record": "reflection",
+  "what_worked": "...",
+  "what_failed": "...",
+  "diagnosis": "...",
+  "evidence": "...",
+  "keep": "keep | reject | undecided",
+  "decision": "...",
+  "next_hypothesis": "...",
+  "limitation": "...",
+  "analysis": "..."
+}
 ```
 
-Use `limitation` when an evaluation ended without rollout evidence. After each target evaluation, the reflection also carries the sim-to-target calibration outcome (`TOOLS.md` section 2): discrepancies and simulator changes in `analysis` and `evidence`, the repair screened in simulation in `next_hypothesis`. A later reflection on the same submission is an amendment; earlier records remain.
+Use `limitation` when an evaluation ended without rollout evidence.
 
-**`history`** lists every submission with its hashes (`policy_sha256`, `archive_sha256`, `feedback_sha256`), `state`, `official` results, notes with `timing` (`before_result` / `after_result`), `role`, `keep`, `gate`, and:
+After each target evaluation with accessible rollout feedback, the reflection must also carry the sim-to-target calibration outcome (`TOOLS.md` section 3): discrepancies and simulator changes in `analysis` and `evidence`, and the repair screened in simulation in `next_hypothesis`.
 
-- **`official`:** `status` (`success`, `failure`, `criteria_undefined`, or `not_evaluable`), `verifier_status` (the report's `status`), `score` (the report's `progress`; `null` unless evaluated and computed), `score_bounds` (equal to the score: the result is exact), `confidence`, `stages` (score per stage), `milestones`, `hardware`, `runtime` (`valid` / `invalid`), `versions`, `criteria`, `rankable` (`false` while the task's criteria are undefined, and for an evaluated failure whose progress could not be computed), and `unranked_reason` (`null`, `criteria_undefined`, `not_evaluable` or `progress_not_computed`).
-- **`research`:** the bound intent, the rollout evidence (`complete rollout`, `partial rollout` up to a policy failure, or `none`), reflections, current decision and next hypothesis, `training_video`, and `needs`: every missing part (for example `reflection: missing`). Missing parts are listed, never filled in, and never block a submission.
-- **`comparison`:** `vs_previous` (the previous comparable submission) and `vs_best_before` (the best comparable earlier submission): `improved`, `regressed`, or `tied`, with score delta, stage deltas, and milestones gained or lost. The categories runtime valid, no hardware violation and success decide first; otherwise the exact scores (scores are exact, so two different scores are never `inconclusive`). One trial per submission: success is compared as a status, not a rate.
-- **`gate`:** `first`, `improved`, `equal`, `regressed`, or `not_comparable` (different evaluation versions), against the best comparable earlier submission. An unranked record (see `unranked_reason`) has no gate; one whose progress could not be computed still gets `comparison` (`ranked` `false`, `score_delta` `null` with its reason).
-- **`best_evaluated`:** ranked by official results only: valid run, then no hardware violation, then `success`, then score; ties go to the earlier submission. `best_by_versions` gives the best of each version group. Comparable means the same contract, verifier, criteria id and status, rubric, hardware-spec, target model and environment versions.
-- **`latest_candidate`:** the latest submission not labelled `diagnostic` or `experimental`.
-- **`research_summary`:** records with intent and reflection, incomplete records, intents not bound to a submission, and the record-chain check.
+A later reflection on the same submission is an amendment; earlier records remain.
 
-While the task's success criteria are undefined (`SUCCESS.md`), every record is listed with its validity and evidence but nothing is ranked: `gate`, `comparison` and `best_evaluated` stay empty. Comparisons and the best policy are evidence; they never select, restore, or reject a policy.
+### Mandatory Sim-to-Target Calibration
+
+After every target evaluation with accessible rollout feedback, and before the next target submission, the agent must use `r2s2r-calib` to complete and record a sim-to-target comparison.
+
+The required workflow is:
+
+1. Extract the target trajectory from the fetched feedback.
+2. Replay the target action sequence in the agent's simulator.
+3. Compare target and simulator trajectories.
+4. Diagnose discrepancies in wrist motion, finger dynamics, object motion and contact behavior.
+5. Record the evidence, hypotheses, and justified simulator changes.
+6. Validate the next candidate locally and summarize the findings in the research reflection.
+
+Use the commands and adapters defined in `TOOLS.md` section 3.
+
+The agent remains free to choose its simulator, calibration parameters, and policy-learning algorithm.
+
+If feedback is sealed, unavailable or technically unusable, record the blocker. If replay is genuinely infeasible, preserve the tool evidence and follow the documented exception procedure before proceeding without completed replay-based calibration.
+
+Calibration is a mandatory research-workflow requirement. It does not change the official verifier score, the sealed record, or the evaluation ranking.
+
+**Calibration enforcement:** The research agent must satisfy this requirement before subsequent submissions. Existing remote API commands do not independently impose a new server-side calibration gate unless that behavior is explicitly documented and implemented. Missing calibration evidence must not be represented as completed calibration.
+
+### History
+
+`history` lists every submission with its hashes (`policy_sha256`, `archive_sha256`, `feedback_sha256`), state, official results, notes with timing (`before_result` / `after_result`), role, keep, gate, and:
+
+**`official`:**
+
+- `status`: `success`, `failure`, `criteria_undefined`, or `not_evaluable`.
+- `task_status`: the same value as `status` (kept for compatibility).
+- `verifier_status`: the report's status.
+- `score`: the report's `progress`, exact; `null` when unavailable or not computed.
+- `score_bounds`: equal to the score when computed; the result is exact.
+- `confidence`: as reported by the official evaluation.
+- `stages`: score per stage.
+- `milestones`: milestones reached.
+- `hardware`: official hardware compliance.
+- `runtime`: valid / invalid.
+- `versions`: evaluation component versions.
+- `criteria`: active criteria metadata.
+- `rankable`: whether the official result is eligible for ranking.
+- `unranked_reason`: `null` when rankable; otherwise the first that applies: `not_evaluable` (report status `not_evaluable`), `criteria_undefined` (report status `criteria_undefined`), `run_invalid` (a target-side run check failed: `validity.run_valid` false), `policy_failure` (the policy failed during the rollout: `validity.policy_runtime.pass` false), `hardware_invalid` (a hardware violation: `validity.hardware.status` `violation`), `progress_not_computed` (an evaluated record without a computed progress, `score` `null`: a record of an earlier verifier version).
+
+**Valid zero progress:** An otherwise valid evaluated rollout with `score = 0.0` is rankable, even if the physical task failed early.
+
+**Missing progress:** `score = null` is not zero. An evaluation whose progress could not be computed is unranked and must retain the reason where available.
+
+**`research`:**
+
+The bound intent, the rollout evidence (complete rollout, partial rollout up to a policy failure, or none), reflections, current decision and next hypothesis, training video, and `needs`: every missing research-record component (for example `reflection: missing`).
+
+Missing components are listed, never filled in automatically.
+
+Research-record completeness and mandatory calibration are distinct from official scoring. Missing training videos or ordinary research notes do not independently block API submissions.
+
+**`comparison`:**
+
+- `vs_previous`: the previous comparable submission.
+- `vs_best_before`: the best comparable earlier submission.
+- Reports improved, regressed, tied, or inconclusive (a side has no computed score; `score_delta` null), with score delta, stage deltas, and milestones gained or lost where meaningful.
+- For officially rankable submissions, comparisons use official `success` first, then `progress`.
+- Scores are exact; distinct numeric scores are not inconclusive.
+- Unranked submissions retain their evidence and any diagnostic comparison the API supports, but cannot displace ranked submissions or determine the best policy.
+- Missing scores retain `score_delta: null` rather than being treated as zero.
+
+One trial per submission: success is compared as a status, not as a rate.
+
+**`gate`:**
+
+`first`, `improved`, `equal`, `regressed`, or `not_comparable` (different evaluation versions), against the best comparable earlier submission.
+
+An unranked record has no ranking gate. An evaluation whose progress could not be computed may still have a diagnostic comparison marked unranked, with `score_delta: null` and its reason.
+
+**`best_evaluated`:**
+
+Only officially rankable evaluations participate in best-policy selection.
+
+Within a compatible version group, rank by:
+
+1. Official `success`.
+2. Official `progress`.
+3. Earlier submission wins an exact tie.
+
+Valid unsuccessful rollouts with `progress = 0.0` remain eligible.
+
+Policy failures, hardware-invalid runs, runtime-invalid runs, missing-progress evaluations, and otherwise technically invalid records do not become `best_evaluated`.
+
+`best_by_versions` gives the best eligible policy of each version group.
+
+Comparable means the same contract, verifier, criteria id and status, rubric, hardware-spec, target model and environment versions.
+
+**`latest_candidate`:**
+
+The latest submission not labelled diagnostic or experimental.
+
+**`research_summary`:**
+
+Records with intent and reflection, incomplete records, intents not bound to a submission, and the record-chain check.
+
+While the task's success criteria are undefined (`SUCCESS.md`), every record is listed with its validity and evidence but nothing is ranked: `gate`, `comparison` and `best_evaluated` stay empty.
+
+Comparisons and the best policy are evidence; they never select, restore, or reject a policy automatically.
+
+### Plain Research Notes
 
 A plain `note sNN` (without `"record"`) keeps the original schema. Required fields: `kind`, `hypothesis`, `change`, `evidence`, `decision`; other fields are optional:
 
 ```json
-{"kind": "improvement | diagnostic | experimental", "hypothesis": "...", "change": "...", "evidence": "...",
- "decision": "...", "keep": "keep | reject | undecided", "source_revision": "git commit",
- "code_change": "summary or diff stat", "sim_config": {"...": "your simulation configuration, ≤ 8 KB"},
- "checkpoint": "your checkpoint reference", "analysis": "...",
- "local": {"...": "your local-simulation result, ≤ 4 KB"}, "parent": "sNN"}
+{
+  "kind": "improvement | diagnostic | experimental",
+  "hypothesis": "...",
+  "change": "...",
+  "evidence": "...",
+  "decision": "...",
+  "keep": "keep | reject | undecided",
+  "source_revision": "git commit",
+  "code_change": "summary or diff stat",
+  "sim_config": {
+    "...": "your simulation configuration, ≤ 8 KB"
+  },
+  "checkpoint": "your checkpoint reference",
+  "analysis": "...",
+  "local": {
+    "...": "your local-simulation result, ≤ 4 KB"
+  },
+  "parent": "sNN"
+}
 ```
 
-All records are append-only and hash-chained (corrections are new records); they cannot carry or change official results, and unknown fields are refused. `r2s2r-harness` (`TOOLS.md`) wraps these commands.
+All records are append-only and hash-chained (corrections are new records); they cannot carry or change official results, and unknown fields are refused. `r2s2r-harness` (`TOOLS.md` section 2) wraps these commands.
 
-**Training-simulation video (standard research artifact).** For every target submission, record a representative rollout of the submitted policy in your own training simulator and link it to the submission, so that it can be compared with the target rollout of the same package (the public research dashboard shows both). Prefer a full episode from the documented initial condition, and keep the local experiment and simulator details. The video must show your own local simulation of that exact package: never a human demonstration, a target evaluation video, another policy's rollout, an upstream repository demonstration, or reconstructed footage.
+### Training-Simulation Video
 
-1. **Upload** the video for the exact package: `r2s2r-harness video sNN my_rollout.mp4 --package my_policy/ --simulator NAME --local-run ID` (`TOOLS.md`), or `training-video sNN PACKAGE_SHA256 [SIMULATOR] [run=LOCAL_RUN]` with the video on stdin. The target refuses a video unless `PACKAGE_SHA256` equals the submission's `archive_sha256`.
-2. **State the rollout** with `note sNN` and `"record": "training_video"`, naming the `sha256` of the uploaded video (in the upload response):
+Training-simulation video is a standard research artifact, separate from mandatory sim-to-target calibration.
+
+For every target submission, record a representative rollout of the submitted policy in your own training simulator and link it to the submission, so that it can be compared with the target rollout of the same package (the public research dashboard shows both).
+
+Prefer a full episode from the documented initial condition, and keep the local experiment and simulator details.
+
+The video must show your own local simulation of that exact package: never a human demonstration, a target evaluation video, another policy's rollout, an upstream repository demonstration, or reconstructed footage.
+
+Upload the video for the exact package:
+
+```bash
+r2s2r-harness video sNN my_rollout.mp4 --package my_policy/ --simulator NAME --local-run ID
+```
+
+Or use:
+
+```bash
+$R2S2R_API training-video sNN PACKAGE_SHA256 [SIMULATOR] [run=LOCAL_RUN] < my_rollout.mp4
+```
+
+The target refuses a video unless `PACKAGE_SHA256` equals the submission's `archive_sha256`.
+
+State the rollout with `note sNN` and `"record": "training_video"`, naming the SHA-256 of the uploaded video (from the upload response):
 
 ```json
-{"record": "training_video", "video_sha256": "...", "rollout": "full"}
-{"record": "training_video", "video_sha256": "...", "rollout": "partial", "start_state": "...", "duration_s": 12.5, "limitations": "..."}
-{"record": "training_video", "rollout": "none", "reason": "why no simulator rollout could be recorded"}
+{
+  "record": "training_video",
+  "video_sha256": "...",
+  "rollout": "full"
+}
+```
+
+For a partial rollout:
+
+```json
+{
+  "record": "training_video",
+  "video_sha256": "...",
+  "rollout": "partial",
+  "start_state": "...",
+  "duration_s": 12.5,
+  "limitations": "..."
+}
+```
+
+When no video exists:
+
+```json
+{
+  "record": "training_video",
+  "rollout": "none",
+  "reason": "why no simulator rollout could be recorded"
+}
 ```
 
 | Field | Meaning | Limits |
 |---|---|---|
-| `PACKAGE_SHA256` | SHA-256 of the exact archive submitted as `sNN`; must equal its `archive_sha256` in `history`, otherwise the video is refused | 64 lowercase hex digits |
-| `SIMULATOR` | Label of your simulator | 1–40 characters `A-Z a-z 0-9 . _ + -` |
-| `run=LOCAL_RUN` | Identifier of your local experiment, run, or checkpoint | 1–80 characters `A-Z a-z 0-9 . _ : + -` |
+| `PACKAGE_SHA256` | SHA-256 of the exact archive submitted as `sNN`; must equal its `archive_sha256` in history, otherwise the video is refused | 64 lowercase hex digits |
+| `SIMULATOR` | Label of your simulator | 1–40 characters: A-Z a-z 0-9 . _ + - |
+| `run=LOCAL_RUN` | Identifier of your local experiment, run, or checkpoint | 1–80 characters: A-Z a-z 0-9 . _ : + - |
 | Video | MP4 or WebM of a rollout of that exact package in your simulator | ≤ 64 MB; ≤ 4 per submission (the latest is shown; earlier ones are kept) |
 | `video_sha256` | SHA-256 of a video already registered for this submission | 64 lowercase hex digits |
 | `rollout` | `full` (a whole episode), `partial`, or `none` (no video) | — |
-| `start_state`, `duration_s`, `limitations` | Required for `partial`: where the shown rollout starts, how long it is, and what it does not show | ≤ 1000 characters; (0, 3600] s; ≤ 2000 characters |
-| `reason` | Required for `none`: why no simulator rollout could be recorded | ≤ 2000 characters |
+| `start_state`, `duration_s`, `limitations` | Required for partial: where the shown rollout starts, how long it is, and what it does not show | ≤ 1000 characters; (0, 3600] s; ≤ 2000 characters |
+| `reason` | Required for none: why no simulator rollout could be recorded | ≤ 2000 characters |
 
-The video is never evaluated or charged and never changes official results, comparisons, or the best policy; a missing or failed video never blocks a submission, and it can be added before or after the result without a new submission. In `history`, `research.training_video` shows whether it is expected for the submission, the number of videos, the latest video's SHA-256, and the rollout label; a missing video or rollout statement is listed in `research.needs`. Do not rerun earlier experiments only to produce videos for earlier submissions.
+The video is never evaluated or charged and never changes official results, comparisons, or the best policy; a missing or failed video never blocks a submission, and it can be added before or after the result without a new submission.
+
+In `history`, `research.training_video` shows whether it is expected for the submission, the number of videos, the latest video's SHA-256, and the rollout label; a missing video or rollout statement is listed in `research.needs`.
+
+Do not rerun earlier experiments only to produce videos for earlier submissions.
 
 ## 6. On-demand Access
 
-Stored data of earlier submissions, retrieved only when you need it. Not charged; never changes official results. `frames` complements `fetch`: RGB frames at any instant (also between video frames), optionally with depth, rendered from the same ground-truth trajectory as the videos.
+Stored data of earlier submissions, retrieved only when you need it. Not charged; never changes official results.
+
+`frames` complements `fetch`: RGB frames at any instant (also between video frames), optionally with depth, rendered from the same ground-truth trajectory as the videos.
 
 | Command | Returns | Limits |
 |---|---|---|
-| `package sNN` | The exact archive you submitted; its SHA-256 equals `archive_sha256` in `history` | — |
-| `frames sNN VIEW TIMES [depth]` | PNG frames from the same cameras at any instant of the rollout (s, up to 3 decimals; nearest 1 ms; within 0 and the episode length), optional 16-bit depth, and `frames/frames.json` (`t` and `control_step` per frame) | ≤ 8 times per call; ≤ 240 frames (times × views) per submission |
+| `package sNN` | The exact archive you submitted; its SHA-256 equals `archive_sha256` in history | — |
+| `frames sNN VIEW TIMES [depth]` | PNG frames from the same cameras at any instant of the rollout (seconds, up to 3 decimals; nearest 1 ms; within 0 and the episode length), optional 16-bit depth, and `frames/frames.json` (`t` and `control_step` per frame) | ≤ 8 times per call; ≤ 240 frames (times × views) per submission |
 
 ## 7. Versions
+
+Components are versioned independently. The task's active verifier and criteria versions are determined by the actual registry and recorded in the official evaluation reports, not inferred from historical examples.
 
 | Component | Current | Where it appears |
 |---|---|---|
 | Policy interface | `v2` | `manifest.json` `contract_version` (`sim2target/PACKAGE.md`); `feedback.json` and `report.json` `versions.contract` |
-| Object state schema | `objstate-1` | `state/schema.json` `schema`; `versions.state_schema` |
+| Object state schema | `objstate-1` | `state/schema.json` schema; `versions.state_schema` |
 | Environment | `env-3` (right hand), `env-3L` (left hand); your task's: `TASK_CONFIG.md` section 1 | `feedback.json` `environment_version`; `versions.environment` |
 | Wrist | `wrist-1` | `versions.wrist` (`hardware/SPECS.md` section 4) |
-| Official evaluation | `gv-1` (the criteria of your task: `TASK_CONFIG.md` section 1, `SUCCESS.md`) | `report.json` `verifier_version`, `criteria`; `feedback.json` `verifier`, `criteria` |
+| Official evaluation | Active verifier version and task-specific criteria ID, as reported by the target | `report.json` `verifier_version`, `criteria`; `feedback.json` `verifier`, `criteria` |
 | Feedback protocol | `r2s2r-feedback/3` | `feedback.json` `protocol` |
 | Feedback contents | `agent-view-2` | `feedback.json` `feedback_view` |
 | Camera rig | `rig-1.3` | `calibration.json`, `frames.json` and `video.json` `rig_version`; `feedback.json` `versions.rig` |
 | Hardware specification | `hwspec-1.1` (right hand), `hwspec-1.1L` (left hand) | `hardware/hardware_spec.json`, `hardware/hardware_spec_left.json`; `report.json` `validity.hardware.spec_version` |
 | Target model | `tm-2` (Wuji Hand 2.2 right), `tm-2L` (Wuji Hand 2.2 left); your task's: `TASK_CONFIG.md` section 1 | `feedback.json` `target_model_version`, `robot`; `history` `official.versions.target_model` |
 
-The components are versioned separately; the status of your task's criteria is stated in `TASK_CONFIG.md` section 1 and `SUCCESS.md`. The environment version `env-3` names this environment generation: the floating wrist, the ground-truth object state in the observation, and each task's scene and initial configuration (`TASK_CONFIG.md`); `env-3L` is the same generation with the left hand; earlier environment versions of a task (a fixed hand, joint-only observations) have separate experiments and records and are not compared with this one. The target model version names the simulated robot revision and physics configuration of the target environment. Every record keeps the versions it was produced with, and `gate` and `best_evaluated` compare only submissions whose contract, verifier, criteria id and status, rubric, hardware-spec, target model, and environment versions match. A change of the criteria status (`SUCCESS.md`) therefore starts a new comparison group.
+The components are versioned separately; the criteria id, rubric and status of every evaluation are stated in its report's `criteria` field (`sim2target/FEEDBACK.md` section 1); the criteria themselves are in `SUCCESS.md`.
+
+The environment version `env-3` names this environment generation: the floating wrist, the ground-truth object state in the observation, and each task's scene and initial configuration (`TASK_CONFIG.md`); `env-3L` is the same generation with the left hand.
+
+Earlier environment versions of a task (a fixed hand, joint-only observations) have separate experiments and records and are not compared with this one.
+
+The target model version names the simulated robot revision and physics configuration of the target environment.
+
+Every record keeps the versions it was produced with. `gate` and `best_evaluated` compare only submissions whose contract, verifier, criteria id and status, rubric, hardware-spec, target model, and environment versions match.
+
+A change of the criteria status (`SUCCESS.md`) starts a new comparison group.
+
+**Progress and ranking:** The official Ground-Truth Verifier computes task progress using the active criteria. The current task rubrics are:
+
+| Task | Progress |
+|---|---|
+| Tennis | 9 sequential stages × 1/9 |
+| Plug | 4 sequential stages × 0.25 |
+| Pen | 5 sequential stages × 0.20 |
+| Cube | 4 sequential stages × 0.25 |
+
+The detailed stage definitions and success conditions remain in each task's `SUCCESS.md`.
+
+For Cube, distance-to-solved measurements are diagnostics, not a replacement for the four-stage progress rubric.
+
+The verifier's official progress is the only score used for ranking. The harness must not independently recompute it.
 
 ## 8. Access Boundaries
 
@@ -192,11 +476,13 @@ The target environment provides the official evaluation and the rollout evidence
 |---|---|
 | Task definition, success criteria (or the statement that none are defined yet), task configuration, robot and object specifications, demonstration (this bundle) | The target environment's simulator and its physics parameters (mass distribution beyond the published values, contact and surface properties, actuator internals) |
 | During the rollout: the observation of `sim2target/CONTRACT.md` (finger encoders, exact wrist state, exact object states) | During the rollout: contacts, forces, torques, images, the evaluation's progress |
-| Official results: `status`, `success`, `progress`, stages, milestones, validity, versions (`fetch`, `history`) | Explanations of failures or suggested fixes; the verifier's implementation and configuration |
+| Official results: status, success, progress, stages, milestones, validity, versions (`fetch`, `history`) | Explanations of failures or suggested fixes; the verifier's implementation and configuration |
 | Rollout evidence: the ground-truth state record with contact flags (`state/trajectory.npz`), the rollout log with commanded and executed wrist targets (`logs/trial_0.npz`), rendered videos, RGB and depth frames on demand (`frames`) | Contact forces, contact depths, per-link contacts, joint torques, the evaluation condition, the target's diagnostics |
 | Hardware and runtime diagnostics: joint position, speed and torque compliance, action validity, policy errors, run validity | The record of any other submitter |
 | Your own packages, research records, and training-simulation videos | — |
 
-- Your key reaches only the commands in section 1, for your task's experiment; anything else is refused and no shell is started.
-- No command changes success criteria, scoring rules, official results, or the budget; your records and videos never change official results.
-- The deployed policy receives the observation of `sim2target/CONTRACT.md` and runs in a sandbox (`sim2target/PACKAGE.md`).
+Your key reaches only the commands in section 1, for your task's experiment; anything else is refused and no shell is started.
+
+No command changes success criteria, scoring rules, official results, or the budget; your records and videos never change official results.
+
+The deployed policy receives the observation of `sim2target/CONTRACT.md` and runs in a sandbox (`sim2target/PACKAGE.md`).

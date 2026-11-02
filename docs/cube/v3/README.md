@@ -13,9 +13,9 @@ This workspace documents one task. The same environment generation runs several 
 
 ## The Two Stages
 
-**Demo-to-Sim.** From the demonstration video (`demo/`) to a simulated reproduction of the skill, in two steps. First reconstruct the demonstration into the outputs of `demo2sim/REFERENCE.md` (required): the camera and time base, the objects' 6D motion, the demonstrator's 3D hand motion in the same metric world, the hand–object contact phases, the validation and a comparison video. `demo2sim/RECONSTRUCTION.md` is the default workflow and `TOOLS.md` section 3 lists the pre-installed reconstruction tools and models; how you reconstruct is your choice. The objects' geometry and physical properties are given (`object/SPECS.md`). Then build your training simulation (for example in MuJoCo, the format of the reconstruction's scene) of the target robot and objects from the public specifications (`hardware/SPECS.md`, the hand file of your task, `object/SPECS.md`, `TASK_CONFIG.md`), with your reconstruction as the reference of the skill, and develop a policy that meets the policy interface (`sim2target/CONTRACT.md`, `sim2target/PACKAGE.md`).
+**Demo-to-Sim.** From the demonstration video (`demo/`) to a simulated reproduction of the skill, in two steps. First reconstruct the demonstration into the outputs of `demo2sim/REFERENCE.md` (required): the camera and time base, the objects' 6D motion, the demonstrator's 3D hand motion in the same metric world, the hand–object contact phases, the validation and a comparison video. `demo2sim/RECONSTRUCTION.md` is the default workflow and `TOOLS.md` section 4 lists the pre-installed reconstruction tools and models; how you reconstruct is your choice. The objects' geometry and physical properties are given (`object/SPECS.md`). Then build your training simulation (for example in MuJoCo, the format of the reconstruction's scene) of the target robot and objects from the public specifications (`hardware/SPECS.md`, the hand file of your task, `object/SPECS.md`, `TASK_CONFIG.md`), with your reconstruction as the reference of the skill, and develop a policy that meets the policy interface (`sim2target/CONTRACT.md`, `sim2target/PACKAGE.md`).
 
-**Sim-to-Target.** Submit the policy to the target environment (`sim2target/REMOTE_API.md`), inspect the official result and the rollout evidence (`sim2target/FEEDBACK.md`, `sim2target/EVALUATION.md`), calibrate your simulator against the target rollout (`TOOLS.md` section 2), diagnose, revise, and resubmit.
+**Sim-to-Target.** Submit the policy to the target environment (`sim2target/REMOTE_API.md`), inspect the official result and the rollout evidence (`sim2target/FEEDBACK.md`, `sim2target/EVALUATION.md`), calibrate your simulator against the target rollout (`TOOLS.md` section 3), diagnose, revise, and resubmit.
 
 ## Closed-loop Improvement
 
@@ -31,13 +31,13 @@ Use the **100-submission budget** thoughtfully. Follow the Standard Research Wor
 
 No calibration is required before your first target rollout. After each target evaluation, before the next submission:
 
-1. Use `r2s2r-calib` (`TOOLS.md` section 2) to extract the target trajectory, replay its action sequence in your own simulator, and compare the wrist, object, and joint trajectories with the target's exact state record.
+1. Use `r2s2r-calib` (`TOOLS.md` section 3) to extract the target trajectory, replay its action sequence in your own simulator, and compare the wrist, object, and joint trajectories with the target's exact state record.
 2. Diagnose the discrepancies and formulate testable failure hypotheses.
 3. Update your simulator, or explain why a particular discrepancy cannot be modeled.
 4. Screen candidate repairs in simulation before the next target submission.
 5. Record the calibration evidence, your modifications, and the results.
 
-If replay is genuinely infeasible, document the reason and validate the next candidate in another documented way. Your simulator, physics parameters, calibration algorithm, policy, controller, and learning method remain your choice.
+If the feedback is unavailable or sealed, or replay is genuinely infeasible, record a calibration exception with its evidence instead (`TOOLS.md` section 3); an exception is never a completed calibration. Your simulator, physics parameters, calibration algorithm, policy, controller, and learning method remain your choice.
 
 ## Documents
 
@@ -51,7 +51,7 @@ Each specification has one authoritative document; the others refer to it. Every
 | `TASK_CONFIG.md` | Runtime configuration of your task: hand variant, experiment and API command, episode length, scene and initial configuration, objects, observation and record shapes |
 | `TOOLS.md` | The tools and where they are: research harness, sim-to-target calibration (`r2s2r-calib`), reconstruction tools and models, package and hardware checks |
 | `demo/` | Human demonstration video, sampled frames, and `demo/README.md`: the actual files, their time base, and the reconstruction inputs |
-| `object/SPECS.md` | The task's objects (and scene items such as a table): geometry, mass, appearance, mechanism where there is one, and the state frames reported in the observation |
+| `object/SPECS.md` | The task's objects: geometry, mass, appearance, mechanism where there is one, and the state frames reported in the observation (scene items such as a table, and the initial arrangement: `TASK_CONFIG.md`) |
 | `demo2sim/` | **Demo-to-Sim:** `demo2sim/REFERENCE.md`, the required output contract of the demonstration's reconstruction, its validation, and the reconstruction tools and models provided; `demo2sim/RECONSTRUCTION.md`, the default reconstruction workflow (scene analysis, known-geometry objects, camera and metric scale, 6D tracking, the hand fit against the object scene, physical and contact checks): a starting point, not a fixed algorithm |
 | `sim2target/CONTRACT.md` | Policy interface `v2`: observations (finger encoders, wrist state, exact object state), actions (finger and wrist targets), execution rules (authoritative) |
 | `sim2target/PACKAGE.md` | Policy package format, runtime, resource limits and sandbox restrictions as enforced |
@@ -86,11 +86,11 @@ Hypothesis → Change → Local validation → Target submission → Feedback �
 | **Standard feedback** (automatic) | After every rollout the target environment stores the evaluation evidence: the official evaluation report, the ground-truth state record with contact flags, the rollout log with commanded and executed wrist targets, three rendered videos, calibration, and timestamps. Retrieve it with `fetch` (`sim2target/FEEDBACK.md`). |
 | **Standard research workflow** | Kept automatically in `history`: every submission's exact package, hashes, official results, and feedback; the best evaluated policy; comparisons with earlier comparable submissions (regression detection). Your part: before each submission, your hypothesis and planned change (`r2s2r-harness submit`, which also captures your git revision and diff); after each result, what worked and what failed, your diagnosis and its evidence, keep / reject / undecided, and your next hypothesis (`r2s2r-harness reflect`); and for every submission a video of your own training-simulation rollout of that exact package, stated as a full or partial rollout (`r2s2r-harness video` and a `training_video` record, `sim2target/REMOTE_API.md` section 5), or the reason no video could be recorded. If an evaluation produced no rollout evidence, say so. |
 | **On-demand access** | When you need them: earlier policy packages (`package`, `r2s2r-harness best --download`), and RGB or depth frames at selected instants (`frames`). |
-| **Sim-to-target calibration** (required after each target evaluation; not before your first rollout) | Extract the target rollout and replay its action sequence in your own simulator (`r2s2r-calib`), compare the wrist, object and joint trajectories with the target's exact state record, turn the discrepancies into testable failure hypotheses, update your simulator or state why a discrepancy cannot be modeled, screen candidate repairs in simulation before the next submission, and record the evidence, modifications, and results (`TOOLS.md` section 2). |
+| **Sim-to-target calibration** (required after each target evaluation; not before your first rollout) | Extract the target rollout and replay its action sequence in your own simulator (`r2s2r-calib`), compare the wrist, object and joint trajectories with the target's exact state record, turn the discrepancies into testable failure hypotheses, update your simulator or state why a discrepancy cannot be modeled, screen candidate repairs in simulation before the next submission, and record the evidence, modifications, and results (`TOOLS.md` section 3). |
 | **Optional analysis tools** | `r2s2r-hwcheck` and your own diagnostics, visualizations, and scripts. |
 | **Your choice** | Simulator, physics parameters, calibration method, policy, controller, learning method, reward, curriculum, diagnostic methods, and what to try next. |
 
-Your diagnosis is a hypothesis; the official evaluation is authoritative. Missing records never block a submission; `history` lists them (`sim2target/REMOTE_API.md` section 5).
+Your diagnosis is a hypothesis; the official evaluation is authoritative. The target never blocks a submission for a missing record; `history` lists them (`sim2target/REMOTE_API.md` section 5). `r2s2r-harness submit` refuses the next submission while the calibration of the previous one is not recorded (`TOOLS.md` section 3).
 
 ## Rules
 

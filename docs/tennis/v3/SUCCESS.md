@@ -1,61 +1,42 @@
-# Target Environment: Success Criteria and Task Progress Rubric
+# SUCCESS.md — Tennis Ball Manipulation
 
-**Task:** Toss 1 → Catch 1 → Toss 2 → Catch 2 → Hold
+## Task Objective
 
-**Status of these criteria: provisional.** They are the success criteria of this task's previous environment (a fixed palm-up hand with joint-only observations), carried over unchanged to this environment (floating wrist, exact object state in the observation). They may change before the evaluation of this environment becomes final. Every official report names the criteria it was scored with (`criteria.id` `tennis-v1`, `criteria.rubric` `rubric-1.5`, `criteria.status` `provisional`; `sim2target/FEEDBACK.md` section 1), and a change of the criteria or of their status starts a new comparison group in `history` (`sim2target/REMOTE_API.md` section 7); records are never re-scored.
+Reproduce the demonstrated tennis ball manipulation sequence using the Wuji Hand 2:
 
-The target environment evaluates each rollout against these criteria. The total score ranges from **0 to 1.0**.
+Toss 1 → Catch 1 → Spin 1 → Toss 2 → Catch 2 → Toss 3 → Catch 3 → Spin 2 → Hold
 
-- **Episode:** 10 s (5,000 control steps at 500 Hz).
-- **Stage dependency:** Later-stage progress is credited only after the preceding stage is fully completed.
-- **Rubric version:** `rubric-1.5` (2026-10-28: the first rubric version of this task).
-- **Official success:** the official evaluation reports `success: true`. This requires a score (`progress`) of 1.0, hardware compliance (`hardware/SPECS.md` section 7), and a valid run (all 5,000 steps executed without a policy failure).
+## Success Criteria
 
-**Definitions.** A **release** is the moment the ball loses hand contact; it starts a **flight** if the ball then touches nothing (hand or environment) for at least 0.10 s. The **apex** is the highest point of the flight above the release height. A flight **lands on the hand** if the first contact after it is hand contact. **Retention** after a landing is the time the ball stays with the hand: it touches nothing else, and contact interruptions are shorter than 0.10 s (a longer interruption is the next release). Flights are counted in order; hops and regrasps shorter than 0.10 s are not releases. Success requires 2 complete toss-and-catch cycles (Toss 1 to Catch 2) and the final hold.
+Complete all nine stages in order:
 
-## 1. Toss 1 (0–0.25)
+1. Toss 1: Toss the ball upward.
+2. Catch 1: Catch and retain the ball.
+3. Spin 1: Rotate the ball at least 360° about the world Z-axis while retaining it.
+4. Toss 2: Toss the ball upward again.
+5. Catch 2: Catch and retain the ball.
+6. Toss 3: Toss the ball upward a third time.
+7. Catch 3: Catch and retain the ball.
+8. Spin 2: Rotate the ball at least 360° about the world Z-axis while retaining it.
+9. Hold: Maintain hand contact throughout the final 1.0 s.
 
-| Score | Milestone |
-|---|---|
-| 0.25 × (apex / 5 cm) | Partial credit, linear in the apex of the first flight |
-| 0.25 | A flight with at least 0.10 s of contact-free flight and an apex at least 5 cm above the release point |
+Requirements:
 
-## 2. Catch 1 (0–0.25)
+* Toss: At least 0.10 s of contact-free flight, with an apex at least 5 cm above release height.
+* Catch: Ball lands on the hand and is retained for at least 0.30 s.
+* Spin: At least 360° net rotation about the world Z-axis, measured using unwrapped angular displacement.
+* Retention: The ball must never touch the environment or leave the permitted workspace.
 
-| Score | Milestone |
-|---|---|
-| 0.25 × (retention / 0.30 s) | Partial credit, linear in the retention time after the Toss 1 flight landed on the hand |
-| 0.25 | The Toss 1 flight lands on the hand and the ball is retained for at least 0.30 s |
+## Task Progress
 
-## 3. Toss 2 (0–0.20)
+* Progress ranges from `0.0` to `1.0`.
+* Each completed stage contributes `1/9`.
+* Stages are credited sequentially; incomplete stages receive no credit.
+* `success = true` requires all nine stages, hardware compliance, and a valid rollout.
 
-| Score | Milestone |
-|---|---|
-| 0.20 × (apex / 5 cm) | Partial credit, linear in the apex of the next flight after Catch 1 |
-| 0.20 | A second flight with at least 0.10 s of contact-free flight and an apex at least 5 cm above its release point |
+## Evaluation Rules
 
-## 4. Catch 2 (0–0.20)
-
-| Score | Milestone |
-|---|---|
-| 0.20 × (retention / 0.30 s) | Partial credit, linear in the retention time after the Toss 2 flight landed on the hand |
-| 0.20 | The Toss 2 flight lands on the hand and the ball is retained for at least 0.30 s |
-
-## 5. Hold (0–0.10)
-
-| Score | Milestone |
-|---|---|
-| 0.10 × (contact fraction) | Partial credit: the fraction of the final 1.0 s with hand contact |
-| 0.10 | Hand contact throughout the final 1.0 s (the ball never touched the environment or left the workspace) |
-
-**Retention:** Every milestone requires the ball retained up to that moment: it never touches the environment, and its centre stays within 25 cm horizontally of its step-0 position. Flights released after the ball first touched the environment or left the workspace score nothing, and the Hold stage then scores 0.
-
-**Scoring:** Each stage scores its partial credit until its milestone is complete and its full weight afterwards. A contact gap shorter than 0.10 s is a bobble, not a release; a flight that lands on the environment ends the cycle without a catch. The ball's rotation is not measured and does not count.
-
-## 6. Ground-Truth Evaluation
-
-The target environment scores these criteria from its exact simulation state: the object's state frame (`object/SPECS.md`), the hand–object and object–environment contact flags of every control interval, and the robot's joint state and applied torques (`sim2target/FEEDBACK.md`). There are no measurement margins, uncertainty intervals or `unknown` outcomes: every milestone is either reached or not, with its time, and `progress` is the exact score.
-
-## 7. Research Freedom
-
-These criteria define the **official target evaluation**, not a required training reward. The target score (`progress` in `verifier/report.json`, `score` in `history`) is an evaluation metric. You may design your own training rewards, intermediate objectives, curricula, optimization methods, simulators, and policy architectures; your training reward need not resemble the target score. Your own metrics do not replace official results.
+* Episode: 15 s (7,500 steps at 500 Hz).
+* Verifier: Uses exact object states, robot states, and contact information from the target environment.
+* Research freedom: The agent may independently design training rewards, curricula, and optimization methods.
+* Integrity: The agent must not modify or bypass the verifier or evaluation constraints.

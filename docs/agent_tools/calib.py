@@ -14,7 +14,16 @@ Usage:
   r2s2r-calib compare <target.npz> <sim.npz> -o <dir> [--lag N] [--threshold RAD]   metrics.json (+ SVG plots)
   r2s2r-calib diagnose <target.npz> <sim.npz> -o <dir>                              metrics.json + report.md + PNG plots
   r2s2r-calib video <target.mp4> <sim.mp4> -o <out.mp4> [--sim-offset S] [--height PX]
-  r2s2r-calib record DIR --hypothesis TEXT [--notes TEXT] [--config cfg.json] [--files F ...]
+  r2s2r-calib record DIR --hypothesis TEXT [--notes TEXT] [--config cfg.json] [--files metrics.json ...]
+                     one directory <UTC time>_<hypothesis>/ with record.json (hypothesis, notes, the configuration, copies of the
+                     evidence files with their SHA-256, a summary of a metrics.json among them) and a line in DIR/index.jsonl.
+                     Traceability (EXPERIMENT.md): cfg.json names the submission (status completed | exception, submission_id,
+                     experiment, archive_sha256, feedback_sha256, simulator_revision, replay_mode commanded | executed, optional
+                     calib_mode action | state-step | state-segment, simulator_changes or no_change_reason, local_validation; for an
+                     exception: exception_reason_class
+                     feedback_unavailable | feedback_sealed | replay_infeasible, explanation, alternative_diagnosis); --files
+                     carries metrics.json (extract / compare write the target identity into it), diagnosis output, validation
+                     evidence or the failed tool output; --notes the changes or no-change rationale. r2s2r-harness checks it.
 
 Trajectory file `r2s2r-traj/3` (NumPy .npz, allow_pickle never needed). One time base: control step k at t = 0.002 k.
   Log block, N rows (row k = control step k): `step`, `t`, measured `q`, `qd` (N, 20) in the vendor order `joint_names`,
@@ -222,6 +231,24 @@ def finger_tracking(d: dict) -> dict:
             "worst_joint": str(d["joint_names"][int(np.argmax(np.sqrt(np.mean(e ** 2, axis=0))))])}
 
 
+def _bundle_sid(src: Path, f: dict) -> str | None:
+    """Submission id from the fetched bundle: the top-level directory `<experiment>_sNN` of the tar or extracted directory."""
+    src = Path(src)
+    name = None
+    if src.is_dir():
+        root = src if (src / "feedback.json").is_file() else next((p.parent for p in src.rglob("feedback.json")), None)
+        name = root.name if root is not None else None
+    else:
+        try:
+            with tarfile.open(src, "r:*") as tf:
+                tops = {m.name.split("/", 1)[0] for m in tf.getmembers() if "/" in m.name}
+            name = next(iter(tops)) if len(tops) == 1 else None
+        except tarfile.TarError:
+            name = None
+    m = re.search(r"_(s\d{2,3})$", name or "")
+    return m.group(1) if m else None
+
+
 def extract(src: Path, out: Path) -> dict:
     f = _bundle_files(src)
     try:
@@ -234,6 +261,13 @@ def extract(src: Path, out: Path) -> dict:
     for need in ("logs/trial_0.npz", "state/trajectory.npz", "state/schema.json"):
         if need not in f:
             raise CalibError(f"bundle lacks {need}")
+    for rel, want in sorted((fb.get("files") or {}).items()):  # every returned file hashes as feedback.json says, or nothing is extracted
+        if rel.endswith(".mp4"):
+            continue  # videos are not loaded here; r2s2r-harness archive / verify check them
+        if rel not in f:
+            raise CalibError(f"bundle lacks {rel} listed in feedback.json (incomplete or truncated download; fetch it again)")
+        if hashlib.sha256(f[rel]).hexdigest() != want:
+            raise CalibError(f"{rel}: SHA-256 differs from feedback.json (the bundle was altered or truncated; fetch it again)")
     schema = json.loads(f["state/schema.json"])
     if schema.get("schema") != STATE_SCHEMA:
         raise CalibError(f"state schema {schema.get('schema')!r} is not {STATE_SCHEMA}")
@@ -264,7 +298,8 @@ def extract(src: Path, out: Path) -> dict:
             d[k] = st[k]
     fr = json.loads(f["video/frames.json"]) if "video/frames.json" in f else {}
     rep = json.loads(f["verifier/report.json"]) if "verifier/report.json" in f else {}
-    meta = {"schema": SCHEMA, "source": "target", "task": fb.get("task"), "submission_id": fb.get("submission_id"), "protocol": fb.get("protocol"),
+    meta = {"schema": SCHEMA, "source": "target", "task": fb.get("task"), "submission_id": fb.get("submission_id") or _bundle_sid(src, f), "protocol": fb.get("protocol"),
+            "feedback_sha256": hashlib.sha256(f["feedback.json"]).hexdigest(),  # = feedback_sha256 of this submission in history
             "policy_sha256": fb.get("policy_sha256"), "versions": fb.get("versions"), "criteria": fb.get("criteria"),
             "dt": DT, "steps": n, "state_rows": R, "duration_s": n * DT, "expected_steps": fb.get("expected_steps"),
             "object_names": [str(x) for x in st["object_names"]], "part_names": [str(x) for x in st["part_names"]] if "part_names" in st.files else [],
@@ -512,6 +547,7 @@ def compare(tg: dict, sm: dict, lag: int = 50, thr: float = 0.1) -> dict:
         res["parts"] = {"note": "the target has parts (cube articulation) but the simulated file carries none: not compared"}
     try:
         tm = json.loads(str(tg["meta"]))
+        res["target"] = {k: tm.get(k) for k in ("task", "submission_id", "feedback_sha256", "policy_sha256", "versions")}
         res["target_wrist_tracking"] = tm.get("target_wrist_tracking")
         res["target_finger_tracking"] = tm.get("target_finger_tracking")
         res["replay"] = json.loads(str(sm["meta"])).get("replay")

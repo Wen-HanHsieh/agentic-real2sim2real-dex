@@ -30,16 +30,18 @@ Observations and actions: `sim2target/CONTRACT.md` (contract `v2`). Optional act
 |---|---|
 | Python | 3.12 (3.12.3 on the target) |
 | Libraries | Python standard library, NumPy 2.5.4, PyTorch 2.14.1 (CPU build); nothing else (no SciPy) |
-| CPU threads | 1 (BLAS and Torch thread pools are set to 1; up to 64 additional threads may be created) |
+| Numerical compute threads | BLAS and PyTorch thread pools are restricted to 1 thread. Up to 64 additional threads may be created within the sandbox; these do not increase the CPU-time budget |
 | GPU | Not available |
-| Address space | ≤ 8 GB (allocation beyond it fails with `MemoryError`) |
+| Address space | ≤ 8 GB; allocations exceeding the limit fail. The precise failure behavior depends on the allocation path and sandbox enforcement |
 | Total CPU time | ≤ 600 s per trial |
 | `act()` inference time | 2 ms target |
 | Hard policy-call timeout | 5 s per `act()`; 60 s for `load_policy()` and `reset()` |
 | Writable temporary storage | `TMPDIR`, ≤ 64 MB in total; a single file ≤ 64 MB |
 | Open files | ≤ 256 |
 
-The 2 ms target matches the 500 Hz control rate; a slower mean is reported as a warning by `validate` and `submit`. The 5 s timeout is a hard failure limit, not an acceptable inference rate.
+The 2 ms inference target matches the 500 Hz control rate; a slower mean is reported as a warning by `validate` and `submit`. The 5 s timeout is a hard failure limit, not an acceptable inference rate.
+
+Exceeding the enforced address-space or CPU-time limits can cause allocation failure or policy termination. Policies must remain within these limits throughout the trial.
 
 ## 3. Sandbox (as enforced)
 
@@ -62,7 +64,39 @@ Check locally before submitting:
 r2s2r-preflight my_policy/
 ```
 
-The remote `validate` command (`sim2target/REMOTE_API.md`) is authoritative and is never charged. It checks: manifest, SHA-256 hashes and the declared contract version, Python 3.12 syntax, no compiled code, `load_policy()` and `reset()` in the sandbox, five `act()` calls on synthetic observations with exactly your task's keys, shapes and dtypes (`sim2target/CONTRACT.md` section 3, `TASK_CONFIG.md` section 4), each returning a valid action dictionary (section 4 of `sim2target/CONTRACT.md`), determinism (`reset()` and replay give bit-identical actions), and inference time. `submit` runs the same checks first; a rejected package is not charged.
+For the Cube task, use the left-hand configuration defined in `TASK_CONFIG.md`:
+
+```bash
+r2s2r-preflight my_policy/ --hand left
+```
+
+Alternatively:
+
+```bash
+R2S2R_HAND=left r2s2r-preflight my_policy/
+```
+
+The local preflight must use the correct hand variant and vendor URDF joint ordering for the task.
+
+The remote `validate` command (`sim2target/REMOTE_API.md`) is authoritative and is never charged. It checks: manifest, SHA-256 hashes and the declared contract version, Python 3.12 syntax, no compiled code, `load_policy()` and `reset()` in the sandbox, five `act()` calls on synthetic observations with exactly your task's keys, shapes and dtypes (`sim2target/CONTRACT.md` section 3, `TASK_CONFIG.md` section 5), each returning a valid action dictionary (section 4 of `sim2target/CONTRACT.md`), determinism (`reset()` and replay give bit-identical actions), and inference time. `submit` runs the same checks first; a rejected package is not charged.
+
+**Task-specific observations.** Synthetic observations must follow the exact task-specific schema, including documented undefined values and their validity indicators. For example, Plug goal-position and goal-orientation values may contain `NaN` when `goal_defined` is false. Such documented observation values are permitted by `sim2target/CONTRACT.md`; action outputs must still contain only valid finite values.
+
+For Cube, validation must use the left-hand joint order and the task-specific observation fields, including cubie states and configuration indices, defined in `TASK_CONFIG.md`.
+
+### Validation Scope
+
+Package validation confirms that the package can be loaded and that its interface, basic execution, determinism, and sandbox requirements are satisfied.
+
+It does not establish:
+
+- **Rollout validity:** Whether a complete target rollout satisfies all runtime and hardware requirements.
+- **Task success:** Whether the policy completes the manipulation task defined in `SUCCESS.md`.
+- **Evaluation rankability:** Whether the official evaluation is eligible for ranking and regression comparisons.
+
+These outcomes are determined by the official evaluation system after the rollout.
+
+A valid rollout with task progress `0.0` remains rankable. An otherwise valid early task failure does not automatically make the result unrankable. Technically invalid rollouts are handled according to the official validity rules.
 
 Passing validation does not guarantee a successful rollout.
 
