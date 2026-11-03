@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-03T07:52:32Z",
- "exported_utc": "2026-11-03T07:52:30Z",
+ "generated_utc": "2026-11-03T07:56:06Z",
+ "exported_utc": "2026-11-03T07:56:02Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-03T07:46:20",
+    "time": "2026-11-03T07:55:59",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-03T07:23:07",
+    "time": "2026-11-03T07:55:50",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -27690,6 +27690,282 @@
          "text": "GPU static-controller validation agrees with CPU held state within about10micrometres and benchmarks69,689policy-environment steps/s at2048worlds (20physics ticks each), versus about1000CPU steps/s per run. Full GPU baseline validation is running before a GPU simulation record and training. I also corrected final-evaluation initialization so world-frame ball jitter is independent of wrist yaw, matching criteria wording; early failed CPU evaluations rotated the nominal ball with yaw before adding jitter. No passing claim relies on those early trials."
         },
         "files": {}
+       },
+       {
+        "id": "r0030",
+        "seq": 30,
+        "kind": "sim",
+        "version": 4,
+        "recorded_utc": "2026-11-03T07:55:59Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 1,
+         "simulator": {
+          "name": "MuJoCoWarp",
+          "version": "3.17.0 (Warp1.19.0)",
+          "timestep_s": 0.001,
+          "integrator": "implicitfast",
+          "solver": "Newton, 30 iterations, tolerance 1e-9",
+          "contact": "Same MuJoCo3.17 implicitfast1kHz elliptic condim4 contact, ball priority1",
+          "friction": "Ball-dominant sliding0.9, torsion0.0005m, rolling0.00002m (rolling coefficient inactive at condim4). These are explicitly inferred, not measurements.",
+          "arithmetic": "float32, nondeterministic GPU ordering",
+          "parallelism": "CUDA graph with20 one-millisecond controller/physics ticks per50Hz network command. Reference commands and rate limits updated500Hz."
+         },
+         "scene": {
+          "files_sha256": {
+           "research/sim/scene.xml": "806c7f42cf95…",
+           "research/sim/reference.npz": "1a148c9394d2…",
+           "research/sim/q_initial.npy": "a3b7c074281c…",
+           "research/controller.cpp": "ee11f530e0d4…",
+           "research/sim_utils.py": "10d1bd71d3e5…",
+           "hardware/wuji_hand2_right/urdf/right.urdf": "9ad34330b2fd…",
+           "hardware/hardware_spec.json": "4d6b56d15b05…",
+           "research/reference_controller.py": "79768ae48c3b…",
+           "research/task_env.py": "7c7fe9a4cef8…",
+           "research/sim/toss_tune_0.json": "edb15cc342d5…",
+           "research/sim/toss_tune_1.json": "2fd4dbdb2f0a…",
+           "research/sim/toss_tune_2.json": "b7c9e67f1f39…",
+           "research/sim/scene_v3.xml": "b64aae5730c1…",
+           "research/warp_sim.py": "b5c3616a84c3…",
+           "research/gpu_env.py": "0ba9bce1f97b…"
+          },
+          "robot": "Wuji Hand 2.2 right; all URDF inertias, link transforms, 20 joints and vendor meshes preserved; within-finger housing collision excluded; inter-finger collisions enabled",
+          "object": "0.065 m diameter sphere, .0577 kg, isotropic inertia .000041 kg m2. Separate free joint. Visual stripe sites have no collision, sensing or mass effect.",
+          "floor": "z=0; world X forward Y left Z up"
+         },
+         "reference": {
+          "source": "Recorded reconstruction v1 r0002",
+          "retarget": "+Y robot palm normal = cross(index-MCP minus wrist, little-MCP minus wrist); -Z = wrist-to-middle MCP; +X completes right handed frame. Fixed translation puts initial root at [0,0,.65]. No per-episode reference alignment. 9-frame Savitzky-Golay smoothing of wrist position.",
+          "ball_adaptation": "Constant world translation corresponding to local initial ball [0.008,.052,-.140] m in robot wrist frame, adapting human to robot palm dimensions. This preserves measured flight heights.",
+          "fingers": "Initial pad-center IK to sphere with penetration penalty, then analysis opening reference near annotated release/catch times. Exact MANO contacts are too uncertain to retarget literally.",
+          "base_controller_v2": {
+           "offline_method": "Differential evolution of 8 parameters per toss using MuJoCo rollouts, only during offline reference development. No planning or optimization at execution.",
+           "parameters": [
+            null,
+            null,
+            null
+           ],
+           "closed_loop_part": "Time-gated horizontal correction from observed ball center to desired palm-relative center, capped to60mm per axis; gain0.46-0.90. Does not observe contacts.",
+           "untrained_baseline": "10/10 episodes have3 captured flights but0/10 complete tasks: all3 in-hand spins fail (directional angles around0.3rad). Nominal allflight-height/timing/ballistic conditions, finalhold and hardware pass. Wrist RMS18mm,1.54deg; maxposition99.3mm.",
+           "final_policy_plan": "PPO residual fingers must learn directional spins. Baseline alone is explicitly not a learned task solution."
+          }
+         },
+         "wrist_and_fingers": {
+          "wrist": "1 kHz specified Cartesian impedance Kp=2000,Kd=60,rot Kp=20,Kd=.4, own-weight and COM moment compensation .6878*9.81, force norm<=30N torque<=2Nm; executed targets rate limited at500Hz to2.5m/s,6rad/s; free joint unconstrained workspace",
+          "fingers": "Specified 1kHz PD gains, zero requested joint feedforward, torque clipped to individual effort limits. Joint target clipped to URDF limits and additionally rate limited to70% motor speed at500Hz. Actual position/speed checked without state clipping; violations fail verification. Armature as hand spec.",
+          "policy_rate": "Learned network 50Hz; its outputs held for ten500Hz command ticks. Command bridge updates rate limits at500Hz and impedance/PD at1kHz.",
+          "noise": "Deployable policy encoder readings have independent Gaussian std .002rad and .05rad/s. Controllers use true states as actuator inner-loop measurements.",
+          "GPU_port": "World force and body-frame generalized root torque are equivalent to applying the specified wrist wrench at the root origin. Own-hand COM compensation uses subtree_com. Conservative caps29.99999N and1.999999Nm and one-ULP inward motor torque caps prevent float32 roundoff exceeding hardware maxima. No qpos/qvel clipping.",
+          "policy_decoder": "PPO outputs20 independent joint target-velocity increments (.5 times motor max speed), integrated into position residuals, bounded1.2rad; command targets kept0.05rad within joint limits with integrator anti-windup. Original hardware PD remains unchanged. Before firstcatch+.02s and after9.85s residuals decay. Finger opening reference also decays residuals. Wrist follows disclosed basev2."
+         },
+         "initial_conditions": {
+          "wrist_pos_m": [
+           0,
+           0,
+           0.65
+          ],
+          "wrist_quat_wxyz": [
+           0.8120396710175835,
+           0.442334868459725,
+           -0.2930118021767136,
+           -0.24305456305843567
+          ],
+          "finger_q": [
+           0.9980010969449797,
+           -0.036438880626117096,
+           -0.06024925296892872,
+           -0.074760808215634,
+           0.4434622378617891,
+           -0.08922713786477297,
+           0.4301312647946355,
+           0.5525482046771022,
+           0.44040789208864795,
+           0.01847145720253543,
+           0.18704411974095225,
+           0.6355395855083136,
+           0.47890696544428357,
+           0.10465943543175649,
+           0.2911029037010217,
+           0.5740889666876458,
+           0.8033986287524824,
+           -0.0689476903120875,
+           -0.015711246757696713,
+           0.022868279727586833
+          ],
+          "ball_wrist_local_m": [
+           0.008,
+           0.052,
+           -0.14
+          ],
+          "ball_orientation_wxyz": [
+           1,
+           0,
+           0,
+           0
+          ],
+          "settling_s": 0.2,
+          "reason": "Initial held palm-up state adapted from reconstructed first frame; no attachment or later ball state reset."
+         },
+         "episode": {
+          "duration_s": 10.5,
+          "control_rate_hz": 500,
+          "network_rate_hz": 50,
+          "physics_rate_hz": 1000,
+          "termination": "Training may terminate on drop, excessive separation or hardware violation. Evaluation always records the full episode and any failure. No object forces beyond gravity/contact."
+         },
+         "validation": {
+          "mass_kg": 0.6878,
+          "specified_mass_kg": 0.6878,
+          "ball_mass_kg": 0.0577,
+          "ball_inertia_kgm2": [
+           4.1e-05,
+           4.1e-05,
+           4.1e-05
+          ],
+          "ball_radius_m": 0.0325,
+          "joint_limits_match": true,
+          "settle_2s_stats": [
+           0.21669256491753036,
+           0.0,
+           0.24234994244859304,
+           0.0,
+           1.0000000000000002,
+           7.601863064894022,
+           0.7043148514982437,
+           0.0
+          ],
+          "settled_wrist_position_error_m": 0.00028301695123942054,
+          "settled_ball_displacement_m": 0.0004782470579049968,
+          "two_seconds_physics_wall_s": 0.10564899444580078,
+          "v3_settle_2s_stats": [
+           0.21362830831204407,
+           0.0,
+           0.23938277335225902,
+           0.0,
+           1.0000000000000002,
+           7.601157963971505,
+           0.7042101628054098,
+           0.0
+          ],
+          "v3_settle_wrist_error_m": 0.00028301693720163995,
+          "GPU_baseline": {
+           "episodes": 10,
+           "overflow": 0,
+           "flight_rises_nominal_m": [
+            0.27494698762893677,
+            0.26488763093948364,
+            0.30827397108078003
+           ],
+           "hardware_passes": 10,
+           "wrist_passes": 10,
+           "full_report": "research/warp/validation/report.json"
+          },
+          "GPU_physics_throughput": {
+           "worlds": 2048,
+           "macro_steps_per_s": 69689.18784705419,
+           "wall_s": 2.938762903213501,
+           "initial_wrist_pose": [
+            0.0,
+            0.0,
+            0.6499999999999999,
+            0.8120396710175835,
+            0.442334868459725,
+            -0.2930118021767136,
+            -0.24305456305843567
+           ],
+           "final_wrist_pose": [
+            1.0597955846236573e-09,
+            -6.606929447983134e-10,
+            0.6497174501419067,
+            0.8131237030029297,
+            0.4407961368560791,
+            -0.2921043634414673,
+            -0.24331805109977722
+           ],
+           "final_ball_position": [
+            0.10916237533092499,
+            0.10114330053329468,
+            0.6353714466094971
+           ],
+           "stats": [
+            0.0001606579462531954,
+            0.0,
+            0.19830088317394257,
+            0.0,
+            1.0000001192092896,
+            7.313365936279297,
+            0.6713358163833618,
+            0.0
+           ],
+           "overflow": 0
+          }
+         },
+         "baseline": {
+          "episodes": 10,
+          "captured_flights": [
+           3,
+           3,
+           3,
+           3,
+           3,
+           3,
+           3,
+           3,
+           3,
+           3
+          ],
+          "complete_successes": 0,
+          "reason": "All3 spin stages fail; base has no spin primitive.",
+          "hardware_passes": 10,
+          "wrist_passes": 10
+         },
+         "limitations": [
+          "Convex link collision hulls approximate vendor geometry; no detailed felt/soft-pad deformation or air drag.",
+          "Friction is inferred. Validation distribution does not demonstrate real-hardware transfer.",
+          "Human contact reconstruction is partial, so initial finger geometry comes from robot pad IK.",
+          "Success in this smaller torsion model will not establish success at the original0.005m. Evaluate friction sensitivity separately; physical contact-patch size is not identified by the video.",
+          "GPUfloat32 contact trajectories differ from CPU by millimetres during impact; this is a distinct recorded simulation version.",
+          "Contact-patch torsion remains inferred, nominal0.0005m.",
+          "Training resets may sample physically generated catch-state snapshots; verification uses uninterrupted episodes with physical initial settling."
+         ],
+         "media": {
+          "initial": "research/sim/initial_v3.png",
+          "replay": "research/sim/replay.mp4",
+          "baseline_v2": "research/baseline_v2_eval/right.mp4",
+          "baseline_gpu": "research/warp/validation/right.mp4"
+         },
+         "change_reason": "GPU batched MuJoCoWarp3.17.0 backend; same scene, geometry, mass/inertia, contacts and1kHz hardware law. Validated all10 baseline episodes before PPO use.",
+         "physics_hypothesis_source": "https://mujoco.readthedocs.io/en/3.17.0/computation/ (length units and torsional contact model only; selected coefficient is my hypothesis)",
+         "source": "https://mujoco.readthedocs.io/en/3.17.0/mjwarp/index.html"
+        },
+        "files": {
+         "image": {
+          "sha": "aa5d11803067",
+          "bytes": 91867,
+          "content_type": "image/png"
+         },
+         "replay_video": {
+          "sha": "1804ef8f0af2",
+          "bytes": 201795,
+          "content_type": "video/mp4"
+         },
+         "scene_1": {
+          "sha": "b64aae5730c1",
+          "bytes": 38998,
+          "content_type": "application/xml"
+         },
+         "scene_2": {
+          "sha": "b116e27e07a4",
+          "bytes": 48805,
+          "content_type": "application/json"
+         },
+         "scene_3": {
+          "sha": "6af2a09a99bb",
+          "bytes": 759,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-03T06:33:10Z",
@@ -32577,6 +32853,349 @@
          "text": "Stage 1 complete at 07:22:03Z, 55m53s after start, with reconstruction v2 r0009: VALID format, original geometric PASS, independent all-vertex hand-table PASS, 353/360 detected hand frames valid. Criteria v2 r0010 changes only the corrected reference, preserving every numerical threshold. Right-hand MuJoCo import preserves 0.6878 kg mass; 1 kHz controller circle check with matching feedforward has max 0.391 mm / 0.152 degree errors and zero hardware violations. Retargeting the recorded wrist and fingers now; training simulation not yet recorded and PPO has not begun. Budget remaining approximately 7 hours."
         },
         "files": {}
+       },
+       {
+        "id": "r0012",
+        "seq": 12,
+        "kind": "sim",
+        "version": 1,
+        "recorded_utc": "2026-11-03T07:55:11Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 2,
+         "simulator": {
+          "name": "MuJoCo",
+          "version": "3.17.0",
+          "timestep_s": 0.001,
+          "solver": "Newton, 80 iterations, 30 line-search iterations, elliptic cone, implicitfast",
+          "contact": {
+           "solref": [
+            0.004,
+            1
+           ],
+           "solimp": [
+            0.95,
+            0.99,
+            0.001
+           ],
+           "condim": 4,
+           "plastic_friction": 0.7,
+           "rubber_friction": 1.0,
+           "table_friction": 0.6,
+           "torsional": 0.003,
+           "rolling": 0.0001
+          }
+         },
+         "scene": {
+          "xml_sha256": "91082893ed52…",
+          "assets_sha256": {
+           "assets/plug_black.obj": "e823fda5f082…",
+           "assets/plug_white.obj": "bb8c0aa70eb4…",
+           "assets/r_index_finger_distal.STL": "7b11dd372a4a…",
+           "assets/r_index_finger_middle.STL": "9ba4bd6449d5…",
+           "assets/r_index_finger_proximal.STL": "d07ffb4a0f10…",
+           "assets/r_index_finger_proximal_abd.STL": "373722f52678…",
+           "assets/r_index_finger_tip_sensor_frame.STL": "d5a13c524785…",
+           "assets/r_middle_finger_distal.STL": "7b11dd372a4a…",
+           "assets/r_middle_finger_middle.STL": "5f88e7c64188…",
+           "assets/r_middle_finger_proximal.STL": "039bee058e2e…",
+           "assets/r_middle_finger_proximal_abd.STL": "91e3f149f9ca…",
+           "assets/r_middle_finger_tip_sensor_frame.STL": "d5a13c524785…",
+           "assets/r_mount.STL": "302c1a168417…",
+           "assets/r_pinky_distal.STL": "6832e7482d55…",
+           "assets/r_pinky_middle.STL": "609cc6cef5df…",
+           "assets/r_pinky_proximal.STL": "c88defaf8c67…",
+           "assets/r_pinky_proximal_abd.STL": "0d9493bc1a62…",
+           "assets/r_pinky_tip_sensor_frame.STL": "22f19f242d73…",
+           "assets/r_ring_finger_distal.STL": "7b11dd372a4a…",
+           "assets/r_ring_finger_middle.STL": "6fbcf92b159a…",
+           "assets/r_ring_finger_proximal.STL": "da1870bfe856…",
+           "assets/r_ring_finger_proximal_abd.STL": "df3787ff168f…",
+           "assets/r_ring_finger_tip_sensor_frame.STL": "d5a13c524785…",
+           "assets/r_thumb_distal.STL": "273878b0f78e…",
+           "assets/r_thumb_middle.STL": "a04ebd10f245…",
+           "assets/r_thumb_proximal.STL": "e3e9e7c1266c…",
+           "assets/r_thumb_proximal_abd.STL": "2aaafd9ba420…",
+           "assets/r_thumb_tip_sensor_frame.STL": "4bb06fa7ee60…",
+           "assets/r_wrist.STL": "ece3f36af8ed…"
+          },
+          "source_urdf_sha256": "9ad34330b2fd…",
+          "objects": "Specified rounded visual meshes, sharp box body/blade collisions, 75/55 g, COM +2 mm toward blades, rectangular-inertia approximation.",
+          "table": "1.2 x 1.2 x .03 m, center (.1,0), top z=0; floor z=-.75",
+          "structural_collision_exclusions": "Adjacent links up to two URDF edges suppress joint housing overlap; all inter-finger and robot-object collision retained.",
+          "asset_archive": "scene_assets.npz: uint8 arrays keyed by original filename; reconstruct with pathlib.Path(\"assets\",name).write_bytes(array.tobytes())"
+         },
+         "reference": {
+          "record": "r0009",
+          "version": 2,
+          "mapping": {
+           "reconstruction_version": 2,
+           "reconstruction_record": "r0009",
+           "method": "Fixed MANO-root to anatomical-palm rotation, least-squares rotational mean across valid hand frames. Robot +Y palm normal, -Z middle MCP direction. Mount translation aligns palm frames plus one constant local morphology offset, justified by 20--30 mm shorter robot reach and 10.5 mm initial replay table penetration; invalid gaps linearly/Slerp interpolated and labelled inferred.",
+           "rotation": [
+            null,
+            null,
+            null
+           ],
+           "world_translation": [
+            -0.15,
+            0.05,
+            0.44
+           ],
+           "mount_to_palm": [
+            0.00300045189842331,
+            0.0,
+            -0.0284982808511822
+           ],
+           "morphology_offset_local": [
+            0.0,
+            -0.015,
+            -0.025
+           ],
+           "source_sha256": "62ee7e12e775…"
+          },
+          "fingers": {
+           "method": "Offline bounded nonlinear least squares with exact MuJoCo site Jacobians. During grasps, match thumb and nearby opposing finger MANO surface contacts projected onto the plug body to pad surfaces, nominal 0.3 mm compression; otherwise match tips. Long-finger base abduction held at zero and ring/little gently open because direct human retargeting crossed middle/ring tips and produced back-drive speed violations. Final errors measured after these choices, 3-frame smoothing and 20%-speed target limiting. Used only as reference/base, not runtime trajectory optimization.",
+           "median_tip_error_mm": [
+            16.64992422107648,
+            12.574940700777109,
+            17.806821776668183,
+            80.52466116202041,
+            76.08678694241372
+           ],
+           "p90_tip_error_mm": [
+            22.366879343946454,
+            21.020106722377964,
+            27.969520055368392,
+            134.59778351721727,
+            114.97131494139323
+           ],
+           "max_reference_speed_ratio": 0.2000000000000004,
+           "wall_time_s": 3.9069390296936035
+          }
+         },
+         "controllers": {
+          "wrist": "Exact wrist-1 Cartesian impedance at 1 kHz, own-weight gravity compensation, 30 N / 2 Nm norm caps, executed targets at 500 Hz with 2.5 m/s / 6 rad/s rate caps and clipped feedforward.",
+          "fingers": "Specified 20 joint PD gains at 1 kHz, motor effort saturation and URDF armatures. All ticks audited for position allowance, actual speed and applied torque. Conservative requested-finger-target ramp at 25% of max speed, with no finger velocity feedforward, is part of command shaping; limits/gains unchanged.",
+          "policy": "50 Hz network decisions held into 500 Hz command packets, both controllers 1 kHz; no wrist workspace limits."
+         },
+         "initial_conditions": {
+          "wrist_position": [
+           -0.1326145969715647,
+           -0.12431175394276249,
+           0.11965229239515462
+          ],
+          "wrist_quaternion": [
+           -0.28362033703962053,
+           0.2988817842705096,
+           0.8950790996411021,
+           -0.1704775317585358
+          ],
+          "finger_q": [
+           0.604759541990179,
+           -0.0836186427427074,
+           -0.05949430845689935,
+           -0.5657844892528178,
+           1.4309215303373555,
+           0.0,
+           -0.009199164725246862,
+           -0.5026414421611607,
+           1.5599354499358422,
+           0.0,
+           0.04910986302774733,
+           -0.5253619027967302,
+           0.15,
+           0.0,
+           0.2,
+           0.1,
+           0.15,
+           0.0,
+           0.2,
+           0.1
+          ],
+          "objects": {
+           "plug_white": [
+            null,
+            null,
+            null,
+            null
+           ],
+           "plug_black": [
+            null,
+            null,
+            null,
+            null
+           ]
+          },
+          "reason": "Recorded demonstration start transformed by (-.15,+.05,+.44) and one fixed local morphology offset; both plugs side-resting on right, clear hand approaching from near-right."
+         },
+         "episode": {
+          "duration_s": 16,
+          "network_rate_hz": 50,
+          "command_rate_hz": 500,
+          "controller_rate_hz": 1000,
+          "termination": "16 s, hardware violation, non-finite state; training may reset to pre-grasp reference phases with shorter horizons.",
+          "actor_action_space": "26 bounded residuals: wrist translation capped at 35 mm norm, rotation capped at 0.30 rad norm, 20 finger corrections scaled 0.1–0.5 rad and clipped to URDF limits. Network at 50 Hz; held targets ramped at 500 Hz."
+         },
+         "validation": {
+          "robot_mass_kg": 0.6878,
+          "controller": {
+           "robot_mass": 0.6878,
+           "circle": {
+            "radius_m": 0.02,
+            "frequency_hz": 1.0,
+            "yaw_amplitude_deg": 10.0,
+            "warmup_s": 1.0,
+            "position_rms_mm": 0.3283877234553744,
+            "position_max_mm": 0.39253418633714776,
+            "orientation_rms_deg": 0.12166176103457521,
+            "orientation_max_deg": 0.15330750790772144
+           },
+           "hardware": {
+            "tick": 4000,
+            "max_speed_ratio": 0.04356334216287855,
+            "max_position_excess": 0.0,
+            "max_torque_ratio": 0.07706490688181127,
+            "max_force": 10.118064120344302,
+            "max_wrist_torque": 0.5657128984602513,
+            "violations": 0,
+            "saturations": 0
+           },
+           "wall_time_s": 0.5685470104217529
+          },
+          "object_drop": {
+           "white_free_fall_acceleration_m_s2": -9.809999999999803,
+           "final_center_height_m": 0.014497869317775367,
+           "expected_side_rest_height_m": 0.0145,
+           "gravity_m_s2": -9.81,
+           "maximum_hand_mass_kg": 0.6878
+          },
+          "kinematic_reference": {
+           "max_hand_table_penetration_mm": 0.0,
+           "max_hand_object_penetration_mm": 7.854502698585826,
+           "frames_hand_table_over_2mm": [],
+           "worst_frame": 0,
+           "method": "Kinematic reference geometry diagnostic, not a learned or physically executed rollout."
+          },
+          "baseline": {
+           "policy": "Untuned time-indexed reference, no learned residual; this baseline is not presented as PPO.",
+           "episodes": 10,
+           "success_rate": 0.0,
+           "hardware_pass_count": 10,
+           "wrist_pass_count": 10,
+           "pickup_pass_count": 0,
+           "seed_range": [
+            1000,
+            1009
+           ]
+          },
+          "reset_check": "After mj_setConst, restore requested qpos and zero qvel. Verified phase resets 0,2.1,8.3 s have zero wrist/finger pose error, and sampled XY placement perturbations are actually present."
+         },
+         "limitations": [
+          "Retargeted kinematic reference has up to 7.85 mm local object intersection, so it is a guide rather than a physically solved trajectory; physical execution uses contact dynamics only.",
+          "Object friction/inertia estimates, rigid pad approximation, contact compliance and monocular depth uncertainty limit transfer.",
+          "Actor observations restricted to allowed noisy encoders, own target and wrist state, object poses/velocities, step index and constants."
+         ],
+         "media": {
+          "initial": "initial.png",
+          "replay": "videos/reference_compare.mp4"
+         },
+         "source_files": {
+          "build_scene.py": "e5874ef9c0ba…",
+          "controller.cpp": "5b8e8aff2bef…",
+          "control.py": "d2911b2f166a…",
+          "environment.py": "daf89ac8e74e…",
+          "retarget_fingers.py": "868c4c3abaa1…",
+          "reference.npz": "c72a0bb292f4…",
+          "finger_reference.npz": "5c8988fb77b7…"
+         }
+        },
+        "files": {
+         "image": {
+          "sha": "fe0fb279df98",
+          "bytes": 44449,
+          "content_type": "image/png"
+         },
+         "replay_video": {
+          "sha": "37c7dbb607cc",
+          "bytes": 795710,
+          "content_type": "video/mp4"
+         },
+         "scene_1": {
+          "sha": "91082893ed52",
+          "bytes": 37281,
+          "content_type": "application/xml"
+         },
+         "scene_10": {
+          "sha": "83b7095b27f3",
+          "bytes": 646,
+          "content_type": "application/json"
+         },
+         "scene_11": {
+          "sha": "ad96e8374596",
+          "bytes": 210,
+          "content_type": "application/json"
+         },
+         "scene_12": {
+          "sha": "cbd08fc44261",
+          "bytes": 31798,
+          "content_type": "application/json"
+         },
+         "scene_2": {
+          "sha": "03794d9df3e1",
+          "bytes": 1884545,
+          "content_type": "application/octet-stream"
+         },
+         "scene_3": {
+          "sha": "e5874ef9c0ba",
+          "bytes": 9996,
+          "content_type": "text/plain"
+         },
+         "scene_4": {
+          "sha": "5b8e8aff2bef",
+          "bytes": 3893,
+          "content_type": "text/plain"
+         },
+         "scene_5": {
+          "sha": "d2911b2f166a",
+          "bytes": 2403,
+          "content_type": "text/plain"
+         },
+         "scene_6": {
+          "sha": "daf89ac8e74e",
+          "bytes": 10889,
+          "content_type": "text/plain"
+         },
+         "scene_7": {
+          "sha": "c72a0bb292f4",
+          "bytes": 393766,
+          "content_type": "application/octet-stream"
+         },
+         "scene_8": {
+          "sha": "5c8988fb77b7",
+          "bytes": 147132,
+          "content_type": "application/octet-stream"
+         },
+         "scene_9": {
+          "sha": "3cf8ba86dd07",
+          "bytes": 1065,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0013",
+        "seq": 13,
+        "kind": "note",
+        "version": 8,
+        "recorded_utc": "2026-11-03T07:55:50Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Simulation v1 r0012 recorded after reconstruction v2 and criteria v2. Correctly randomized reference baseline: 0/10 successes, all ten wrist/hardware checks pass, neither plug picked up. A direct human finger retarget crossed middle/ring tips and caused release back-drive; base abduction and unused support fingers were simplified rather than weakening physics/limits. Reset semantics were checked and corrected before recording the simulation. PPO run ppo01 now trains a deployable 136-input/26-residual actor with explicit finger-contact proximity, object-position and blade-axis rewards, and pre-grasp curricula followed by the full sequence. Reference/base performance remains separately reported; no scripted solution is claimed."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-03T07:02:23Z",
@@ -33428,7 +34047,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-03T07:52:32Z",
+  "staged_utc": "2026-11-03T07:56:05Z",
   "tasks": {
    "cube": {
     "files": {
@@ -33512,7 +34131,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-03T07:52:32Z",
+  "staged_utc": "2026-11-03T07:56:05Z",
   "tasks": {
    "tennis": {
     "status": "available",
