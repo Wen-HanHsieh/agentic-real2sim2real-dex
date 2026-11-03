@@ -25,6 +25,14 @@ The policy is learned with **reinforcement learning** in your training simulatio
 
 Such methods may be used for analysis, for building a reference, or as baselines, but they are not the reported policy. If you are unsure whether a method qualifies, record the method and your reasoning in a note before relying on it.
 
+**The final policy must be deployable.** At each control step it may observe only:
+
+- **Proprioception:** finger joint positions and velocities with encoder noise (`hardware/SPECS.md`), its own previous finger and wrist targets, and the wrist pose and velocity.
+- **Object states:** position, orientation, linear and angular velocity of each object's state frame (`object/SPECS.md`).
+- The step index and constant task settings.
+
+It must not observe contacts or contact forces, joint torques or motor currents, physical parameters (mass, friction, inertia, damping), images, rewards, or any other simulator internal. It outputs finger position targets (optionally velocity targets) and a wrist pose target (optionally feed-forward velocities) through the controllers of `hardware/SPECS.md`. A teacher may use more information during training, but the policy you verify and report is the deployable one; state its observation and action spaces in every iteration record.
+
 ## 2. Resembling the Demonstration
 
 The manipulation should resemble the demonstration, especially the wrist pose (`TASK.md`). Your reward, your verification criteria (`demo2sim/VERIFICATION.md`) or both should measure how closely the policy's wrist motion follows the demonstrator's wrist motion, retargeted to the robot, and you report that measure for every iteration.

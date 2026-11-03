@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-03T05:54:10Z",
- "exported_utc": "2026-11-03T05:52:30Z",
+ "generated_utc": "2026-11-03T05:59:53Z",
+ "exported_utc": "2026-11-03T05:59:49Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-03T05:50:57",
+    "time": "2026-11-03T05:56:36",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-03T05:50:22",
+    "time": "2026-11-03T05:53:23",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -20666,6 +20666,196 @@
          "text": "Re-read updated LEARNING.md section1 after operator update. Final actor observation will contain only noisy q/qd, wrist pose/velocity, previous finger/wrist targets, ball pose/linear/angular velocity, step index and fixed reference/task settings. No contacts, contact forces, applied or demanded torque, masses/friction, rewards, images or hidden simulator state enter the actor. Contacts and hardware quantities remain training-reward and verification measurements only. No privileged teacher is currently planned."
         },
         "files": {}
+       },
+       {
+        "id": "r0007",
+        "seq": 7,
+        "kind": "sim",
+        "version": 1,
+        "recorded_utc": "2026-11-03T05:56:36Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 1,
+         "reconstruction_record": "r0003",
+         "simulator": {
+          "name": "MuJoCo",
+          "version": "3.3.7",
+          "timestep_s": 0.001,
+          "policy_rate_hz": 500,
+          "PD_rate_hz": 1000,
+          "solver": "Newton,30iterations,tolerance1e-9,implicitfast,elliptic friction,impratio5",
+          "contacts": "Vendor STL convex hulls, rigid passive rubber pads; condim4, friction.8/.005/.001, solref .004 1, solimp .95 .99 .001. Floor pair solref .01 .7, energy-dissipating drop checks. Unknown physical contact properties are inferred."
+         },
+         "scene": {
+          "model": "research/sim/scene.xml",
+          "sha256": "90fd61ba97c0…",
+          "robot": "public right Wuji Hand2.2 URDF and vendor STL meshes, all link masses/inertias retained, total.6878kg",
+          "object": "analytic sphere radius.0325m,mass.0577kg,diagonal shell inertia4.1e-5kgm2; world floor atz0,gravity -9.81",
+          "model_hashes": {
+           "<path>": "22f19f242d73…"
+          }
+         },
+         "reference": {
+          "file": "research/recon/retarget_reference.npz",
+          "sha256": "e068cc08c74a…",
+          "retargeting": "From fitted human wrist and palm/finger axes; robot+y=palm normal,-z=distal direction; initial wrist translatedto(0,0,.65). Short invalid gaps46,47,113 interpolated only for derived reference. Wrist base follows this reference; static cupped finger pose from geometric collision-aware IK. Ball training reference is reconstructed trajectory plus constant initial ball-center offset for robot palm geometry.",
+          "use": "Phase/object/wrist rewards; network residuals must add retention,spin,release,catch. Base alone fails."
+         },
+         "wrist_and_fingers": {
+          "wrist": "Exact specified Cartesian impedance Kp2000,Kd60,Kr20,Dr.4,hand-only gravity compensation including moment,30N/2Nm saturation; executed-target rate caps2.5m/s and6rad/s. No wrist workspace constraint. Forces act only on root via mj_applyFT.",
+          "fingers": "URDF-order20joints, specifiedkp/kd, current-limited torque effort, vendor armature. qtarget clipped to position limits and optional policy mapping target rates limited to.65*URDF speeds. PD qd_target=0. Actual speed/position/torque checked every1ms; violations terminate, no velocity state clipping. Encoder sigmaq.002rad,qd.05rad/s independently at500Hz.",
+          "actions": "26 network residuals:3wrist position*.08m,3rotationvector*.4rad around fixed reference,20finger position offsets*1rad around initial cup. Target projection then specified controllers.",
+          "observations": "108 deployable scalars from noisy encoders,wrist pose/velocity,ball pose/velocity,previous executed targets,step index and fixed task reference settings. No contacts/forces/torques/current/physical parameters/images/rewards/simulator internals."
+         },
+         "initial_conditions": {
+          "wrist_position": [
+           0.0,
+           0.0,
+           0.65
+          ],
+          "wrist_quaternion_wxyz": [
+           0.7512727412862472,
+           0.476016844796153,
+           -0.4373262745825016,
+           -0.1332027072936319
+          ],
+          "fingers_q": [
+           0.7257824270312411,
+           -0.28726334730320785,
+           0.36922948722225113,
+           -0.01670054152160263,
+           0.9580145395221253,
+           -0.09815189261643835,
+           0.414579001110326,
+           0.43726908663727665,
+           0.9555617971981264,
+           0.12525509851880548,
+           0.30707919597062816,
+           0.2148038501057025,
+           0.8184176229189982,
+           0.3196921577708115,
+           0.8210763651856383,
+           0.23861625678708573,
+           0.7662387745440189,
+           0.19765984970221656,
+           1.6399569232533138,
+           0.31057618113425167
+          ],
+          "ball_position": [
+           0.0703838959919109,
+           0.0924219986447395,
+           0.689626775689067
+          ],
+          "ball_in_wrist_frame": [
+           0.005,
+           0.065,
+           -0.104
+          ],
+          "reason": "Video starts in right palm-up support. Retargeted root pose fixed from frame0; sphere shifted~3cm relative human to allow robot pad geometry. Collision-aware geometric IK places pads~0.5mm from sphere with no ball penetration, then dynamics settles."
+         },
+         "episode": {
+          "full_seconds": 10.5,
+          "steps": 5250,
+          "termination": "ball floor contact,ball-wrist distance>.6m,ball below wrist-.35m,nonfinite state,any finger hardware violation,or time limit. Curriculum hold3s(mode0),first toss3s(mode1),full10.5s(mode2) are separately labelled.",
+          "reset": "No welds/noncontact ball actuation; all states physical after initial reset."
+         },
+         "validation": {
+          "robot_hand_mass_kg": 0.6878,
+          "ball_mass_kg": 0.0577,
+          "ball_radius_m": 0.0325,
+          "ball_diagonal_inertia_kgm2": [
+           4.1e-05,
+           4.1e-05,
+           4.1e-05
+          ],
+          "all_20_joint_ranges_efforts_kp_kd_armatures_checked": true,
+          "actuator_order_matches_URDF": true,
+          "URDF_inertial_rotations_all_zero": true,
+          "Cplusplus_python_controller_max_q_difference_1s": 1.067e-11,
+          "measured_batch_steps_per_second_64env": 49739,
+          "baseline": {
+           "full_task_pass": false,
+           "termination_s": 2.33,
+           "wrist_position_RMS_m": 0.0018415283284577903,
+           "wrist_orientation_RMS_deg": 2.8657302695712015,
+           "max_joint_speed_ratio": 0.17331388592720032,
+           "hardware_violation": false,
+           "reason": "Static cup/reference wrist cannot retain ball through first throw and does not execute required spins."
+          },
+          "floor_drop_test": {
+           "release_heights_m": [
+            0.2,
+            0.6,
+            1,
+            2
+           ],
+           "post_contact_apex_m": [
+            0.03622,
+            0.04724,
+            0.06037,
+            0.08761
+           ],
+           "max_upward_speed_mps": [
+            0.3754,
+            0.639,
+            0.8382,
+            1.1391
+           ],
+           "interpretation": "Dissipative and numerically stable at1ms; unknown actual restitution, floor contact fails task anyway."
+          },
+          "limitations": [
+           "Convex hull collision of vendor STL meshes; rubber pads represented as rigid compliant contacts.",
+           "Observed hand fit partly occluded; reference wrist3gaps interpolated.",
+           "Unknown friction/compliance inferred; no aerodynamic drag.",
+           "Reference replay is kinematic evidence, not task success."
+          ]
+         },
+         "media": {
+          "initial_scene": "initial_left.png",
+          "replay": "replay.mp4: demo left,kinematic robot wrist/static cup and reconstructed sphere right; replay is not a policy rollout."
+         },
+         "implementation": {
+          "Python_controller_sha256": "e05dd2d37163…",
+          "Cplusplus_controller_sha256": "37fd996bee64…",
+          "batch_bridge_sha256": "32e1b20a9077…",
+          "Cplusplus_Python_max_q_difference_1s": 1.067e-11,
+          "step_throughput_64env_s": 49739
+         },
+         "changes": "First training simulation, built only after reconstructionr0003 and criteriar0004."
+        },
+        "files": {
+         "image": {
+          "sha": "d4afa989eee5",
+          "bytes": 164869,
+          "content_type": "image/png"
+         },
+         "replay_video": {
+          "sha": "86e172aa5436",
+          "bytes": 689417,
+          "content_type": "video/mp4"
+         },
+         "scene_1": {
+          "sha": "90fd61ba97c0",
+          "bytes": 30421,
+          "content_type": "application/xml"
+         },
+         "scene_2": {
+          "sha": "01ed81ad96d1",
+          "bytes": 2787,
+          "content_type": "application/json"
+         },
+         "scene_3": {
+          "sha": "d82385269f97",
+          "bytes": 17982,
+          "content_type": "text/plain"
+         },
+         "scene_4": {
+          "sha": "c60cb6b22ebb",
+          "bytes": 1556,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-03T05:44:44Z",
@@ -23575,6 +23765,371 @@
          "text": "The original approach/lift RL actor already succeeds locally; isolated rotation training can damage actions on phases it never visits. Proposed architecture: a phase-gated mixture of closed-loop PPO-trained neural actors for acquisition, white reorientation/placement, and black manipulation. Each command residual still comes from an RL-trained network, while the same reconstruction-derived reference and exact hardware PD execute it. This is a hierarchical residual-RL architecture, not a scripted final policy or online optimizer. A full original-state20episode evaluation will judge the composed policy; curriculum progress alone cannot pass."
         },
         "files": {}
+       },
+       {
+        "id": "r0024",
+        "seq": 24,
+        "kind": "sim",
+        "version": 4,
+        "recorded_utc": "2026-11-03T05:53:23Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 1,
+         "simulator": {
+          "name": "MuJoCo",
+          "version": "3.17.0",
+          "timestep_s": 0.001,
+          "integrator": "implicitfast",
+          "solver": "Newton, 50 iterations, tolerance 1e-9",
+          "contacts": "elliptic friction cone; condim4 including torsional friction; object/table solref 0.004 1; hand solref 0.006 1; solimp 0.95 0.99 0.001; rigid collision shapes with compliant contacts",
+          "backends": {
+           "training": "MuJoCoWarp3.17.0/Warp1.19.0 CUDA float32, sameXML,implicitfast,Newton50iterations,ellipticcondim4;1024worlds,nconmax128,nccdmax64,njmax512; CUDAgraphs20ticks/neuralstep.",
+           "verification": "MuJoCo3.17.0 CPU float64, sameXML/controllers/reference, strict1ms independentverifier criteria2. Backenddifferences are transfer limitations."
+          }
+         },
+         "scene": {
+          "scene_file": "research/sim/scene.xml",
+          "files_sha256": {
+           "research/sim/scene.xml": "cb6ff62488ac…",
+           "research/sim/robot.py": "7a5cb278811a…",
+           "research/sim/env.py": "313fe9f9f481…",
+           "research/sim/env4.py": "1f5e8aac489a…",
+           "research/sim/reference.py": "fcb2b0288f15…",
+           "research/sim/base_reference.json": "814916079835…",
+           "research/sim/reference.npz": "4b18b8e7fd53…",
+           "research/sim/candidate_grasp_reset.npz": "36a7365e129d…",
+           "research/sim/composite_policy.py": "b5514b97624f…",
+           "research/gpu/train.py": "875a878476f9…",
+           "research/gpu/controller.py": "049df44157a0…",
+           "research/gpu/features.py": "decf24637c5b…",
+           "research/gpu/probe_controller.py": "db6160083503…",
+           "research/gpu/probe_features.py": "744cde4b4e4d…",
+           "research/gpu/reference_controller.py": "8b051d26f95d…",
+           "research/gpu/backend.py": "113678757a44…"
+          },
+          "asset_manifest": {
+           "r_index_finger_proximal_abd.STL": "373722f52678…",
+           "r_middle_finger_tip_sensor_frame.STL": "d5a13c524785…",
+           "r_thumb_distal.STL": "273878b0f78e…",
+           "r_index_finger_middle.STL": "9ba4bd6449d5…",
+           "r_pinky_proximal.STL": "c88defaf8c67…",
+           "r_ring_finger_proximal.STL": "da1870bfe856…",
+           "plug_black.obj": "2d2f697bb79b…",
+           "r_pinky_proximal_abd.STL": "0d9493bc1a62…",
+           "r_ring_finger_proximal_abd.STL": "df3787ff168f…",
+           "r_middle_finger_proximal.STL": "039bee058e2e…",
+           "r_pinky_distal.STL": "6832e7482d55…",
+           "r_index_finger_distal.STL": "7b11dd372a4a…",
+           "r_ring_finger_tip_sensor_frame.STL": "d5a13c524785…",
+           "r_middle_finger_middle.STL": "5f88e7c64188…",
+           "r_middle_finger_distal.STL": "7b11dd372a4a…",
+           "r_index_finger_proximal.STL": "d07ffb4a0f10…",
+           "r_ring_finger_middle.STL": "6fbcf92b159a…",
+           "r_thumb_tip_sensor_frame.STL": "4bb06fa7ee60…",
+           "r_wrist.STL": "ece3f36af8ed…",
+           "r_thumb_middle.STL": "a04ebd10f245…",
+           "r_pinky_tip_sensor_frame.STL": "22f19f242d73…",
+           "r_mount.STL": "302c1a168417…",
+           "r_pinky_middle.STL": "609cc6cef5df…",
+           "r_thumb_proximal_abd.STL": "2aaafd9ba420…",
+           "r_thumb_proximal.STL": "e3e9e7c1266c…",
+           "r_middle_finger_proximal_abd.STL": "91e3f149f9ca…",
+           "plug_white.obj": "165b34248ff5…",
+           "r_ring_finger_distal.STL": "7b11dd372a4a…",
+           "r_index_finger_tip_sensor_frame.STL": "d5a13c524785…"
+          },
+          "robot": "Supplied Wuji Hand 2.2 right URDF, exact masses/inertias/axes/limits and vendor STL convex collision hulls; 20 motors with effort saturation and specified armatures.",
+          "self_collision": "Enabled except the five palm-to-proximal-abduction MCP/CMC housing pairs: convex hulls overlap inside the assembled mechanisms (measured 1.6 mm at neutral for ring/pinky). All inter-finger and other hand collisions remain enabled.",
+          "objects": "Two passive free bodies: prescribed sharp box bodies and Type-A blade boxes; Blender visuals from reconstruction; exact mass 0.075/0.055 kg, COM 2 mm bladeward, uniform-box inertia estimate. No welds, object forces or object state assignment after reset.",
+          "table": "1.20 x 1.20 x 0.03 m, center XY (0.10,0), top z0; floor z-0.75; gravity (0,0,-9.81).",
+          "attachment_note": "Hardware/object asset checksums identify the supplied public model files; source_manifest.json preserves the scene builder and controller/environment source. Binary archives are not accepted by the record endpoint."
+         },
+         "reference": {
+          "record": "r0006",
+          "retargeting": "Robot -Z follows human wrist-to-MCP centroid, +Y right palm normal, +X completes right-handed basis; 358 supported human wrist frames. Offline collision-aware three-contact IK for thumb/index/middle with continuous joint branches. Contacts across the body Y sides; unequal index/middle axial locations drive in-hand reorientation. White additionally tracks initial fingertip orientations rigidly with the desired object rotation. Up to45deg extra wrist rotation about the reconstructed reorientation axis is shared with finger rolling. This is a retargeting choice; recorded criteria remain40deg RMS/65deg p95 and8cm position. Sim3 restores sim1 prefix throughclock5.85; then qbase anchors achieved grip instead of running the incompatible offline finger transition. Robot wrist still follows reference with bounded translation offset and RL residual.",
+          "usage": "Recorded contact phase ordering, wrist orientations and scene alignment guide a frozen base/reference plus RL residual. Object center lift to z0.065 m; final centers from reconstructed placement. Goal yaw preserves initial blade-gap axis because blade-up is task-critical and hidden yaw is uncertain. Reference time is stretched by 1.3, ending at 32.5 s. Black timings shifted by0.5reference seconds for a slower transition; base ends33.15s. Online anchors update robot command reference only, never object state or constraints. Kinematic replay visualizes the unanchored reference; it is not a dynamic success claim.",
+          "alignment_translation_m": [
+           -0.2810572761420699,
+           0.0472954002708865,
+           0.36114360439090654
+          ],
+          "replay": "replay.mp4 explicitly shows a kinematic retargeting next to time-scaled human video; it is not a learned or dynamic success rollout."
+         },
+         "controllers": {
+          "wrist": "Free 6-DoF root, no workspace constraint. 1 kHz impedance: Kp 2000 N/m, Kd60; rotation20 Nm/rad and0.4; exact hand gravity/COM compensation only; force norm<=30N, torque<=2Nm. Executed targets/linear feedforward <=1m/s and angular <=3rad/s at500Hz. Generalized wrench verified equal to mj_applyFT at root origin (error0).",
+          "fingers": "Specified joint PD at1kHz with exact gains, q_target clipping, effort saturation, vendor armatures, and no position/velocity state clipping. Position, speed, torque and finite-action validity checked every1ms; violating episodes terminate.",
+          "encoders": "Independent sigma0.002rad and0.05rad/s at500Hz; no contact/force/tactile measurements given to policy.",
+          "policy_interface": "26 learned residuals at50Hz: wrist3xyz x0.03m,3worldrot x0.22rad,20independentfinger x1.2rad;40msfilter;500Hz packets. Encoder-based qhold=qenc+(previous_motor_torque+Kd*qdenc)/Kp atclock5.85white/20.8black, compensated for current RL residual; held as base, blended0.3s, then blended back1.3s after release. No force/tactile observation. Wrist position anchored to native human trajectory with current target offset capped65mm. Exact hardware controller unchanged. Additional command qtarget slew cap3rad/s; hardwarePD unchanged. GPUmonitors every1ms; a flagged batch episode ends at next20ms neural boundary with penalty, never counts valid; CPUverification terminates atfirstviolation."
+         },
+         "observations": "132D: original86D encoders,wrist/object/reference/phase features;26previousactions;20qreference-minus-encodererrors. No tactile/force sensing; objectstate exact simulated state.",
+         "initial_conditions": {
+          "objects": [
+           [
+            null,
+            null,
+            null,
+            null
+           ],
+           [
+            null,
+            null,
+            null,
+            null
+           ]
+          ],
+          "wrist": [
+           [
+            -0.539196826528601,
+            0.44073456092208724,
+            -0.7176488201553046,
+            -0.16369160713000017
+           ],
+           [
+            0.781485273601206,
+            0.5794725173688432,
+            -0.23128417316942368,
+            -0.10708971940570347
+           ],
+           [
+            0.3139228398921206,
+            -0.6855396767678956,
+            -0.6568773113535246,
+            0.12245859133510514
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+           ]
+          ],
+          "finger_q": [
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0
+          ],
+          "reason": "Reconstructed initial side-lying charger poses and early visible wrist approach; wrist raised30mm and moved back20mm to accommodate robot geometry. Objects settle physically for0.2s.",
+          "curriculum": "white_reorient begins atclock5.85 from actual physically held white grasp achieved by RLiteration1 at5.8s, qvelzero, qtarget inferred via inverse dynamics from neighboring recorded states.0.2s physicalsettle. Objects remain passive after reset. Nominal full evaluation always starts from original side-lying objects; initial-state verifier explicitly rejects held-seed reset.",
+          "held_seed_file": "research/sim/candidate_grasp_reset.npz; includes qpos41,qvel38,qtarget20,wrist_target7,source_time5.8,source_policy_sha256",
+          "gpu_training": "Nominalfriction0.8/mass; independentresetcommonhand+whiteXYUniform±1mm in heldseed; blackunchanged;500Hz independentGaussianencodernoise. Initialsettledstate copied fromCPU, noobjectresetafterepisodebegins. Noobjectforce/weld."
+         },
+         "episode": {
+          "full_duration_s": 36.0,
+          "allowed_verification_timeout_s": 40.0,
+          "neural_rate_hz": 50,
+          "command_rate_hz": 500,
+          "physics_rate_hz": 1000,
+          "termination": "Hardware/action error, fall z<-0.05 or large active-object deviation; timeout. Final standing hold included.",
+          "gpu_curriculum_duration_s": 10.65
+         },
+         "validation": {
+          "hand_mass_kg": 0.6878,
+          "joint_limits_and_actuators": "Compared against hardware/hardware_spec.json and RIGHT_HAND.md; armature, effort, range and joint order preserved.",
+          "controller_checks": {
+           "hold": {
+            "max_position_mm": 3.338974899045363e-05,
+            "rms_position_mm": 9.15290094449387e-06,
+            "max_rotation_deg": 3.0368205442892703e-05,
+            "rms_rotation_deg": 8.259613872051861e-06,
+            "wall_seconds": 0.22876334599641268
+           },
+           "circle": {
+            "max_position_mm": 0.4517444461201089,
+            "rms_position_mm": 0.37304957860522076,
+            "max_rotation_deg": 0.25682602400194654,
+            "rms_rotation_deg": 0.1896177647081598,
+            "wall_seconds": 0.48634543899970595
+           },
+           "finger_ramp": {
+            "max_position_mm": 0.042954883838357605,
+            "rms_position_mm": 0.00840025135141922,
+            "max_rotation_deg": 0.03879472124996343,
+            "rms_rotation_deg": 0.007574204418580018,
+            "wall_seconds": 0.34268122100183973
+           }
+          },
+          "passive_object_drop": [
+           {
+            "body_center": null,
+            "body_bottom": -2.130682279527507e-06,
+            "blade_up_deg": 0.0,
+            "speed": 5.292992711667705e-13,
+            "mass": 0.075
+           },
+           {
+            "body_center": null,
+            "body_bottom": -2.1306822802352743e-06,
+            "blade_up_deg": 0.0,
+            "speed": 3.818313221436804e-13,
+            "mass": 0.055
+           }
+          ],
+          "curriculum_hold_probe": [
+           {
+            "torque_scale": 0.7,
+            "height_min": 0.0631199962867753,
+            "max_object_drift": 0.0010519335366480323,
+            "hardware_violation": null
+           },
+           {
+            "torque_scale": 0.85,
+            "height_min": 0.06317927313549405,
+            "max_object_drift": 0.0009860806301771503,
+            "hardware_violation": null
+           },
+           {
+            "torque_scale": 1.0,
+            "height_min": 0.06323625330389815,
+            "max_object_drift": 0.0009220874384526764,
+            "hardware_violation": null
+           },
+           {
+            "torque_scale": 1.15,
+            "height_min": 0.06329264333045556,
+            "max_object_drift": 0.0008587088489486553,
+            "hardware_violation": null
+           },
+           {
+            "torque_scale": 1.3,
+            "height_min": 0.06334962047140057,
+            "max_object_drift": 0.0007950917227398798,
+            "hardware_violation": null
+           }
+          ],
+          "driver_equivalence": {
+           "steps": 100,
+           "max_qpos_diff": 0.0,
+           "max_qvel_diff": 0.0,
+           "hardware": null
+          },
+          "initial_state_guard": "Full nominal reset accepted; heldseedreset rejected. 132obs/26actions finite; zeroaction0.4s smoke nohardwareviolation. Warmstart mean preserved to7.45e-9 by linear mapping of previous synergies to20qresiduals.",
+          "gpu_controller_loaded_grasp": {
+           "nworld": 1024,
+           "physics_ticks": 1000,
+           "wall_seconds": 2.1377830679994076,
+           "physics_steps_per_s": 479000.8936492726,
+           "neural50Hz_steps_per_s": 23950.04468246363,
+           "max_qpos_difference_cpu_hold": 7.223570775495569e-05,
+           "max_qvel_difference_cpu_hold": 0.00531936306903937,
+           "gpu_hardware_flags": "all1024zero",
+           "cpu_violation": null,
+           "gpu_overflows": "all1024zero",
+           "root_p_gpu": [
+            0.01920713670551777,
+            -0.06772609055042267,
+            0.1197487860918045
+           ],
+           "root_p_cpu": [
+            0.019207082860195863,
+            -0.0677261235917777,
+            0.11974883083905459
+           ]
+          },
+          "gpu_hold_parity": {
+           "max_qpos_error": 2.426518620479712e-07,
+           "max_qvel_error": 3.452209923468406e-05,
+           "worlds": 1024,
+           "ticks": 1000,
+           "hardware_flags": 0,
+           "overflows": 0,
+           "log": "research/logs/warp_controller_probe.log"
+          },
+          "gpu_feature_probe": {
+           "neural_fps": 17987.24643322534,
+           "samples": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+           ],
+           "overflow_any": false
+          },
+          "gpu_interpretation": "Hold and loaded-grasp crosschecks, not proof of dynamic task backend equivalence. Same physicalmodel but differentfloatprecision/collisionimplementation; final20episodeCPUverificationrequired. Zeroactorheldbaselinefailsplacement; finite132D observations throughout535neuralsteps and no bufferoverflow."
+         },
+         "limitations": [
+          "This simulation has not yet produced a passing policy; heldseed curriculum is not final task success.",
+          "Objectstate exact; contactfriction, inertia,compliance inferred.",
+          "Encoder-derived holdingtarget is approximate underacceleration andnoise.",
+          "Wrist nativealignment and full orderedreleasedplacements require independent verification.",
+          "GPU/CPUcontactdifferences maypreventtransfer; explicitfullCPUverificationwilldetectthis.",
+          "Widerqresidualrange and qtargetslew are policydecoderchoices; hardware unchanged.",
+          "Stage actor mixture can fail transitions; no taskpassclaim fromlocalcurriculum."
+         ],
+         "previous_sim_version": 3,
+         "change_reason": "Add batched MuJoCoWarp3.17.0 GPU training backend with identicalXML/hardware at1ms; CPUbackend retained for independent verification. Fingerresidualscale increases0.6->1.2rad; qtarget slew limited3rad/s (PDgains/effort/position/speedlimits unchanged). Add nonvanishing objectdistance, nearplacement reward and longer held curriculum. Phasegated RLactors proposed to retain acquired skills.",
+         "learning_changes": {
+          "curriculum": "Heldseedwhite_reorient clock5.85->16.50; fullfinaleval36s originalside-lying scene. Subsequent phaseactor training and full fine-tuning may follow.",
+          "reward": "Linear blade-up alignment inheldcurriculum, Gaussianposition plus -2*distance/0.1m; explicit nearplacement and released-standing; phasegrasp/lift; humanwrist penalties; unsupportedcarry/releasecontact/action/actionchange/hardwarefailure. Full formulas periteration.",
+          "architecture": "PPO132obs/26actions, independent finger residuals; phasegated composition of RL-trained subnetworks allowed and recorded as architecture before reliance. All finalresidualcommands mustcome fromRL-trained networks."
+         }
+        },
+        "files": {
+         "image": {
+          "sha": "2de8bc280ffc",
+          "bytes": 105263,
+          "content_type": "image/png"
+         },
+         "replay_video": {
+          "sha": "e79d56603e44",
+          "bytes": 1534423,
+          "content_type": "video/mp4"
+         },
+         "scene_1": {
+          "sha": "cb6ff62488ac",
+          "bytes": 30293,
+          "content_type": "application/xml"
+         },
+         "scene_2": {
+          "sha": "4b18b8e7fd53",
+          "bytes": 31910,
+          "content_type": "application/octet-stream"
+         },
+         "scene_3": {
+          "sha": "814916079835",
+          "bytes": 41113,
+          "content_type": "application/json"
+         },
+         "scene_4": {
+          "sha": "1fb88dfe8eff",
+          "bytes": 58233,
+          "content_type": "application/json"
+         },
+         "scene_5": {
+          "sha": "efade1277338",
+          "bytes": 10773,
+          "content_type": "application/json"
+         },
+         "scene_6": {
+          "sha": "28a460747db7",
+          "bytes": 1354,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-03T03:50:37Z",
@@ -24426,7 +24981,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-03T05:53:21Z",
+  "staged_utc": "2026-11-03T05:59:52Z",
   "tasks": {
    "cube": {
     "files": {
@@ -24510,7 +25065,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-03T05:53:20Z",
+  "staged_utc": "2026-11-03T05:59:51Z",
   "tasks": {
    "tennis": {
     "status": "available",
