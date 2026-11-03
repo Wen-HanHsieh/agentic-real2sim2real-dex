@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-03T05:44:37Z",
- "exported_utc": "2026-11-03T05:44:34Z",
+ "generated_utc": "2026-11-03T05:54:10Z",
+ "exported_utc": "2026-11-03T05:52:30Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-03T05:38:12",
+    "time": "2026-11-03T05:50:57",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-03T05:34:19",
+    "time": "2026-11-03T05:50:22",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -20434,9 +20434,241 @@
          "text": "Video analysis: provisional detached flights frames 52-67, 163-178 and 200-216 (30 Hz). Robust SAM3 sphere fits independently estimate gravity magnitudes 9.33, 9.97 and 9.90 m/s^2 before enforcing gravity. Fitted rises from the first detached frame are 0.288, 0.321 and 0.300 m. Median object replay IoU is 0.944. Focal 1270.5 pixels remains an inferred MoGe prior because a sphere cannot uniquely calibrate focal length; this limitation will be preserved. All ball rotations remain explicitly unobservable. The updated VERIFICATION.md has been re-read."
         },
         "files": {}
+       },
+       {
+        "id": "r0003",
+        "seq": 3,
+        "kind": "recon",
+        "version": 1,
+        "recorded_utc": "2026-11-03T05:44:44Z",
+        "exception": false,
+        "body": {
+         "summary": "Three tennis tosses reconstructed from315frames. Contract VALID; quality validator overall pass. Dense-probe MANO refinement removes depth jumps and penetration; unobservable spin and occlusion warnings retained.",
+         "components": [
+          {
+           "name": "camera",
+           "status": "partial",
+           "method": "MoGe median focal prior and known sphere metric geometry; gravity fit; static assumption",
+           "note": "Focal length inferred, not uniquely calibrated from a sphere."
+          },
+          {
+           "name": "tennis_ball_geometry",
+           "status": "from_specification",
+           "method": "Blender API UV sphere radius.0325m",
+           "note": "Specified mass and thin-shell inertia preserved."
+          },
+          {
+           "name": "tennis_ball_6d_motion",
+           "status": "partial",
+           "method": "SAM3 masks, robust metric sphere fit, gravity-constrained flights and occluded-depth interpolation",
+           "note": "Translation supported; all rotation unobservable. Raw independent gravity9.33,9.97,9.90m/s^2."
+          },
+          {
+           "name": "ball_rotation",
+           "status": "unobservable",
+           "method": "Constant orientation gauge only",
+           "note": "No invented human spin."
+          },
+          {
+           "name": "hand_motion",
+           "status": "partial",
+           "method": "HaWoR + required default MANO fit then dense-probe owned-copy supervised refinement",
+           "note": "312/315 valid; maximum full-mesh penetration2.10mm; anatomical/self-intersection warnings retained."
+          },
+          {
+           "name": "contact_phases",
+           "status": "partial",
+           "method": "Dense video inspection and joint scene fitting",
+           "note": "Four held intervals separating three flights; boundaries ±2frames, thumb opposition not observed consistently."
+          }
+         ],
+         "limitations": [
+          "Focal length inferred from MoGe; sphere alone does not uniquely calibrate intrinsics. Human ball rotation unobservable. Three hand frames invalid, residual anatomical and self-intersection warnings documented."
+         ],
+         "validation": {
+          "schema": "recon-validation/1",
+          "utc": "2026-11-03T05:43:01Z",
+          "thresholds": {
+           "contact_band_mm": 5.0,
+           "phase_fail_mm": 10.0,
+           "pen_warn_mm": 5.0,
+           "pen_fail_mm": 10.0,
+           "wrist_speed_mps": 3.0,
+           "wrist_accel_mps2": 150.0,
+           "tip_speed_mps": 5.0,
+           "bone_jump_deg": 60.0,
+           "obj_jump_m": 0.1,
+           "obj_rot_jump_deg": 45.0,
+           "g": 9.81,
+           "g_tol": 2.0,
+           "rest_drift_mm": 5.0,
+           "sink_mm": 3.0,
+           "hand_chain_mm": [
+            140.0,
+            230.0
+           ],
+           "iou_warn": 0.6,
+           "hand_precision_warn": 0.7,
+           "opposition_deg": 60.0,
+           "anatomical_min_frac": 0.5
+          },
+          "checks": {
+           "reprojection": {
+            "status": "pass",
+            "per_part": null,
+            "below_threshold": null,
+            "note": "against your own masks: agreement with them is necessary, not sufficient (3D errors along the viewing ray are invisible here)"
+           },
+           "fingertip_distance": {
+            "status": "pass",
+            "phases": null
+           },
+           "anatomical_contact": {
+            "status": "warn",
+            "phases": null,
+            "note": "a grasp needs the thumb and an opposing finger on opposite sides of the object; single-finger pushes or palm support are legitimate but must be stated in the analysis. Low penetration does not imply contact."
+           },
+           "penetration_hand_object": {
+            "status": "pass",
+            "max_mm": null,
+            "frames_over_warn": null,
+            "signed": null,
+            "note": "unsigned (lower bound) distances where the object mesh is not watertight"
+           },
+           "self_penetration": {
+            "status": "warn",
+            "finger_finger_frames": null,
+            "finger_finger_frac": 0.003,
+            "hand_hand_frames": null,
+            "note": "triangle intersections between different fingers (FCL); counts are not volumes"
+           },
+           "continuity": {
+            "status": "pass",
+            "flagged": null,
+            "count": 0
+           },
+           "physics": {
+            "status": "pass",
+            "flights": null,
+            "rests": null,
+            "note": "free-flight intervals are given with --flight OBJ=a:b; rest intervals default to object intervals without contact"
+           },
+           "handedness_scale": {
+            "status": "pass",
+            "per_side": null,
+            "note": "left/right are the demonstrator's anatomical hands; a hand is never mirrored"
+           },
+           "sync": {
+            "status": "pass",
+            "t_real_monotonic": true,
+            "fps_real": 30.0,
+            "compare_frames": 315,
+            "compare_matches": true,
+            "object_offset_check": null
+           },
+           "camera_focal": {
+            "status": "pass",
+            "focal_px": 1270.5,
+            "prior_px": 1270.5,
+            "ratio": 1.0,
+            "prior_source": "research/recon/transforms/moge/intrinsics.json",
+            "focal_label": "inferred",
+            "threshold_ratio": 1.25,
+            "note": "MoGe intrinsics are a learned prior; the focal should be calibrated against known geometry (camera_calib.py pnp). A large disagreement needs its explanation in NOTES.md (which one is wrong, and why)."
+           }
+          },
+          "summary": {
+           "reprojection": "pass",
+           "fingertip_distance": "pass",
+           "anatomical_contact": "warn",
+           "penetration_hand_object": "pass",
+           "self_penetration": "warn",
+           "continuity": "pass",
+           "physics": "pass",
+           "handedness_scale": "pass",
+           "sync": "pass",
+           "camera_focal": "pass"
+          },
+          "failed": [],
+          "incomplete": [],
+          "missing_required": [],
+          "overall": "pass",
+          "overall_note": "pass"
+         },
+         "check_reference": {
+          "verdict": "VALID",
+          "errors": 0,
+          "warnings": 0,
+          "error_list": []
+         },
+         "exception": null,
+         "producer": {
+          "tool": "r2s2r-d2s recon",
+          "recon_dir": "recon"
+         }
+        },
+        "files": {
+         "compare_video": {
+          "sha": "074bc99dbe65",
+          "bytes": 1513285,
+          "content_type": "video/mp4"
+         },
+         "validation_json": {
+          "sha": "a8b442aa0fb4",
+          "bytes": 6673,
+          "content_type": "application/json"
+         },
+         "viewer": {
+          "sha": "23d478437612",
+          "bytes": 4997120,
+          "content_type": "application/x-tar"
+         }
+        }
+       },
+       {
+        "id": "r0004",
+        "seq": 4,
+        "kind": "criteria",
+        "version": 1,
+        "recorded_utc": "2026-11-03T05:44:58Z",
+        "exception": false,
+        "body": {},
+        "files": {
+         "criteria_md": {
+          "sha": "377853077a1a",
+          "bytes": 9075,
+          "content_type": "text/markdown"
+         }
+        }
+       },
+       {
+        "id": "r0005",
+        "seq": 5,
+        "kind": "note",
+        "version": 3,
+        "recorded_utc": "2026-11-03T05:44:59Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Reconstruction and criteria precede simulation. Plan: MuJoCo with exact URDF link inertias,20joints, specified1kHz PD and wrist impedance; PPO closed-loop residuals around the reconstructed wrist and a non-solving hand pose reference. The base will be evaluated by itself and must fail full criteria. The policy observes noisy encoders plus privileged simulated object pose/velocity, with no tactile observations. Nominal wrist translation speed2.5m/s permits a ballistic rise v^2/(2g)=.319m; measured0.29-.32m is attainable with a near-limit launch and finger contribution, although human wrist motion alone is slower. I will first learn support/spin and then whole-sequence flight/capture, reporting curriculum outcomes separately from full verification."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0006",
+        "seq": 6,
+        "kind": "note",
+        "version": 4,
+        "recorded_utc": "2026-11-03T05:50:57Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Re-read updated LEARNING.md section1 after operator update. Final actor observation will contain only noisy q/qd, wrist pose/velocity, previous finger/wrist targets, ball pose/linear/angular velocity, step index and fixed reference/task settings. No contacts, contact forces, applied or demanded torque, masses/friction, rewards, images or hidden simulator state enter the actor. Contacts and hardware quantities remain training-reward and verification measurements only. No privileged teacher is currently planned."
+        },
+        "files": {}
        }
       ],
-      "first_recon_utc": null,
+      "first_recon_utc": "2026-11-03T05:44:44Z",
       "chain_ok": true,
       "run": 3
      }
@@ -23330,6 +23562,19 @@
          "text": "Simulation3 accepted as r0021 at05:32:03Z before PPOiteration3 started. Curriculum resets use an actually achieved, independently checked passive pinch (1s drift<=1.06mm over tested torque scales), not an object weld. New initial-state verification guard accepts full nominal scene and rejects heldseed. Training/evaluation decoder equivalence is exact for100 stochastic neural steps. Expanded132obs/26actions RL initialization preserves parent mean outputs within7.45e-9; new optimizer and independent finger exploration. Final policy remains closed-loop RL; no online trajectory optimizer is used."
         },
         "files": {}
+       },
+       {
+        "id": "r0023",
+        "seq": 23,
+        "kind": "note",
+        "version": 13,
+        "recorded_utc": "2026-11-03T05:50:22Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "The original approach/lift RL actor already succeeds locally; isolated rotation training can damage actions on phases it never visits. Proposed architecture: a phase-gated mixture of closed-loop PPO-trained neural actors for acquisition, white reorientation/placement, and black manipulation. Each command residual still comes from an RL-trained network, while the same reconstruction-derived reference and exact hardware PD execute it. This is a hierarchical residual-RL architecture, not a scripted final policy or online optimizer. A full original-state20episode evaluation will judge the composed policy; curriculum progress alone cannot pass."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-03T03:50:37Z",
@@ -24181,7 +24426,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-03T05:44:36Z",
+  "staged_utc": "2026-11-03T05:53:21Z",
   "tasks": {
    "cube": {
     "files": {
@@ -24265,7 +24510,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-03T05:44:36Z",
+  "staged_utc": "2026-11-03T05:53:20Z",
   "tasks": {
    "tennis": {
     "status": "available",
