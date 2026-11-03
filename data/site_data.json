@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-03T09:32:33Z",
- "exported_utc": "2026-11-03T09:32:29Z",
+ "generated_utc": "2026-11-03T09:42:33Z",
+ "exported_utc": "2026-11-03T09:42:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-03T09:31:43",
+    "time": "2026-11-03T09:42:24",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -44406,6 +44406,3788 @@
          "text": "09:32 UTC elapsed3h06m. Independent catch calibration on frozenPPO26,seeds5000-5002 found9 constantsettings with>=95% first120ms support in all3 trials. Choosecandidate36: thirdcatchXYgain1.0, closureadvance delta-.08s (100ms later than sim7),thirdpulse.92; all3 first120ms supports100%, rise.318-.326m, duration.529-.534s,wristmax.09628m. Original secondpulse settings retained. Validate zero-residual baseline and record sim8 before PPO. This supports the hypothesis that early closure caused glancing contact, not the need to relax capture criteria."
         },
         "files": {}
+       },
+       {
+        "id": "r0077",
+        "seq": 77,
+        "kind": "sim",
+        "version": 8,
+        "recorded_utc": "2026-11-03T09:32:49Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 1,
+         "simulator": {
+          "name": "MuJoCoWarp",
+          "version": "3.17.0 (Warp1.19.0)",
+          "timestep_s": 0.001,
+          "integrator": "implicitfast",
+          "solver": "Newton, 30 iterations, tolerance 1e-9",
+          "contact": "Same MuJoCo3.17 implicitfast1kHz elliptic condim4 contact, ball priority1",
+          "friction": "Ball-dominant sliding0.9, torsion0.0005m, rolling0.00002m (rolling coefficient inactive at condim4). These are explicitly inferred, not measurements.",
+          "arithmetic": "float32, nondeterministic GPU ordering",
+          "parallelism": "CUDA graph with20 one-millisecond controller/physics ticks per50Hz network command. Reference commands and rate limits updated500Hz."
+         },
+         "scene": {
+          "files_sha256": {
+           "research/sim/scene.xml": "806c7f42cf95…",
+           "research/sim/reference.npz": "1a148c9394d2…",
+           "research/sim/q_initial.npy": "a3b7c074281c…",
+           "research/controller.cpp": "ee11f530e0d4…",
+           "research/sim_utils.py": "10d1bd71d3e5…",
+           "hardware/wuji_hand2_right/urdf/right.urdf": "9ad34330b2fd…",
+           "hardware/hardware_spec.json": "4d6b56d15b05…",
+           "research/reference_controller.py": "79768ae48c3b…",
+           "research/task_env.py": "7c7fe9a4cef8…",
+           "research/sim/toss_tune_0.json": "edb15cc342d5…",
+           "research/sim/toss_tune_1.json": "2fd4dbdb2f0a…",
+           "research/sim/toss_tune_2.json": "b7c9e67f1f39…",
+           "research/sim/scene_v3.xml": "b64aae5730c1…",
+           "research/warp_sim.py": "29f229f8dd03…",
+           "research/gpu_env.py": "5b3ae3cc8b40…",
+           "research/sim/reference_tuning_v6.json": "f12716d907e3…",
+           "research/sim/reference_tuning_v7.json": "12066336e32f…",
+           "research/sim/reference_tuning_v8.json": "aebbc94b0042…"
+          },
+          "robot": "Wuji Hand 2.2 right; all URDF inertias, link transforms, 20 joints and vendor meshes preserved; within-finger housing collision excluded; inter-finger collisions enabled",
+          "object": "0.065 m diameter sphere, .0577 kg, isotropic inertia .000041 kg m2. Separate free joint. Visual stripe sites have no collision, sensing or mass effect.",
+          "floor": "z=0; world X forward Y left Z up"
+         },
+         "reference": {
+          "source": "Recorded reconstruction v1 r0002",
+          "retarget": "+Y robot palm normal = cross(index-MCP minus wrist, little-MCP minus wrist); -Z = wrist-to-middle MCP; +X completes right handed frame. Fixed translation puts initial root at [0,0,.65]. No per-episode reference alignment. 9-frame Savitzky-Golay smoothing of wrist position.",
+          "ball_adaptation": "Constant world translation corresponding to local initial ball [0.008,.052,-.140] m in robot wrist frame, adapting human to robot palm dimensions. This preserves measured flight heights.",
+          "fingers": "Initial pad-center IK to sphere with penetration penalty, then analysis opening reference near annotated release/catch times. Exact MANO contacts are too uncertain to retarget literally.",
+          "base_controller_v2": {
+           "offline_method": "Differential evolution of 8 parameters per toss using MuJoCo rollouts, only during offline reference development. No planning or optimization at execution.",
+           "parameters": [
+            null,
+            null,
+            null
+           ],
+           "closed_loop_part": "Time-gated horizontal correction from observed ball center to desired palm-relative center, capped to60mm per axis; gain0.46-0.90. Does not observe contacts.",
+           "untrained_baseline": "Updated reference has0/10 complete successes; all spins fail. Every episode has3 captured flights, but flight ranges are reported in validation, not assumed to pass.",
+           "final_policy_plan": "PPO residual fingers must learn directional spins. Baseline alone is explicitly not a learned task solution."
+          },
+          "constant_adjustment_v6": {
+           "parameters": [
+            0.03,
+            0.0,
+            0.7,
+            0.02,
+            0.98
+           ],
+           "meaning": [
+            "second_pulse_center_delta_s",
+            "second_finger_open_advance_delta_s",
+            "third_catch_xy_gain",
+            "third_finger_close_advance_delta_s",
+            "third_wrist_pulse_scale"
+           ],
+           "selection": "Candidate1 of40 in calibration16b, selected using frozenPPO15 and3 reference-development seeds5000-5002, not verification seeds. Constant settings; no search at execution. Second rise.211-.219m, duration.423-.427s; third rise.306-.312m, first120ms contact.85-1.00, wrist max.09782m. No full task verdict from calibration.",
+           "parents": [
+            "research/calibration16/calibration.json",
+            "research/calibration16b/calibration.json"
+           ]
+          },
+          "constant_adjustment_v7": {
+           "parameters": [
+            0.025,
+            0.0,
+            0.7,
+            0.02,
+            0.98,
+            1.02
+           ],
+           "meaning": [
+            "second_pulse_center_delta_s",
+            "second_open_advance_delta_s",
+            "third_catch_xy_gain",
+            "third_close_advance_delta_s",
+            "third_pulse_scale",
+            "second_pulse_scale"
+           ],
+           "third_catch_settling": {
+            "from_s": 6.7,
+            "until_s": 7.32,
+            "rule": "During third flight/catch, network increments are suppressed and integrated residuals decay by.5 per50Hz command; reference finger grasp remains active. No state reset, object force, contact trigger or physics modification. This delays lastspin until after physical capture support."
+           },
+           "selection": "Second adjustment from offline calibration20 candidate13; catch settling hypothesis from strict PPO19 failure diagnostics. Criteria unchanged. Base performance must be revalidated."
+          },
+          "constant_adjustment_v8": {
+           "parameters": [
+            0.025,
+            0.0,
+            1.0,
+            -0.08,
+            0.92,
+            1.02
+           ],
+           "meaning": [
+            "second_pulse_center_delta_s",
+            "second_open_advance_delta_s",
+            "third_catch_xy_gain",
+            "third_close_advance_delta_s",
+            "third_pulse_scale",
+            "second_pulse_scale"
+           ],
+           "third_catch_settling": {
+            "from_s": 6.7,
+            "until_s": 7.32,
+            "rule": "During third flight/catch, network increments are suppressed and integrated residuals decay by.5 per50Hz command; reference finger grasp remains active. No state reset, object force, contact trigger or physics modification. This delays lastspin until after physical capture support."
+           },
+           "selection": "Offline catch calibration with frozenPPO26, seeds5000-5002. Candidate36:100% contact in each first120ms after thirdcapture; thirdrise.318-.326m, flight.529-.534s,wristmax.09628m. Later thirdfinger closure, strongerXYcatchfeedback, lowerpulse amplitude. No criteria change or online search."
+          }
+         },
+         "wrist_and_fingers": {
+          "wrist": "1 kHz specified Cartesian impedance Kp=2000,Kd=60,rot Kp=20,Kd=.4, own-weight and COM moment compensation .6878*9.81, force norm<=30N torque<=2Nm; executed targets rate limited at500Hz to2.5m/s,6rad/s; free joint unconstrained workspace",
+          "fingers": "Specified 1kHz PD gains, zero requested joint feedforward, torque clipped to individual effort limits. Joint target clipped to URDF limits and additionally rate limited to70% motor speed at500Hz. Actual position/speed checked without state clipping; violations fail verification. Armature as hand spec.",
+          "policy_rate": "Learned network 50Hz; its outputs held for ten500Hz command ticks. Command bridge updates rate limits at500Hz and impedance/PD at1kHz.",
+          "noise": "Deployable policy encoder readings have independent Gaussian std .002rad and .05rad/s. Controllers use true states as actuator inner-loop measurements.",
+          "GPU_port": "World force and body-frame generalized root torque are equivalent to applying the specified wrist wrench at the root origin. Own-hand COM compensation uses subtree_com. Conservative caps29.99999N and1.999999Nm and one-ULP inward motor torque caps prevent float32 roundoff exceeding hardware maxima. No qpos/qvel clipping.",
+          "policy_decoder": "PPO outputs20 independent joint target-velocity increments (.5 times motor max speed), integrated into position residuals, bounded1.2rad; command targets kept0.05rad within joint limits with integrator anti-windup. Original hardware PD remains unchanged. Before firstcatch+.02s and after9.85s residuals decay. Finger opening reference also decays residuals. Wrist follows disclosed basev2. Sim7: learned increments are zero during[6.70,7.32)s, residualintegrator decays.5/50Hz while the reference catch grasp continues. Lastspin may act after7.32. This is disclosed reference assistance; PPO must still learn all spins.",
+          "target_guard": {
+           "inputs": "Noisy joint encoders at500Hz: sigma q=.002rad, qd=.05rad/s; prior targets and public limits/gains/armature only. No contacts/forces/parameters observed.",
+           "speed_bounds": "vp=min(.75*vmax,max(0,(upper-.04-qenc)/.025)); vn=min(.75*vmax,max(0,(qenc-lower-.04)/.025)).",
+           "equation": "tau_lo=clip(Iarm*(-vn-venc)/.002,effort); tau_hi=clip(Iarm*(vp-venc)/.002,effort). Position target projected into [qenc+(tau_lo+kd*venc)/kp, qenc+(tau_hi+kd*venc)/kp], then URDF range.",
+           "meaning": "A conservative command filter based on minimum joint inertia; actual velocity/position still measured independently and must pass exact criteria. It can command braking targets immediately; inner1kHz PD/effort clamp unchanged.",
+           "noise": "Warp stateless Gaussian stream byworld and500Hz counter, independent samples; counter persists acrosstrainingresets."
+          }
+         },
+         "initial_conditions": {
+          "wrist_pos_m": [
+           0,
+           0,
+           0.65
+          ],
+          "wrist_quat_wxyz": [
+           0.8120396710175835,
+           0.442334868459725,
+           -0.2930118021767136,
+           -0.24305456305843567
+          ],
+          "finger_q": [
+           0.9980010969449797,
+           -0.036438880626117096,
+           -0.06024925296892872,
+           -0.074760808215634,
+           0.4434622378617891,
+           -0.08922713786477297,
+           0.4301312647946355,
+           0.5525482046771022,
+           0.44040789208864795,
+           0.01847145720253543,
+           0.18704411974095225,
+           0.6355395855083136,
+           0.47890696544428357,
+           0.10465943543175649,
+           0.2911029037010217,
+           0.5740889666876458,
+           0.8033986287524824,
+           -0.0689476903120875,
+           -0.015711246757696713,
+           0.022868279727586833
+          ],
+          "ball_wrist_local_m": [
+           0.008,
+           0.052,
+           -0.14
+          ],
+          "ball_orientation_wxyz": [
+           1,
+           0,
+           0,
+           0
+          ],
+          "settling_s": 0.2,
+          "reason": "Initial held palm-up state adapted from reconstructed first frame; no attachment or later ball state reset."
+         },
+         "episode": {
+          "duration_s": 10.5,
+          "control_rate_hz": 500,
+          "network_rate_hz": 50,
+          "physics_rate_hz": 1000,
+          "termination": "Training may terminate on drop, excessive separation or hardware violation. Evaluation always records the full episode and any failure. No object forces beyond gravity/contact."
+         },
+         "validation": {
+          "mass_kg": 0.6878,
+          "specified_mass_kg": 0.6878,
+          "ball_mass_kg": 0.0577,
+          "ball_inertia_kgm2": [
+           4.1e-05,
+           4.1e-05,
+           4.1e-05
+          ],
+          "ball_radius_m": 0.0325,
+          "joint_limits_match": true,
+          "settle_2s_stats": [
+           0.21669256491753036,
+           0.0,
+           0.24234994244859304,
+           0.0,
+           1.0000000000000002,
+           7.601863064894022,
+           0.7043148514982437,
+           0.0
+          ],
+          "settled_wrist_position_error_m": 0.00028301695123942054,
+          "settled_ball_displacement_m": 0.0004782470579049968,
+          "two_seconds_physics_wall_s": 0.10564899444580078,
+          "v3_settle_2s_stats": [
+           0.21362830831204407,
+           0.0,
+           0.23938277335225902,
+           0.0,
+           1.0000000000000002,
+           7.601157963971505,
+           0.7042101628054098,
+           0.0
+          ],
+          "v3_settle_wrist_error_m": 0.00028301693720163995,
+          "GPU_baseline": {
+           "episodes": 10,
+           "overflow": 0,
+           "flight_rises_nominal_m": [
+            0.27494698762893677,
+            0.26488763093948364,
+            0.30827397108078003
+           ],
+           "hardware_passes": 10,
+           "wrist_passes": 10,
+           "full_report": "research/warp/validation/report.json"
+          },
+          "GPU_physics_throughput": {
+           "worlds": 2048,
+           "macro_steps_per_s": 69689.18784705419,
+           "wall_s": 2.938762903213501,
+           "initial_wrist_pose": [
+            0.0,
+            0.0,
+            0.6499999999999999,
+            0.8120396710175835,
+            0.442334868459725,
+            -0.2930118021767136,
+            -0.24305456305843567
+           ],
+           "final_wrist_pose": [
+            1.0597955846236573e-09,
+            -6.606929447983134e-10,
+            0.6497174501419067,
+            0.8131237030029297,
+            0.4407961368560791,
+            -0.2921043634414673,
+            -0.24331805109977722
+           ],
+           "final_ball_position": [
+            0.10916237533092499,
+            0.10114330053329468,
+            0.6353714466094971
+           ],
+           "stats": [
+            0.0001606579462531954,
+            0.0,
+            0.19830088317394257,
+            0.0,
+            1.0000001192092896,
+            7.313365936279297,
+            0.6713358163833618,
+            0.0
+           ],
+           "overflow": 0
+          },
+          "guarded_baseline": {
+           "episodes": 10,
+           "captured_flights": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3
+           ],
+           "hardware_passes": 10,
+           "wrist_passes": 10,
+           "overflow": 0,
+           "complete_successes": 0,
+           "full_report": "research/warp/validation_guard/report.json"
+          },
+          "v6_baseline": {
+           "episodes": 10,
+           "captured_flights": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3
+           ],
+           "hardware_passes": 10,
+           "wrist_passes": 10,
+           "complete_successes": 0,
+           "flight_passes_by_stage": [
+            10,
+            10,
+            10
+           ],
+           "nominal_flights": [
+            null,
+            null,
+            null
+           ],
+           "full_report": "research/warp/validation_v6/[redacted]"
+          },
+          "v7_baseline": {
+           "episodes": 10,
+           "captured_flights": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3
+           ],
+           "hardware_passes": 10,
+           "wrist_passes": 10,
+           "complete_successes": 0,
+           "flight_passes_by_stage": [
+            10,
+            10,
+            10
+           ],
+           "nominal_flights": [
+            null,
+            null,
+            null,
+            null
+           ],
+           "full_report": "research/warp/validation_v7/[redacted]"
+          },
+          "v8_baseline": {
+           "episodes": 10,
+           "captured_flights": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3
+           ],
+           "hardware_passes": 10,
+           "wrist_passes": 10,
+           "complete_successes": 0,
+           "flight_passes_by_stage": [
+            10,
+            10,
+            10
+           ],
+           "floor_episodes": 0,
+           "nominal_flights": [
+            null,
+            null,
+            null
+           ],
+           "full_report": "research/warp/validation_v8/[redacted]"
+          }
+         },
+         "baseline": {
+          "episodes": 10,
+          "captured_flights": [
+           3,
+           3,
+           3,
+           3,
+           3,
+           3,
+           3,
+           3,
+           3,
+           3
+          ],
+          "hardware_passes": 10,
+          "wrist_passes": 10,
+          "complete_successes": 0,
+          "flight_passes_by_stage": [
+           10,
+           10,
+           10
+          ],
+          "floor_episodes": 0,
+          "nominal_flights": [
+           {
+            "release_s": 1.707,
+            "capture_s": 2.165,
+            "duration_s": 0.458,
+            "rise_m": 0.27524900436401367,
+            "horizontal_displacement_m": 0.013910314068198204,
+            "apex_s": 1.944,
+            "gravity_error_mps2": 0.0005351273250013878,
+            "captured": true,
+            "release_idx": 1706,
+            "capture_idx": 2164,
+            "floor_contact": false,
+            "pass": true
+           },
+           {
+            "release_s": 5.447,
+            "capture_s": 5.923,
+            "duration_s": 0.47600000000000003,
+            "rise_m": 0.26576703786849976,
+            "horizontal_displacement_m": 0.023554524406790733,
+            "apex_s": 5.68,
+            "gravity_error_mps2": 0.0004067827632306036,
+            "captured": true,
+            "release_idx": 5446,
+            "capture_idx": 5922,
+            "floor_contact": false,
+            "pass": true
+           },
+           {
+            "release_s": 6.626,
+            "capture_s": 7.135,
+            "duration_s": 0.509,
+            "rise_m": 0.2946074604988098,
+            "horizontal_displacement_m": 0.011526413261890411,
+            "apex_s": 6.871,
+            "gravity_error_mps2": 0.00039467095723203936,
+            "captured": true,
+            "release_idx": 6625,
+            "capture_idx": 7134,
+            "floor_contact": false,
+            "pass": true
+           }
+          ],
+          "full_report": "research/warp/validation_v8/[redacted]"
+         },
+         "limitations": [
+          "Convex link collision hulls approximate vendor geometry; no detailed felt/soft-pad deformation or air drag.",
+          "Friction is inferred. Validation distribution does not demonstrate real-hardware transfer.",
+          "Human contact reconstruction is partial, so initial finger geometry comes from robot pad IK.",
+          "Success in this smaller torsion model will not establish success at the original0.005m. Evaluate friction sensitivity separately; physical contact-patch size is not identified by the video.",
+          "GPUfloat32 contact trajectories differ from CPU by millimetres during impact; this is a distinct recorded simulation version.",
+          "Contact-patch torsion remains inferred, nominal0.0005m.",
+          "Training resets may sample physically generated catch-state snapshots; verification uses uninterrupted episodes with physical initial settling.",
+          "Command guard is not a proof against arbitrary contact impulses; every actual1kHz trajectory remains subject to exact hardware checks."
+         ],
+         "media": {
+          "initial": "research/sim/initial_v3.png",
+          "replay": "research/sim/replay.mp4",
+          "baseline_v2": "research/baseline_v2_eval/right.mp4",
+          "baseline_gpu": "research/warp/validation_v8/right.mp4"
+         },
+         "change_reason": "Offline thirdcatch calibration on frozenPPO26 and3 separate training-only seeds chooses laterfingerclosure(delta-.08s),XYgain1.0,thirdpulse.92. All3 calibration first120mscontact100%; no criteria/physics/guard change. Sim7fixedcatchsettling retained. Newconstantsettings only; no execution-time search.",
+         "physics_hypothesis_source": "https://mujoco.readthedocs.io/en/3.17.0/computation/ (length units and torsional contact model only; selected coefficient is my hypothesis)",
+         "source": "https://mujoco.readthedocs.io/en/3.17.0/mjwarp/index.html"
+        },
+        "files": {
+         "image": {
+          "sha": "aa5d11803067",
+          "bytes": 91867,
+          "content_type": "image/png"
+         },
+         "replay_video": {
+          "sha": "99285fca913f",
+          "bytes": 203050,
+          "content_type": "video/mp4"
+         },
+         "scene_1": {
+          "sha": "b64aae5730c1",
+          "bytes": 38998,
+          "content_type": "application/xml"
+         },
+         "scene_2": {
+          "sha": "aebbc94b0042",
+          "bytes": 964,
+          "content_type": "application/json"
+         },
+         "scene_3": {
+          "sha": "5f856f6a44bc",
+          "bytes": 265188,
+          "content_type": "application/json"
+         },
+         "scene_4": {
+          "sha": "f9fe655bae58",
+          "bytes": 48509,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0078",
+        "seq": 78,
+        "kind": "iter",
+        "version": 26,
+        "recorded_utc": "2026-11-03T09:39:30Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO",
+          "steps": 27328512,
+          "args": {
+           "out": "research/runs/gpu24_settlelaunch",
+           "steps": 30000000,
+           "envs": 2048,
+           "seed": 211,
+           "load": "research/runs/gpu15_guarded/policy.pt",
+           "experts": true,
+           "std": 0.05,
+           "rho": 0.0,
+           "lr": 0.0001,
+           "horizon": 32,
+           "mode": "mixed",
+           "sim_version": 6,
+           "reward": "gpu-v4-settlelaunch",
+           "freeze_phases": null,
+           "context_bank": "research/contexts/bank20.npz",
+           "base_version": 2,
+           "variant": "gpu_independent_safe",
+           "reward_version": "gpu-v4-settlelaunch",
+           "reference_tuning": [
+            0.029999999329447746,
+            0.0,
+            0.699999988079071,
+            0.019999999552965164,
+            0.9800000190734863
+           ]
+          },
+          "architecture": "Four independent2x256tanh actor heads selected solely by observed clock, shared2x256 critic, phase-specific diagonal Gaussian20 actions",
+          "hyperparameters": {
+           "gamma": 0.99,
+           "gae_lambda": 0.95,
+           "clip": 0.2,
+           "epochs_max": 4,
+           "minibatch": 8192,
+           "horizon": 32,
+           "entropy_coef": 0.002,
+           "actor_and_critic_grad_clip": 0.5,
+           "reward_scale": 0.1,
+           "adaptive_lr": "KL>0.02 multiply.85;KL<.005 multiply1.02, range1e-5..4e-4; stopepochifKL>.03"
+          }
+         },
+         "reward_terms": [
+          {
+           "name": "ball_position",
+           "formula": "Flight8 exp(-(distance to successful physical baseline path/.055)^2); held5 exp(-(distance to retargeted palm region/.075)^2). Baseline flight heights/timings independently meet criteria.",
+           "weight": 1
+          },
+          {
+           "name": "ball_velocity",
+           "formula": "(2 flight,.2 held) exp(-||v-vgoal||²/1.5); flight goal from physical baseline.",
+           "weight": 1
+          },
+          {
+           "name": "spin",
+           "formula": "3 clip(relative wrist-X angular velocity,-target,target) exp(-(held position error/.09)^2)*contact fraction; phase targets4,18,3rad/s; outside -.03 min(|relative omega|,30). Dense spin reward multiplied0.1 after reward-only signed-X7.5rad milestone in the active stage.",
+           "weight": 1
+          },
+          {
+           "name": "spin_axis",
+           "formula": "-.02 min(norm(other relative angular components),30) during spin.",
+           "weight": 1
+          },
+          {
+           "name": "contact_phase",
+           "formula": ".5 times contact fraction while held, .5 times free fraction in flight.",
+           "weight": 1
+          },
+          {
+           "name": "wrist_position",
+           "formula": "exp(-(wrist-reference position error/.04)^2)",
+           "weight": 1
+          },
+          {
+           "name": "wrist_rotation",
+           "formula": "exp(-(wrist-reference rotation angle error/.35)^2)",
+           "weight": 1
+          },
+          {
+           "name": "action_change",
+           "formula": "-.01 sum squared change of20 joint target-velocity increments",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-2 max(0,speed_ratio-.85)^2 -100 if speed ratio>1 or position allowance exceeded",
+           "weight": 1
+          },
+          {
+           "name": "drop",
+           "formula": "-10 if ball touches floor or ball z<.15m",
+           "weight": 1
+          },
+          {
+           "name": "catch_progress",
+           "formula": "For supported capture in timewindow:10+90exp(-((estimated rise-targetheight)/.045)^2)exp(-((duration-targetduration)/.10)^2); minus30 if duration<minimum-.02s. Targets heights[.235,.267,.319]m,durations[.50,.50,.56]s. Counters are reward-only, not policy inputs.",
+           "weight": 1
+          },
+          {
+           "name": "spin_progress",
+           "formula": "+100 once per held phase when signed X integral>=7.5rad with contact; training margin above2pi, separate strict verification.",
+           "weight": 1
+          },
+          {
+           "name": "final_hold",
+           "formula": "After9.85s:2exp(-(relative center speed/.15)^2)+2exp(-|relative omega|²)-5 if ball-palm distance>.10m.",
+           "weight": 1
+          },
+          {
+           "name": "launch_quality",
+           "formula": "At15 continuously free50Hz blocks (~.30s):30exp(-((estimated peak rise-[.235,.267,.319]m)/.045)^2)-30 if rise differs by>.06m. Training shaping sampled50Hz only; verification uses actual1kHz traces.",
+           "weight": 1
+          },
+          {
+           "name": "prelaunch_grasp",
+           "formula": "-8 sum(exp(-((time-(release-.04))/.12)^2), releases2/3) times sum squared integrated finger residuals.",
+           "weight": 1
+          },
+          {
+           "name": "completed_spin_settle",
+           "formula": "-.5 sum squared integrated residuals after the active spin shaping milestone; counters never enter observations.",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "initial wrist yaw",
+           "distribution": "uniform",
+           "range_deg": [
+            -2,
+            2
+           ]
+          },
+          {
+           "quantity": "initial finger positions",
+           "distribution": "uniform",
+           "range_rad": [
+            -0.01,
+            0.01
+           ]
+          },
+          {
+           "quantity": "initial ball world-horizontal center",
+           "distribution": "uniform",
+           "range_m": [
+            -0.003,
+            0.003
+           ]
+          },
+          {
+           "quantity": "encoder noise",
+           "distribution": "Gaussian independent",
+           "q_std_rad": 0.002,
+           "qd_std_radps": 0.05
+          }
+         ],
+         "policy_observation_space": "128 values: noisy20 joint positions/velocities, ball position/velocity relative wrist, ball orientation and angular velocity, wrist pose/velocity and fixed-reference error, prior own target/target-increment memory, time Fourier features. Contacts, forces, physics parameters, rewards and progress counters never enter the policy.",
+         "action_space": "20 independent joint target-velocity increments scaled by0.5URDF speeds, integrated to position residuals bounded1.2rad, clipped0.05rad inside joint limits with anti-windup. Reference finger opening decays residuals; early/final residual gates disclosed. Wrist uses basev2.500Hz target bridge and1kHz hardware remain inforce.",
+         "curriculum": {
+          "mode": "mixed",
+          "mixed": "40% complete episodes from start;20% each start at physical catch-state snapshots2.18,5.94,7.20s; continue to10.5s, terminate drop/hardware violation.",
+          "focused": "fast starts5.94s and continues through third toss/catch to7.50s; late starts7.20s and includes final hold; first starts2.18s through second catch6.20s.",
+          "initial_states": "Physical baseline states in nominal .0005m-torsion model, then stated perturbations. Verification uses independent uninterrupted full episodes and .20s initial physical settling.",
+          "learner_contexts": {
+           "bank": "research/contexts/bank20.npz",
+           "sha256": "19ec5718ced5…",
+           "metadata": {
+            "checkpoint": "research/runs/gpu20_preserve/policy.pt",
+            "PPO_steps": 2031616,
+            "worlds": 512,
+            "seeds": null,
+            "sim_version": 6,
+            "counts": null,
+            "filter": "No previous hardware/floor/overflow violation; current ball near hand with actual contact. Full uninterrupted physical rollouts, states include policy/controller memory.",
+            "purpose": "Offline PPO curriculum only; verification remains independent full episodes1000-1009."
+           },
+           "fraction": 0.75,
+           "other_fraction": "25% baseline physical states. Contexts already include training-only initial perturbations; no extra initial jitter is applied after selecting context."
+          }
+         },
+         "compute": {
+          "training_wall_s": 932.9267094135284,
+          "gpu_hours": 0.25914630817042456,
+          "engine": "MuJoCoWarp3.17.0/Warp1.19.0"
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "checkpoint": "research/runs/gpu24_settlelaunch/policy.pt",
+          "engine": "MuJoCoWarp3.17.0",
+          "torsion_override_m": null,
+          "baseline": false,
+          "sim_version": 6,
+          "reference_tuning": [
+           0.029999999329447746,
+           0.0,
+           0.699999988079071,
+           0.019999999552965164,
+           0.9800000190734863
+          ],
+          "episodes": 10,
+          "successes": 8,
+          "success_rate": 0.8,
+          "pass": false,
+          "results": [
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1000
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1001
+           },
+           {
+            "success": false,
+            "captured_flights": 2,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "2/3 captured flights; 0/3 spins",
+            "seed": 1002
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1003
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1004
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1005
+           },
+           {
+            "success": false,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1006
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1007
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1008
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1009
+           }
+          ],
+          "wall_s": 14.48026728630066,
+          "overflow": 0
+         },
+         "checkpoint": "research/runs/gpu24_settlelaunch/policy.pt",
+         "reflection": "Run stopped at27.3M steps after selectedPPO29 met nominal stoppingcriteria. Rewardv4 teaches postspin settling and reaches8/10 complete in sim6, but below9/10; FAIL. This is a useful independent approach without sim7catch gate, but not selected. Allremaining training stopped; no furtheroptimization afterselectedcriterionpass.",
+         "base_controller_performance": "GPU reference controller:10/10 have3 caught flights and pass wrist/hardware checks,0/10 full tasks because all spins fail. Learned spin/transition control is separately evaluated.",
+         "limitations": [
+          "Nominal torsional friction length.0005m inferred, not measured.",
+          "GPU float32/non-deterministic contact trajectories; exact1kHz traces used for verification."
+         ],
+         "pretraining": {
+          "checkpoint": "research/runs/gpu15_guarded/policy.pt",
+          "steps": 30015488,
+          "wall_s": 936.0783045291901
+         },
+         "constant_reference_tuning": [
+          0.029999999329447746,
+          0.0,
+          0.699999988079071,
+          0.019999999552965164,
+          0.9800000190734863
+         ]
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "2c9031e19b48",
+          "bytes": 264135,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "a2c0fd73a021",
+          "bytes": 269597,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "d2422dcaf498",
+          "bytes": 231361,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "d9e8c0bd226c",
+          "bytes": 325288,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0079",
+        "seq": 79,
+        "kind": "verify",
+        "version": 26,
+        "recorded_utc": "2026-11-03T09:39:31Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0078",
+         "criteria_version": 1,
+         "verdict": "FAIL",
+         "policy": {
+          "checkpoint": "research/runs/gpu24_settlelaunch/policy.pt",
+          "observations": "deployable",
+          "PPO_steps": 27328512
+         },
+         "episodes": {
+          "count": 10,
+          "seeds": [
+           1000,
+           1001,
+           1002,
+           1003,
+           1004,
+           1005,
+           1006,
+           1007,
+           1008,
+           1009
+          ],
+          "conditions": "World-ball jitter independent of wrist yaw, exact criteria v1 distribution,0.20s physical initial settling, Gaussian encoders."
+         },
+         "success_rate": 0.8,
+         "results": [
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.07339828067592695,
+            "relative_speed_rms_mps": 0.07955830573620644,
+            "relative_angular_speed_rms_radps": 0.8650523614495481,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020500714856019852,
+            "position_max_m": 0.09764935361593279,
+            "rotation_rms_deg": 1.3394459138442245,
+            "rotation_p95_deg": 2.549412999839568,
+            "palm_tilt_median_deg": 22.83904013574543,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8566924587865941,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1000
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.0746749295167913,
+            "relative_speed_rms_mps": 0.0806954715345106,
+            "relative_angular_speed_rms_radps": 0.3364006502078665,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020360933309614616,
+            "position_max_m": 0.09762595966793249,
+            "rotation_rms_deg": 1.3374053975417242,
+            "rotation_p95_deg": 2.556703315434867,
+            "palm_tilt_median_deg": 22.84699703273509,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8654876349975928,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.9999942779541,
+            "max_wrist_torque_Nm": 1.9999991655349731,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1001
+          },
+          {
+           "success": false,
+           "captured_flights": 2,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.07494029575976183,
+            "relative_speed_rms_mps": 0.08012990395435643,
+            "relative_angular_speed_rms_radps": 0.44937111313718714,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.02034052236043365,
+            "position_max_m": 0.09762587522788951,
+            "rotation_rms_deg": 1.3401286474885081,
+            "rotation_p95_deg": 2.5454790814697232,
+            "palm_tilt_median_deg": 22.84474841874856,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.844860135700494,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "2/3 captured flights; 0/3 spins",
+           "seed": 1002
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.07483142971682502,
+            "relative_speed_rms_mps": 0.07997172067654122,
+            "relative_angular_speed_rms_radps": 0.36255581475437704,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020684109870417654,
+            "position_max_m": 0.09762963732981933,
+            "rotation_rms_deg": 1.340233913323536,
+            "rotation_p95_deg": 2.5411233700147524,
+            "palm_tilt_median_deg": 22.84786766660033,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8406800200701054,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.9999942779541,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1003
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.07476096494644534,
+            "relative_speed_rms_mps": 0.08109349011753333,
+            "relative_angular_speed_rms_radps": 0.27885599216982143,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.019868420713619828,
+            "position_max_m": 0.09763816797215884,
+            "rotation_rms_deg": 1.3406791954959396,
+            "rotation_p95_deg": 2.550061526418012,
+            "palm_tilt_median_deg": 22.83745006935187,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.859172541175024,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999991655349731,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1004
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.07428321545030996,
+            "relative_speed_rms_mps": 0.08028503456809769,
+            "relative_angular_speed_rms_radps": 0.28788684671900444,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.019968980603005625,
+            "position_max_m": 0.09762344057968597,
+            "rotation_rms_deg": 1.3386874469255217,
+            "rotation_p95_deg": 2.5467974835529787,
+            "palm_tilt_median_deg": 22.848145392428936,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.856715063634303,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.9999942779541,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1005
+          },
+          {
+           "success": false,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.05556153321637972,
+            "relative_speed_rms_mps": 0.06861497604711914,
+            "relative_angular_speed_rms_radps": 2.192328085377932,
+            "pass": false
+           },
+           "wrist": {
+            "position_rms_m": 0.02052596905574733,
+            "position_max_m": 0.09761740985420789,
+            "rotation_rms_deg": 1.33905172170905,
+            "rotation_p95_deg": 2.5397658687407985,
+            "palm_tilt_median_deg": 22.841066598615075,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8344055839002353,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.9999942779541,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1006
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.07215442848523658,
+            "relative_speed_rms_mps": 0.07820410678112742,
+            "relative_angular_speed_rms_radps": 0.5311193511004254,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020488938174427786,
+            "position_max_m": 0.09762613626814791,
+            "rotation_rms_deg": 1.3424490043908923,
+            "rotation_p95_deg": 2.5470016736165446,
+            "palm_tilt_median_deg": 22.847957213535288,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8613523513850391,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1007
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.07383468830470098,
+            "relative_speed_rms_mps": 0.07994319100867445,
+            "relative_angular_speed_rms_radps": 0.23162231232770458,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020601377853590452,
+            "position_max_m": 0.09763335932146175,
+            "rotation_rms_deg": 1.3418684190550527,
+            "rotation_p95_deg": 2.560212946847946,
+            "palm_tilt_median_deg": 22.84628836235879,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8574790931071365,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.9999942779541,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1008
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.07440985426023226,
+            "relative_speed_rms_mps": 0.08063246722359067,
+            "relative_angular_speed_rms_radps": 0.24118862112183803,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.019981042253118114,
+            "position_max_m": 0.09763426359852802,
+            "rotation_rms_deg": 1.3403317515319932,
+            "rotation_p95_deg": 2.548353805562523,
+            "palm_tilt_median_deg": 22.843216916214274,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.857716869264496,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1009
+          }
+         ],
+         "simulation_version": 6,
+         "evidence": {
+          "metrics": "research/runs/gpu24_settlelaunch/eval/[redacted]",
+          "initial_conditions": "research/runs/gpu24_settlelaunch/eval/initial_conditions.json",
+          "traces": "1kHz actualqpos,qvel,contacts,hardware maxima,solver overflow flags",
+          "videos": "Top/left/right of a success and a failure where present"
+         },
+         "limitations": [
+          "Nominal torsional friction length.0005m inferred, not measured.",
+          "GPU float32/non-deterministic contact trajectories; exact1kHz traces used for verification."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "491459ffcd10",
+          "bytes": 47151,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "54fd38d3c6aa",
+          "bytes": 10126,
+          "content_type": "application/json"
+         },
+         "video_left_failure": {
+          "sha": "40eabfa3d3f2",
+          "bytes": 268896,
+          "content_type": "video/mp4"
+         },
+         "video_left_success": {
+          "sha": "a2c0fd73a021",
+          "bytes": 269597,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "59b7f9d2f983",
+          "bytes": 228894,
+          "content_type": "video/mp4"
+         },
+         "video_right_success": {
+          "sha": "d2422dcaf498",
+          "bytes": 231361,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "ebb0fc84deb3",
+          "bytes": 326139,
+          "content_type": "video/mp4"
+         },
+         "video_top_success": {
+          "sha": "d9e8c0bd226c",
+          "bytes": 325288,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0080",
+        "seq": 80,
+        "kind": "iter",
+        "version": 27,
+        "recorded_utc": "2026-11-03T09:39:34Z",
+        "exception": false,
+        "body": {
+         "sim_version": 7,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO",
+          "steps": 16842752,
+          "args": {
+           "out": "research/runs/gpu27_catchadapt",
+           "steps": 30000000,
+           "envs": 2048,
+           "seed": 241,
+           "load": "research/runs/gpu19_launch/policy.pt",
+           "experts": true,
+           "std": 0.05,
+           "rho": 0.0,
+           "lr": 0.0001,
+           "horizon": 32,
+           "mode": "mixed",
+           "sim_version": 7,
+           "reward": "gpu-v3-launchquality",
+           "freeze_phases": "1,2",
+           "context_bank": null,
+           "base_version": 2,
+           "variant": "gpu_independent_safe",
+           "reward_version": "gpu-v3-launchquality",
+           "reference_tuning": [
+            0.02500000037252903,
+            0.0,
+            0.699999988079071,
+            0.019999999552965164,
+            0.9800000190734863,
+            1.0199999809265137
+           ]
+          },
+          "architecture": "Four independent2x256tanh actor heads selected solely by observed clock, shared2x256 critic, phase-specific diagonal Gaussian20 actions",
+          "hyperparameters": {
+           "gamma": 0.99,
+           "gae_lambda": 0.95,
+           "clip": 0.2,
+           "epochs_max": 4,
+           "minibatch": 8192,
+           "horizon": 32,
+           "entropy_coef": 0.002,
+           "actor_and_critic_grad_clip": 0.5,
+           "reward_scale": 0.1,
+           "adaptive_lr": "KL>0.02 multiply.85;KL<.005 multiply1.02, range1e-5..4e-4; stopepochifKL>.03"
+          },
+          "frozen_phase_heads": "1,2"
+         },
+         "reward_terms": [
+          {
+           "name": "ball_position",
+           "formula": "Flight8 exp(-(distance to successful physical baseline path/.055)^2); held5 exp(-(distance to retargeted palm region/.075)^2). Baseline flight heights/timings independently meet criteria.",
+           "weight": 1
+          },
+          {
+           "name": "ball_velocity",
+           "formula": "(2 flight,.2 held) exp(-||v-vgoal||²/1.5); flight goal from physical baseline.",
+           "weight": 1
+          },
+          {
+           "name": "spin",
+           "formula": "3 clip(relative wrist-X angular velocity,-target,target) exp(-(held position error/.09)^2)*contact fraction; phase targets4,18,3rad/s; outside -.03 min(|relative omega|,30).",
+           "weight": 1
+          },
+          {
+           "name": "spin_axis",
+           "formula": "-.02 min(norm(other relative angular components),30) during spin.",
+           "weight": 1
+          },
+          {
+           "name": "contact_phase",
+           "formula": ".5 times contact fraction while held, .5 times free fraction in flight.",
+           "weight": 1
+          },
+          {
+           "name": "wrist_position",
+           "formula": "exp(-(wrist-reference position error/.04)^2)",
+           "weight": 1
+          },
+          {
+           "name": "wrist_rotation",
+           "formula": "exp(-(wrist-reference rotation angle error/.35)^2)",
+           "weight": 1
+          },
+          {
+           "name": "action_change",
+           "formula": "-.01 sum squared change of20 joint target-velocity increments",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-2 max(0,speed_ratio-.85)^2 -100 if speed ratio>1 or position allowance exceeded",
+           "weight": 1
+          },
+          {
+           "name": "drop",
+           "formula": "-10 if ball touches floor or ball z<.15m",
+           "weight": 1
+          },
+          {
+           "name": "catch_progress",
+           "formula": "For supported capture in timewindow:10+90exp(-((estimated rise-targetheight)/.045)^2)exp(-((duration-targetduration)/.10)^2); minus30 if duration<minimum-.02s. Targets heights[.235,.267,.319]m,durations[.50,.50,.56]s. Counters are reward-only, not policy inputs.",
+           "weight": 1
+          },
+          {
+           "name": "spin_progress",
+           "formula": "+100 once per held phase when signed X integral>=7.5rad with contact; training margin above2pi, separate strict verification.",
+           "weight": 1
+          },
+          {
+           "name": "final_hold",
+           "formula": "After9.85s:2exp(-(relative center speed/.15)^2)+2exp(-|relative omega|²)-5 if ball-palm distance>.10m.",
+           "weight": 1
+          },
+          {
+           "name": "launch_quality",
+           "formula": "At15 continuously free50Hz blocks (~.30s):30exp(-((estimated peak rise-[.235,.267,.319]m)/.045)^2)-30 if rise differs by>.06m. Training shaping sampled50Hz only; verification uses actual1kHz traces.",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "initial wrist yaw",
+           "distribution": "uniform",
+           "range_deg": [
+            -2,
+            2
+           ]
+          },
+          {
+           "quantity": "initial finger positions",
+           "distribution": "uniform",
+           "range_rad": [
+            -0.01,
+            0.01
+           ]
+          },
+          {
+           "quantity": "initial ball world-horizontal center",
+           "distribution": "uniform",
+           "range_m": [
+            -0.003,
+            0.003
+           ]
+          },
+          {
+           "quantity": "encoder noise",
+           "distribution": "Gaussian independent",
+           "q_std_rad": 0.002,
+           "qd_std_radps": 0.05
+          }
+         ],
+         "policy_observation_space": "128 values: noisy20 joint positions/velocities, ball position/velocity relative wrist, ball orientation and angular velocity, wrist pose/velocity and fixed-reference error, prior own target/target-increment memory, time Fourier features. Contacts, forces, physics parameters, rewards and progress counters never enter the policy.",
+         "action_space": "20 independent joint target-velocity increments scaled by0.5URDF speeds, integrated to position residuals bounded1.2rad, clipped0.05rad inside joint limits with anti-windup. Reference finger opening decays residuals; early/final residual gates disclosed. Wrist uses basev2.500Hz target bridge and1kHz hardware remain inforce. Sim>=7 catch-settle gate: during[6.70,7.32)s increments suppressed and residuals decay.5 per50Hz step, with original physical controllers. Lastspin actions resume7.32s.",
+         "curriculum": {
+          "mode": "mixed",
+          "mixed": "40% complete episodes from start;20% each start at physical catch-state snapshots2.18,5.94,7.20s; continue to10.5s, terminate drop/hardware violation.",
+          "focused": "fast starts5.94s and continues through third toss/catch to7.50s; late starts7.20s and includes final hold; first starts2.18s through second catch6.20s.",
+          "initial_states": "Physical baseline states in nominal .0005m-torsion model, then stated perturbations. Verification uses independent uninterrupted full episodes and .20s initial physical settling."
+         },
+         "compute": {
+          "training_wall_s": 534.224771976471,
+          "gpu_hours": 0.14839576999346415,
+          "engine": "MuJoCoWarp3.17.0/Warp1.19.0"
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "checkpoint": "research/runs/gpu27_catchadapt/policy.pt",
+          "engine": "MuJoCoWarp3.17.0",
+          "torsion_override_m": null,
+          "baseline": false,
+          "sim_version": 7,
+          "reference_tuning": [
+           0.02500000037252903,
+           0.0,
+           0.699999988079071,
+           0.019999999552965164,
+           0.9800000190734863,
+           1.0199999809265137
+          ],
+          "episodes": 10,
+          "successes": 7,
+          "success_rate": 0.7,
+          "pass": false,
+          "results": [
+           {
+            "success": false,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "3/3 captured flights; 2/3 spins",
+            "seed": 1000
+           },
+           {
+            "success": false,
+            "captured_flights": 2,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "2/3 captured flights; 0/3 spins",
+            "seed": 1001
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1002
+           },
+           {
+            "success": false,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1003
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1004
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1005
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1006
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1007
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1008
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1009
+           }
+          ],
+          "wall_s": 13.891424655914307,
+          "overflow": 0
+         },
+         "checkpoint": "research/runs/gpu27_catchadapt/policy.pt",
+         "reflection": "Stopped after~17M ofplanned30M becausePPO29 met nominal stoppingcriteria. Frozen successful first/short heads plus longerlaunch/late adaptation in sim7 gives7/10 complete, below9/10. FAIL; not selected. Preserve actualsteps/source/curves and allfullrollouts.",
+         "base_controller_performance": "GPU reference controller:10/10 have3 caught flights and pass wrist/hardware checks,0/10 full tasks because all spins fail. Learned spin/transition control is separately evaluated.",
+         "limitations": [
+          "Nominal torsional friction length.0005m inferred, not measured.",
+          "GPU float32/non-deterministic contact trajectories; exact1kHz traces used for verification.",
+          "Untrained reference in sim7 can laterdrop; its3initialcaughtflights are partial progress, never task success."
+         ],
+         "pretraining": {
+          "checkpoint": "research/runs/gpu19_launch/policy.pt",
+          "steps": 30015488,
+          "wall_s": 938.7922496795654
+         },
+         "constant_reference_tuning": [
+          0.02500000037252903,
+          0.0,
+          0.699999988079071,
+          0.019999999552965164,
+          0.9800000190734863,
+          1.0199999809265137
+         ]
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "77e166c2f3c0",
+          "bytes": 152833,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "62b71550f119",
+          "bytes": 261673,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "89dceca6cc4b",
+          "bytes": 226954,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "20a49a33aadc",
+          "bytes": 319230,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0081",
+        "seq": 81,
+        "kind": "verify",
+        "version": 27,
+        "recorded_utc": "2026-11-03T09:39:35Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0080",
+         "criteria_version": 1,
+         "verdict": "FAIL",
+         "policy": {
+          "checkpoint": "research/runs/gpu27_catchadapt/policy.pt",
+          "observations": "deployable",
+          "PPO_steps": 16842752
+         },
+         "episodes": {
+          "count": 10,
+          "seeds": [
+           1000,
+           1001,
+           1002,
+           1003,
+           1004,
+           1005,
+           1006,
+           1007,
+           1008,
+           1009
+          ],
+          "conditions": "World-ball jitter independent of wrist yaw, exact criteria v1 distribution,0.20s physical initial settling, Gaussian encoders."
+         },
+         "success_rate": 0.7,
+         "results": [
+          {
+           "success": false,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 0.992,
+            "maximum_ball_palm_distance_m": 0.06745975721030269,
+            "relative_speed_rms_mps": 0.08041779228270705,
+            "relative_angular_speed_rms_radps": 0.5377583487555038,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020204320826826886,
+            "position_max_m": 0.09771700452082167,
+            "rotation_rms_deg": 1.3213460669193584,
+            "rotation_p95_deg": 2.461942210956635,
+            "palm_tilt_median_deg": 22.831904156268084,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.916127357543365,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "3/3 captured flights; 2/3 spins",
+           "seed": 1000
+          },
+          {
+           "success": false,
+           "captured_flights": 2,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.05844224153051951,
+            "relative_speed_rms_mps": 0.0624624303136143,
+            "relative_angular_speed_rms_radps": 0.2385280207778708,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.01928356320449256,
+            "position_max_m": 0.09768528649173755,
+            "rotation_rms_deg": 1.3237269084162768,
+            "rotation_p95_deg": 2.4709648002610747,
+            "palm_tilt_median_deg": 22.81985716340469,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.7808531956833688,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "2/3 captured flights; 0/3 spins",
+           "seed": 1001
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.05923766051215791,
+            "relative_speed_rms_mps": 0.06351914489808495,
+            "relative_angular_speed_rms_radps": 0.23243688617127725,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020027450588244494,
+            "position_max_m": 0.09768388861077065,
+            "rotation_rms_deg": 1.3254194072799141,
+            "rotation_p95_deg": 2.4576333085653674,
+            "palm_tilt_median_deg": 22.829490249630243,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8080086736552355,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.9999942779541,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1002
+          },
+          {
+           "success": false,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 0.99,
+            "maximum_ball_palm_distance_m": 0.06741730334973062,
+            "relative_speed_rms_mps": 0.0873674805925022,
+            "relative_angular_speed_rms_radps": 1.188023821337292,
+            "pass": false
+           },
+           "wrist": {
+            "position_rms_m": 0.020090599761591346,
+            "position_max_m": 0.09766037707842636,
+            "rotation_rms_deg": 1.329557204251736,
+            "rotation_p95_deg": 2.4533373002666714,
+            "palm_tilt_median_deg": 22.824130456144136,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.854523112450404,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.9999942779541,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1003
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 0.992,
+            "maximum_ball_palm_distance_m": 0.06958920519542791,
+            "relative_speed_rms_mps": 0.08882689113526666,
+            "relative_angular_speed_rms_radps": 0.7546211966756032,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020372915832065804,
+            "position_max_m": 0.0976478023213814,
+            "rotation_rms_deg": 1.3329173933992118,
+            "rotation_p95_deg": 2.4657546614250436,
+            "palm_tilt_median_deg": 22.828253185406517,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8627447895374181,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1004
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.06010580051135646,
+            "relative_speed_rms_mps": 0.06564610476066751,
+            "relative_angular_speed_rms_radps": 0.37917370555767205,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.019695116598485333,
+            "position_max_m": 0.09766926437451154,
+            "rotation_rms_deg": 1.3268414973740474,
+            "rotation_p95_deg": 2.463022060334077,
+            "palm_tilt_median_deg": 22.82088099463779,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8056277431221571,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.9999942779541,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1005
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.06052054125595886,
+            "relative_speed_rms_mps": 0.06476466393025641,
+            "relative_angular_speed_rms_radps": 0.265823523118918,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.019879376265001917,
+            "position_max_m": 0.09767944922253355,
+            "rotation_rms_deg": 1.3258307196302497,
+            "rotation_p95_deg": 2.470641930427687,
+            "palm_tilt_median_deg": 22.82321283759757,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8291898813681328,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.9999942779541,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1006
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.058508562549556956,
+            "relative_speed_rms_mps": 0.06489445990063783,
+            "relative_angular_speed_rms_radps": 0.5140407127539648,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020163185348875335,
+            "position_max_m": 0.09767077540607785,
+            "rotation_rms_deg": 1.3287757699401956,
+            "rotation_p95_deg": 2.4641534493016892,
+            "palm_tilt_median_deg": 22.82519772300862,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.809277061658648,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1007
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 0.994,
+            "maximum_ball_palm_distance_m": 0.0582575562566076,
+            "relative_speed_rms_mps": 0.06909860751503454,
+            "relative_angular_speed_rms_radps": 0.8341816583312341,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020289515796690923,
+            "position_max_m": 0.0976494951787401,
+            "rotation_rms_deg": 1.3340201217216967,
+            "rotation_p95_deg": 2.4754475607206623,
+            "palm_tilt_median_deg": 22.835936264281603,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.808643507082608,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999991655349731,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1008
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 0.988,
+            "maximum_ball_palm_distance_m": 0.06823263635670217,
+            "relative_speed_rms_mps": 0.08878228286702061,
+            "relative_angular_speed_rms_radps": 0.9001342253529878,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020115040595009005,
+            "position_max_m": 0.0976545879088585,
+            "rotation_rms_deg": 1.3322321035571918,
+            "rotation_p95_deg": 2.4695441240771463,
+            "palm_tilt_median_deg": 22.828459621822315,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.9341220165133172,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1009
+          }
+         ],
+         "simulation_version": 7,
+         "evidence": {
+          "metrics": "research/runs/gpu27_catchadapt/eval/[redacted]",
+          "initial_conditions": "research/runs/gpu27_catchadapt/eval/initial_conditions.json",
+          "traces": "1kHz actualqpos,qvel,contacts,hardware maxima,solver overflow flags",
+          "videos": "Top/left/right of a success and a failure where present"
+         },
+         "limitations": [
+          "Nominal torsional friction length.0005m inferred, not measured.",
+          "GPU float32/non-deterministic contact trajectories; exact1kHz traces used for verification.",
+          "Untrained reference in sim7 can laterdrop; its3initialcaughtflights are partial progress, never task success."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "a904c0349247",
+          "bytes": 47362,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "54fd38d3c6aa",
+          "bytes": 10126,
+          "content_type": "application/json"
+         },
+         "video_left_failure": {
+          "sha": "1ccde6a007d6",
+          "bytes": 262688,
+          "content_type": "video/mp4"
+         },
+         "video_left_success": {
+          "sha": "62b71550f119",
+          "bytes": 261673,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "6a33484d84ea",
+          "bytes": 228257,
+          "content_type": "video/mp4"
+         },
+         "video_right_success": {
+          "sha": "89dceca6cc4b",
+          "bytes": 226954,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "ba68445fd569",
+          "bytes": 316981,
+          "content_type": "video/mp4"
+         },
+         "video_top_success": {
+          "sha": "20a49a33aadc",
+          "bytes": 319230,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0082",
+        "seq": 82,
+        "kind": "iter",
+        "version": 28,
+        "recorded_utc": "2026-11-03T09:39:39Z",
+        "exception": false,
+        "body": {
+         "sim_version": 7,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO",
+          "steps": 11665408,
+          "args": {
+           "out": "research/runs/gpu28_latesettled",
+           "steps": 20000000,
+           "envs": 2048,
+           "seed": 251,
+           "load": "research/runs/gpu26_catchsettle/policy.pt",
+           "experts": true,
+           "std": 0.08,
+           "rho": 0.0,
+           "lr": 0.0001,
+           "horizon": 32,
+           "mode": "late",
+           "sim_version": 7,
+           "reward": "gpu-v3-launchquality",
+           "freeze_phases": "0,1,2",
+           "context_bank": "research/contexts/bank26.npz",
+           "base_version": 2,
+           "variant": "gpu_independent_safe",
+           "reward_version": "gpu-v3-launchquality",
+           "reference_tuning": [
+            0.02500000037252903,
+            0.0,
+            0.699999988079071,
+            0.019999999552965164,
+            0.9800000190734863,
+            1.0199999809265137
+           ]
+          },
+          "architecture": "Four independent2x256tanh actor heads selected solely by observed clock, shared2x256 critic, phase-specific diagonal Gaussian20 actions",
+          "hyperparameters": {
+           "gamma": 0.99,
+           "gae_lambda": 0.95,
+           "clip": 0.2,
+           "epochs_max": 4,
+           "minibatch": 8192,
+           "horizon": 32,
+           "entropy_coef": 0.002,
+           "actor_and_critic_grad_clip": 0.5,
+           "reward_scale": 0.1,
+           "adaptive_lr": "KL>0.02 multiply.85;KL<.005 multiply1.02, range1e-5..4e-4; stopepochifKL>.03"
+          },
+          "frozen_phase_heads": "0,1,2"
+         },
+         "reward_terms": [
+          {
+           "name": "ball_position",
+           "formula": "Flight8 exp(-(distance to successful physical baseline path/.055)^2); held5 exp(-(distance to retargeted palm region/.075)^2). Baseline flight heights/timings independently meet criteria.",
+           "weight": 1
+          },
+          {
+           "name": "ball_velocity",
+           "formula": "(2 flight,.2 held) exp(-||v-vgoal||²/1.5); flight goal from physical baseline.",
+           "weight": 1
+          },
+          {
+           "name": "spin",
+           "formula": "3 clip(relative wrist-X angular velocity,-target,target) exp(-(held position error/.09)^2)*contact fraction; phase targets4,18,3rad/s; outside -.03 min(|relative omega|,30).",
+           "weight": 1
+          },
+          {
+           "name": "spin_axis",
+           "formula": "-.02 min(norm(other relative angular components),30) during spin.",
+           "weight": 1
+          },
+          {
+           "name": "contact_phase",
+           "formula": ".5 times contact fraction while held, .5 times free fraction in flight.",
+           "weight": 1
+          },
+          {
+           "name": "wrist_position",
+           "formula": "exp(-(wrist-reference position error/.04)^2)",
+           "weight": 1
+          },
+          {
+           "name": "wrist_rotation",
+           "formula": "exp(-(wrist-reference rotation angle error/.35)^2)",
+           "weight": 1
+          },
+          {
+           "name": "action_change",
+           "formula": "-.01 sum squared change of20 joint target-velocity increments",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-2 max(0,speed_ratio-.85)^2 -100 if speed ratio>1 or position allowance exceeded",
+           "weight": 1
+          },
+          {
+           "name": "drop",
+           "formula": "-10 if ball touches floor or ball z<.15m",
+           "weight": 1
+          },
+          {
+           "name": "catch_progress",
+           "formula": "For supported capture in timewindow:10+90exp(-((estimated rise-targetheight)/.045)^2)exp(-((duration-targetduration)/.10)^2); minus30 if duration<minimum-.02s. Targets heights[.235,.267,.319]m,durations[.50,.50,.56]s. Counters are reward-only, not policy inputs.",
+           "weight": 1
+          },
+          {
+           "name": "spin_progress",
+           "formula": "+100 once per held phase when signed X integral>=7.5rad with contact; training margin above2pi, separate strict verification.",
+           "weight": 1
+          },
+          {
+           "name": "final_hold",
+           "formula": "After9.85s:2exp(-(relative center speed/.15)^2)+2exp(-|relative omega|²)-5 if ball-palm distance>.10m.",
+           "weight": 1
+          },
+          {
+           "name": "launch_quality",
+           "formula": "At15 continuously free50Hz blocks (~.30s):30exp(-((estimated peak rise-[.235,.267,.319]m)/.045)^2)-30 if rise differs by>.06m. Training shaping sampled50Hz only; verification uses actual1kHz traces.",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "initial wrist yaw",
+           "distribution": "uniform",
+           "range_deg": [
+            -2,
+            2
+           ]
+          },
+          {
+           "quantity": "initial finger positions",
+           "distribution": "uniform",
+           "range_rad": [
+            -0.01,
+            0.01
+           ]
+          },
+          {
+           "quantity": "initial ball world-horizontal center",
+           "distribution": "uniform",
+           "range_m": [
+            -0.003,
+            0.003
+           ]
+          },
+          {
+           "quantity": "encoder noise",
+           "distribution": "Gaussian independent",
+           "q_std_rad": 0.002,
+           "qd_std_radps": 0.05
+          }
+         ],
+         "policy_observation_space": "128 values: noisy20 joint positions/velocities, ball position/velocity relative wrist, ball orientation and angular velocity, wrist pose/velocity and fixed-reference error, prior own target/target-increment memory, time Fourier features. Contacts, forces, physics parameters, rewards and progress counters never enter the policy.",
+         "action_space": "20 independent joint target-velocity increments scaled by0.5URDF speeds, integrated to position residuals bounded1.2rad, clipped0.05rad inside joint limits with anti-windup. Reference finger opening decays residuals; early/final residual gates disclosed. Wrist uses basev2.500Hz target bridge and1kHz hardware remain inforce. Sim>=7 catch-settle gate: during[6.70,7.32)s increments suppressed and residuals decay.5 per50Hz step, with original physical controllers. Lastspin actions resume7.32s.",
+         "curriculum": {
+          "mode": "late",
+          "mixed": "40% complete episodes from start;20% each start at physical catch-state snapshots2.18,5.94,7.20s; continue to10.5s, terminate drop/hardware violation.",
+          "focused": "fast starts5.94s and continues through third toss/catch to7.50s; late starts7.20s and includes final hold; first starts2.18s through second catch6.20s.",
+          "initial_states": "Physical baseline states in nominal .0005m-torsion model, then stated perturbations. Verification uses independent uninterrupted full episodes and .20s initial physical settling.",
+          "learner_contexts": {
+           "bank": "research/contexts/bank26.npz",
+           "sha256": "c9c416e6bf52…",
+           "metadata": {
+            "checkpoint": "research/runs/gpu26_catchsettle/policy.pt",
+            "PPO_steps": 2031616,
+            "worlds": 512,
+            "seeds": null,
+            "sim_version": 7,
+            "counts": null,
+            "filter": "No previous hardware/floor/overflow violation; current ball near hand with actual contact. Full uninterrupted physical rollouts, states include policy/controller memory.",
+            "purpose": "Offline PPO curriculum only; verification remains independent full episodes1000-1009."
+           },
+           "fraction": 0.75,
+           "phase_start_s": 7.32,
+           "other_fraction": "25% physical baseline state at7.32. Contexts include training-only independent start perturbations, no further initial jitter."
+          },
+          "late_phase_start_s": 7.32
+         },
+         "compute": {
+          "training_wall_s": 322.06222891807556,
+          "gpu_hours": 0.089461730255021,
+          "engine": "MuJoCoWarp3.17.0/Warp1.19.0"
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "checkpoint": "research/runs/gpu28_latesettled/policy.pt",
+          "engine": "MuJoCoWarp3.17.0",
+          "torsion_override_m": null,
+          "baseline": false,
+          "sim_version": 7,
+          "reference_tuning": [
+           0.02500000037252903,
+           0.0,
+           0.699999988079071,
+           0.019999999552965164,
+           0.9800000190734863,
+           1.0199999809265137
+          ],
+          "episodes": 10,
+          "successes": 9,
+          "success_rate": 0.9,
+          "pass": true,
+          "results": [
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1000
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1001
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1002
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1003
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1004
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1005
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1006
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1007
+           },
+           {
+            "success": false,
+            "captured_flights": 2,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "2/3 captured flights; 0/3 spins",
+            "seed": 1008
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1009
+           }
+          ],
+          "wall_s": 13.497178077697754,
+          "overflow": 0
+         },
+         "checkpoint": "research/runs/gpu28_latesettled/policy.pt",
+         "reflection": "Stopped at~11.7M ofplanned20M whenPPO29 met nominal stoppingcriteria. Focused last-phase PPO from actual7.32s learnercontexts, with heads0/1/2 frozen, also reaches9/10 nominal full episodes in sim7. It is unselected: finalpublished verification and measuredfriction-sensitivity claim refer toPPO29/sim8. No separate friction-sensitivity evaluation was conducted for this alternative; preserve itsnominalmetrics/curves/source/videos without a broaderclaim. GPUcontactordering differences mean evenfrozenprefix trajectories varyslightly.",
+         "base_controller_performance": "GPU reference controller:10/10 have3 caught flights and pass wrist/hardware checks,0/10 full tasks because all spins fail. Learned spin/transition control is separately evaluated.",
+         "limitations": [
+          "Nominal torsional friction length.0005m inferred, not measured.",
+          "GPU float32/non-deterministic contact trajectories; exact1kHz traces used for verification.",
+          "Untrained reference in sim7 can laterdrop; its3initialcaughtflights are partial progress, never task success."
+         ],
+         "pretraining": {
+          "checkpoint": "research/runs/gpu26_catchsettle/policy.pt",
+          "steps": 2031616,
+          "wall_s": 50.75363826751709
+         },
+         "constant_reference_tuning": [
+          0.02500000037252903,
+          0.0,
+          0.699999988079071,
+          0.019999999552965164,
+          0.9800000190734863,
+          1.0199999809265137
+         ]
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "918313a52806",
+          "bytes": 94572,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "6c14bdd4a538",
+          "bytes": 261155,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "91b28b2c2a5c",
+          "bytes": 225281,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "5d08b9fdb869",
+          "bytes": 317671,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0083",
+        "seq": 83,
+        "kind": "iter",
+        "version": 29,
+        "recorded_utc": "2026-11-03T09:40:19Z",
+        "exception": false,
+        "body": {
+         "sim_version": 8,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO",
+          "steps": 2031616,
+          "args": {
+           "out": "research/runs/gpu29_latercatch",
+           "steps": 2000000,
+           "envs": 2048,
+           "seed": 261,
+           "load": "research/runs/gpu26_catchsettle/policy.pt",
+           "experts": true,
+           "std": 0.02,
+           "rho": 0.0,
+           "lr": 1e-05,
+           "horizon": 32,
+           "mode": "full",
+           "sim_version": 8,
+           "reward": "gpu-v3-launchquality",
+           "freeze_phases": "1,2",
+           "context_bank": null,
+           "base_version": 2,
+           "variant": "gpu_independent_safe",
+           "reward_version": "gpu-v3-launchquality",
+           "reference_tuning": [
+            0.02500000037252903,
+            0.0,
+            1.0,
+            -0.07999999821186066,
+            0.9200000166893005,
+            1.0199999809265137
+           ]
+          },
+          "architecture": "Four independent2x256tanh actor heads selected solely by observed clock, shared2x256 critic, phase-specific diagonal Gaussian20 actions",
+          "hyperparameters": {
+           "gamma": 0.99,
+           "gae_lambda": 0.95,
+           "clip": 0.2,
+           "epochs_max": 4,
+           "minibatch": 8192,
+           "horizon": 32,
+           "entropy_coef": 0.002,
+           "actor_and_critic_grad_clip": 0.5,
+           "reward_scale": 0.1,
+           "adaptive_lr": "KL>0.02 multiply.85;KL<.005 multiply1.02, range1e-5..4e-4; stopepochifKL>.03"
+          },
+          "frozen_phase_heads": "1,2"
+         },
+         "reward_terms": [
+          {
+           "name": "ball_position",
+           "formula": "Flight8 exp(-(distance to successful physical baseline path/.055)^2); held5 exp(-(distance to retargeted palm region/.075)^2). Baseline flight heights/timings independently meet criteria.",
+           "weight": 1
+          },
+          {
+           "name": "ball_velocity",
+           "formula": "(2 flight,.2 held) exp(-||v-vgoal||²/1.5); flight goal from physical baseline.",
+           "weight": 1
+          },
+          {
+           "name": "spin",
+           "formula": "3 clip(relative wrist-X angular velocity,-target,target) exp(-(held position error/.09)^2)*contact fraction; phase targets4,18,3rad/s; outside -.03 min(|relative omega|,30).",
+           "weight": 1
+          },
+          {
+           "name": "spin_axis",
+           "formula": "-.02 min(norm(other relative angular components),30) during spin.",
+           "weight": 1
+          },
+          {
+           "name": "contact_phase",
+           "formula": ".5 times contact fraction while held, .5 times free fraction in flight.",
+           "weight": 1
+          },
+          {
+           "name": "wrist_position",
+           "formula": "exp(-(wrist-reference position error/.04)^2)",
+           "weight": 1
+          },
+          {
+           "name": "wrist_rotation",
+           "formula": "exp(-(wrist-reference rotation angle error/.35)^2)",
+           "weight": 1
+          },
+          {
+           "name": "action_change",
+           "formula": "-.01 sum squared change of20 joint target-velocity increments",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-2 max(0,speed_ratio-.85)^2 -100 if speed ratio>1 or position allowance exceeded",
+           "weight": 1
+          },
+          {
+           "name": "drop",
+           "formula": "-10 if ball touches floor or ball z<.15m",
+           "weight": 1
+          },
+          {
+           "name": "catch_progress",
+           "formula": "For supported capture in timewindow:10+90exp(-((estimated rise-targetheight)/.045)^2)exp(-((duration-targetduration)/.10)^2); minus30 if duration<minimum-.02s. Targets heights[.235,.267,.319]m,durations[.50,.50,.56]s. Counters are reward-only, not policy inputs.",
+           "weight": 1
+          },
+          {
+           "name": "spin_progress",
+           "formula": "+100 once per held phase when signed X integral>=7.5rad with contact; training margin above2pi, separate strict verification.",
+           "weight": 1
+          },
+          {
+           "name": "final_hold",
+           "formula": "After9.85s:2exp(-(relative center speed/.15)^2)+2exp(-|relative omega|²)-5 if ball-palm distance>.10m.",
+           "weight": 1
+          },
+          {
+           "name": "launch_quality",
+           "formula": "At15 continuously free50Hz blocks (~.30s):30exp(-((estimated peak rise-[.235,.267,.319]m)/.045)^2)-30 if rise differs by>.06m. Training shaping sampled50Hz only; verification uses actual1kHz traces.",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "initial wrist yaw",
+           "distribution": "uniform",
+           "range_deg": [
+            -2,
+            2
+           ]
+          },
+          {
+           "quantity": "initial finger positions",
+           "distribution": "uniform",
+           "range_rad": [
+            -0.01,
+            0.01
+           ]
+          },
+          {
+           "quantity": "initial ball world-horizontal center",
+           "distribution": "uniform",
+           "range_m": [
+            -0.003,
+            0.003
+           ]
+          },
+          {
+           "quantity": "encoder noise",
+           "distribution": "Gaussian independent",
+           "q_std_rad": 0.002,
+           "qd_std_radps": 0.05
+          }
+         ],
+         "policy_observation_space": "128 values: noisy20 joint positions/velocities, ball position/velocity relative wrist, ball orientation and angular velocity, wrist pose/velocity and fixed-reference error, prior own target/target-increment memory, time Fourier features. Contacts, forces, physics parameters, rewards and progress counters never enter the policy.",
+         "action_space": "20 independent joint target-velocity increments scaled by0.5URDF speeds, integrated to position residuals bounded1.2rad, clipped0.05rad inside joint limits with anti-windup. Reference finger opening decays residuals; early/final residual gates disclosed. Wrist uses basev2.500Hz target bridge and1kHz hardware remain inforce. Sim>=7 catch-settle gate: during[6.70,7.32)s increments suppressed and residuals decay.5 per50Hz step, with original physical controllers. Lastspin actions resume7.32s.",
+         "curriculum": {
+          "mode": "full",
+          "mixed": "40% complete episodes from start;20% each start at physical catch-state snapshots2.18,5.94,7.20s; continue to10.5s, terminate drop/hardware violation.",
+          "focused": "fast starts5.94s and continues through third toss/catch to7.50s; late starts7.20s and includes final hold; first starts2.18s through second catch6.20s.",
+          "initial_states": "Physical baseline states in nominal .0005m-torsion model, then stated perturbations. Verification uses independent uninterrupted full episodes and .20s initial physical settling.",
+          "reset_distribution": "All episodes begin at initial physically settled state; no partial phase resets.",
+          "late_phase_start_s": 7.32
+         },
+         "compute": {
+          "training_wall_s": 50.95730113983154,
+          "gpu_hours": 0.014154805872175429,
+          "engine": "MuJoCoWarp3.17.0/Warp1.19.0"
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "checkpoint": "research/runs/gpu29_latercatch/policy.pt",
+          "engine": "MuJoCoWarp3.17.0",
+          "torsion_override_m": null,
+          "baseline": false,
+          "sim_version": 8,
+          "reference_tuning": [
+           0.02500000037252903,
+           0.0,
+           1.0,
+           -0.07999999821186066,
+           0.9200000166893005,
+           1.0199999809265137
+          ],
+          "episodes": 10,
+          "successes": 9,
+          "success_rate": 0.9,
+          "pass": true,
+          "results": [
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1000
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1001
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1002
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1003
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1004
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1005
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1006
+           },
+           {
+            "success": false,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1007
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1008
+           },
+           {
+            "success": true,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "simulation_overflow": false,
+            "progress": "all required stages",
+            "seed": 1009
+           }
+          ],
+          "wall_s": 13.879963397979736,
+          "overflow": 0
+         },
+         "checkpoint": "research/runs/gpu29_latercatch/policy.pt",
+         "reflection": "Selected final policy:9/10 complete successes including nominal1000 in simulation8 against unchanged recordedcriteria1; everyepisodepasses all3flights,all3spins,wristsimilarity,hardware/no-floor/no-overflow. Seed1007fails only finalangularsettling1.718rad/s versus1. Alltrainingstopped uponthisresult. Final2,031,616-step PPO adaptation usesPPO-onlyparents; first/shortspin headsfrozen, neuralfingers closed-loop withdeployableobservations. Referencealone0/10 tasks. Criticallimitation: samepolicy0/10 at each torsionlength.0001,.001,.005m versus9/10 nominal.0005m; no frictionrobustness/hardwaretransferclaim. Includes all1kHzmetrics,traces,success/failure3views,evidenceplot,sensitivityreport,sourcehashes and reproductioninstructions. This satisfies the stated nominal stoppingcriterion, not an officialevaluation.",
+         "base_controller_performance": "GPU reference controller:10/10 have3 caught flights and pass wrist/hardware checks,0/10 full tasks because all spins fail. Learned spin/transition control is separately evaluated.",
+         "limitations": [
+          "Nominal torsional friction length.0005m inferred, not measured.",
+          "GPU float32/non-deterministic contact trajectories; exact1kHz traces used for verification.",
+          "9/10 only in nominal model;0/10 at.0001,.001,.005m. No broad friction robustness or real-hardware transfer is established.",
+          "Untrained reference in sim7 can laterdrop; its3initialcaughtflights are partial progress, never task success."
+         ],
+         "pretraining": {
+          "checkpoint": "research/runs/gpu26_catchsettle/policy.pt",
+          "steps": 2031616,
+          "wall_s": 50.75363826751709
+         },
+         "constant_reference_tuning": [
+          0.02500000037252903,
+          0.0,
+          1.0,
+          -0.07999999821186066,
+          0.9200000166893005,
+          1.0199999809265137
+         ],
+         "physics_sensitivity": {
+          "checkpoint": "research/runs/gpu29_latercatch/policy.pt",
+          "nominal_torsional_length_m": 0.0005,
+          "scope": "Separate sensitivity analysis with all other model/controller/policy settings fixed. Not part of nominal success criterion. Friction length is inferred, not measured.",
+          "results": [
+           {
+            "torsional_length_m": 0.0001,
+            "episodes": 10,
+            "successes": 0,
+            "nominal_criteria_distribution": false,
+            "mean_spin_angles_rad": null,
+            "captured_flights": null,
+            "hardware_passes": 10,
+            "metrics": "research/runs/gpu29_latercatch/sensitivity/torsion0001/[redacted]"
+           },
+           {
+            "torsional_length_m": 0.0005,
+            "episodes": 10,
+            "successes": 9,
+            "nominal_criteria_distribution": true,
+            "mean_spin_angles_rad": null,
+            "captured_flights": null,
+            "hardware_passes": 10,
+            "metrics": "research/runs/gpu29_latercatch/eval/[redacted]"
+           },
+           {
+            "torsional_length_m": 0.001,
+            "episodes": 10,
+            "successes": 0,
+            "nominal_criteria_distribution": false,
+            "mean_spin_angles_rad": null,
+            "captured_flights": null,
+            "hardware_passes": 10,
+            "metrics": "research/runs/gpu29_latercatch/sensitivity/torsion001/[redacted]"
+           },
+           {
+            "torsional_length_m": 0.005,
+            "episodes": 10,
+            "successes": 0,
+            "nominal_criteria_distribution": false,
+            "mean_spin_angles_rad": null,
+            "captured_flights": null,
+            "hardware_passes": 10,
+            "metrics": "research/runs/gpu29_latercatch/sensitivity/torsion005/[redacted]"
+           }
+          ],
+          "conclusion": "9/10 only in nominal model;0/10 at.0001,.001,.005m. No broad friction robustness or real-hardware transfer is established."
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "3d429197a8d0",
+          "bytes": 15371,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "fd890a528527",
+          "bytes": 259431,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "8cacfacb28af",
+          "bytes": 228731,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "2e19b3aa2dca",
+          "bytes": 317137,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0084",
+        "seq": 84,
+        "kind": "verify",
+        "version": 28,
+        "recorded_utc": "2026-11-03T09:41:20Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0083",
+         "criteria_version": 1,
+         "verdict": "PASS",
+         "policy": {
+          "checkpoint": "research/runs/gpu29_latercatch/policy.pt",
+          "observations": "deployable",
+          "PPO_steps": 2031616
+         },
+         "episodes": {
+          "count": 10,
+          "seeds": [
+           1000,
+           1001,
+           1002,
+           1003,
+           1004,
+           1005,
+           1006,
+           1007,
+           1008,
+           1009
+          ],
+          "conditions": "World-ball jitter independent of wrist yaw, exact criteria v1 distribution,0.20s physical initial settling, Gaussian encoders."
+         },
+         "success_rate": 0.9,
+         "results": [
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.059860047806551756,
+            "relative_speed_rms_mps": 0.06350260899072172,
+            "relative_angular_speed_rms_radps": 0.1647726080154143,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.02133375629368086,
+            "position_max_m": 0.09628783501728597,
+            "rotation_rms_deg": 1.2880291571530564,
+            "rotation_p95_deg": 2.466208032547444,
+            "palm_tilt_median_deg": 22.832903403184257,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8044047543410483,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999991655349731,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1000
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.055226389458660374,
+            "relative_speed_rms_mps": 0.05897967618068785,
+            "relative_angular_speed_rms_radps": 0.28814023638521935,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.02038054368243001,
+            "position_max_m": 0.09628210651185175,
+            "rotation_rms_deg": 1.2915627666064255,
+            "rotation_p95_deg": 2.4837920629777503,
+            "palm_tilt_median_deg": 22.83226701976433,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8218480539978764,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1001
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.056840090179342814,
+            "relative_speed_rms_mps": 0.06197435505247099,
+            "relative_angular_speed_rms_radps": 0.2759165520954448,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020194252357916248,
+            "position_max_m": 0.09628301941551776,
+            "rotation_rms_deg": 1.2913966023355545,
+            "rotation_p95_deg": 2.477214261637634,
+            "palm_tilt_median_deg": 22.83263706939184,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8079027615130624,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999991655349731,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1002
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.056849720004426646,
+            "relative_speed_rms_mps": 0.06258477190507436,
+            "relative_angular_speed_rms_radps": 0.3201162423843773,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020844487196502958,
+            "position_max_m": 0.0962516335791197,
+            "rotation_rms_deg": 1.2928512540413306,
+            "rotation_p95_deg": 2.4872257784873177,
+            "palm_tilt_median_deg": 22.83275236083117,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8352650064935514,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.9999942779541,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1003
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.05548236854555858,
+            "relative_speed_rms_mps": 0.059583120918788195,
+            "relative_angular_speed_rms_radps": 0.3118502396185658,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020159761349988516,
+            "position_max_m": 0.0962597997909815,
+            "rotation_rms_deg": 1.2958687732286713,
+            "rotation_p95_deg": 2.478347719523876,
+            "palm_tilt_median_deg": 22.83487449268017,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8290433366313499,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999991655349731,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1004
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.05979573200403375,
+            "relative_speed_rms_mps": 0.06340872693157915,
+            "relative_angular_speed_rms_radps": 0.13261536965406145,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020170996193217088,
+            "position_max_m": 0.0963000979868348,
+            "rotation_rms_deg": 1.2903937585429173,
+            "rotation_p95_deg": 2.465381173782025,
+            "palm_tilt_median_deg": 22.83097958183521,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8213001824611138,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1005
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.059045856421408915,
+            "relative_speed_rms_mps": 0.06359586089269786,
+            "relative_angular_speed_rms_radps": 0.1692882395667111,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.021049774904964853,
+            "position_max_m": 0.09625132489861775,
+            "rotation_rms_deg": 1.2953688064618183,
+            "rotation_p95_deg": 2.50100578620769,
+            "palm_tilt_median_deg": 22.835913318928593,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.813475821231264,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1006
+          },
+          {
+           "success": false,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.06127591761800639,
+            "relative_speed_rms_mps": 0.0648472721260098,
+            "relative_angular_speed_rms_radps": 1.7178241248525838,
+            "pass": false
+           },
+           "wrist": {
+            "position_rms_m": 0.020115405534080956,
+            "position_max_m": 0.09628036278374738,
+            "rotation_rms_deg": 1.2943657262973975,
+            "rotation_p95_deg": 2.47420330478804,
+            "palm_tilt_median_deg": 22.83343046286721,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8641810558430236,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1007
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.05698789082644266,
+            "relative_speed_rms_mps": 0.06255075830842145,
+            "relative_angular_speed_rms_radps": 0.2912974931611248,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.020348571438256836,
+            "position_max_m": 0.09625489140938964,
+            "rotation_rms_deg": 1.2965960006016348,
+            "rotation_p95_deg": 2.5021160448543465,
+            "palm_tilt_median_deg": 22.835830640473823,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8037077803648378,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.99999237060547,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1008
+          },
+          {
+           "success": true,
+           "captured_flights": 3,
+           "flight_candidates": [
+            null,
+            null,
+            null
+           ],
+           "spins": [
+            null,
+            null,
+            null
+           ],
+           "final_hold": {
+            "contact_fraction": 1.0,
+            "maximum_ball_palm_distance_m": 0.058204881772792934,
+            "relative_speed_rms_mps": 0.0629159383980918,
+            "relative_angular_speed_rms_radps": 0.23649634522593205,
+            "pass": true
+           },
+           "wrist": {
+            "position_rms_m": 0.0207576071226574,
+            "position_max_m": 0.09625318441060222,
+            "rotation_rms_deg": 1.2993533908535677,
+            "rotation_p95_deg": 2.5009010227959334,
+            "palm_tilt_median_deg": 22.835395787376516,
+            "pass": true
+           },
+           "hardware": {
+            "maximum_finger_speed_ratio": 0.8168145532827763,
+            "position_violation_steps": 0,
+            "torque_limit_ratio_max": 1.0,
+            "max_wrist_force_N": 29.9999942779541,
+            "max_wrist_torque_Nm": 1.9999992847442627,
+            "pass": true
+           },
+           "floor_contact": false,
+           "initial_support_contact": true,
+           "simulation_overflow": false,
+           "progress": "all required stages",
+           "seed": 1009
+          }
+         ],
+         "simulation_version": 8,
+         "evidence": {
+          "metrics": "research/runs/gpu29_latercatch/eval/[redacted]",
+          "initial_conditions": "research/runs/gpu29_latercatch/eval/initial_conditions.json",
+          "traces": "1kHz actualqpos,qvel,contacts,hardware maxima,solver overflow flags",
+          "videos": "Top/left/right of a success and a failure where present",
+          "policy_weights_npz": "research/runs/gpu29_latercatch/policy_state.npz",
+          "trace_files": [
+           "research/runs/gpu29_latercatch/eval/trace_00.npz",
+           "research/runs/gpu29_latercatch/eval/trace_01.npz",
+           "research/runs/gpu29_latercatch/eval/trace_02.npz",
+           "research/runs/gpu29_latercatch/eval/trace_03.npz",
+           "research/runs/gpu29_latercatch/eval/trace_04.npz",
+           "research/runs/gpu29_latercatch/eval/trace_05.npz",
+           "research/runs/gpu29_latercatch/eval/trace_06.npz",
+           "research/runs/gpu29_latercatch/eval/trace_07.npz",
+           "research/runs/gpu29_latercatch/eval/trace_08.npz",
+           "research/runs/gpu29_latercatch/eval/trace_09.npz"
+          ],
+          "plot_local_only": "research/runs/gpu29_latercatch/eval/evidence.png"
+         },
+         "limitations": [
+          "Nominal torsional friction length.0005m inferred, not measured.",
+          "GPU float32/non-deterministic contact trajectories; exact1kHz traces used for verification.",
+          "9/10 only in nominal model;0/10 at.0001,.001,.005m. No broad friction robustness or real-hardware transfer is established.",
+          "Untrained reference in sim7 can laterdrop; its3initialcaughtflights are partial progress, never task success."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "e5501b78fbb4",
+          "bytes": 48606,
+          "content_type": "application/json"
+         },
+         "file_10": {
+          "sha": "185e439f5d74",
+          "bytes": 2653237,
+          "content_type": "application/octet-stream"
+         },
+         "file_11": {
+          "sha": "56fb65477b2e",
+          "bytes": 2654149,
+          "content_type": "application/octet-stream"
+         },
+         "file_12": {
+          "sha": "946d5b518a3a",
+          "bytes": 2652770,
+          "content_type": "application/octet-stream"
+         },
+         "file_13": {
+          "sha": "731a4786bb20",
+          "bytes": 2654633,
+          "content_type": "application/octet-stream"
+         },
+         "file_14": {
+          "sha": "3e13fbddd25f",
+          "bytes": 2653101,
+          "content_type": "application/octet-stream"
+         },
+         "file_15": {
+          "sha": "2a802105e356",
+          "bytes": 2654282,
+          "content_type": "application/octet-stream"
+         },
+         "file_16": {
+          "sha": "4e2f88d56101",
+          "bytes": 2655231,
+          "content_type": "application/octet-stream"
+         },
+         "file_17": {
+          "sha": "5389d20b5034",
+          "bytes": 49250,
+          "content_type": "application/json"
+         },
+         "file_18": {
+          "sha": "2c8e8dd3cdd7",
+          "bytes": 46503,
+          "content_type": "application/json"
+         },
+         "file_19": {
+          "sha": "a8ea79841bf0",
+          "bytes": 48669,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "54fd38d3c6aa",
+          "bytes": 10126,
+          "content_type": "application/json"
+         },
+         "file_3": {
+          "sha": "1d8e6c7d049d",
+          "bytes": 2515,
+          "content_type": "application/json"
+         },
+         "file_4": {
+          "sha": "fd7a4e7eb989",
+          "bytes": 4872,
+          "content_type": "application/json"
+         },
+         "file_5": {
+          "sha": "71f0592cbc96",
+          "bytes": 5818,
+          "content_type": "text/markdown"
+         },
+         "file_6": {
+          "sha": "6724463728bf",
+          "bytes": 1921027,
+          "content_type": "application/octet-stream"
+         },
+         "file_7": {
+          "sha": "210100631228",
+          "bytes": 2651470,
+          "content_type": "application/octet-stream"
+         },
+         "file_8": {
+          "sha": "b25cee0517ae",
+          "bytes": 2654014,
+          "content_type": "application/octet-stream"
+         },
+         "file_9": {
+          "sha": "7cec9795a81b",
+          "bytes": 2652835,
+          "content_type": "application/octet-stream"
+         },
+         "video_left_failure": {
+          "sha": "9ac0e3c86168",
+          "bytes": 261733,
+          "content_type": "video/mp4"
+         },
+         "video_left_success": {
+          "sha": "fd890a528527",
+          "bytes": 259431,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "df1690feec61",
+          "bytes": 225826,
+          "content_type": "video/mp4"
+         },
+         "video_right_success": {
+          "sha": "8cacfacb28af",
+          "bytes": 228731,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "6b58dd826e43",
+          "bytes": 319876,
+          "content_type": "video/mp4"
+         },
+         "video_top_success": {
+          "sha": "2e19b3aa2dca",
+          "bytes": 317137,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0085",
+        "seq": 85,
+        "kind": "note",
+        "version": 18,
+        "recorded_utc": "2026-11-03T09:42:23Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Final reflection, 2026-11-03T09:42:22.525399+00:00, elapsed3.271h of8h. Stoppingconditionmet: selectedPPO29 iterationr0083, verificationr0084 PASS in simulation8 against unchangedcriteria1,9/10 includingnominal. First/short/last nominalturns14.034,8.796,7.004rad; everyepisodepasses allflights/spins/hardware/wrist/no-floor/overflowchecks; onlyseed1007fails finalangularsettling1.718rad/s. Alltrainingprocesses stopped. Whatworked: validreference reconstruction with explicitunobservableorientation, independentstrict1kHz verification, encoder-onlycommandprojection, PPOphaseactors and physicallearner-contextcurricula, launch-quality shaping, laterfingerclosure/settledcatch. Whatfailed: rawreference timing afterlearnedrolling, isolatedteachertransfer, higherexploration/backdrives, naive residualfading; earlyrewardbonus acceptedlowshortthrows. Mainlimitation: inferrednominaltorsion.0005m,0/10 at each.0001/.001/.005m. No frictionrobustness orhardwaretransferclaim; smallfixedseeds/GPUcontactnondeterminism andcamera/contactuncertainty remain. Ifthisresearchcontinued, firstmeasure/calibratecontactpatch/friction andtrainPPOoverthatuncertainty, thenvalidatefreshseedsandrepeatedruns beforehardware. Policyweights,all10actual1kHztraces,success/failure3views,metrics,sensitivity,andreport uploadedwithr0084; localresearch/RESULTS.md includesreproductioncommands. All29evaluatediterations recorded; unselectedPPO28 also9/10nominal butwithoutseparatefrictionstudy, no selectedclaimforit."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-03T06:33:10Z",
@@ -52318,7 +56100,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-03T09:32:32Z",
+  "staged_utc": "2026-11-03T09:42:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -52402,7 +56184,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-03T09:32:32Z",
+  "staged_utc": "2026-11-03T09:42:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
