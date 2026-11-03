@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-03T07:12:32Z",
- "exported_utc": "2026-11-03T07:12:29Z",
+ "generated_utc": "2026-11-03T07:22:32Z",
+ "exported_utc": "2026-11-03T07:22:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-03T07:05:46",
+    "time": "2026-11-03T07:20:08",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-03T07:02:43",
+    "time": "2026-11-03T07:22:22",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -23438,6 +23438,376 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0014",
+        "seq": 14,
+        "kind": "note",
+        "version": 6,
+        "recorded_utc": "2026-11-03T07:13:38Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Geometric rolling-IK analysis (not a policy result) loses the ball within about0.3s even with pad-focused tripod grasps and center feedback; it is rejected as a teacher. Position-PPO long-spin motion is partial, and smooth synergy PPO is stable but slow. Run5 starts from run3 weights and widens the curriculum to2.18-5.38,5.94-6.60,7.20-10s, using baseline physics snapshots without extra settling. Its directional spin reward has equal per-rad/s slope in all phases (target4,18,3rad/s), addressing the much shorter second spin; no verification threshold changes."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0015",
+        "seq": 15,
+        "kind": "note",
+        "version": 7,
+        "recorded_utc": "2026-11-03T07:15:42Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "The original .005m torsional friction length is uncalibrated and may resist tennis-ball spin too strongly. MuJoCo documents torsion as a contact-patch length (https://mujoco.readthedocs.io/en/3.17.0/computation/). I will test .0005m nominal, with all specified mass, geometry, inertia, sliding friction and hardware unchanged, and measure sensitivity up to .005m rather than claim either is experimentally identified. This is a physics hypothesis requiring a new simulation record, not a relaxed task criterion. Pad-focused geometric IK did not solve stable rolling, so the robust original grasp remains."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0016",
+        "seq": 16,
+        "kind": "sim",
+        "version": 3,
+        "recorded_utc": "2026-11-03T07:17:59Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 1,
+         "simulator": {
+          "name": "MuJoCo",
+          "version": "3.17.0",
+          "timestep_s": 0.001,
+          "integrator": "implicitfast",
+          "solver": "Newton, 30 iterations, tolerance 1e-9",
+          "contact": "Same MuJoCo3.17 implicitfast1kHz elliptic condim4 contact, ball priority1",
+          "friction": "Ball-dominant sliding0.9, torsion0.0005m, rolling0.00002m (rolling coefficient inactive at condim4). These are explicitly inferred, not measurements."
+         },
+         "scene": {
+          "files_sha256": {
+           "research/sim/scene.xml": "806c7f42cf95…",
+           "research/sim/reference.npz": "1a148c9394d2…",
+           "research/sim/q_initial.npy": "a3b7c074281c…",
+           "research/controller.cpp": "ee11f530e0d4…",
+           "research/sim_utils.py": "10d1bd71d3e5…",
+           "hardware/wuji_hand2_right/urdf/right.urdf": "9ad34330b2fd…",
+           "hardware/hardware_spec.json": "4d6b56d15b05…",
+           "research/reference_controller.py": "79768ae48c3b…",
+           "research/task_env.py": "7c7fe9a4cef8…",
+           "research/sim/toss_tune_0.json": "edb15cc342d5…",
+           "research/sim/toss_tune_1.json": "2fd4dbdb2f0a…",
+           "research/sim/toss_tune_2.json": "b7c9e67f1f39…",
+           "research/sim/scene_v3.xml": "b64aae5730c1…"
+          },
+          "robot": "Wuji Hand 2.2 right; all URDF inertias, link transforms, 20 joints and vendor meshes preserved; within-finger housing collision excluded; inter-finger collisions enabled",
+          "object": "0.065 m diameter sphere, .0577 kg, isotropic inertia .000041 kg m2. Separate free joint. Visual stripe sites have no collision, sensing or mass effect.",
+          "floor": "z=0; world X forward Y left Z up"
+         },
+         "reference": {
+          "source": "Recorded reconstruction v1 r0002",
+          "retarget": "+Y robot palm normal = cross(index-MCP minus wrist, little-MCP minus wrist); -Z = wrist-to-middle MCP; +X completes right handed frame. Fixed translation puts initial root at [0,0,.65]. No per-episode reference alignment. 9-frame Savitzky-Golay smoothing of wrist position.",
+          "ball_adaptation": "Constant world translation corresponding to local initial ball [0.008,.052,-.140] m in robot wrist frame, adapting human to robot palm dimensions. This preserves measured flight heights.",
+          "fingers": "Initial pad-center IK to sphere with penetration penalty, then analysis opening reference near annotated release/catch times. Exact MANO contacts are too uncertain to retarget literally.",
+          "base_controller_v2": {
+           "offline_method": "Differential evolution of 8 parameters per toss using MuJoCo rollouts, only during offline reference development. No planning or optimization at execution.",
+           "parameters": [
+            null,
+            null,
+            null
+           ],
+           "closed_loop_part": "Time-gated horizontal correction from observed ball center to desired palm-relative center, capped to60mm per axis; gain0.46-0.90. Does not observe contacts.",
+           "untrained_baseline": "10/10 episodes have3 captured flights but0/10 complete tasks: all3 in-hand spins fail (directional angles around0.3rad). Nominal allflight-height/timing/ballistic conditions, finalhold and hardware pass. Wrist RMS18mm,1.54deg; maxposition99.3mm.",
+           "final_policy_plan": "PPO residual fingers must learn directional spins. Baseline alone is explicitly not a learned task solution."
+          }
+         },
+         "wrist_and_fingers": {
+          "wrist": "1 kHz specified Cartesian impedance Kp=2000,Kd=60,rot Kp=20,Kd=.4, own-weight and COM moment compensation .6878*9.81, force norm<=30N torque<=2Nm; executed targets rate limited at500Hz to2.5m/s,6rad/s; free joint unconstrained workspace",
+          "fingers": "Specified 1kHz PD gains, zero requested joint feedforward, torque clipped to individual effort limits. Joint target clipped to URDF limits and additionally rate limited to70% motor speed at500Hz. Actual position/speed checked without state clipping; violations fail verification. Armature as hand spec.",
+          "policy_rate": "Learned network 50Hz; its outputs held for ten500Hz command ticks. Command bridge updates rate limits at500Hz and impedance/PD at1kHz.",
+          "noise": "Deployable policy encoder readings have independent Gaussian std .002rad and .05rad/s. Controllers use true states as actuator inner-loop measurements."
+         },
+         "initial_conditions": {
+          "wrist_pos_m": [
+           0,
+           0,
+           0.65
+          ],
+          "wrist_quat_wxyz": [
+           0.8120396710175835,
+           0.442334868459725,
+           -0.2930118021767136,
+           -0.24305456305843567
+          ],
+          "finger_q": [
+           0.9980010969449797,
+           -0.036438880626117096,
+           -0.06024925296892872,
+           -0.074760808215634,
+           0.4434622378617891,
+           -0.08922713786477297,
+           0.4301312647946355,
+           0.5525482046771022,
+           0.44040789208864795,
+           0.01847145720253543,
+           0.18704411974095225,
+           0.6355395855083136,
+           0.47890696544428357,
+           0.10465943543175649,
+           0.2911029037010217,
+           0.5740889666876458,
+           0.8033986287524824,
+           -0.0689476903120875,
+           -0.015711246757696713,
+           0.022868279727586833
+          ],
+          "ball_wrist_local_m": [
+           0.008,
+           0.052,
+           -0.14
+          ],
+          "ball_orientation_wxyz": [
+           1,
+           0,
+           0,
+           0
+          ],
+          "settling_s": 0.2,
+          "reason": "Initial held palm-up state adapted from reconstructed first frame; no attachment or later ball state reset."
+         },
+         "episode": {
+          "duration_s": 10.5,
+          "control_rate_hz": 500,
+          "network_rate_hz": 50,
+          "physics_rate_hz": 1000,
+          "termination": "Training may terminate on drop, excessive separation or hardware violation. Evaluation always records the full episode and any failure. No object forces beyond gravity/contact."
+         },
+         "validation": {
+          "mass_kg": 0.6878,
+          "specified_mass_kg": 0.6878,
+          "ball_mass_kg": 0.0577,
+          "ball_inertia_kgm2": [
+           4.1e-05,
+           4.1e-05,
+           4.1e-05
+          ],
+          "ball_radius_m": 0.0325,
+          "joint_limits_match": true,
+          "settle_2s_stats": [
+           0.21669256491753036,
+           0.0,
+           0.24234994244859304,
+           0.0,
+           1.0000000000000002,
+           7.601863064894022,
+           0.7043148514982437,
+           0.0
+          ],
+          "settled_wrist_position_error_m": 0.00028301695123942054,
+          "settled_ball_displacement_m": 0.0004782470579049968,
+          "two_seconds_physics_wall_s": 0.10564899444580078,
+          "v3_settle_2s_stats": [
+           0.21362830831204407,
+           0.0,
+           0.23938277335225902,
+           0.0,
+           1.0000000000000002,
+           7.601157963971505,
+           0.7042101628054098,
+           0.0
+          ],
+          "v3_settle_wrist_error_m": 0.00028301693720163995
+         },
+         "baseline": {
+          "criteria_version": 1,
+          "checkpoint": null,
+          "episodes": 10,
+          "successes": 0,
+          "success_rate": 0.0,
+          "pass": false,
+          "results": [
+           {
+            "success": false,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "progress": "3/3 captured flights; 0/3 spins",
+            "seed": 1000
+           },
+           {
+            "success": false,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "progress": "3/3 captured flights; 0/3 spins",
+            "seed": 1001
+           },
+           {
+            "success": false,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "progress": "3/3 captured flights; 0/3 spins",
+            "seed": 1002
+           },
+           {
+            "success": false,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "progress": "3/3 captured flights; 0/3 spins",
+            "seed": 1003
+           },
+           {
+            "success": false,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "progress": "3/3 captured flights; 0/3 spins",
+            "seed": 1004
+           },
+           {
+            "success": false,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "progress": "3/3 captured flights; 0/3 spins",
+            "seed": 1005
+           },
+           {
+            "success": false,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "progress": "3/3 captured flights; 0/3 spins",
+            "seed": 1006
+           },
+           {
+            "success": false,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "progress": "3/3 captured flights; 0/3 spins",
+            "seed": 1007
+           },
+           {
+            "success": false,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "progress": "3/3 captured flights; 0/3 spins",
+            "seed": 1008
+           },
+           {
+            "success": false,
+            "captured_flights": 3,
+            "flight_candidates": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "hardware": null,
+            "floor_contact": false,
+            "initial_support_contact": true,
+            "progress": "3/3 captured flights; 0/3 spins",
+            "seed": 1009
+           }
+          ],
+          "wall_s": 22.334814071655273
+         },
+         "limitations": [
+          "Convex link collision hulls approximate vendor geometry; no detailed felt/soft-pad deformation or air drag.",
+          "Friction is inferred. Validation distribution does not demonstrate real-hardware transfer.",
+          "Human contact reconstruction is partial, so initial finger geometry comes from robot pad IK.",
+          "Success in this smaller torsion model will not establish success at the original0.005m. Evaluate friction sensitivity separately; physical contact-patch size is not identified by the video."
+         ],
+         "media": {
+          "initial": "research/sim/initial_v3.png",
+          "replay": "research/sim/replay.mp4",
+          "baseline_v2": "research/baseline_v2_eval/right.mp4"
+         },
+         "change_reason": "Test uncalibrated contact-patch torque resistance: ball has higher mixing priority and nominal torsional friction length0.0005m instead of0.005m. All task/hardware specification values, geometry, gains, time steps and basev2 remain unchanged.",
+         "physics_hypothesis_source": "https://mujoco.readthedocs.io/en/3.17.0/computation/ (length units and torsional contact model only; selected coefficient is my hypothesis)"
+        },
+        "files": {
+         "image": {
+          "sha": "aa5d11803067",
+          "bytes": 91867,
+          "content_type": "image/png"
+         },
+         "replay_video": {
+          "sha": "c893db6b26ff",
+          "bytes": 549030,
+          "content_type": "video/mp4"
+         },
+         "scene_1": {
+          "sha": "b64aae5730c1",
+          "bytes": 38998,
+          "content_type": "application/xml"
+         },
+         "scene_2": {
+          "sha": "0758a7f286d4",
+          "bytes": 36849,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0017",
+        "seq": 17,
+        "kind": "note",
+        "version": 8,
+        "recorded_utc": "2026-11-03T07:20:08Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Run3 completed1,001,472PPO steps in1169s on the original torsional-friction model; full and isolated-spin evaluation is now running. Run6 tests the separately recorded simulationv3 .0005m torsion hypothesis with the same wide-spin curriculum and phase-gated residuals. Run7 tests independent20-joint velocity increments because coupling MCP/PIP/DIP into finger synergies may restrict rolling. All these remain PPO-only, use deployable observations, and will be recorded on evaluation, including failures."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-03T06:33:10Z",
@@ -28090,6 +28460,228 @@
          "text": "Reference version 1 recorded as r0005 at 07:02:23Z, before any training-simulation construction, and within 37 minutes of research start. The format checker is VALID and original geometric validation overall PASS with retained warnings. Criteria v1 defines ordered white/black physical pickup, ~0.25 m left transfer, upright unsupported settling, wrist similarity, hardware compliance and ten held-out complete episodes. Next: build the public right-hand model and controllers in MuJoCo, retarget the recorded wrist/objects, diagnose a physical contact baseline, then train a deployable closed-loop PPO network and report its baseline ablation."
         },
         "files": {}
+       },
+       {
+        "id": "r0008",
+        "seq": 8,
+        "kind": "note",
+        "version": 6,
+        "recorded_utc": "2026-11-03T07:13:07Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Robot replay exposed an untested limitation of reconstruction v1: some inferred/fitted human wrist and hand geometry falls below the tabletop, although the provided validator reports PASS because its physics check tests objects, not hand-table intersection. Do not treat validator PASS as evidence for this missing check. The compiled right hand mass is exactly 0.6878 kg and a 2 s impedance/PD hold has zero hardware violations. Before learning, add an explicit hand-table constraint in a local fitter copy, measure penetration of every hand vertex against the tabletop, and record a corrected reference if it improves within the 60-minute reconstruction budget (deadline 07:26:10Z)."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0009",
+        "seq": 9,
+        "kind": "recon",
+        "version": 2,
+        "recorded_utc": "2026-11-03T07:22:03Z",
+        "exception": false,
+        "body": {
+         "summary": "VALID v2 corrects v1 hand-table failure: explicit all-vertex support gives zero table penetration and >=32.10 mm wrist clearance. 353/360 detected hand frames valid, mask IoU 0.7786, hand-object intersection <=0.44 mm, opposed grasp verified. Original geometric validator PASS with retained minor warnings.",
+         "components": [
+          {
+           "name": "camera",
+           "status": "partial",
+           "method": "MoGe tabletop-normal prior; focal 1200 px; stationary charger translation",
+           "note": "Precise calibration unavailable; rejected inconsistent camera estimators; 25 mm depth uncertainty."
+          },
+          {
+           "name": "object_geometry",
+           "status": "from_specification",
+           "method": "Blender bpy body and blade meshes",
+           "note": "Public dimensions, mass and COM preserved; collision boxes sharp."
+          },
+          {
+           "name": "object_6d_motion",
+           "status": "partial",
+           "method": "SAM3 + render-and-compare, common-support constrained rest poses",
+           "note": "Occluded turns invalid; measured/inferred labels and uncertainties retained."
+          },
+          {
+           "name": "hand_motion",
+           "status": "partial",
+           "method": "HaWoR + local provided-MANO fitter copy with opposing contact, separation and all-vertex hand-table support",
+           "note": "353/360 detected frames valid; hand-table penetration 0 mm before visibility filtering; wrist clearance >=32.10 mm; eight small finger-intersection frames."
+          },
+          {
+           "name": "contact_phases",
+           "status": "ok",
+           "method": "Manual event inspection and geometric checks",
+           "note": "Opposed fractions 0.905 white and 1.0 black on jointly valid frames; hidden contacts inferred."
+          },
+          {
+           "name": "validation",
+           "status": "ok",
+           "method": "Original validate_reconstruction.py and check_reference.py",
+           "note": "Original geometric validator overall PASS with retained warnings; independent all-vertex hand-table PASS; maximum hand-object intersection 0.44 mm."
+          }
+         ],
+         "limitations": [
+          "Camera and metric depth remain uncertain by approximately 25 mm; hidden object turns are invalid and nominal interpolations are inferred.",
+          "Eight small finger-intersection frames, one finger discontinuity and fine image-offset uncertainty remain; all checks and warnings retained. No held-out image validation."
+         ],
+         "validation": {
+          "schema": "recon-validation/1",
+          "utc": "2026-11-03T07:20:23Z",
+          "thresholds": {
+           "contact_band_mm": 5.0,
+           "phase_fail_mm": 10.0,
+           "pen_warn_mm": 5.0,
+           "pen_fail_mm": 10.0,
+           "wrist_speed_mps": 3.0,
+           "wrist_accel_mps2": 150.0,
+           "tip_speed_mps": 5.0,
+           "bone_jump_deg": 60.0,
+           "obj_jump_m": 0.1,
+           "obj_rot_jump_deg": 45.0,
+           "g": 9.81,
+           "g_tol": 2.0,
+           "rest_drift_mm": 5.0,
+           "sink_mm": 3.0,
+           "hand_chain_mm": [
+            140.0,
+            230.0
+           ],
+           "iou_warn": 0.6,
+           "hand_precision_warn": 0.7,
+           "opposition_deg": 60.0,
+           "anatomical_min_frac": 0.5
+          },
+          "checks": {
+           "reprojection": {
+            "status": "pass",
+            "per_part": null,
+            "below_threshold": null,
+            "note": "against your own masks: agreement with them is necessary, not sufficient (3D errors along the viewing ray are invisible here)"
+           },
+           "fingertip_distance": {
+            "status": "pass",
+            "phases": null
+           },
+           "anatomical_contact": {
+            "status": "pass",
+            "phases": null,
+            "note": "a grasp needs the thumb and an opposing finger on opposite sides of the object; single-finger pushes or palm support are legitimate but must be stated in the analysis. Low penetration does not imply contact."
+           },
+           "penetration_hand_object": {
+            "status": "pass",
+            "max_mm": null,
+            "frames_over_warn": null,
+            "signed": null,
+            "note": "unsigned (lower bound) distances where the object mesh is not watertight"
+           },
+           "self_penetration": {
+            "status": "warn",
+            "finger_finger_frames": null,
+            "finger_finger_frac": 0.023,
+            "hand_hand_frames": null,
+            "note": "triangle intersections between different fingers (FCL); counts are not volumes"
+           },
+           "continuity": {
+            "status": "warn",
+            "flagged": null,
+            "count": 1
+           },
+           "physics": {
+            "status": "pass",
+            "flights": null,
+            "rests": null,
+            "note": "free-flight intervals are given with --flight OBJ=a:b; rest intervals default to object intervals without contact"
+           },
+           "handedness_scale": {
+            "status": "pass",
+            "per_side": null,
+            "note": "left/right are the demonstrator's anatomical hands; a hand is never mirrored"
+           },
+           "sync": {
+            "status": "warn",
+            "t_real_monotonic": true,
+            "fps_real": 30.0,
+            "compare_frames": 436,
+            "compare_matches": true,
+            "object_offset_check": null
+           },
+           "camera_focal": {
+            "status": "pass",
+            "focal_px": 1200.0,
+            "prior_px": 1073.7,
+            "ratio": 1.118,
+            "prior_source": "research/recon_v2/transforms/moge/intrinsics.json",
+            "focal_label": "inferred",
+            "threshold_ratio": 1.25,
+            "note": "MoGe intrinsics are a learned prior; the focal should be calibrated against known geometry (camera_calib.py pnp). A large disagreement needs its explanation in NOTES.md (which one is wrong, and why)."
+           }
+          },
+          "summary": {
+           "reprojection": "pass",
+           "fingertip_distance": "pass",
+           "anatomical_contact": "pass",
+           "penetration_hand_object": "pass",
+           "self_penetration": "warn",
+           "continuity": "warn",
+           "physics": "pass",
+           "handedness_scale": "pass",
+           "sync": "warn",
+           "camera_focal": "pass"
+          },
+          "failed": [],
+          "incomplete": [],
+          "missing_required": [],
+          "overall": "pass",
+          "overall_note": "pass"
+         },
+         "check_reference": {
+          "verdict": "VALID",
+          "errors": 0,
+          "warnings": 1,
+          "error_list": []
+         },
+         "exception": null,
+         "producer": {
+          "tool": "r2s2r-d2s recon",
+          "recon_dir": "recon_v2"
+         }
+        },
+        "files": {
+         "compare_video": {
+          "sha": "000069eb90bf",
+          "bytes": 1981583,
+          "content_type": "video/mp4"
+         },
+         "validation_json": {
+          "sha": "0e807fe86148",
+          "bytes": 6751,
+          "content_type": "application/json"
+         },
+         "viewer": {
+          "sha": "a27044f4639b",
+          "bytes": 6625280,
+          "content_type": "application/x-tar"
+         }
+        }
+       },
+       {
+        "id": "r0010",
+        "seq": 10,
+        "kind": "criteria",
+        "version": 2,
+        "recorded_utc": "2026-11-03T07:22:22Z",
+        "exception": false,
+        "body": {
+         "reason": "Use corrected reconstruction v2: all-vertex hand-table support fixes wrist/table penetration. All numerical success thresholds, seeds and perturbations are unchanged; no policy has been trained or judged."
+        },
+        "files": {
+         "criteria_md": {
+          "sha": "48d3c2ae4b73",
+          "bytes": 7880,
+          "content_type": "text/markdown"
+         }
+        }
        }
       ],
       "first_recon_utc": "2026-11-03T07:02:23Z",
@@ -28941,7 +29533,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-03T07:12:32Z",
+  "staged_utc": "2026-11-03T07:22:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -29025,7 +29617,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-03T07:12:32Z",
+  "staged_utc": "2026-11-03T07:22:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
