@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-03T04:32:32Z",
- "exported_utc": "2026-11-03T04:32:29Z",
+ "generated_utc": "2026-11-03T04:42:32Z",
+ "exported_utc": "2026-11-03T04:42:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-03T04:29:40",
+    "time": "2026-11-03T04:40:48",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -21363,6 +21363,608 @@
          "text": "Simulation v1 accepted as r0011 at 04:26:21Z. Earlier upload was rejected because scene attachments do not accept .gz or .py. I had inadvertently launched a learner before reading that failed receipt; stopped its owned parent/workers, preserved its unevaluated curves under aborted_before_sim_receipt, discarded all updates, and will not use any checkpoint from it. Added a training-start guard requiring a valid accepted simulation receipt. Restarting PPO from seed101 from scratch after r0011."
         },
         "files": {}
+       },
+       {
+        "id": "r0013",
+        "seq": 13,
+        "kind": "iter",
+        "version": 1,
+        "recorded_utc": "2026-11-03T04:40:47Z",
+        "exception": false,
+        "body": {
+         "sim_version": 1,
+         "reward_terms": [
+          {
+           "name": "object_position",
+           "formula": "exp(-||p-p_ref||^2/0.025^2)",
+           "weight": 3.0
+          },
+          {
+           "name": "blade_axis",
+           "formula": "exp(-acos(z_obj dot z_ref)^2/0.5^2)",
+           "weight": 0.5
+          },
+          {
+           "name": "fingertip_proximity",
+           "formula": "exp(-mean(max(surface_gap,0))/0.020), thumb/index/middle",
+           "weight": 0.7
+          },
+          {
+           "name": "opposed_grasp",
+           "formula": "thumb and opposing finger force>=0.05 N, contact angle>=60deg",
+           "weight": 0.8
+          },
+          {
+           "name": "clear_lift",
+           "formula": "clip(body_bottom/0.035,0,1)",
+           "weight": 2.0
+          },
+          {
+           "name": "wrist_reference",
+           "formula": "exp(-||p-p_base||^2/0.06^2 - geodesic(q,q_base)^2/0.5^2)",
+           "weight": 0.15
+          },
+          {
+           "name": "inactive_object",
+           "formula": "exp(-||p_other-p_other_ref||^2/0.025^2)",
+           "weight": 0.3
+          },
+          {
+           "name": "action",
+           "formula": "-mean(a^2)",
+           "weight": 0.02
+          },
+          {
+           "name": "action_change",
+           "formula": "-mean((a-a_prev)^2)",
+           "weight": 0.01
+          },
+          {
+           "name": "failure",
+           "formula": "-50 hardware failure, -15 fall/large deviation",
+           "weight": 1.0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "initial_object_x_y",
+           "distribution": "independent Uniform per object/axis",
+           "range_m": [
+            -0.001,
+            0.001
+           ]
+          },
+          {
+           "name": "initial_object_world_yaw",
+           "distribution": "Uniform per object",
+           "range_deg": [
+            -1.0,
+            1.0
+           ]
+          },
+          {
+           "name": "object_mass_and_inertia_multiplier",
+           "distribution": "Uniform per object",
+           "range": [
+            0.98,
+            1.02
+           ]
+          },
+          {
+           "name": "object_sliding_friction",
+           "distribution": "Uniform per object",
+           "range": [
+            0.75,
+            0.9
+           ]
+          },
+          {
+           "name": "encoder_noise_500Hz",
+           "distribution": "Independent Gaussian",
+           "position_sigma_rad": 0.002,
+           "velocity_sigma_rad_s": 0.05
+          }
+         ],
+         "algorithm": {
+          "algorithm": "PPO",
+          "learning_rate": 0.0003,
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip_range": 0.2,
+          "n_steps": 256,
+          "batch_size": 512,
+          "n_epochs": 5,
+          "entropy_coefficient": 0.001,
+          "environments": 24,
+          "seed": 101
+         },
+         "architecture": "MLP pi128,128 and vf128,128 Tanh; Gaussian 14D residual action; observations100D",
+         "observations": "100D noisy encoders, wrist state/reference errors, perfect object state/reference errors, phase and previous action. No tactile/force inputs.",
+         "actions": "14D learned residual at50Hz; 6 wrist and 8 finger synergies, filtered40ms and decoded to500Hz specified controller targets. Frozen contact-aware base is allowed residual-RL reference.",
+         "checkpoint": "research/runs/run01/model.zip",
+         "checkpoint_sha256": "91b48fce6ab0…",
+         "trained_transitions": 503808,
+         "curriculum": {
+          "stage": "white_lift",
+          "description": "white_lift: physically settled open grasp reset atclock2.6,4s duration; white_full: full approach through white placement; full:36s two-object sequence."
+         },
+         "compute": {
+          "wall_seconds": 382.4703962802887,
+          "gpu_hours": 0.0
+         },
+         "training_curves": "Every vectorized neural step (mean across environments) logs total reward and each weighted reward term, episode returns/length, lift/grasp progress and hardware failures; step counts total transitions.",
+         "evaluation": {
+          "criteria_version": 2,
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "nominal_success": false,
+          "all_hardware_integrity_pass": true,
+          "verdict": "fail",
+          "criterion_rates": {
+           "white": {
+            "opposing_grasp": 1.0,
+            "clear_lift": 1.0,
+            "left_transfer": 1.0,
+            "released_placement": 0.0,
+            "held_carry": 1.0
+           },
+           "black": {
+            "opposing_grasp": 1.0,
+            "clear_lift": 1.0,
+            "left_transfer": 0.05,
+            "released_placement": 0.0,
+            "held_carry": 1.0
+           }
+          },
+          "wrist_similarity": [
+           {
+            "orientation_rms_deg": null,
+            "orientation_p95_deg": null,
+            "position_rms_m": null,
+            "palm_normal_rms_deg": null,
+            "detected_event_alignment_episodes": 0,
+            "note": "Planned-clock diagnostic used when grasp/release events are incomplete; this never makes a criterion pass."
+           },
+           {
+            "orientation_rms_deg": null,
+            "orientation_p95_deg": null,
+            "position_rms_m": null,
+            "palm_normal_rms_deg": null,
+            "detected_event_alignment_episodes": 0,
+            "note": "Planned-clock diagnostic used when grasp/release events are incomplete; this never makes a criterion pass."
+           }
+          ],
+          "per_episode": [
+           {
+            "seed": 10000,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10001,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10002,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10003,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10004,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10005,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10006,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10007,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10008,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10009,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10010,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10011,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10012,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10013,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10014,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10015,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10016,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10017,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10018,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10019,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           }
+          ],
+          "metrics_file": "research/runs/run01/evaluation/summary.json",
+          "metrics_sha256": "050f8cd423f1…"
+         },
+         "reflection": "PPO iteration 1 learned the white opposing grasp, >=15 mm lift and >=20 cm left transfer in all20 evaluation episodes, where the zero-residual baseline failed the lift. Full success is0/20: white is released sideways, and corrections learned only on the white lift interfere with black placement. All20 hardware/integrity checks pass. Mean wrist orientation RMS is about10.6deg white/15.7deg black; position RMS0.0857m/0.0814m exceeds the recorded0.08m bound. Do not relax criteria. Next: train the entire white manipulation with phase-gated lift/contact rewards, stronger blade-axis and released-standing rewards, and a direct human-wrist-position reward. The frozen white base still underdrives rotation; revise its offline retargeting to share a modest, explicitly measured extra wrist rotation with finger rolling, while retaining the same wrist thresholds. Then train the whole two-object sequence and expand randomization.\n",
+         "change_reason": null,
+         "learning_provenance": {
+          "sim_version": 1,
+          "algorithm": "PPO",
+          "stage": "white_lift",
+          "domain_randomization_name": "small",
+          "requested_transitions": 500000,
+          "actual_transitions": 503808,
+          "environments": 24,
+          "seed": 101,
+          "learning_rate": 0.0003,
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip_range": 0.2,
+          "n_steps": 256,
+          "batch_size": 512,
+          "n_epochs": 5,
+          "entropy_coefficient": 0.001,
+          "architecture": "MLP pi128,128 and vf128,128 Tanh; Gaussian 14D residual action; observations100D",
+          "checkpoint": "research/runs/run01/model.zip",
+          "checkpoint_sha256": "91b48fce6ab0…",
+          "source_sha256": {
+           "<path>": "cb6ff62488ac…"
+          },
+          "started_utc": "2026-11-03T04:26:51.545638+00:00",
+          "finished_utc": "2026-11-03T04:33:14.016028+00:00",
+          "wall_seconds": 382.4703962802887,
+          "gpu_hours": 0.0,
+          "loaded_from": null,
+          "training_hardware_failures": 3
+         },
+         "limitations": [
+          "All claims refer to this constructed simulation, not official evaluation or real hardware.",
+          "Perfect simulated object pose observations; uncertain friction/inertia/contact compliance."
+         ]
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "d42138e0a0e4",
+          "bytes": 5870282,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "a51674732232",
+          "bytes": 783276,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "9876388cd537",
+          "bytes": 772804,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "61dc6952fe44",
+          "bytes": 677466,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0014",
+        "seq": 14,
+        "kind": "verify",
+        "version": 1,
+        "recorded_utc": "2026-11-03T04:40:47Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0013",
+         "criteria_version": 2,
+         "verdict": "fail",
+         "policy": {
+          "checkpoint": "research/runs/run01/model.zip",
+          "sha256": "91b48fce6ab0…",
+          "weights_npz": "research/runs/run01/policy_weights.npz",
+          "weights_npz_sha256": "32567c3e0b8d…"
+         },
+         "episodes": 20,
+         "initial_conditions": "Seeds10000–10019, nominal episode0; independent xy±2mm, yaw±2deg, mass/inertia±5%, friction0.70–0.90; prescribed500Hz encoder noise.",
+         "result": {
+          "criteria_version": 2,
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "nominal_success": false,
+          "all_hardware_integrity_pass": true,
+          "verdict": "fail",
+          "criterion_rates": {
+           "white": {
+            "opposing_grasp": 1.0,
+            "clear_lift": 1.0,
+            "left_transfer": 1.0,
+            "released_placement": 0.0,
+            "held_carry": 1.0
+           },
+           "black": {
+            "opposing_grasp": 1.0,
+            "clear_lift": 1.0,
+            "left_transfer": 0.05,
+            "released_placement": 0.0,
+            "held_carry": 1.0
+           }
+          },
+          "wrist_similarity": [
+           {
+            "orientation_rms_deg": null,
+            "orientation_p95_deg": null,
+            "position_rms_m": null,
+            "palm_normal_rms_deg": null,
+            "detected_event_alignment_episodes": 0,
+            "note": "Planned-clock diagnostic used when grasp/release events are incomplete; this never makes a criterion pass."
+           },
+           {
+            "orientation_rms_deg": null,
+            "orientation_p95_deg": null,
+            "position_rms_m": null,
+            "palm_normal_rms_deg": null,
+            "detected_event_alignment_episodes": 0,
+            "note": "Planned-clock diagnostic used when grasp/release events are incomplete; this never makes a criterion pass."
+           }
+          ],
+          "per_episode": [
+           {
+            "seed": 10000,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10001,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10002,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10003,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10004,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10005,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10006,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10007,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10008,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10009,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10010,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10011,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10012,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10013,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10014,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10015,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10016,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10017,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10018,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           },
+           {
+            "seed": 10019,
+            "success": false,
+            "hardware_integrity_pass": true,
+            "objects": null
+           }
+          ],
+          "metrics_file": "research/runs/run01/evaluation/summary.json",
+          "metrics_sha256": "050f8cd423f1…"
+         },
+         "evidence": {
+          "full_metrics_sha256": "050f8cd423f1…",
+          "representative": "Nominal unless a successful episode exists; actual physics rollout with mean network action.",
+          "sampling": "Contacts and hardware at1kHz; wrist trace100Hz; rollout video30fps."
+         },
+         "limitations": [
+          "All claims refer to this constructed simulation, not official evaluation or real hardware.",
+          "Perfect simulated object pose observations; uncertain friction/inertia/contact compliance."
+         ],
+         "reflection": "PPO iteration 1 learned the white opposing grasp, >=15 mm lift and >=20 cm left transfer in all20 evaluation episodes, where the zero-residual baseline failed the lift. Full success is0/20: white is released sideways, and corrections learned only on the white lift interfere with black placement. All20 hardware/integrity checks pass. Mean wrist orientation RMS is about10.6deg white/15.7deg black; position RMS0.0857m/0.0814m exceeds the recorded0.08m bound. Do not relax criteria. Next: train the entire white manipulation with phase-gated lift/contact rewards, stronger blade-axis and released-standing rewards, and a direct human-wrist-position reward. The frozen white base still underdrives rotation; revise its offline retargeting to share a modest, explicitly measured extra wrist rotation with finger rolling, while retaining the same wrist thresholds. Then train the whole two-object sequence and expand randomization.\n",
+         "official_evaluation": false
+        },
+        "files": {
+         "file_1": {
+          "sha": "050f8cd423f1",
+          "bytes": 104799,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "32567c3e0b8d",
+          "bytes": 229446,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "981ee5be6701",
+          "bytes": 1515,
+          "content_type": "application/json"
+         },
+         "video_left_failure": {
+          "sha": "a51674732232",
+          "bytes": 783276,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "9876388cd537",
+          "bytes": 772804,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "61dc6952fe44",
+          "bytes": 677466,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0015",
+        "seq": 15,
+        "kind": "note",
+        "version": 9,
+        "recorded_utc": "2026-11-03T04:40:48Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "PPO iteration 1 learned the white opposing grasp, >=15 mm lift and >=20 cm left transfer in all20 evaluation episodes, where the zero-residual baseline failed the lift. Full success is0/20: white is released sideways, and corrections learned only on the white lift interfere with black placement. All20 hardware/integrity checks pass. Mean wrist orientation RMS is about10.6deg white/15.7deg black; position RMS0.0857m/0.0814m exceeds the recorded0.08m bound. Do not relax criteria. Next: train the entire white manipulation with phase-gated lift/contact rewards, stronger blade-axis and released-standing rewards, and a direct human-wrist-position reward. The frozen white base still underdrives rotation; revise its offline retargeting to share a modest, explicitly measured extra wrist rotation with finger rolling, while retaining the same wrist thresholds. Then train the whole two-object sequence and expand randomization.\n"
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-03T03:50:37Z",
@@ -22214,7 +22816,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-03T04:32:32Z",
+  "staged_utc": "2026-11-03T04:42:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -22298,7 +22900,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-03T04:32:31Z",
+  "staged_utc": "2026-11-03T04:42:31Z",
   "tasks": {
    "tennis": {
     "status": "available",
