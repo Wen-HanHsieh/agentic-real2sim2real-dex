@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-03T09:42:33Z",
- "exported_utc": "2026-11-03T09:42:29Z",
+ "generated_utc": "2026-11-03T09:52:33Z",
+ "exported_utc": "2026-11-03T09:52:30Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-03T09:32:04",
+    "time": "2026-11-03T09:48:43",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -55249,6 +55249,524 @@
          "text": "While PPO03 trains, physical-guide diagnostics show only modest command rate-limiter distortion (thumb/middle mean2.0/1.4mm white,2.3/3.2mm black). A larger effect is gravity-induced compliant slip: white falls about6mm relative to the fingertips before turning, leaving the pinch near the upper body edge, then loses contact. Offline analysis now tests body-local X=+4mm pinches, deeper toward the initially table-facing side, with native hand-table collision penalties. This is a new base feasibility study, not an evaluated learned iteration. All prior evidence retained."
         },
         "files": {}
+       },
+       {
+        "id": "r0027",
+        "seq": 27,
+        "kind": "iter",
+        "version": 3,
+        "recorded_utc": "2026-11-03T09:48:29Z",
+        "exception": false,
+        "body": {
+         "sim_version": 3,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "algorithm": "PPO clipped surrogate; GAE",
+          "paper": "https://arxiv.org/abs/1707.06347",
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "learning_rate": 0.0003,
+          "epochs": 6,
+          "minibatch": 1024,
+          "rollout_steps": 256,
+          "num_envs": 24,
+          "seed": 3,
+          "reward_scale": 0.1,
+          "actor": "154 ->128 tanh ->128 tanh ->26 diagonal Gaussian latent; tanh action; initial logstd -1.8; PPO02 warm start with index action rows reset",
+          "critic": "same allowed observations, separate 2x128 tanh",
+          "policy_observations": "deployable",
+          "args": {
+           "out": "research/training/ppo03",
+           "steps": 6000000,
+           "envs": 24,
+           "seed": 3,
+           "resume": "research/training/ppo02/checkpoint.pt",
+           "device": "cuda:0",
+           "stage": -1
+          }
+         },
+         "reward_terms": [
+          {
+           "name": "wrist_position",
+           "formula": "exp(-||p-p_ref||^2/0.04^2)",
+           "weight": 2.0
+          },
+          {
+           "name": "wrist_orientation",
+           "formula": "exp(-geodesic(q,q_ref)^2/0.35^2)",
+           "weight": 1.0
+          },
+          {
+           "name": "object_tracking",
+           "formula": "sum exp(-position_error^2/.045^2), weights3 active/placed and.15 otherwise",
+           "weight": 1
+          },
+          {
+           "name": "orientation_tracking",
+           "formula": "sum (1+dot(actual_blade_axis,planned_blade_axis))/2, weights8 active/placed and.05 otherwise",
+           "weight": 1
+          },
+          {
+           "name": "grasp",
+           "formula": ".2 thumb+.2 long+.5 opposed during manipulation",
+           "weight": 1
+          },
+          {
+           "name": "contact_proximity",
+           "formula": "sum over retargeted thumb/nearby fingers exp(-pad_distance_to_object-conditioned_reference_contact^2/.025^2)",
+           "weight": 0.5
+          },
+          {
+           "name": "goal",
+           "formula": "per placed object:8*I(y>.15)*exp(-tilt^2/.17^2)*exp(-bottom^2/.005^2)*I(no_hand_contact)",
+           "weight": 1
+          },
+          {
+           "name": "lift",
+           "formula": "one-time bonus when each object clearance first exceeds .01 m",
+           "weight": 2
+          },
+          {
+           "name": "hardware",
+           "formula": "I(any tick violation), terminate",
+           "weight": -100
+          },
+          {
+           "name": "action",
+           "formula": "sum(action^2)",
+           "weight": -0.01
+          },
+          {
+           "name": "action_smooth",
+           "formula": "sum((action-previous_action)^2)",
+           "weight": -0.01
+          },
+          {
+           "name": "hand_table",
+           "formula": "I(hand-table contact)",
+           "weight": -0.1
+          },
+          {
+           "name": "rotation_assist",
+           "formula": "turning only:.5*exp(-index_to_USBpoint_distance^2/.035^2)*max(0,sin(tilt))+2*clip((previous_tilt-tilt)/.05,-1,1)*I(clearance>.003)",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "object_initial_xy",
+           "distribution": "independent uniform",
+           "range_m": [
+            -0.003,
+            0.003
+           ]
+          },
+          {
+           "name": "object_initial_yaw",
+           "distribution": "uniform",
+           "range_deg": [
+            -2,
+            2
+           ]
+          },
+          {
+           "name": "object_mass_factor",
+           "distribution": "uniform",
+           "range": [
+            0.95,
+            1.05
+           ]
+          },
+          {
+           "name": "plastic_friction_factor",
+           "distribution": "uniform",
+           "range": [
+            0.9,
+            1.1
+           ]
+          },
+          {
+           "name": "encoder_position_noise",
+           "distribution": "independent Gaussian",
+           "std_rad": 0.002
+          },
+          {
+           "name": "encoder_velocity_noise",
+           "distribution": "independent Gaussian",
+           "std_rad_s": 0.05
+          }
+         ],
+         "policy": {
+          "checkpoint": "research/training/ppo03/evaluated_checkpoint.pt",
+          "checkpoint_sha256": "188748b7ca03…",
+          "weights_npz_sha256": "e1fc8caa6df4…",
+          "observations": "154 permitted inputs: previous136 plus object position/blade-axis goal errors and wrist position/rotation errors, all derived from allowed states and constant task goals. No contacts, torques, forces, images or sampled physical parameters.",
+          "actions": "26 independent tanh residuals; wrist <=35mm/.30rad norm around base,20 finger position targets. Correlated index curl removed; supplied controller law and limits unchanged."
+         },
+         "curriculum": "Planned first25% single-object pre-grasp to end of placement, next40% mix single-object and full episodes, last35%full. Run stopped early in stage1 after2.17M checkpoint evaluation regressed pickup; evaluated checkpoint never reached final full-only stage.",
+         "compute": {
+          "wall_time_s_total_run": 1124.9955513477325,
+          "gpu_hours": 0.31249876426325907,
+          "gpu": "one L40S",
+          "cpu_environments": 24,
+          "samples_total_run": 2549760,
+          "evaluated_checkpoint_samples": 2174976,
+          "evaluated_checkpoint_wall_s": 990.72762799263,
+          "updates_total_run": 415,
+          "planned_steps": 6000000,
+          "stopping_reason": "Checkpoint evaluation regressed pickup; stronger base found by independent native-physics analysis."
+         },
+         "evaluation": {
+          "criteria_version": 2,
+          "episodes": 10,
+          "seeds": [
+           1000,
+           1001,
+           1002,
+           1003,
+           1004,
+           1005,
+           1006,
+           1007,
+           1008,
+           1009
+          ],
+          "success_rate": 0.0,
+          "per_criterion_pass_rate": {
+           "plug_white_pickup": 0.2,
+           "plug_white_transfer": 0.0,
+           "plug_white_hold": 0.0,
+           "plug_black_pickup": 0.0,
+           "plug_black_transfer": 0.0,
+           "plug_black_hold": 0.0,
+           "order": 0.0,
+           "white_preserved": 0.0,
+           "wrist": 0.8,
+           "hardware": 1.0,
+           "duration": 1.0,
+           "release_gap": 1.0,
+           "initial_right_side": 1.0,
+           "initial_side_resting": 1.0
+          },
+          "wrist_position_rms_m": [
+           0.0389886398924028,
+           0.0395884975860567,
+           0.04049417510713332,
+           0.03942293778243535,
+           0.039490887842219005,
+           0.04092266776947625,
+           0.039268717485404246,
+           0.03917277190490212,
+           0.03950497439181546,
+           0.0395837361051079
+          ],
+          "wrist_orientation_rms_deg": [
+           15.711437216967559,
+           14.944085072475541,
+           15.985342993053774,
+           15.889462407744514,
+           15.151262760265595,
+           14.325049969793302,
+           15.294514224943908,
+           15.054953567658343,
+           15.209438359913017,
+           15.226902162574497
+          ],
+          "baseline_success_rate": 0.0,
+          "baseline_white_pickup_rate": 0.9,
+          "baseline_black_pickup_rate": 0.3,
+          "baseline_episodes": 10,
+          "metrics": "research/training/ppo03/evaluation/[redacted]"
+         },
+         "reflection": "FAIL0/10. Stronger rotation reward and index posture exploration did not overcome the poor contact guide: white pickup2/10, black0/10. Wrist passes8/10, hardware10/10. Early termination is an experimental decision, not task completion. Next use validated stronger compression and reversed white contact ordering; preserve criteria.",
+         "evidence": {
+          "top": "research/training/ppo03/videos/top.mp4",
+          "left": "research/training/ppo03/videos/left.mp4",
+          "right": "research/training/ppo03/videos/right.mp4",
+          "representative_seed": 1000
+         },
+         "source": {
+          "ppo_sha256": "e871b965add1…",
+          "environment_sha256": "4c7977406bc1…"
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "1e805173f385",
+          "bytes": 211258,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "6c90533d1122",
+          "bytes": 385359,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "cacfd7c9584f",
+          "bytes": 399110,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "804110add2e2",
+          "bytes": 321224,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0028",
+        "seq": 28,
+        "kind": "verify",
+        "version": 3,
+        "recorded_utc": "2026-11-03T09:48:42Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0027",
+         "criteria_version": 2,
+         "verdict": "fail",
+         "policy": {
+          "checkpoint": "research/training/ppo03/evaluated_checkpoint.pt",
+          "weights_file": "policy_weights.npz",
+          "observations": "deployable"
+         },
+         "episodes": {
+          "count": 10,
+          "seeds": [
+           1000,
+           1001,
+           1002,
+           1003,
+           1004,
+           1005,
+           1006,
+           1007,
+           1008,
+           1009
+          ],
+          "conditions": "Complete16s episodes, no curriculum resets; actual XY+-3mm/yaw+-2deg/mass+-5%/plastic friction+-10%, specified encoder noise."
+         },
+         "result": {
+          "criteria_version": 2,
+          "policy": "research/training/ppo03/evaluated_checkpoint.pt",
+          "episodes": [
+           {
+            "success": false,
+            "checks": null,
+            "objects": null,
+            "wrist": null,
+            "minimum_final_hand_gap_m": 0.1,
+            "hardware": null,
+            "steps": 800,
+            "initial_object_positions": null,
+            "randomization": null,
+            "episode_reward": 7142.550615481776,
+            "seed": 1000
+           },
+           {
+            "success": false,
+            "checks": null,
+            "objects": null,
+            "wrist": null,
+            "minimum_final_hand_gap_m": 0.1,
+            "hardware": null,
+            "steps": 800,
+            "initial_object_positions": null,
+            "randomization": null,
+            "episode_reward": 7068.292861482237,
+            "seed": 1001
+           },
+           {
+            "success": false,
+            "checks": null,
+            "objects": null,
+            "wrist": null,
+            "minimum_final_hand_gap_m": 0.1,
+            "hardware": null,
+            "steps": 800,
+            "initial_object_positions": null,
+            "randomization": null,
+            "episode_reward": 7010.262363954003,
+            "seed": 1002
+           },
+           {
+            "success": false,
+            "checks": null,
+            "objects": null,
+            "wrist": null,
+            "minimum_final_hand_gap_m": 0.1,
+            "hardware": null,
+            "steps": 800,
+            "initial_object_positions": null,
+            "randomization": null,
+            "episode_reward": 7098.9672594012245,
+            "seed": 1003
+           },
+           {
+            "success": false,
+            "checks": null,
+            "objects": null,
+            "wrist": null,
+            "minimum_final_hand_gap_m": 0.1,
+            "hardware": null,
+            "steps": 800,
+            "initial_object_positions": null,
+            "randomization": null,
+            "episode_reward": 7098.556408367413,
+            "seed": 1004
+           },
+           {
+            "success": false,
+            "checks": null,
+            "objects": null,
+            "wrist": null,
+            "minimum_final_hand_gap_m": 0.1,
+            "hardware": null,
+            "steps": 800,
+            "initial_object_positions": null,
+            "randomization": null,
+            "episode_reward": 7068.278876005384,
+            "seed": 1005
+           },
+           {
+            "success": false,
+            "checks": null,
+            "objects": null,
+            "wrist": null,
+            "minimum_final_hand_gap_m": 0.1,
+            "hardware": null,
+            "steps": 800,
+            "initial_object_positions": null,
+            "randomization": null,
+            "episode_reward": 7113.368791094978,
+            "seed": 1006
+           },
+           {
+            "success": false,
+            "checks": null,
+            "objects": null,
+            "wrist": null,
+            "minimum_final_hand_gap_m": 0.1,
+            "hardware": null,
+            "steps": 800,
+            "initial_object_positions": null,
+            "randomization": null,
+            "episode_reward": 7230.30482534691,
+            "seed": 1007
+           },
+           {
+            "success": false,
+            "checks": null,
+            "objects": null,
+            "wrist": null,
+            "minimum_final_hand_gap_m": 0.1,
+            "hardware": null,
+            "steps": 800,
+            "initial_object_positions": null,
+            "randomization": null,
+            "episode_reward": 7077.474943329755,
+            "seed": 1008
+           },
+           {
+            "success": false,
+            "checks": null,
+            "objects": null,
+            "wrist": null,
+            "minimum_final_hand_gap_m": 0.1,
+            "hardware": null,
+            "steps": 800,
+            "initial_object_positions": null,
+            "randomization": null,
+            "episode_reward": 7073.40219830473,
+            "seed": 1009
+           }
+          ],
+          "success_rate": 0.0,
+          "episodes_count": 10,
+          "max_policy_inference_s": 0.0005990310019114986,
+          "wall_time_s": 17.728919744491577,
+          "limitations": [
+           "Own simulation claim; narrow initial/physics perturbations, no real-world transfer claim.",
+           "Reference camera/depth uncertainty and remaining reconstruction warnings."
+          ]
+         },
+         "evidence": {
+          "failed_episode_seed": 1000,
+          "success_video": null,
+          "reason": "No successful episode exists.",
+          "videos": [
+           "top_failure",
+           "left_failure",
+           "right_failure"
+          ],
+          "metrics": "research/training/ppo03/evaluation/[redacted]",
+          "weights": "policy_weights.npz"
+         },
+         "limitations": [
+          "Own simulation verdict; no official score or real-world claim.",
+          "Zero complete successes; pickup regressed to white2/10,black0/10. Wrist8/10, hardware10/10.",
+          "Evaluated checkpoint stopped before final full-episode curriculum stage.",
+          "Ten fixed narrow validation seeds, rigid pads/contact assumptions and reconstruction uncertainty."
+         ],
+         "next_hypothesis": "Use reversed white contact ordering and stronger grip compression, validated to achieve near-upright turning in native-physics baseline analysis. Improve placement/release and train PPO against fixed criteria."
+        },
+        "files": {
+         "file_1": {
+          "sha": "aace5efab996",
+          "bytes": 31602,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "e1fc8caa6df4",
+          "bytes": 311190,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "e871b965add1",
+          "bytes": 8061,
+          "content_type": "text/plain"
+         },
+         "file_4": {
+          "sha": "4c7977406bc1",
+          "bytes": 13896,
+          "content_type": "text/plain"
+         },
+         "file_5": {
+          "sha": "4d9ae6e7784d",
+          "bytes": 745,
+          "content_type": "application/json"
+         },
+         "video_left_failure": {
+          "sha": "6c90533d1122",
+          "bytes": 385359,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "cacfd7c9584f",
+          "bytes": 399110,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "804110add2e2",
+          "bytes": 321224,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0029",
+        "seq": 29,
+        "kind": "note",
+        "version": 16,
+        "recorded_utc": "2026-11-03T09:48:43Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "PPO03 checkpoint2174976 samples is FAIL0/10; white pickup2/10,black0/10,wrist8/10,hardware10/10. Stopped the run at2549760 samples rather than spending the remaining budget on the weak guide. Offline contact studies show reversed white Z-contact ordering plus extra4mm bounded position-target grip compression reaches16.8deg white/29.9deg black and transfers both left with zero hardware violations nominally, but both still topple at release. End-face pinches and small phase-feedback lookahead were rejected after native-physics tests. Next improve timed lowering/release and use this stronger guide for PPO; no numerical criteria or original wrist reference changes."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-03T07:02:23Z",
@@ -56100,7 +56618,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-03T09:42:32Z",
+  "staged_utc": "2026-11-03T09:52:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -56184,7 +56702,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-03T09:42:32Z",
+  "staged_utc": "2026-11-03T09:52:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
