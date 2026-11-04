@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-04T23:02:38Z",
- "exported_utc": "2026-11-04T23:02:29Z",
+ "generated_utc": "2026-11-04T23:12:36Z",
+ "exported_utc": "2026-11-04T23:12:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-04T23:00:55",
+    "time": "2026-11-04T23:05:40",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -677,7 +677,7 @@
    "best": "s04",
    "latest_candidate": "s06",
    "activity": {
-    "time": "2026-11-04T22:53:12",
+    "time": "2026-11-04T23:05:33",
     "verb": "other"
    },
    "record_chain": "intact (20 entries)",
@@ -99523,6 +99523,411 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0041",
+        "seq": 41,
+        "kind": "note",
+        "version": 16,
+        "recorded_utc": "2026-11-04T23:02:50Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Elapsed3h37m. Simulation7 r0040 retains original black contact arrangement: mirrored Z-stagger lowered IK error but reduced baseline black lifts15/20 to6/20 and moved median reference wrist error near25deg. New193D features were independently reproduced from noisy q/wrist/object poses to<1e-14; no contact/force/physical parameters enter actor inputs. Reference phase is internal deployable controller memory, updated500Hz only from allowed object poses and elapsed time; pose gates do not optimize an online plan. Nominal PD-demand target shaping uses encoders and published gains, not measured torque. Normalization compensation preserved actor/critic raw-input outputs to<1e-6 for unclipped test inputs. Train one transferred policy from r0038 (reliable white) and one fresh PPO seed; all RL remains PPO."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0042",
+        "seq": 42,
+        "kind": "iter",
+        "version": 7,
+        "recorded_utc": "2026-11-04T23:05:40Z",
+        "exception": false,
+        "body": {
+         "sim_version": 5,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO",
+          "architecture": {
+           "actor": [
+            256,
+            256
+           ],
+           "critic": [
+            256,
+            256
+           ],
+           "activation": "tanh",
+           "observation_dim": 148,
+           "action_dim": 26
+          },
+          "hyperparameters": {
+           "out": "research/runs/three_airborne_v5",
+           "steps": 8000000,
+           "envs": 32,
+           "threads": 16,
+           "seed": 404,
+           "resume": "research/runs/iter003_prefix2m/final.pt",
+           "reset_optimizer": true,
+           "resume_rms_count": 10000.0,
+           "device": "cuda:0",
+           "phase_start": 0.7,
+           "phase_end": 0.0,
+           "algorithm": "PPO",
+           "learning_rate": 0.00025,
+           "clip": 0.2,
+           "gamma": 0.997,
+           "gae_lambda": 0.95,
+           "horizon": 256,
+           "batch": 8192,
+           "minibatch": 1024,
+           "epochs": 4,
+           "entropy_coefficient": 0.002,
+           "value_coefficient": 0.5,
+           "value_clipping": false,
+           "reward_scale_for_learning": 0.1,
+           "max_grad_norm": 0.5,
+           "policy_observations": "deployable",
+           "actor_layers": [
+            256,
+            256
+           ],
+           "critic_layers": [
+            256,
+            256
+           ],
+           "activation": "tanh",
+           "policy_hz": 50,
+           "command_hz": 500,
+           "pd_hz": 1000,
+           "observation_dimension": 148,
+           "action_dimension": 26,
+           "observation_normalization": "running moments; variance floor0.0004; clip10; frozen for evaluation"
+          },
+          "total_training_steps": 9723904,
+          "attempted_steps_including_work_after_selected_checkpoint": 9723904
+         },
+         "reward_terms": [
+          {
+           "name": "object_position",
+           "formula": "sum_o weight*exp(-||p-p_ref||^2/0.035^2); weight2 active,.35 otherwise",
+           "weight": 1
+          },
+          {
+           "name": "object_axis",
+           "formula": "Sum_o weight*exp(-blade_axis_error^2/.5^2), weight2.5 active,.15 otherwise",
+           "weight": 1
+          },
+          {
+           "name": "wrist_tracking",
+           "formula": "Against unmodified human mount trajectory: .45exp(-position_error^2/.055^2)+.45exp(-SO3_error^2/.45^2)-3(relu(position_error-.08)/.03)^2-2(relu(SO3_error-.9)/.3)^2",
+           "weight": 1
+          },
+          {
+           "name": "finger_tracking",
+           "formula": "exp(-mean(q-q_ref)^2/.16)",
+           "weight": 0.2
+          },
+          {
+           "name": "opposed_contact",
+           "formula": "Active:0.6 opposed positional contact, else0.1 any hand; add0.8*clip(min(thumbN,max(indexN,middleN))/.6,0,1) if positional opposition and force-weighted surface normals dot<-.5; add0.4exp(-bodySDF(pad_skin)^2/.02^2) each thumb,index. Simulator force reward only, excluded from policy observations. Minus0.15*sum_thumb,index,middle min(10,relu(total_normal_force_N-4)) to discourage excess squeeze.",
+           "weight": 1
+          },
+          {
+           "name": "lift_height",
+           "formula": "Active:2*clip(bottom/(.015 white,.035 black),0,1)*(.3+.7exp(-blade_tilt^2/.45^2))",
+           "weight": 1
+          },
+          {
+           "name": "settled",
+           "formula": "per-object upright left, base supported, speed small and no hand contact",
+           "weight": 1
+          },
+          {
+           "name": "milestones",
+           "formula": "first settled upright-left+8; first bottom clearance>1cm+2",
+           "weight": 1
+          },
+          {
+           "name": "action_smoothness",
+           "formula": "-.02mean(filtered_action^2)-.03mean(action_change^2)",
+           "weight": 1
+          },
+          {
+           "name": "joint_speed",
+           "formula": "-mean((qd/(.8*published_speed))^4)",
+           "weight": 0.1
+          },
+          {
+           "name": "ordered_rest",
+           "formula": "Before white first settled:-2min(4,relu(blackXYdrift-.005)/.01); additionally active plug:-2clip((y-.13)/.04,0,1)clip(blade_tilt-.34906585,0,1) to discourage premature carry.",
+           "weight": 1
+          },
+          {
+           "name": "penetration",
+           "formula": "-min(4,(max_[redacted]-.003)^2/.003^2) above3mm",
+           "weight": 0.2
+          },
+          {
+           "name": "terminal",
+           "formula": "-50 hardware violation;-25 dropped/nonfinite;+20 both final states stable1.6s (training goal only)",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "initial object XY",
+           "distribution": "independent uniform",
+           "range_m": [
+            -0.005,
+            0.005
+           ]
+          },
+          {
+           "quantity": "initial object yaw",
+           "distribution": "independent uniform",
+           "range_deg": [
+            -5,
+            5
+           ]
+          },
+          {
+           "quantity": "object mass and inertia multiplier",
+           "distribution": "uniform",
+           "range": [
+            0.9,
+            1.1
+           ],
+           "schedule": "amplitude0.25 to1 over first half of updates"
+          },
+          {
+           "quantity": "contact friction multiplier",
+           "distribution": "uniform",
+           "range": [
+            0.8,
+            1.2
+           ],
+           "schedule": "amplitude0.25 to1 over first half of updates"
+          },
+          {
+           "quantity": "joint encoder position",
+           "distribution": "independent Gaussian",
+           "sigma_rad": 0.002
+          },
+          {
+           "quantity": "joint encoder velocity",
+           "distribution": "independent Gaussian",
+           "sigma_radps": 0.05
+          }
+         ],
+         "curriculum": {
+          "method": "Candidate supported/pregrasp reference states at frames37,60,220,240; reject any initial geometric penetration>1mm and fall back to full37. No attachments. Actual initial frame/rejection count logged. Verification always full37.",
+          "phase_probability": [
+           0.7,
+           0.0
+          ],
+          "schedule": "linear to final probability by80% of updates; remaining20% at final probability"
+         },
+         "observation_space": "Noisy20q/20qd, wrist pose+velocities, previous20 finger targets+7 wrist target, two13D object states, time, and offline reference targets deterministically indexed by time. No contacts/forces/torques/physics parameters/images.",
+         "action_space": "26D Gaussian neural residual decoded to20 finger positions and wrist pose through the recorded reference controller;50Hz residual,500Hz commands,1kHz hardware PD. The software target shaper and robot reference are declared in simulation version5.",
+         "checkpoint": {
+          "path": "research/runs/three_airborne_v5/final.pt",
+          "sha256": "073071c25109…",
+          "deployable_npz": "research/runs/three_airborne_v5/policy.npz",
+          "deployable_npz_sha256": "29880f67d2bf…"
+         },
+         "compute": {
+          "wall_seconds": 2609.450609922409,
+          "allocated_gpu_hours": 0.7248473916451136,
+          "gpus": 1,
+          "gpu_type": "NVIDIA L40S",
+          "cpu_threads": 16
+         },
+         "evaluation": {
+          "checkpoint": "research/runs/three_airborne_v5/final.pt",
+          "checkpoint_sha256": "073071c25109…",
+          "criteria_version": 1,
+          "sim_version": 5,
+          "simulation_directory": "research/sim_v5_frozen",
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violating_episodes": 19,
+          "per_criterion_pass_counts": {
+           "initial_scene": 20,
+           "white_then_black": 0,
+           "white_preserved": 0,
+           "final_objects_separate": 20,
+           "hardware": 1,
+           "penetration": 20,
+           "wrist_similarity": 0,
+           "episode_duration": 20,
+           "plug_white_lift": 0,
+           "plug_white_physical_grasp": 0,
+           "plug_white_transport": 0,
+           "plug_white_final_standing": 0,
+           "plug_white_ordered_phases": 0,
+           "plug_white_grasp_duration": 0,
+           "plug_white_no_drop": 20,
+           "plug_black_lift": 20,
+           "plug_black_physical_grasp": 20,
+           "plug_black_transport": 0,
+           "plug_black_final_standing": 0,
+           "plug_black_ordered_phases": 0,
+           "plug_black_grasp_duration": 0,
+           "plug_black_no_drop": 20
+          },
+          "passed": false,
+          "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+          "inference_latency_max_s": 0.12095012999998289,
+          "evaluation_wall_seconds": 5.287981986999512,
+          "action_selection": "deterministic Gaussian mean, with encoder noise retained"
+         },
+         "baseline": {
+          "path": "research/sim/baseline_eval_v5/[redacted]",
+          "success_rate": 0.0,
+          "note": "Zero-residual reference tested on same20 initial cases; not a learned policy."
+         },
+         "reflection": "Later checkpoint of same parent fine-tuning as r0038; compute cumulative, not additive. Evaluation0/20 with19 hardware failures; white skill was lost although black lift/contact20/20. This confirms that training return alone is misleading and the earlier hardware-safe white20/20 prefix is a better initialization. Simulation7 starts from r0038, reduces unused-finger residuals, uses gentle target-demand shaping/strong hardware penalty and compensates observation-normalization changes. A fresh PPO seed tests initialization dependence. Criteria1 unchanged.",
+         "limitations": [
+          "Simulation-only claim; no real-robot result.",
+          "Task contact timing currently sampled50Hz;1kHz hardware/penetration extrema. A candidate pass requires fine contact audit."
+         ],
+         "simulation_record_sha256": "36920672f0a9…",
+         "training_lineage": {
+          "initial_checkpoint": "research/runs/iter003_prefix2m/final.pt",
+          "initial_iteration_record": "r0028",
+          "pretrained_steps": 2064384,
+          "source_sim_version": 4,
+          "new_sim_version": 5,
+          "changes": "Three-contact reference; airborne-axis/force-band/human-wrist rewards; earlier encoder brake. Optimizer reset and RMS count reduced to10000 for adaptation; no privileged observations."
+         },
+         "early_stop_reason": "Stopped near the planned end after rolling hardware failures rose above80%, while the earlier evaluated prefix remained hardware-safe and completed white upright20/20. Preserve final checkpoint/curves and evaluate to document degradation; use the earlier validated prefix as initialization for safer action decoding and normalization compensation. Compute here is cumulative for this parent run, shared with r0038 prefix rather than an additional independent run.\n"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "9d1ff17adc36",
+          "bytes": 422476,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "4ddba2ca1970",
+          "bytes": 327577,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "99c98d56293b",
+          "bytes": 386074,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "e793624a6a3b",
+          "bytes": 341693,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0043",
+        "seq": 43,
+        "kind": "verify",
+        "version": 7,
+        "recorded_utc": "2026-11-04T23:05:40Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0042",
+         "criteria_version": 1,
+         "verdict": "fail",
+         "policy": {
+          "path": "research/runs/three_airborne_v5/final.pt",
+          "sha256": "073071c25109…",
+          "deployable_npz": "research/runs/three_airborne_v5/policy.npz",
+          "deployable_npz_sha256": "29880f67d2bf…"
+         },
+         "episodes": 20,
+         "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+         "result": {
+          "criteria_version": 1,
+          "sim_version": 5,
+          "simulation_directory": "research/sim_v5_frozen",
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violating_episodes": 19,
+          "per_criterion_pass_counts": {
+           "initial_scene": 20,
+           "white_then_black": 0,
+           "white_preserved": 0,
+           "final_objects_separate": 20,
+           "hardware": 1,
+           "penetration": 20,
+           "wrist_similarity": 0,
+           "episode_duration": 20,
+           "plug_white_lift": 0,
+           "plug_white_physical_grasp": 0,
+           "plug_white_transport": 0,
+           "plug_white_final_standing": 0,
+           "plug_white_ordered_phases": 0,
+           "plug_white_grasp_duration": 0,
+           "plug_white_no_drop": 20,
+           "plug_black_lift": 20,
+           "plug_black_physical_grasp": 20,
+           "plug_black_transport": 0,
+           "plug_black_final_standing": 0,
+           "plug_black_ordered_phases": 0,
+           "plug_black_grasp_duration": 0,
+           "plug_black_no_drop": 20
+          },
+          "passed": false,
+          "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+          "inference_latency_max_s": 0.12095012999998289,
+          "evaluation_wall_seconds": 5.287981986999512
+         },
+         "evidence": {
+          "metrics": "research/runs/three_airborne_v5/eval/[redacted]",
+          "rollout": "First held-out episode, seed1001; all per-case results supplied."
+         },
+         "limitations": [
+          "Simulation-only claim; no real-robot result.",
+          "Task contact timing currently sampled50Hz;1kHz hardware/penetration extrema. A candidate pass requires fine contact audit."
+         ],
+         "reflection": "Later checkpoint of same parent fine-tuning as r0038; compute cumulative, not additive. Evaluation0/20 with19 hardware failures; white skill was lost although black lift/contact20/20. This confirms that training return alone is misleading and the earlier hardware-safe white20/20 prefix is a better initialization. Simulation7 starts from r0038, reduces unused-finger residuals, uses gentle target-demand shaping/strong hardware penalty and compensates observation-normalization changes. A fresh PPO seed tests initialization dependence. Criteria1 unchanged."
+        },
+        "files": {
+         "file_1": {
+          "sha": "f097b7464799",
+          "bytes": 89571,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "29880f67d2bf",
+          "bytes": 804034,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "9502f8782ee9",
+          "bytes": 43173,
+          "content_type": "application/json"
+         },
+         "video_left_failed": {
+          "sha": "4ddba2ca1970",
+          "bytes": 327577,
+          "content_type": "video/mp4"
+         },
+         "video_right_failed": {
+          "sha": "99c98d56293b",
+          "bytes": 386074,
+          "content_type": "video/mp4"
+         },
+         "video_top_failed": {
+          "sha": "e793624a6a3b",
+          "bytes": 341693,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-04T19:41:44Z",
@@ -105544,6 +105949,19 @@
          "text": "While PPO3/4/5 train, I will use offline CEM trajectory search only as analysis/reference construction, not as an execution-time policy or an RL algorithm. LEARNING.md explicitly allows trajectory optimization for analysis or building a reference; only PPO will train the final closed-loop network. Initial goal is a robust IM grasp over0–1.1s, since v1 controllers squeeze the wrong orientation rather than transfer and sim2 baseline first80ms continuous support occurs too late. Search actions are native PD target residuals; pen remains unactuated. Any optimized reference will be recorded as a new simulation before PPO uses it, and its untrained performance reported separately."
         },
         "files": {}
+       },
+       {
+        "id": "r0027",
+        "seq": 27,
+        "kind": "note",
+        "version": 17,
+        "recorded_utc": "2026-11-04T23:05:33Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Offline initial-grasp candidate establishes initial IM support by0.136–0.180s in all20 strict perturbation episodes (both1kHz contact ticks), but full baseline remains0/20. First offline turn search reached127deg with MR support; variant2 adds distal joints, angle-gated contact, geometry shaping, and exploration restarts, currently reaching180deg without a catch. Neither is a PPO success. Concurrent PPO run6 branches from a frozen intermediate run4 checkpoint, sim2, 4096environments,200M additional transitions, min2s episodes. New reward adds1.5 pair-centerline proximity and0.3 opposition, -0.2 velocity-margin cost, failure penalty -2 instead of-0.5; GAE lambda0.995. Initial GPU benchmark4096worlds achieved408k simulation-only transitions/s (short nominal hold, not representative training). Every evaluated PPO run will receive iteration+verification records."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-04T21:20:48Z",
@@ -105915,7 +106333,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-04T23:02:34Z",
+  "staged_utc": "2026-11-04T23:12:34Z",
   "tasks": {
    "cube": {
     "files": {
@@ -105999,7 +106417,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-04T23:02:33Z",
+  "staged_utc": "2026-11-04T23:12:34Z",
   "tasks": {
    "tennis": {
     "status": "available",
