@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-04T22:32:33Z",
- "exported_utc": "2026-11-04T22:32:29Z",
+ "generated_utc": "2026-11-04T22:42:33Z",
+ "exported_utc": "2026-11-04T22:42:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-04T22:31:29",
+    "time": "2026-11-04T22:39:15",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -98357,6 +98357,396 @@
          "text": "Elapsed3h05m. Sim6 transfer currently has frequent hardware terminations (up to39% in a recent rolling200-episode training window), despite safe zero-residual baseline/initialization. This is not a passing result. Diagnose commanded posture/self-contact and observation-statistic transfer. Hypotheses: old two-finger residuals conflict with new middle-finger contact, and rapid RMS updates alter a transferred network function outside PPO clipping. Prepare smaller nonessential residuals, gentle encoder-based nominal torque-demand shaping (full hardware braking retained), deterministic pose-derived features, and function-preserving first-layer compensation when normalization statistics change. These use only allowed noisy encoders/object states/constants; no contact/force observations will be introduced."
         },
         "files": {}
+       },
+       {
+        "id": "r0036",
+        "seq": 36,
+        "kind": "iter",
+        "version": 5,
+        "recorded_utc": "2026-11-04T22:39:14Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO",
+          "architecture": {
+           "actor": [
+            256,
+            256
+           ],
+           "critic": [
+            256,
+            256
+           ],
+           "activation": "tanh",
+           "observation_dim": 148,
+           "action_dim": 26
+          },
+          "hyperparameters": {
+           "out": "research/runs/tripod_release_v6",
+           "steps": 10000000,
+           "envs": 64,
+           "threads": 32,
+           "seed": 606,
+           "resume": "research/runs/iter003/final.pt",
+           "reset_optimizer": true,
+           "resume_rms_count": 10000.0,
+           "device": "cuda:0",
+           "phase_start": 0.8,
+           "phase_end": 0.0,
+           "algorithm": "PPO",
+           "learning_rate": 0.00025,
+           "clip": 0.2,
+           "gamma": 0.997,
+           "gae_lambda": 0.95,
+           "horizon": 256,
+           "batch": 16384,
+           "minibatch": 1024,
+           "epochs": 4,
+           "entropy_coefficient": 0.002,
+           "value_coefficient": 0.5,
+           "value_clipping": false,
+           "reward_scale_for_learning": 0.1,
+           "max_grad_norm": 0.5,
+           "policy_observations": "deployable",
+           "actor_layers": [
+            256,
+            256
+           ],
+           "critic_layers": [
+            256,
+            256
+           ],
+           "activation": "tanh",
+           "policy_hz": 50,
+           "command_hz": 500,
+           "pd_hz": 1000,
+           "observation_dimension": 148,
+           "action_dimension": 26,
+           "observation_normalization": "running moments; variance floor0.0004; clip10; frozen for evaluation"
+          },
+          "total_training_steps": 11878400,
+          "attempted_steps_including_work_after_selected_checkpoint": 11878400
+         },
+         "reward_terms": [
+          {
+           "name": "object_position",
+           "formula": "sum_o weight*exp(-||p-p_ref||^2/0.035^2); weight2 active,.35 otherwise",
+           "weight": 1
+          },
+          {
+           "name": "object_axis",
+           "formula": "Sum_o weight*exp(-blade_axis_error^2/.5^2), weight2.5 active,.15 otherwise",
+           "weight": 1
+          },
+          {
+           "name": "wrist_tracking",
+           "formula": "Against unmodified human mount trajectory: .45exp(-position_error^2/.055^2)+.45exp(-SO3_error^2/.45^2)-3(relu(position_error-.08)/.03)^2-2(relu(SO3_error-1.0471975512)/.3)^2",
+           "weight": 1
+          },
+          {
+           "name": "finger_tracking",
+           "formula": "exp(-mean(q-q_ref)^2/.16)",
+           "weight": 0.2
+          },
+          {
+           "name": "opposed_contact",
+           "formula": "Active:0.6 positional opposition else0.1 any hand;0.8 balanced force/0.6N with opposed normals;0.4exp(-pad-bodySDF^2/.02^2) each thumb/index/middle. Before supported upright left, add0.8*clip(min(three normal forces)/.3N)*clip(norm(cross(index-thumb,middle-thumb))/.0004m2), with opposition and three contacts. Once supported upright left, replace accumulated contact term by0.15*term-0.6*sum(three normal forces)+0.4 anyhand before release-ready or-0.4 anyhand after. Always subtract0.15sum min(10,relu(force-4N)).",
+           "weight": 1
+          },
+          {
+           "name": "lift_height",
+           "formula": "Active:2*clip(bottom/(.015 white,.035 black),0,1)*(.3+.7exp(-blade_tilt^2/.45^2))",
+           "weight": 1
+          },
+          {
+           "name": "settled",
+           "formula": "Per-object upright left/base supported/velocity small/no hand AND release-ready. Release-ready: first sustained opposed grasp to final touch span3.6-5.8s white,3.3-5.4s black; reference-initialized preplaced objects exempt during curriculum.",
+           "weight": 1
+          },
+          {
+           "name": "milestones",
+           "formula": "First settled release-ready+8; first bottom clearance>1cm+2",
+           "weight": 1
+          },
+          {
+           "name": "action_smoothness",
+           "formula": "-.02mean(filtered_action^2)-.03mean(action_change^2)",
+           "weight": 1
+          },
+          {
+           "name": "joint_speed",
+           "formula": "-mean((qd/(.8*published_speed))^4)",
+           "weight": 0.1
+          },
+          {
+           "name": "ordered_rest",
+           "formula": "Before white first settled:-2min(4,relu(blackXYdrift-.005)/.01); additionally active plug:-2clip((y-.13)/.04,0,1)clip(blade_tilt-.34906585,0,1) to discourage premature carry.",
+           "weight": 1
+          },
+          {
+           "name": "penetration",
+           "formula": "-min(4,(max_[redacted]-.003)^2/.003^2) above3mm",
+           "weight": 0.2
+          },
+          {
+           "name": "terminal",
+           "formula": "-50 hardware;-25 dropped/nonfinite;+20 both final objects settled and release-ready continuously1.6s (training goal; full criteria1 evaluated separately)",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "initial object XY",
+           "distribution": "independent uniform",
+           "range_m": [
+            -0.005,
+            0.005
+           ]
+          },
+          {
+           "quantity": "initial object yaw",
+           "distribution": "independent uniform",
+           "range_deg": [
+            -5,
+            5
+           ]
+          },
+          {
+           "quantity": "object mass and inertia multiplier",
+           "distribution": "uniform",
+           "range": [
+            0.9,
+            1.1
+           ],
+           "schedule": "amplitude0.25 to1 over first half of updates"
+          },
+          {
+           "quantity": "contact friction multiplier",
+           "distribution": "uniform",
+           "range": [
+            0.8,
+            1.2
+           ],
+           "schedule": "amplitude0.25 to1 over first half of updates"
+          },
+          {
+           "quantity": "joint encoder position",
+           "distribution": "independent Gaussian",
+           "sigma_rad": 0.002
+          },
+          {
+           "quantity": "joint encoder velocity",
+           "distribution": "independent Gaussian",
+           "sigma_radps": 0.05
+          }
+         ],
+         "curriculum": {
+          "method": "Candidate supported/pregrasp reference states at frames37,60,220,240; reject any initial geometric penetration>1mm and fall back to full37. No attachments. Actual initial frame/rejection count logged. Verification always full37.",
+          "phase_probability": [
+           0.8,
+           0.0
+          ],
+          "schedule": "linear to final probability by80% of updates; remaining20% at final probability"
+         },
+         "observation_space": "Noisy20q/20qd, wrist pose+velocities, previous20 finger targets+7 wrist target, two13D object states, time, and offline reference targets deterministically indexed by time. No contacts/forces/torques/physics parameters/images.",
+         "action_space": "26D Gaussian neural residual decoded to20 finger positions and wrist pose through the recorded reference controller;50Hz residual,500Hz commands,1kHz hardware PD. The software target shaper and robot reference are declared in simulation version6.",
+         "checkpoint": {
+          "path": "research/runs/tripod_release_v6/final.pt",
+          "sha256": "638c3a9480fd…",
+          "deployable_npz": "research/runs/tripod_release_v6/policy.npz",
+          "deployable_npz_sha256": "b0312421a7aa…"
+         },
+         "compute": {
+          "wall_seconds": 683.6591646671295,
+          "allocated_gpu_hours": 0.18990532351864708,
+          "gpus": 1,
+          "gpu_type": "NVIDIA L40S",
+          "cpu_threads": 32
+         },
+         "evaluation": {
+          "checkpoint": "research/runs/tripod_release_v6/final.pt",
+          "checkpoint_sha256": "638c3a9480fd…",
+          "criteria_version": 1,
+          "sim_version": 6,
+          "simulation_directory": "research/sim_v6_frozen",
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violating_episodes": 20,
+          "per_criterion_pass_counts": {
+           "initial_scene": 20,
+           "white_then_black": 0,
+           "white_preserved": 0,
+           "final_objects_separate": 20,
+           "hardware": 0,
+           "penetration": 20,
+           "wrist_similarity": 0,
+           "episode_duration": 20,
+           "plug_white_lift": 0,
+           "plug_white_physical_grasp": 0,
+           "plug_white_transport": 0,
+           "plug_white_final_standing": 0,
+           "plug_white_ordered_phases": 0,
+           "plug_white_grasp_duration": 0,
+           "plug_white_no_drop": 20,
+           "plug_black_lift": 0,
+           "plug_black_physical_grasp": 0,
+           "plug_black_transport": 0,
+           "plug_black_final_standing": 0,
+           "plug_black_ordered_phases": 0,
+           "plug_black_grasp_duration": 0,
+           "plug_black_no_drop": 20
+          },
+          "passed": false,
+          "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+          "inference_latency_max_s": 0.12233808899873111,
+          "evaluation_wall_seconds": 3.0717618465423584
+         },
+         "baseline": {
+          "path": "research/sim/baseline_eval_v6/[redacted]",
+          "success_rate": 0.0,
+          "note": "Zero-residual reference tested on same20 initial cases; not a learned policy."
+         },
+         "reflection": "Stopped after hardware failure rose above60% in training. Held-out full starts all20 fail pinky MCP abduction velocity near6.01s, with no successful lifts. Baseline remains hardware-safe. Transfer disturbed the grasp and nonessential finger control; stronger rotation alone was ineffective. Next: restrict unused residuals, gentle encoder-based nominal torque-demand shaping with full emergency braking, function-preserving normalization updates, and deployable geometric features. Criteria1 unchanged.",
+         "limitations": [
+          "Simulation-only claim; no real-robot result.",
+          "Task contact timing currently sampled50Hz;1kHz hardware/penetration extrema. A candidate pass requires fine contact audit."
+         ],
+         "simulation_record_sha256": "f5dd5600c353…",
+         "training_lineage": {
+          "initial_checkpoint": "research/runs/iter003/final.pt",
+          "initial_iteration_record": "r0032",
+          "source_sim_version": 4,
+          "new_sim_version": 6,
+          "changes": "Three-contact geometry, tripod reward, wider angular residual, light supported contact/release span reward,200ms fixed pause, encoder-based wrist governor. Optimizer reset/RMS count10000. No privileged observations."
+         },
+         "early_stop_reason": "Stopped after roughly2M additional PPO decisions because rolling hardware failure rose above60% and episode length collapsed, indicating unsafe posture/early-termination behavior rather than valid skill progress. Preserve full curves and final checkpoint and evaluate it. Diagnose before continuing with safer action decoding and normalization; criteria1 unchanged. Pretrained model came from r0032; reported compute here is new fine-tuning only.\n"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "8d5167d4f627",
+          "bytes": 97040,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "6d863bab8ebc",
+          "bytes": 195433,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "f6e735cb41b9",
+          "bytes": 216147,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "994743c5984e",
+          "bytes": 185970,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0037",
+        "seq": 37,
+        "kind": "verify",
+        "version": 5,
+        "recorded_utc": "2026-11-04T22:39:15Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0036",
+         "criteria_version": 1,
+         "verdict": "fail",
+         "policy": {
+          "path": "research/runs/tripod_release_v6/final.pt",
+          "sha256": "638c3a9480fd…",
+          "deployable_npz": "research/runs/tripod_release_v6/policy.npz",
+          "deployable_npz_sha256": "b0312421a7aa…"
+         },
+         "episodes": 20,
+         "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+         "result": {
+          "criteria_version": 1,
+          "sim_version": 6,
+          "simulation_directory": "research/sim_v6_frozen",
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violating_episodes": 20,
+          "per_criterion_pass_counts": {
+           "initial_scene": 20,
+           "white_then_black": 0,
+           "white_preserved": 0,
+           "final_objects_separate": 20,
+           "hardware": 0,
+           "penetration": 20,
+           "wrist_similarity": 0,
+           "episode_duration": 20,
+           "plug_white_lift": 0,
+           "plug_white_physical_grasp": 0,
+           "plug_white_transport": 0,
+           "plug_white_final_standing": 0,
+           "plug_white_ordered_phases": 0,
+           "plug_white_grasp_duration": 0,
+           "plug_white_no_drop": 20,
+           "plug_black_lift": 0,
+           "plug_black_physical_grasp": 0,
+           "plug_black_transport": 0,
+           "plug_black_final_standing": 0,
+           "plug_black_ordered_phases": 0,
+           "plug_black_grasp_duration": 0,
+           "plug_black_no_drop": 20
+          },
+          "passed": false,
+          "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+          "inference_latency_max_s": 0.12233808899873111,
+          "evaluation_wall_seconds": 3.0717618465423584
+         },
+         "evidence": {
+          "metrics": "research/runs/tripod_release_v6/eval/[redacted]",
+          "rollout": "First held-out episode, seed1001; all per-case results supplied."
+         },
+         "limitations": [
+          "Simulation-only claim; no real-robot result.",
+          "Task contact timing currently sampled50Hz;1kHz hardware/penetration extrema. A candidate pass requires fine contact audit."
+         ],
+         "reflection": "Stopped after hardware failure rose above60% in training. Held-out full starts all20 fail pinky MCP abduction velocity near6.01s, with no successful lifts. Baseline remains hardware-safe. Transfer disturbed the grasp and nonessential finger control; stronger rotation alone was ineffective. Next: restrict unused residuals, gentle encoder-based nominal torque-demand shaping with full emergency braking, function-preserving normalization updates, and deployable geometric features. Criteria1 unchanged."
+        },
+        "files": {
+         "file_1": {
+          "sha": "eb1a3a51d21b",
+          "bytes": 89118,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "b0312421a7aa",
+          "bytes": 804220,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "2e730f1071e9",
+          "bytes": 44881,
+          "content_type": "application/json"
+         },
+         "video_left_failed": {
+          "sha": "6d863bab8ebc",
+          "bytes": 195433,
+          "content_type": "video/mp4"
+         },
+         "video_right_failed": {
+          "sha": "f6e735cb41b9",
+          "bytes": 216147,
+          "content_type": "video/mp4"
+         },
+         "video_top_failed": {
+          "sha": "994743c5984e",
+          "bytes": 185970,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-04T19:41:44Z",
@@ -100373,7 +100763,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-04T22:32:32Z",
+  "staged_utc": "2026-11-04T22:42:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -100457,7 +100847,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-04T22:32:32Z",
+  "staged_utc": "2026-11-04T22:42:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
