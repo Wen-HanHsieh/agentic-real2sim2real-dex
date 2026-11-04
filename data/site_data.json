@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-04T11:32:33Z",
- "exported_utc": "2026-11-04T11:32:30Z",
+ "generated_utc": "2026-11-04T11:42:36Z",
+ "exported_utc": "2026-11-04T11:42:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-04T11:31:52",
+    "time": "2026-11-04T11:41:01",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -61304,6 +61304,1915 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0041",
+        "seq": 41,
+        "kind": "iter",
+        "version": 9,
+        "recorded_utc": "2026-11-04T11:32:58Z",
+        "exception": false,
+        "body": {
+         "sim_version": 4,
+         "algorithm": "PPO, Stable-Baselines3 2.9.2",
+         "checkpoint": "research/iter05/checkpoint_20m.zip",
+         "checkpoint_sha256": "339a99d51234…",
+         "policy_observations": "deployable",
+         "sampled_environment_steps": 20008960,
+         "architecture": {
+          "actor": [
+           256,
+           256
+          ],
+          "critic": [
+           256,
+           256
+          ],
+          "activation": "tanh",
+          "observation_dim": 121,
+          "action_dim": 26
+         },
+         "observation_space": "Noisy finger q/qd, wrist pose/velocity, object pose/velocity, own previous targets and time. Additional deterministic goal sin/cos/speed, relative orientation error, relative angular velocity and wrist-frame ball position/velocity use only allowed object/wrist states, time and constants. No contacts/forces/torques/physical parameters in actor.",
+         "action_space": "20boundedfinger-targetresiduals,3wristpositionresiduals,3wristrotationresiduals;50Hznetwork,500Hzcommandstream,1000Hzprescribedcontrollers.",
+         "hyperparameters": {
+          "learning_rate": 0.0002,
+          "n_steps": 64,
+          "batch_size": 8192,
+          "epochs": 4,
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip_range": 0.2,
+          "entropy_coef": 0.001
+         },
+         "seeds": [
+          42
+         ],
+         "environments": 1024,
+         "reward_terms": [
+          {
+           "name": "ball_tracking",
+           "formula": "exp(-ball_error²/0.065²)",
+           "weight": 2
+          },
+          {
+           "name": "wrist_tracking",
+           "formula": "exp(-position_error²/0.04²-orientation_error²/0.4²)",
+           "weight": 1
+          },
+          {
+           "name": "retention",
+           "formula": "hand contact and ball-wrist distance<0.16m",
+           "weight": 2
+          },
+          {
+           "name": "spin_orientation_linear",
+           "formula": "-geodesic relative-orientation error to time-derived negative-palm-X goal",
+           "weight": 1.5
+          },
+          {
+           "name": "spin_velocity_tracking",
+           "formula": "retained*exp(-||relative_omega-negative_palm_X*goal_speed||²/4)",
+           "weight": 2
+          },
+          {
+           "name": "action_cost",
+           "formula": "-sum(action²)",
+           "weight": 0.001
+          },
+          {
+           "name": "action_change",
+           "formula": "-sum((action-previous_action)²)",
+           "weight": 0.003
+          },
+          {
+           "name": "joint_speed_cost",
+           "formula": "-mean((qd/vlim)²)",
+           "weight": 0.02
+          },
+          {
+           "name": "termination_penalty",
+           "formula": "failure terminal",
+           "weight": -20
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "initial_state_bank",
+           "distribution": "Uniform finite empirical bank conditioned on curriculum start type",
+           "states": 672,
+           "generation": "96 independent wristXYZ±2mm,fingerq±0.01rad,ballXYZ±1mm samples at each of7reference starts, actual0.5s native CPU settle, seeds20000+ disjoint from verification. All retained."
+          },
+          {
+           "name": "encoder_noise",
+           "distribution": "Fresh independent Gaussian each policy decision",
+           "q_sigma_rad": 0.002,
+           "qd_sigma_rad_s": 0.05
+          }
+         ],
+         "physics_randomization": "none",
+         "curriculum": [
+          [
+           1.0,
+           "spin"
+          ]
+         ],
+         "compute": {
+          "PPO_wall_seconds": 1429.6260740756989,
+          "allocated_GPU_hours": 0.39711835390991634,
+          "GPU_count": 1
+         },
+         "baseline": {
+          "method": "Zero neural residual, declared offline reference baseline7",
+          "nominal_successes": 0,
+          "episodes": 1,
+          "result": "One qualifying first toss/catch and>=0.20s retention; drops during first spin at4.74s. No full skill or scripted spin success.",
+          "evidence": "baseline07_full/[redacted]",
+          "first_flight": {
+           "release_s": 1.794,
+           "duration_s": 0.49,
+           "rise_m": 0.262325,
+           "horizontal_m": 0.03608
+          },
+          "finger_closing": "All four long fingers exceed0.20rad catch/flight flexion contrast.",
+          "fixed_seed_ablation": {
+           "episodes": 20,
+           "successes": 0,
+           "hardware_violation_episodes": 0,
+           "per_criterion_success_counts": {
+            "start_retained": 0,
+            "three_tosses_and_catches": 0,
+            "ordered_spins": 0,
+            "wrist_and_finger_motion": 0,
+            "final_hold": 0,
+            "hardware": 20,
+            "deadline": 20
+           },
+           "qualifying_flight_counts": [
+            1,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+           ]
+          }
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violation_episodes": 20,
+          "per_criterion_success_counts": {
+           "start_retained": 20,
+           "three_tosses_and_catches": 0,
+           "ordered_spins": 0,
+           "wrist_and_finger_motion": 0,
+           "final_hold": 8,
+           "hardware": 0,
+           "deadline": 20
+          },
+          "representative_failure": {
+           "pass": false,
+           "criteria": {
+            "start_retained": true,
+            "three_tosses_and_catches": false,
+            "ordered_spins": false,
+            "wrist_and_finger_motion": false,
+            "final_hold": false,
+            "hardware": false,
+            "deadline": true
+           },
+           "duration_s": 1.7,
+           "floor_contact": false,
+           "qualifying_flights": [],
+           "all_separations": [],
+           "catch_retention": [],
+           "spins": [],
+           "finger_changes": [],
+           "wrist": {
+            "position_rms_m": 0.03295028813914077,
+            "position_max_m": 0.06416328028975862,
+            "orientation_rms_deg": 10.650712822236583,
+            "orientation_max_deg": 14.36738112890743,
+            "palm_up_retained_fraction": 1.0
+           },
+           "hold": {
+            "pass": false,
+            "duration_s": 0.4019999999999999,
+            "relative_center_drift_m": 0.010390132797845028,
+            "relative_angular_excursion_rad": 0.3000982458716756,
+            "retained_fraction": 1.0
+           },
+           "hardware": {
+            "pass": false,
+            "max_speed_ratio": 1.2311385047402517,
+            "max_torque_ratio": 1.0,
+            "max_position_excess_rad": 0.0006856608844660883
+           },
+           "seed": 1000,
+           "return_": 347.2723137365535,
+           "trace": "episode_1000.npz",
+           "violation_first": {
+            "time": 2.1909999999998697,
+            "speed_ratio": 1.004540867922119,
+            "torque_ratio": 1.0,
+            "position_excess_rad": 0.0
+           }
+          }
+         },
+         "reflection": "Additional GPU PPO spin learning raises goal amplitudes; evaluation checks retained angular travel and excursion in native CPU dynamics. Full-task deployment of a spin-only expert remains outside its training distribution and is explicitly tested as a failure-prone baseline for future expert composition. No task or hardware threshold is changed.",
+         "final_reward_scale": 0.1,
+         "reward_definition": "Final training reward = final_reward_scale * sum(raw weighted terms listed here). Curves preserve raw component values and the scaled total.",
+         "initialization": {
+          "checkpoint": "research/iter05/initial_actor.zip",
+          "bc_steps": 0,
+          "reset_critic": false
+         },
+         "curriculum_execution": "Explicit configure_training environment-method calls, returned actual-state assertions; wrapper propagation and reward scaling validated.",
+         "training_state_bank": "Finite672-state bank generated by actual0.5s CPU settling at fresh training seeds20000+, disjoint from verification seeds; all96 samples per seven reference starts retained. Fresh encoder noise every decision.",
+         "backend": "MuJoCo Warp3.17.0 / Warp1.19.0, float32, scene identical to CPU; final verification on CPU float64",
+         "training_segment_diagnostics": {
+          "warning": "Training-segment diagnostic only, not a full-task success claim.",
+          "goal_scale": 1.0,
+          "excursion_definition": "Only retained samples, matching full verifier; older diagnostics included detached samples.",
+          "results": [
+           {
+            "segment": 0,
+            "seed": 1000,
+            "start": 2.6,
+            "end": 5.36,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9768283852280956,
+            "angular_path_retained": 6.630816439500855,
+            "max_excursion": 3.1409182265959417,
+            "hardware": true,
+            "return": 532.2994489181449
+           },
+           {
+            "segment": 0,
+            "seed": 1001,
+            "start": 2.6,
+            "end": 5.36,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9797248370745837,
+            "angular_path_retained": 6.658632980167452,
+            "max_excursion": 3.141027858898444,
+            "hardware": true,
+            "return": 523.9668893566441
+           },
+           {
+            "segment": 0,
+            "seed": 1002,
+            "start": 2.6,
+            "end": 5.36,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9790007241129616,
+            "angular_path_retained": 6.670337881272096,
+            "max_excursion": 3.1412063441868696,
+            "hardware": true,
+            "return": 523.8765753672897
+           },
+           {
+            "segment": 1,
+            "seed": 1000,
+            "start": 6.033333333333333,
+            "end": 6.933333333333,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9955654101995566,
+            "angular_path_retained": 1.6040081795873031,
+            "max_excursion": 0.9505288595232008,
+            "hardware": true,
+            "return": 209.63624728306925
+           },
+           {
+            "segment": 1,
+            "seed": 1001,
+            "start": 6.033333333333333,
+            "end": 6.933333333333,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9977827050997783,
+            "angular_path_retained": 1.6887368944391272,
+            "max_excursion": 0.9886904151642633,
+            "hardware": true,
+            "return": 209.2132043932551
+           },
+           {
+            "segment": 1,
+            "seed": 1002,
+            "start": 6.033333333333333,
+            "end": 6.933333333333,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9933481152993349,
+            "angular_path_retained": 1.6801398319859628,
+            "max_excursion": 0.9452396893261985,
+            "hardware": true,
+            "return": 209.29000821327054
+           },
+           {
+            "segment": 2,
+            "seed": 1000,
+            "start": 7.766666666666667,
+            "end": 10.366666666667,
+            "retained_fraction": 1.0,
+            "support_fraction": 1.0,
+            "angular_path_retained": 6.530547357444846,
+            "max_excursion": 3.1400995332619663,
+            "hardware": true,
+            "return": 384.9921302933874
+           },
+           {
+            "segment": 2,
+            "seed": 1001,
+            "start": 7.766666666666667,
+            "end": 10.366666666667,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9992313604919293,
+            "angular_path_retained": 6.571997380356919,
+            "max_excursion": 3.1390259077053297,
+            "hardware": true,
+            "return": 376.00660179276616
+           },
+           {
+            "segment": 2,
+            "seed": 1002,
+            "start": 7.766666666666667,
+            "end": 10.366666666667,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9976940814757879,
+            "angular_path_retained": 6.615610546914544,
+            "max_excursion": 3.138331597642136,
+            "hardware": true,
+            "return": 380.1956711135662
+           }
+          ]
+         },
+         "curves_note": "Published means per PPO rollout/update; full denser raw CSV retained locally as research/iter05/curves_raw_20m.csv"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "00911b6430ec",
+          "bytes": 120707,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "fdc9dce43cb4",
+          "bytes": 41662,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "715ad6a881a4",
+          "bytes": 42794,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "694acde39e3b",
+          "bytes": 33894,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0042",
+        "seq": 42,
+        "kind": "verify",
+        "version": 9,
+        "recorded_utc": "2026-11-04T11:32:59Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0041",
+         "criteria_version": 1,
+         "sim_version": 4,
+         "checkpoint": "research/iter05/checkpoint_20m.zip",
+         "verdict": "fail",
+         "initial_conditions": "Fixed seeds1000-1019, wrist±2mm,fingers±0.01rad,ball±1mm independently uniform; specified Gaussian encoders active.",
+         "episodes": 20,
+         "successes": 0,
+         "success_rate": 0.0,
+         "per_criterion_success_counts": {
+          "start_retained": 20,
+          "three_tosses_and_catches": 0,
+          "ordered_spins": 0,
+          "wrist_and_finger_motion": 0,
+          "final_hold": 8,
+          "hardware": 0,
+          "deadline": 20
+         },
+         "hardware_violation_episodes": 20,
+         "evidence": {
+          "metrics": "research/iter05/eval_20m/[redacted]",
+          "representative_seed": 1000,
+          "trace": "research/iter05/eval_20m/episode_1000.npz",
+          "views": [
+           "top_failure",
+           "left_failure",
+           "right_failure"
+          ]
+         },
+         "diagnosis": "Additional GPU PPO spin learning raises goal amplitudes; evaluation checks retained angular travel and excursion in native CPU dynamics. Full-task deployment of a spin-only expert remains outside its training distribution and is explicitly tested as a failure-prone baseline for future expert composition. No task or hardware threshold is changed.",
+         "limitations": [
+          "Own simulation only; rigid convex CAD and inferred contact material.",
+          "Perfect object-state sensing; no physical validation.",
+          "Global demonstration object rotation unobservable; local spin interpretation and thresholds are own criteria."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "0aa0f0dabe72",
+          "bytes": 29790,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "e9e4f478d2af",
+          "bytes": 539053,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "b6b75d9ca59f",
+          "bytes": 3269,
+          "content_type": "application/json"
+         },
+         "file_4": {
+          "sha": "9a44ac590391",
+          "bytes": 814557,
+          "content_type": "application/octet-stream"
+         },
+         "file_5": {
+          "sha": "721be5c32cbf",
+          "bytes": 54008,
+          "content_type": "application/json"
+         },
+         "video_left_failure": {
+          "sha": "fdc9dce43cb4",
+          "bytes": 41662,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "715ad6a881a4",
+          "bytes": 42794,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "694acde39e3b",
+          "bytes": 33894,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0043",
+        "seq": 43,
+        "kind": "iter",
+        "version": 10,
+        "recorded_utc": "2026-11-04T11:33:27Z",
+        "exception": false,
+        "body": {
+         "sim_version": 3,
+         "algorithm": "PPO, Stable-Baselines3 2.9.2",
+         "checkpoint": "research/iter03/checkpoint_final.zip",
+         "checkpoint_sha256": "a5fe2be45abd…",
+         "policy_observations": "deployable",
+         "sampled_environment_steps": 2100576,
+         "architecture": {
+          "actor": [
+           256,
+           256
+          ],
+          "critic": [
+           256,
+           256
+          ],
+          "activation": "tanh",
+          "observation_dim": 121,
+          "action_dim": 26
+         },
+         "observation_space": "Noisy finger q/qd, wrist pose/velocity, object pose/velocity, own previous targets and time. Additional deterministic goal sin/cos/speed, relative orientation error, relative angular velocity and wrist-frame ball position/velocity use only allowed object/wrist states, time and constants. No contacts/forces/torques/physical parameters in actor.",
+         "action_space": "20boundedfinger-targetresiduals,3wristpositionresiduals,3wristrotationresiduals;50Hznetwork,500Hzcommandstream,1000Hzprescribedcontrollers.",
+         "hyperparameters": {
+          "learning_rate": 0.0002,
+          "n_steps": 256,
+          "batch_size": 2048,
+          "epochs": 5,
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip_range": 0.2,
+          "entropy_coef": 0.001
+         },
+         "seeds": [
+          7
+         ],
+         "environments": 8,
+         "reward_terms": [
+          {
+           "name": "ball_tracking",
+           "formula": "exp(-ball_error²/0.065²)",
+           "weight": 2
+          },
+          {
+           "name": "wrist_tracking",
+           "formula": "exp(-position_error²/0.04²-orientation_error²/0.4²)",
+           "weight": 1
+          },
+          {
+           "name": "retention",
+           "formula": "hand contact and object-wrist distance<0.16m",
+           "weight": 1
+          },
+          {
+           "name": "spin_orientation",
+           "formula": "retained*exp(-relative_orientation_error²/0.9²)",
+           "weight": 2
+          },
+          {
+           "name": "spin_velocity_progress",
+           "formula": "retained*clip(relative_omega_y/max(goal_speed,0.5),-1,1) in active spin, otherwise -0.1*retained*min(||relative_omega||²,9)",
+           "weight": 2
+          },
+          {
+           "name": "spin_off_axis",
+           "formula": "-retained*min(relative_omega_x²+relative_omega_z²,25)",
+           "weight": 0.03
+          },
+          {
+           "name": "catch_bonus",
+           "formula": "Contact after free flight duration0.38..0.62s, rise0.23..0.40m,horizontal<=0.08m (reward shaping only)",
+           "weight": 50
+          },
+          {
+           "name": "finger_reference",
+           "formula": "exp(-mean((q-retarget_q)²)/0.3)",
+           "weight": 0.02
+          },
+          {
+           "name": "action_cost",
+           "formula": "-sum(action²)",
+           "weight": 0.001
+          },
+          {
+           "name": "action_change",
+           "formula": "-sum((action-previous_action)²)",
+           "weight": 0.003
+          },
+          {
+           "name": "joint_speed_cost",
+           "formula": "-mean((qd/vlimit)²)",
+           "weight": 0.02
+          },
+          {
+           "name": "termination_penalty",
+           "formula": "failure terminal",
+           "weight": -20
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "initial_wrist_translation",
+           "distribution": "independentuniform",
+           "range_m": [
+            -0.002,
+            0.002
+           ]
+          },
+          {
+           "name": "initial_finger_positions",
+           "distribution": "independentuniform,clipped",
+           "range_rad": [
+            -0.01,
+            0.01
+           ]
+          },
+          {
+           "name": "initial_ball_translation",
+           "distribution": "independentuniform",
+           "range_m": [
+            -0.001,
+            0.001
+           ]
+          },
+          {
+           "name": "encoder_noise",
+           "distribution": "independentGaussian",
+           "q_sigma_rad": 0.002,
+           "qd_sigma_rad_s": 0.05
+          }
+         ],
+         "physics_randomization": "none",
+         "curriculum": [
+          [
+           0.3,
+           "spin"
+          ],
+          [
+           0.55,
+           "toss"
+          ],
+          [
+           1.0,
+           "full"
+          ]
+         ],
+         "compute": {
+          "PPO_wall_seconds": 2667.586127281189,
+          "allocated_GPU_hours": 0.740996146466997,
+          "GPU_count": 1
+         },
+         "baseline": {
+          "method": "Zero neural residual, declared offline reference baseline7",
+          "nominal_successes": 0,
+          "episodes": 1,
+          "result": "One qualifying first toss/catch and>=0.20s retention; drops during first spin at4.74s. No full skill or scripted spin success.",
+          "evidence": "baseline07_full/[redacted]",
+          "first_flight": {
+           "release_s": 1.794,
+           "duration_s": 0.49,
+           "rise_m": 0.262325,
+           "horizontal_m": 0.03608
+          },
+          "finger_closing": "All four long fingers exceed0.20rad catch/flight flexion contrast.",
+          "fixed_seed_ablation": {
+           "episodes": 20,
+           "successes": 0,
+           "hardware_violation_episodes": 0,
+           "per_criterion_success_counts": {
+            "start_retained": 0,
+            "three_tosses_and_catches": 0,
+            "ordered_spins": 0,
+            "wrist_and_finger_motion": 0,
+            "final_hold": 0,
+            "hardware": 20,
+            "deadline": 20
+           },
+           "qualifying_flight_counts": [
+            1,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+           ]
+          }
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violation_episodes": 16,
+          "per_criterion_success_counts": {
+           "start_retained": 16,
+           "three_tosses_and_catches": 0,
+           "ordered_spins": 0,
+           "wrist_and_finger_motion": 0,
+           "final_hold": 7,
+           "hardware": 4,
+           "deadline": 20
+          },
+          "representative_failure": {
+           "pass": false,
+           "criteria": {
+            "start_retained": true,
+            "three_tosses_and_catches": false,
+            "ordered_spins": false,
+            "wrist_and_finger_motion": false,
+            "final_hold": false,
+            "hardware": false,
+            "deadline": true
+           },
+           "duration_s": 5.42,
+           "floor_contact": false,
+           "qualifying_flights": [],
+           "all_separations": [
+            null,
+            null,
+            null,
+            null
+           ],
+           "catch_retention": [],
+           "spins": [],
+           "finger_changes": [],
+           "wrist": {
+            "position_rms_m": 0.031163654678267316,
+            "position_max_m": 0.09162305786616733,
+            "orientation_rms_deg": 3.9656225065563726,
+            "orientation_max_deg": 13.612340577419834,
+            "palm_up_retained_fraction": 0.9971311475409836
+           },
+           "hold": {
+            "pass": false,
+            "duration_s": 0.40200000000000036,
+            "relative_center_drift_m": 0.0054523143272836696,
+            "relative_angular_excursion_rad": 0.310626612040482,
+            "retained_fraction": 0.9950248756218906
+           },
+           "hardware": {
+            "pass": false,
+            "max_speed_ratio": 1.0809609778942983,
+            "max_torque_ratio": 1.0,
+            "max_position_excess_rad": 0.004100090967817924
+           },
+           "seed": 1000,
+           "return_": 966.2133298511046,
+           "trace": "episode_1000.npz",
+           "violation_first": {
+            "time": 5.919000000000311,
+            "speed_ratio": 1.0267787337590064,
+            "torque_ratio": 1.0,
+            "position_excess_rad": 1.6830898753178447e-05
+           }
+          }
+         },
+         "reflection": "CPU fine-tuning run stopped after about2.1M samples to concentrate compute on GPU learning. Actual spin,toss,andfull stages executed after the wrapper fix, but the older reward still favoured retention during flight and did not complete the task. Unchanged criteria and exact hardware checks remain authoritative.",
+         "final_reward_scale": 0.1,
+         "reward_definition": "Final training reward = final_reward_scale * sum(raw weighted terms listed here). Curves preserve raw component values and the scaled total.",
+         "initialization": {
+          "checkpoint": "research/iter02/final.zip",
+          "bc_steps": 0,
+          "reset_critic": true
+         },
+         "curriculum_execution": "Explicit configure_training environment-method calls, returned actual-state assertions; wrapper propagation and reward scaling validated.",
+         "training_segment_diagnostics": {
+          "warning": "Training-segment diagnostic only, not a full-task success claim.",
+          "goal_scale": 1.0,
+          "excursion_definition": "Only retained samples, matching full verifier; older diagnostics included detached samples.",
+          "results": [
+           {
+            "segment": 0,
+            "seed": 1000,
+            "start": 2.6,
+            "end": 5.36,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.999275887038378,
+            "angular_path_retained": 2.5676373463930537,
+            "max_excursion": 0.4899839587280482,
+            "hardware": true,
+            "return": 581.2840703406875
+           },
+           {
+            "segment": 0,
+            "seed": 1001,
+            "start": 2.6,
+            "end": 5.36,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.999275887038378,
+            "angular_path_retained": 2.4753062219645265,
+            "max_excursion": 0.5335960973346351,
+            "hardware": true,
+            "return": 583.2432286060515
+           },
+           {
+            "segment": 0,
+            "seed": 1002,
+            "start": 2.6,
+            "end": 5.36,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.999275887038378,
+            "angular_path_retained": 2.515567607529435,
+            "max_excursion": 0.4774163226286557,
+            "hardware": true,
+            "return": 583.2690618777066
+           },
+           {
+            "segment": 1,
+            "seed": 1000,
+            "start": 6.033333333333333,
+            "end": 6.933333333333,
+            "retained_fraction": 0.6674057649667405,
+            "support_fraction": 0.6186252771618626,
+            "angular_path_retained": 1.259916655595346,
+            "max_excursion": 0.5939475544649123,
+            "hardware": true,
+            "return": 142.746827115968
+           },
+           {
+            "segment": 1,
+            "seed": 1001,
+            "start": 6.033333333333333,
+            "end": 6.933333333333,
+            "retained_fraction": 0.6762749445676275,
+            "support_fraction": 0.6053215077605322,
+            "angular_path_retained": 1.2025920788866107,
+            "max_excursion": 0.9055571513592656,
+            "hardware": true,
+            "return": 146.4349697330975
+           },
+           {
+            "segment": 1,
+            "seed": 1002,
+            "start": 6.033333333333333,
+            "end": 6.933333333333,
+            "retained_fraction": 0.6674057649667405,
+            "support_fraction": 0.5875831485587583,
+            "angular_path_retained": 1.2537436442954824,
+            "max_excursion": 0.5629930188933329,
+            "hardware": true,
+            "return": 143.78492305321458
+           },
+           {
+            "segment": 2,
+            "seed": 1000,
+            "start": 7.766666666666667,
+            "end": 10.366666666667,
+            "retained_fraction": 0.9984627209838586,
+            "support_fraction": 0.9577248270561107,
+            "angular_path_retained": 2.6306971883483103,
+            "max_excursion": 0.7089099903306857,
+            "hardware": true,
+            "return": 545.4974834490231
+           },
+           {
+            "segment": 2,
+            "seed": 1001,
+            "start": 7.766666666666667,
+            "end": 10.366666666667,
+            "retained_fraction": 0.9984627209838586,
+            "support_fraction": 0.9584934665641814,
+            "angular_path_retained": 2.650433634571033,
+            "max_excursion": 0.7312783189597407,
+            "hardware": true,
+            "return": 540.2341870005179
+           },
+           {
+            "segment": 2,
+            "seed": 1002,
+            "start": 7.766666666666667,
+            "end": 10.366666666667,
+            "retained_fraction": 0.9984627209838586,
+            "support_fraction": 0.9577248270561107,
+            "angular_path_retained": 2.647456900530716,
+            "max_excursion": 0.7643287866243046,
+            "hardware": true,
+            "return": 539.1668975633842
+           }
+          ]
+         },
+         "curves_note": "Published means per PPO rollout/update; full denser raw CSV retained locally as research/iter03/curves_raw_final.csv"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "f68d59d81036",
+          "bytes": 431020,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "4047f41d1ca3",
+          "bytes": 120887,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "418b6391d763",
+          "bytes": 117465,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "41919875884c",
+          "bytes": 105713,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0044",
+        "seq": 44,
+        "kind": "verify",
+        "version": 10,
+        "recorded_utc": "2026-11-04T11:33:28Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0043",
+         "criteria_version": 1,
+         "sim_version": 3,
+         "checkpoint": "research/iter03/checkpoint_final.zip",
+         "verdict": "fail",
+         "initial_conditions": "Fixed seeds1000-1019, wrist±2mm,fingers±0.01rad,ball±1mm independently uniform; specified Gaussian encoders active.",
+         "episodes": 20,
+         "successes": 0,
+         "success_rate": 0.0,
+         "per_criterion_success_counts": {
+          "start_retained": 16,
+          "three_tosses_and_catches": 0,
+          "ordered_spins": 0,
+          "wrist_and_finger_motion": 0,
+          "final_hold": 7,
+          "hardware": 4,
+          "deadline": 20
+         },
+         "hardware_violation_episodes": 16,
+         "evidence": {
+          "metrics": "research/iter03/eval_final/[redacted]",
+          "representative_seed": 1000,
+          "trace": "research/iter03/eval_final/episode_1000.npz",
+          "views": [
+           "top_failure",
+           "left_failure",
+           "right_failure"
+          ]
+         },
+         "diagnosis": "CPU fine-tuning run stopped after about2.1M samples to concentrate compute on GPU learning. Actual spin,toss,andfull stages executed after the wrapper fix, but the older reward still favoured retention during flight and did not complete the task. Unchanged criteria and exact hardware checks remain authoritative.",
+         "limitations": [
+          "Own simulation only; rigid convex CAD and inferred contact material.",
+          "Perfect object-state sensing; no physical validation.",
+          "Global demonstration object rotation unobservable; local spin interpretation and thresholds are own criteria."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "c38b631ea57b",
+          "bytes": 86640,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "2966d21cfbc6",
+          "bytes": 1682394,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "d19c86e9d420",
+          "bytes": 3372,
+          "content_type": "application/json"
+         },
+         "file_4": {
+          "sha": "755a417e3184",
+          "bytes": 808298,
+          "content_type": "application/octet-stream"
+         },
+         "file_5": {
+          "sha": "721be5c32cbf",
+          "bytes": 54008,
+          "content_type": "application/json"
+         },
+         "video_left_failure": {
+          "sha": "4047f41d1ca3",
+          "bytes": 120887,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "418b6391d763",
+          "bytes": 117465,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "41919875884c",
+          "bytes": 105713,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0045",
+        "seq": 45,
+        "kind": "note",
+        "version": 13,
+        "recorded_utc": "2026-11-04T11:39:38Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Before any positive verdict, refine physical-support measurement: future native traces also record links with positive normal contact force>1e-5N, and retention/opposition/final two-link support use those loaded links. Geometric contact absence still defines flight. This implements criteria1 physical support more strictly; it does not relax or revise any task threshold. Prior full-task verdicts were all FAIL. Earlier support metrics counted MuJoCo geometric contact structures, which can include near-surface unloaded pairs; that limitation is now explicit. Actor inputs and physical dynamics are unchanged; contact forces are used only for evidence/rewards, never actor observations."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0046",
+        "seq": 46,
+        "kind": "sim",
+        "version": 6,
+        "recorded_utc": "2026-11-04T11:41:01Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 6,
+         "simulator": {
+          "name": "MuJoCo Warp batched training; MuJoCo native CPU verification",
+          "version": "MuJoCo/MuJoCo Warp3.17.0, Warp1.19.0",
+          "timestep_s": 0.001,
+          "integrator": "implicitfast",
+          "solver": "Newton",
+          "iterations": 30,
+          "cone": "elliptic",
+          "contact": {
+           "solref": [
+            0.006,
+            1.0
+           ],
+           "solimp": [
+            0.95,
+            0.99,
+            0.001
+           ],
+           "friction": [
+            0.9,
+            0.003,
+            0.0001
+           ],
+           "condim": 6,
+           "margin_m": 0.0003
+          },
+          "precision": "GPUfloat32, CPUfloat64. CPU is used for fixed-criteria verification."
+         },
+         "scene": {
+          "file": "sim_v6/scene.xml",
+          "sha256_files": {
+           "native_validation.json": "b4614389419d…",
+           "controller_table_v7.npz": "446390da5001…",
+           "initial_grasp.json": "094ab13466cc…",
+           "validation.json": "64d54deb8ca3…",
+           "reference.npz": "4bdc18218813…",
+           "scene.xml": "4a86c678cdd8…",
+           "robot_copy.urdf": "fc8c8153594f…",
+           "assets/r_index_finger_proximal_abd.STL": "373722f52678…",
+           "assets/r_middle_finger_tip_sensor_frame.STL": "d5a13c524785…",
+           "assets/r_thumb_distal.STL": "273878b0f78e…",
+           "assets/r_index_finger_middle.STL": "9ba4bd6449d5…",
+           "assets/r_pinky_proximal.STL": "c88defaf8c67…",
+           "assets/r_ring_finger_proximal.STL": "da1870bfe856…",
+           "assets/r_pinky_proximal_abd.STL": "0d9493bc1a62…",
+           "assets/r_ring_finger_proximal_abd.STL": "df3787ff168f…",
+           "assets/r_middle_finger_proximal.STL": "039bee058e2e…",
+           "assets/r_pinky_distal.STL": "6832e7482d55…",
+           "assets/r_index_finger_distal.STL": "7b11dd372a4a…",
+           "assets/r_ring_finger_tip_sensor_frame.STL": "d5a13c524785…",
+           "assets/r_middle_finger_middle.STL": "5f88e7c64188…",
+           "assets/r_middle_finger_distal.STL": "7b11dd372a4a…",
+           "assets/r_index_finger_proximal.STL": "d07ffb4a0f10…",
+           "assets/r_ring_finger_middle.STL": "6fbcf92b159a…",
+           "assets/r_thumb_tip_sensor_frame.STL": "4bb06fa7ee60…",
+           "assets/r_wrist.STL": "ece3f36af8ed…",
+           "assets/r_thumb_middle.STL": "a04ebd10f245…",
+           "assets/r_pinky_tip_sensor_frame.STL": "22f19f242d73…",
+           "assets/r_mount.STL": "302c1a168417…",
+           "assets/r_pinky_middle.STL": "609cc6cef5df…",
+           "assets/r_thumb_proximal_abd.STL": "2aaafd9ba420…",
+           "assets/r_thumb_proximal.STL": "e3e9e7c1266c…",
+           "assets/r_middle_finger_proximal_abd.STL": "91e3f149f9ca…",
+           "assets/r_ring_finger_distal.STL": "7b11dd372a4a…",
+           "assets/r_index_finger_tip_sensor_frame.STL": "d5a13c524785…"
+          },
+          "robot_source": "Wuji Hand2.2 right, unchanged public URDF masses/inertias and mesh geometry copied into own scene",
+          "objects": "One free65mm tennis ball,0.0577kg,diagonal inertia4.1e-5kgm2; floorz0",
+          "collision_exclusions": "Close same-finger kinematic neighbours up to2links, and palm/MCP assembly housings. Cross-finger collisions remain active. Convex CAD meshes otherwise fill physical joint cutouts. Anatomical classification now uses body prefixes; middle phalanges of other fingers are not mistaken for the middle finger."
+         },
+         "reference": {
+          "directory": "recon_v6",
+          "record": "r0010",
+          "uses": "Anatomical wrist retargeting with constant yaw/translation; bounded offline fingertip/contact IK for20joints; replay and dense motion rewards. Ball trajectory is only a reference; ball dynamics are never overwritten."
+         },
+         "wrist": {
+          "free_body": true,
+          "controller": "Prescribed1000Hz Cartesian impedance, Kp2000/20,Kd60/.4, hand-only gravity/COM torque compensation,30N/2Nm norm caps,500Hz executed-target limiting2.5m/s and6rad/s. Wrench applied at r_mount origin."
+         },
+         "fingers": {
+          "controller": "Prescribed1000Hz saturated jointPD, gains/efforts from hardware_spec.json, velocity targets zero. Position targets clipped toURDF bounds. Hardware position/speed/effort constraints checked each1ms tick; any violation fails a trial. Policy may additionally rate-limit its own targets; no simulated velocity clipping or extra forces."
+         },
+         "initial_conditions": {
+          "method": "Offline retargeting followed by own collision-aware static grasp optimization. No learned skill claimed.",
+          "reconstruction_version": 6,
+          "initial_root_position_m": [
+           0.0,
+           0.0,
+           0.55
+          ],
+          "constant_yaw_alignment_rad": -0.618435446804218,
+          "initial_root_rotation": [
+           [
+            0.16079754085052766,
+            0.2764233353072815,
+            -0.947488411830995
+           ],
+           [
+            -0.8643899027250921,
+            0.5028221316399131,
+            5.551115123125783e-17
+           ],
+           [
+            0.4764181429409767,
+            0.8189994161357457,
+            0.3197901021701248
+           ]
+          ],
+          "initial_ball_position_m": [
+           0.1058584992916883,
+           -0.0016465158500603792,
+           0.5700397115802804
+          ],
+          "initial_fingers_rad": [
+           -0.12220317553775102,
+           -0.49277197651322496,
+           0.9725822725537452,
+           0.8823169900774367,
+           -0.09884075749434788,
+           0.24999917022754278,
+           0.7952878719082487,
+           1.5684106967388762,
+           0.8286948493685569,
+           0.23805121389581047,
+           1.11746740132375,
+           0.9389332017806071,
+           1.3363375377097262,
+           -0.002544170106603208,
+           1.192091405403121,
+           0.9874992293026043,
+           1.2851488508926867,
+           0.03910884949908039,
+           1.5330046782510607,
+           0.6785098295193837
+          ],
+          "tip_rms_m_median": 0.005200604332505062,
+          "seconds": 157.8639223575592,
+          "limitations": "Different hand morphology; fingertip-centre fitting and weak geometric contact terms are a kinematic reference only. Dynamics and hardware compliance must be validated.",
+          "grasp_override": {
+           "method": "Offline reference-grasp geometry optimization, not a learned policy.",
+           "q_initial": [
+            -0.11324325502733222,
+            -0.4859029680054647,
+            0.9780138047619279,
+            0.8855868190957614,
+            -0.09699999999999999,
+            0.24999917022754317,
+            0.7952878719082489,
+            1.567,
+            0.8645699137869095,
+            0.19185187470579232,
+            1.1714327073302182,
+            0.9664508574945532,
+            1.3503707593186667,
+            -0.017633363262503796,
+            1.2289908263337668,
+            0.9873773351295296,
+            1.2861242468585996,
+            0.031870117700830654,
+            1.5330102678757405,
+            0.6784904856472366
+           ],
+           "q_retargeted": [
+            -0.12220317553775102,
+            -0.49277197651322496,
+            0.9725822725537452,
+            0.8823169900774367,
+            -0.09884075749434788,
+            0.24999917022754278,
+            0.7952878719082487,
+            1.5684106967388762,
+            0.8286948493685569,
+            0.23805121389581047,
+            1.11746740132375,
+            0.9389332017806071,
+            1.3363375377097262,
+            -0.002544170106603208,
+            1.192091405403121,
+            0.9874992293026043,
+            1.2851488508926867,
+            0.03910884949908039,
+            1.5330046782510607,
+            0.6785098295193837
+           ],
+           "ball_position": [
+            0.10433817094749825,
+            -0.004412037574079883,
+            0.5655352147915339
+           ],
+           "ball_local": [
+            0.02799230021584979,
+            0.03934636691910413,
+            -0.09389119995897655
+           ],
+           "finger_surface_gaps_m": {
+            "thumb": -0.0005999848241526606,
+            "index": 0.00265831730578428,
+            "middle": -0.0005998300667832412,
+            "ring": -0.0005999225879639788,
+            "pinky": 0.015859710103038625
+           },
+           "cost": 0.00010250962515279036,
+           "reason": "Robot-palm seating adjustment: the direct human retarget left a5.33mm palm gap. Move the ball5.5mm along negative palm normal, then optimize three-finger enclosure without altering hardware. This accounts for different palm thickness and preserves the demonstrated placement within reconstruction uncertainty."
+          }
+         },
+         "episode": {
+          "settle_s": 0.5,
+          "skill_max_s": 11.5,
+          "controller_hz": 1000,
+          "target_command_hz": 500,
+          "network_decision_hz": 50,
+          "residual_action_repeat": 10,
+          "termination": "Ball-floor contact, ball farther than0.8m fromwrist, nonfinite state/action, any finger hardware violation, or time limit. Evaluation success uses criteria_v1 and exact three-flight sequence."
+         },
+         "observation_model": {
+          "joint_position_encoder_sigma_rad": 0.002,
+          "joint_velocity_encoder_sigma_rad_s": 0.05,
+          "wrist_and_object_state": "Ideal state allowed by learning contract. Actor observes no contacts/forces/torques/physical parameters.50Hz decisions sample the500Hz encoder stream.",
+          "features": "133 features: original121 deployable features plus12 deterministic reference-error features; phase goal anchor memory derives only from object/wrist states and fixed task time."
+         },
+         "validation": {
+          "initial_hold": {
+           "retained": true,
+           "ball_wrist_distance_m": 0.10657500998947578,
+           "ball_center_drift_m": 0.0011763438497088185,
+           "wrist_position_error_m": 0.00028302235054193485,
+           "wrist_orientation_error_deg": 0.1708741082136198,
+           "finger_hardware_violation": null,
+           "max_joint_speed_ratio": 0.3612165866570296,
+           "contacts": [
+            "r_ring_finger_middle",
+            "r_wrist",
+            "r_middle_finger_tip_sensor_frame",
+            "r_thumb_tip_sensor_frame"
+           ]
+          },
+          "loaded_circle_tracking": {
+           "circle_radius_m": 0.02,
+           "frequency_hz": 1.0,
+           "yaw_amplitude_deg": 10.0,
+           "max_wrist_position_error_m": 0.0005848256309618452,
+           "max_wrist_orientation_error_deg": 0.32840586808633837,
+           "min_ball_hand_contacts": 4,
+           "finger_hardware_violation": null,
+           "max_joint_speed_ratio": 0.3612165866570296
+          },
+          "mass_kg": {
+           "hand": 0.6878000000000001,
+           "ball": 0.0577
+          },
+          "ball_inertia_kgm2": [
+           4.1e-05,
+           4.1e-05,
+           4.1e-05
+          ],
+          "joint_ranges_match": true,
+          "actuator_force_limits_match": true,
+          "controller_tick_s": 0.001,
+          "target_command_tick_s": 0.002,
+          "checks": {
+           "stable_initial_grasp": true,
+           "loaded_tracking": true,
+           "hardware_compliant": true,
+           "masses": true
+          },
+          "identity_to_simulation2": "Physical model XML identical SHA256; same stable-grasp, loaded-tracking and native/Python equivalence tests apply."
+         },
+         "media": {
+          "initial_image": "initial_scene.png",
+          "replay": "Reused simulation-v1 human/kinematic-reference replay because morphology and reference geometry unchanged; not a learned rollout."
+         },
+         "limitations": [
+          "Rigid convex CAD collision links and inferred compliant felt/pad contact. Friction/restitution are not measured from video.",
+          "Perfect object-state sensing; no perception learning.",
+          "Retargeting is a kinematic reference with median5.2mm fingertip error, not a dynamically feasible learned controller.",
+          "GPU float32 dynamics diverge from native float64 across long contact events; short loaded validation is not proof of long-horizon equivalence. Learned policies are tested in native CPU simulation before any success claim.",
+          "Finite training state bank; exact shape/mass/inertia/contact parameters and ideal object-state sensing are unchanged."
+         ],
+         "source_bundle": "simulation_source_v6.txt",
+         "changes_since_previous": [
+          "Physical scene, controllers and baseline7 unchanged.",
+          "Deployable features grow121→133 with deterministic reference-ball position/velocity errors and wrist-reference position/rotation errors. No hidden simulator state enters actor.",
+          "Spin goals now anchor to observed wrist-relative object orientation at fixed demonstrated phase start times. Goal memory stores only permitted object/wrist pose history and clock, independent of contacts. This avoids demanding an unobservable global ball quaternion across tosses. Object state frames are never reset during skill execution.",
+          "Launch-speed shaping uses a broad rational cost instead of the nearly-zero narrow Gaussian for badly overthrown balls, and adds reference flight-velocity shaping.",
+          "Training may sample the871-state continuation bank: original672 actual settles plus199 supported, hardware-compliant physical prefixes from baseline and PPO spin rollouts. Failed prefixes are listed, not claimed successful.",
+          "Supports two PPO-trained neural experts with task-time gating and joint full-sequence PPO fine-tuning. Expert-output preservation and save/load roundtrip validated. Zero neural residual remains the failing baseline7.",
+          "Evidence now uses normal-force-loaded contacts>1e-5N for retention/opposition/final two-link support, per note r0045. Geometric absence defines flights. Actor and dynamics unchanged by this observer."
+         ],
+         "native_controller_validation": {
+          "method": "Compare native and Python controllers on identical loaded trajectories.",
+          "hold_qpos_max_abs_difference": 1.6306400674181987e-15,
+          "tracking_qpos_max_abs_difference": 6.29704621779581e-15,
+          "tracking_qvel_max_abs_difference": 1.6812679720645818e-13,
+          "python_hold_wall_s": 0.32666635513305664,
+          "native_hold_wall_s": 0.0728762149810791,
+          "python_tracking_wall_s": 1.3252334594726562,
+          "native_tracking_wall_s": 0.3595123291015625,
+          "tracking_speedup": 3.6861975298162215,
+          "python_violation": null,
+          "native_violation": null,
+          "pass": true
+         },
+         "baseline_analysis": {
+          "pass": false,
+          "criteria": {
+           "start_retained": false,
+           "three_tosses_and_catches": false,
+           "ordered_spins": false,
+           "wrist_and_finger_motion": false,
+           "final_hold": false,
+           "hardware": true,
+           "deadline": true
+          },
+          "duration_s": 4.74,
+          "floor_contact": true,
+          "qualifying_flights": [
+           {
+            "start": 897,
+            "end": 1142,
+            "release_time": 1.794,
+            "catch_time": 2.284,
+            "duration_s": 0.48999999999999977,
+            "rise_m": 0.2623254639513838,
+            "horizontal_m": 0.0360799703647883,
+            "gravity_est_mps2": 9.809999999999977,
+            "release_vz": 2.2735782066870107,
+            "checks": null,
+            "qualifies": true
+           }
+          ],
+          "all_separations": [
+           {
+            "start": 897,
+            "end": 1142,
+            "release_time": 1.794,
+            "catch_time": 2.284,
+            "duration_s": 0.48999999999999977,
+            "rise_m": 0.2623254639513838,
+            "horizontal_m": 0.0360799703647883,
+            "gravity_est_mps2": 9.809999999999977,
+            "release_vz": 2.2735782066870107,
+            "checks": null,
+            "qualifies": true
+           },
+           {
+            "start": 2156,
+            "end": 2169,
+            "release_time": 4.312,
+            "catch_time": 4.338,
+            "duration_s": 0.0259999999999998,
+            "rise_m": 0.0,
+            "horizontal_m": 0.009885767515245758,
+            "gravity_est_mps2": 9.809999999992321,
+            "release_vz": -0.02663753448070616,
+            "checks": null,
+            "qualifies": false
+           },
+           {
+            "start": 2194,
+            "end": 2371,
+            "release_time": 4.388,
+            "catch_time": 4.74,
+            "duration_s": 0.3540000000000001,
+            "rise_m": 0.0,
+            "horizontal_m": 0.235199959250609,
+            "gravity_est_mps2": 9.734381035229974,
+            "release_vz": -0.018350125987931995,
+            "checks": null,
+            "qualifies": false
+           }
+          ],
+          "catch_retention": [
+           true
+          ],
+          "spins": [],
+          "finger_changes": [
+           {
+            "changes_rad": null,
+            "fingers_meeting_threshold": 4,
+            "pass": true
+           }
+          ],
+          "wrist": {
+           "position_rms_m": 0.036183228403978286,
+           "position_max_m": 0.09157208788967441,
+           "orientation_rms_deg": 2.171901431847903,
+           "orientation_max_deg": 15.624312791366357,
+           "palm_up_retained_fraction": 0.9837133550488599
+          },
+          "hold": {
+           "pass": false,
+           "duration_s": 0.40200000000000036,
+           "relative_center_drift_m": 0.6461700559202864,
+           "relative_angular_excursion_rad": 3.1350152675538006,
+           "retained_fraction": 0.06467661691542288
+          },
+          "hardware": {
+           "pass": true,
+           "max_speed_ratio": 0.7729865260107025,
+           "max_torque_ratio": 0.9365906542462366,
+           "max_position_excess_rad": 0.000912948286520443
+          }
+         },
+         "baseline_parameters": {
+          "lead": 0.1,
+          "duration": 0.1,
+          "flat": 0.5,
+          "fade": 0.08,
+          "launch_v": 0.045,
+          "pulse_center": 0.035,
+          "catch_offset": [
+           0.03,
+           -0.03,
+           0.0
+          ]
+         },
+         "curriculum_validation": {
+          "wrapper_propagation_pass": true,
+          "toss_actual_states": [
+           {
+            "curriculum": "toss",
+            "spin_scale": 0.37
+           },
+           {
+            "curriculum": "toss",
+            "spin_scale": 0.37
+           }
+          ],
+          "toss_actual_start_times": [
+           6.116666666666667,
+           6.116666666666667
+          ],
+          "full_actual_states": [
+           {
+            "curriculum": "full",
+            "spin_scale": 0.37
+           },
+           {
+            "curriculum": "full",
+            "spin_scale": 0.37
+           }
+          ],
+          "reward_scaling_pass": true
+         },
+         "GPU_validation": {
+          "controller": {
+           "initial_generalized_wrench_max_abs_diff": 3.1226402300355005e-05,
+           "initial_motor_torque_max_abs_diff": 4.2335519230204954e-07,
+           "hold_500ms_qpos_max_abs_difference": 1.588746537264929e-05,
+           "gpu_hardware_stats": [
+            0.0,
+            0.0016154652694240212,
+            0.22589774429798126,
+            0.0,
+            0.0,
+            0.0
+           ],
+           "cpu_max_speed": 0.3612165866570266,
+           "wall_s": 5.961783409118652,
+           "gpu_final_qpos": [
+            1.8887849617676977e-10,
+            3.1058695615371334e-09,
+            0.5497170090675354,
+            0.7048982381820679,
+            0.29021650552749634,
+            -0.5044502019882202,
+            -0.40549105405807495,
+            -0.12890830636024475,
+            -0.48947104811668396,
+            0.9542747139930725,
+            0.8773754239082336,
+            -0.09931151568889618,
+            0.2552092671394348,
+            0.7926814556121826,
+            1.5670286417007446,
+            0.8591402173042297,
+            0.19441412389278412,
+            1.1528676748275757,
+            0.9609833359718323,
+            1.3481550216674805,
+            -0.012942771427333355,
+            1.229848861694336,
+            0.9880951642990112,
+            1.28546941280365,
+            0.05294858664274216,
+            1.5357396602630615,
+            0.6789713501930237,
+            0.10525476932525635,
+            -0.0051422035321593285,
+            0.5656211972236633,
+            0.999960720539093,
+            0.0037281408440321684,
+            0.007927759550511837,
+            -0.0013540672371163964
+           ],
+           "cpu_final_qpos": [
+            -4.4462400864405756e-10,
+            4.3290660661128114e-09,
+            0.5497169776494915,
+            0.7048989032562306,
+            0.2902161797140518,
+            -0.5044492623046709,
+            -0.4054911182512118,
+            -0.1288924188948721,
+            -0.4894781726195118,
+            0.9542721749549149,
+            0.8773642677195163,
+            -0.09931152154115679,
+            0.2552092620702043,
+            0.7926814540394533,
+            1.5670286667648257,
+            0.8591421149629828,
+            0.19442044695678376,
+            1.1528614181532377,
+            0.9609773759172151,
+            1.3481563711438034,
+            -0.012947512455569786,
+            1.2298450166289001,
+            0.9880937418003226,
+            1.2854667218304834,
+            0.05294303775867985,
+            1.5357363597247702,
+            0.678970444017057,
+            0.10525628734303615,
+            -0.005142577513520859,
+            0.5656198229109662,
+            0.9999606613733074,
+            0.0037267766305104193,
+            0.007934589254710077,
+            -0.001352455234906007
+           ]
+          },
+          "environment": {
+           "method": "GPU versus native CPU from identical seed20000 settled state,1s moving reference with small finger residuals; only encoder noise excluded in feature comparison.",
+           "initial_allowed_feature_max_abs_difference_excluding_encoders": 1.4901161193847656e-07,
+           "moving_reference_qpos_max_abs_difference": 0.008245986141837964,
+           "moving_reference_root_xyz_max_abs_difference_m": 9.063577615209262e-06,
+           "moving_reference_ball_xyz_max_abs_difference_m": 0.0002671048909636837,
+           "executed_targets_max_abs_difference": 9.059257122245867e-08,
+           "GPU_hardware_violation": false,
+           "CPU_hardware_violation": false,
+           "finite": true,
+           "wall_seconds": 1.4821631908416748,
+           "pass": true
+          },
+          "smoke": {
+           "steps": 25600,
+           "wall_s": 3.3877108097076416,
+           "fps": 7556.724240839896,
+           "mean_reward": 0.45184485725465096,
+           "hardware_violation_steps": 0,
+           "qpos_range": [
+            -0.6036876440048218,
+            1.567202091217041
+           ]
+          }
+         },
+         "state_bank": {
+          "method": "Append physical continuation states to the original672 genuine-settle states. No object reset/force during any prefix; only robot actuation. Continuation states retain material orientation accumulated from the initial world-aligned settle.",
+          "base_manifest": "warp_state_bank/manifest.json",
+          "added": 199,
+          "total": 871,
+          "counts_by_category": {
+           "0": 96,
+           "1": 296,
+           "2": 479
+          },
+          "samples_per_prefix": 64,
+          "prefixes": [
+           "Zero-residual full0..1.2s, for first toss",
+           "Zero-residual full0..2.6s if retained, for first spin",
+           "PPO spin2.6..5.0s, for second toss",
+           "PPO briefspin6.033..6.573s, for third toss"
+          ],
+          "spin_policy": "research/iter05/checkpoint_20m.zip",
+          "spin_policy_sha256": "339a99d51234…",
+          "spin_sampling": "Half deterministic, half sampled from PPO Gaussian; rejected failed/unsupported states are listed.",
+          "rejected": [
+           [
+            "first_catch",
+            40000
+           ],
+           [
+            "first_catch",
+            40002
+           ],
+           [
+            "first_catch",
+            40003
+           ],
+           [
+            "first_catch",
+            40004
+           ],
+           [
+            "first_catch",
+            40005
+           ],
+           [
+            "first_catch",
+            40006
+           ],
+           [
+            "first_catch",
+            40008
+           ],
+           [
+            "first_catch",
+            40009
+           ],
+           [
+            "first_catch",
+            40010
+           ],
+           [
+            "first_catch",
+            40011
+           ],
+           [
+            "first_catch",
+            40013
+           ],
+           [
+            "first_catch",
+            40014
+           ],
+           [
+            "first_catch",
+            40015
+           ],
+           [
+            "first_catch",
+            40016
+           ],
+           [
+            "first_catch",
+            40017
+           ],
+           [
+            "first_catch",
+            40018
+           ],
+           [
+            "first_catch",
+            40019
+           ],
+           [
+            "first_catch",
+            40020
+           ],
+           [
+            "first_catch",
+            40021
+           ],
+           [
+            "first_catch",
+            40022
+           ],
+           [
+            "first_catch",
+            40023
+           ],
+           [
+            "first_catch",
+            40025
+           ],
+           [
+            "first_catch",
+            40027
+           ],
+           [
+            "first_catch",
+            40028
+           ],
+           [
+            "first_catch",
+            40029
+           ],
+           [
+            "first_catch",
+            40030
+           ],
+           [
+            "first_catch",
+            40031
+           ],
+           [
+            "first_catch",
+            40032
+           ],
+           [
+            "first_catch",
+            40033
+           ],
+           [
+            "first_catch",
+            40034
+           ],
+           [
+            "first_catch",
+            40035
+           ],
+           [
+            "first_catch",
+            40036
+           ],
+           [
+            "first_catch",
+            40037
+           ],
+           [
+            "first_catch",
+            40038
+           ],
+           [
+            "first_catch",
+            40039
+           ],
+           [
+            "first_catch",
+            40040
+           ],
+           [
+            "first_catch",
+            40041
+           ],
+           [
+            "first_catch",
+            40042
+           ],
+           [
+            "first_catch",
+            40043
+           ],
+           [
+            "first_catch",
+            40044
+           ],
+           [
+            "first_catch",
+            40045
+           ],
+           [
+            "first_catch",
+            40046
+           ],
+           [
+            "first_catch",
+            40049
+           ],
+           [
+            "first_catch",
+            40050
+           ],
+           [
+            "first_catch",
+            40051
+           ],
+           [
+            "first_catch",
+            40052
+           ],
+           [
+            "first_catch",
+            40054
+           ],
+           [
+            "first_catch",
+            40055
+           ],
+           [
+            "first_catch",
+            40056
+           ],
+           [
+            "first_catch",
+            40057
+           ],
+           [
+            "first_catch",
+            40058
+           ],
+           [
+            "first_catch",
+            40059
+           ],
+           [
+            "first_catch",
+            40060
+           ],
+           [
+            "first_catch",
+            40061
+           ],
+           [
+            "first_catch",
+            40062
+           ],
+           [
+            "first_catch",
+            40063
+           ],
+           [
+            "spin_boundary0",
+            50017
+           ]
+          ],
+          "seeds": "40000..40063 baseline prefixes,50000..50063 and60000..60063 spin prefixes; separate from fixed verification seeds1000-1019.",
+          "limitation": "Finite training continuation bank. This is curriculum data, not full-task evidence.",
+          "wall_seconds": 78.17253971099854
+         },
+         "reward_validation": {
+          "CPU_GPU_reward_max_abs_difference_200ms": 6.975520305818605e-08,
+          "flight_phase_retention_reward": 0.0,
+          "flight_phase_hold_reward": 0.0,
+          "pass": true
+         },
+         "new_validation": {
+          "phase_goals_features_reward": {
+           "observation_dim": 133,
+           "initial_allowed_feature_max_abs_difference_excluding_encoders": 4.079192876815796e-07,
+           "reward_max_abs_difference_first200ms": 6.975520305818605e-08,
+           "goal_clock_unit_test_max_feature_difference": 1.1151612852700055e-05,
+           "goal_clock_unit_test_new_anchor_errors": [
+            2.7517921274977653e-09,
+            2.7517921274977653e-09,
+            2.7517921274977653e-09
+           ],
+           "goal_clock_test_warning": "This clock-only unit test is not a simulation rollout or skill evidence.",
+           "pass": true
+          },
+          "expert_composition": {
+           "expert_mean_max_abs_difference_after121to133feature_expansion": 0.0,
+           "serialization_roundtrip_mean_max_abs_difference": 0.0,
+           "policy_observations": "deployable",
+           "gate_input": "Only known task time obs[99]*11.5; each selected output comes from PPO-trained expert, followed by PPO fine-tuning.",
+           "pass": true
+          }
+         },
+         "baseline_fixed_seed_ablation": {
+          "episodes": 20,
+          "successes": 0,
+          "hardware_violation_episodes": 0,
+          "per_criterion_success_counts": {
+           "start_retained": 0,
+           "three_tosses_and_catches": 0,
+           "ordered_spins": 0,
+           "wrist_and_finger_motion": 0,
+           "final_hold": 0,
+           "hardware": 20,
+           "deadline": 20
+          }
+         }
+        },
+        "files": {
+         "image": {
+          "sha": "b37a4b87f4a1",
+          "bytes": 98262,
+          "content_type": "image/png"
+         },
+         "replay_video": {
+          "sha": "34a0dfd3c3c6",
+          "bytes": 440470,
+          "content_type": "video/mp4"
+         },
+         "scene_1": {
+          "sha": "4a86c678cdd8",
+          "bytes": 34110,
+          "content_type": "application/xml"
+         },
+         "scene_2": {
+          "sha": "446390da5001",
+          "bytes": 762033,
+          "content_type": "application/octet-stream"
+         },
+         "scene_3": {
+          "sha": "bee96b339c20",
+          "bytes": 618028,
+          "content_type": "application/octet-stream"
+         },
+         "scene_4": {
+          "sha": "208ff4b3d93c",
+          "bytes": 3853,
+          "content_type": "application/json"
+         },
+         "scene_5": {
+          "sha": "d4830759ddd9",
+          "bytes": 511,
+          "content_type": "application/json"
+         },
+         "scene_6": {
+          "sha": "15886e3fb5ea",
+          "bytes": 322,
+          "content_type": "application/json"
+         },
+         "scene_7": {
+          "sha": "80b41e759055",
+          "bytes": 87897,
+          "content_type": "text/plain"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-04T08:08:13Z",
@@ -75246,7 +77155,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-04T11:32:32Z",
+  "staged_utc": "2026-11-04T11:42:34Z",
   "tasks": {
    "cube": {
     "files": {
@@ -75330,7 +77239,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-04T11:32:32Z",
+  "staged_utc": "2026-11-04T11:42:34Z",
   "tasks": {
    "tennis": {
     "status": "available",
