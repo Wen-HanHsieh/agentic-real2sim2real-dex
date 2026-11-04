@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-04T05:32:33Z",
- "exported_utc": "2026-11-04T05:32:29Z",
+ "generated_utc": "2026-11-04T05:42:33Z",
+ "exported_utc": "2026-11-04T05:42:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-04T05:31:32",
+    "time": "2026-11-04T05:35:49",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-04T05:29:33",
+    "time": "2026-11-04T05:40:44",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -51273,6 +51273,196 @@
          "text": "Six-fit reconstruction sensitivity analysis is complete. Across nominal weak/strong opposition, ±2 px hand-mask boundaries and 63/67 mm diameter endpoints, relative wrist motion changes by median 11.1 mm, p95 19.4 mm, max 27.9 mm; wrist orientation changes by median 3.13°, p95 4.75°, max 6.19°. Local fingertip variation is larger: p95 24.9 mm, max 49.3 mm. Absolute camera-depth range can reach 165 mm, while relative motion is more stable. Therefore later training should use ball/wrist motion as stronger reference evidence and avoid treating fitted fingertips as exact targets. A swept-sphere blur sensitivity model selected effectively zero interval; that rejects this binary-union approximation, not actual optical blur. No robot training simulation has been built."
         },
         "files": {}
+       },
+       {
+        "id": "r0013",
+        "seq": 13,
+        "kind": "recon",
+        "version": 4,
+        "recorded_utc": "2026-11-04T05:35:49Z",
+        "exception": false,
+        "body": {
+         "summary": "Uncertainty-aware reference: selected contact-consistent geometry plus six-fit sensitivity, all-frame contact audit, spin observability diagnostics, camera/blur checks and updated wrist feasibility. 315 supported hand frames. Required validation passes with disclosed focal and one prelaunch continuity warning. Continuing reconstruction through 05:51:20Z.",
+         "components": [
+          {
+           "name": "camera",
+           "status": "partial",
+           "method": "Static camera; known-size spherical silhouette and shared physical gravity calibration",
+           "note": "938.2 px vs MoGe 1304.7 px; bootstrap 95% interval 923.3–1026.0 px. Geometry/gravity residual improves; learned prior disagreement is disclosed."
+          },
+          {
+           "name": "objects_6d",
+           "status": "partial",
+           "method": "SAM3 ball masks; robust tangent-ray fit of a 65 mm sphere excluding hand-adjacent boundaries; common-gravity ballistic least squares during three flights. Alternating contact/temporal fit against the reconstructed human hand while held; flights fixed to direct silhouette/gravity calibration.",
+           "note": "Translation reconstructed all 315 frames, offscreen frames 207–208 inferred; rotation unobservable. Some blurred prelaunch depth uncertainty."
+          },
+          {
+           "name": "hand_motion",
+           "status": "partial",
+           "method": "Alternating sphere-contour/contact-temporal reconstruction and all-vertex MANO fit. Exact sphere SDF; opposition weight 1 on annotated held intervals; 12000 refinement steps from opposition_strong with contact 2, penetration 2, smooth 1.5 and reduced rates. Selected over weak fit to eliminate seven finger self-intersection frames with only .0026 mask-IoU loss.",
+           "note": "Valid right-hand frames 315; contact pass, opposition pass, penetration pass, self-intersection pass. Six-fit sensitivity: wrist orientation deviation max 6.2°, local fingertips p95 24.9 mm/max 49.3 mm. Validity is visibility support, not exact hidden geometry."
+          },
+          {
+           "name": "contact_phases",
+           "status": "ok",
+           "method": "Native-resolution video inspection and mask separation, checked by 3D distances",
+           "note": "Four contact intervals, three flights. Endpoint uncertainty ±1 video frame."
+          },
+          {
+           "name": "object_geometry",
+           "status": "from_specification",
+           "method": "Blender sphere of diameter .065 m",
+           "note": "Mass .0577 kg and inertia 4.1e-5 kg m²; friction/restitution inferred."
+          },
+          {
+           "name": "ball_rotation",
+           "status": "unobservable",
+           "method": "Explicit unobservable status",
+           "note": "Constant rotation is gauge only; no fabricated spin trajectory."
+          }
+         ],
+         "limitations": [
+          "Ball orientation unobservable. Absolute depth is uncertain; sensitivity can span 165 mm, while relative wrist motion is more stable. Fitted fingertips vary up to 49 mm and should not be exact targets. Static camera is an explicit assumption. One blurred prelaunch step remains a warning; robot wrist target speed requires retargeting."
+         ],
+         "validation": {
+          "schema": "recon-validation/1",
+          "utc": "2026-11-04T05:35:05Z",
+          "thresholds": {
+           "contact_band_mm": 5.0,
+           "phase_fail_mm": 10.0,
+           "pen_warn_mm": 5.0,
+           "pen_fail_mm": 10.0,
+           "wrist_speed_mps": 3.0,
+           "wrist_accel_mps2": 150.0,
+           "tip_speed_mps": 5.0,
+           "bone_jump_deg": 60.0,
+           "obj_jump_m": 0.1,
+           "obj_rot_jump_deg": 45.0,
+           "g": 9.81,
+           "g_tol": 2.0,
+           "rest_drift_mm": 5.0,
+           "sink_mm": 3.0,
+           "hand_chain_mm": [
+            140.0,
+            230.0
+           ],
+           "iou_warn": 0.6,
+           "hand_precision_warn": 0.7,
+           "opposition_deg": 60.0,
+           "anatomical_min_frac": 0.5
+          },
+          "checks": {
+           "reprojection": {
+            "status": "pass",
+            "per_part": null,
+            "below_threshold": null,
+            "note": "against your own masks: agreement with them is necessary, not sufficient (3D errors along the viewing ray are invisible here)"
+           },
+           "fingertip_distance": {
+            "status": "pass",
+            "phases": null
+           },
+           "anatomical_contact": {
+            "status": "pass",
+            "phases": null,
+            "note": "a grasp needs the thumb and an opposing finger on opposite sides of the object; single-finger pushes or palm support are legitimate but must be stated in the analysis. Low penetration does not imply contact."
+           },
+           "penetration_hand_object": {
+            "status": "pass",
+            "max_mm": null,
+            "frames_over_warn": null,
+            "signed": null,
+            "note": "unsigned (lower bound) distances where the object mesh is not watertight"
+           },
+           "self_penetration": {
+            "status": "pass",
+            "finger_finger_frames": null,
+            "finger_finger_frac": 0.0,
+            "hand_hand_frames": null,
+            "note": "triangle intersections between different fingers (FCL); counts are not volumes"
+           },
+           "continuity": {
+            "status": "warn",
+            "flagged": null,
+            "count": 1
+           },
+           "physics": {
+            "status": "pass",
+            "flights": null,
+            "rests": null,
+            "note": "free-flight intervals are given with --flight OBJ=a:b; rest intervals default to object intervals without contact"
+           },
+           "handedness_scale": {
+            "status": "pass",
+            "per_side": null,
+            "note": "left/right are the demonstrator's anatomical hands; a hand is never mirrored"
+           },
+           "sync": {
+            "status": "pass",
+            "t_real_monotonic": true,
+            "fps_real": 30.0,
+            "compare_frames": 315,
+            "compare_matches": true,
+            "object_offset_check": null
+           },
+           "camera_focal": {
+            "status": "warn",
+            "focal_px": 938.2,
+            "prior_px": 1304.7,
+            "ratio": 0.719,
+            "prior_source": "research/recon_v4/transforms/moge/intrinsics.json",
+            "focal_label": "estimated",
+            "threshold_ratio": 1.25,
+            "note": "MoGe intrinsics are a learned prior; the focal should be calibrated against known geometry (camera_calib.py pnp). A large disagreement needs its explanation in NOTES.md (which one is wrong, and why)."
+           }
+          },
+          "summary": {
+           "reprojection": "pass",
+           "fingertip_distance": "pass",
+           "anatomical_contact": "pass",
+           "penetration_hand_object": "pass",
+           "self_penetration": "pass",
+           "continuity": "warn",
+           "physics": "pass",
+           "handedness_scale": "pass",
+           "sync": "pass",
+           "camera_focal": "warn"
+          },
+          "failed": [],
+          "incomplete": [],
+          "missing_required": [],
+          "overall": "pass",
+          "overall_note": "pass"
+         },
+         "check_reference": {
+          "verdict": "VALID",
+          "errors": 0,
+          "warnings": 0,
+          "error_list": []
+         },
+         "exception": null,
+         "producer": {
+          "tool": "r2s2r-d2s recon",
+          "recon_dir": "recon_v4"
+         }
+        },
+        "files": {
+         "compare_video": {
+          "sha": "f8ad011ab43d",
+          "bytes": 1485761,
+          "content_type": "video/mp4"
+         },
+         "validation_json": {
+          "sha": "3f16325097bd",
+          "bytes": 6810,
+          "content_type": "application/json"
+         },
+         "viewer": {
+          "sha": "248e56e8dbb1",
+          "bytes": 4986880,
+          "content_type": "application/x-tar"
+         }
+        }
        }
       ],
       "first_recon_utc": "2026-11-04T05:01:02Z",
@@ -61451,6 +61641,184 @@
           "content_type": "application/x-tar"
          }
         }
+       },
+       {
+        "id": "r0011",
+        "seq": 11,
+        "kind": "recon",
+        "version": 4,
+        "recorded_utc": "2026-11-04T05:40:44Z",
+        "exception": false,
+        "body": {
+         "summary": "Continuous physical reconstruction: VALID format and quality PASS. All360 detected hand frames valid; hand IoU.857, no finger intersections, ~0.5mm fitter penetration. Object symmetry flips removed; maximum rotation steps8.6deg white/1.7deg black. Rest after release and anatomical grasp checks pass. One finger-bone continuity warning at309 and inferred hand-size warning remain.",
+         "components": [
+          {
+           "name": "camera",
+           "status": "partial",
+           "method": "Known-geometry shared-plane fit, 1050px focal prior, background rotation, stationary-object translation anchors",
+           "note": "Translation inferred, not independent ground truth; uncertainty/sensitivity preserved."
+          },
+          {
+           "name": "objects_6d",
+           "status": "ok",
+           "method": "Blender models from specs, SAM3 masks, silhouette fitting with shared support and upright constraints",
+           "note": "Rest states stable and both blades upright at release; displacements and uncertainty in the current measurement/validation artifacts. Hidden turns remain invalid."
+          },
+          {
+           "name": "hand_motion",
+           "status": "partial",
+           "method": "HaWoR-initialized MANO, workspace fitter copy with distal capsules/contact and all778-vertex collision term",
+           "note": "Overall supplied quality validator pass; some image-rejected frames retained invalid. Full fit and configurations preserved."
+          },
+          {
+           "name": "contact_phases",
+           "status": "partial",
+           "method": "Dense visual annotation and 3D metric validation",
+           "note": "See current validation report for minimum distance and anatomical opposition checks; initial touch and release are distinguished from opposed grasp."
+          }
+         ],
+         "limitations": [
+          "Monocular calibration and hidden turn paths are inferred; hidden object turn frames remain invalid. Human hand scale/shape is uncertain (middle chain about239mm); a local continuity refinement at309 is still being tested."
+         ],
+         "validation": {
+          "schema": "recon-validation/1",
+          "utc": "2026-11-04T05:37:45Z",
+          "thresholds": {
+           "contact_band_mm": 5.0,
+           "phase_fail_mm": 10.0,
+           "pen_warn_mm": 5.0,
+           "pen_fail_mm": 10.0,
+           "wrist_speed_mps": 3.0,
+           "wrist_accel_mps2": 150.0,
+           "tip_speed_mps": 5.0,
+           "bone_jump_deg": 60.0,
+           "obj_jump_m": 0.1,
+           "obj_rot_jump_deg": 45.0,
+           "g": 9.81,
+           "g_tol": 2.0,
+           "rest_drift_mm": 5.0,
+           "sink_mm": 3.0,
+           "hand_chain_mm": [
+            140.0,
+            230.0
+           ],
+           "iou_warn": 0.6,
+           "hand_precision_warn": 0.7,
+           "opposition_deg": 60.0,
+           "anatomical_min_frac": 0.5
+          },
+          "checks": {
+           "reprojection": {
+            "status": "pass",
+            "per_part": null,
+            "below_threshold": null,
+            "note": "against your own masks: agreement with them is necessary, not sufficient (3D errors along the viewing ray are invisible here)"
+           },
+           "fingertip_distance": {
+            "status": "pass",
+            "phases": null
+           },
+           "anatomical_contact": {
+            "status": "pass",
+            "phases": null,
+            "note": "a grasp needs the thumb and an opposing finger on opposite sides of the object; single-finger pushes or palm support are legitimate but must be stated in the analysis. Low penetration does not imply contact."
+           },
+           "penetration_hand_object": {
+            "status": "pass",
+            "max_mm": null,
+            "frames_over_warn": null,
+            "signed": null,
+            "note": "unsigned (lower bound) distances where the object mesh is not watertight"
+           },
+           "self_penetration": {
+            "status": "pass",
+            "finger_finger_frames": null,
+            "finger_finger_frac": 0.0,
+            "hand_hand_frames": null,
+            "note": "triangle intersections between different fingers (FCL); counts are not volumes"
+           },
+           "continuity": {
+            "status": "warn",
+            "flagged": null,
+            "count": 1
+           },
+           "physics": {
+            "status": "pass",
+            "flights": null,
+            "rests": null,
+            "note": "free-flight intervals are given with --flight OBJ=a:b; rest intervals default to object intervals without contact"
+           },
+           "handedness_scale": {
+            "status": "warn",
+            "per_side": null,
+            "note": "left/right are the demonstrator's anatomical hands; a hand is never mirrored"
+           },
+           "sync": {
+            "status": "pass",
+            "t_real_monotonic": true,
+            "fps_real": 30.0,
+            "compare_frames": 436,
+            "compare_matches": true,
+            "object_offset_check": null
+           },
+           "camera_focal": {
+            "status": "pass",
+            "focal_px": 1050.0,
+            "prior_px": 1044.7,
+            "ratio": 1.005,
+            "prior_source": "research/recon_final/transforms/moge/intrinsics.json",
+            "focal_label": "estimated",
+            "threshold_ratio": 1.25,
+            "note": "MoGe intrinsics are a learned prior; the focal should be calibrated against known geometry (camera_calib.py pnp). A large disagreement needs its explanation in NOTES.md (which one is wrong, and why)."
+           }
+          },
+          "summary": {
+           "reprojection": "pass",
+           "fingertip_distance": "pass",
+           "anatomical_contact": "pass",
+           "penetration_hand_object": "pass",
+           "self_penetration": "pass",
+           "continuity": "warn",
+           "physics": "pass",
+           "handedness_scale": "warn",
+           "sync": "pass",
+           "camera_focal": "pass"
+          },
+          "failed": [],
+          "incomplete": [],
+          "missing_required": [],
+          "overall": "pass",
+          "overall_note": "pass"
+         },
+         "check_reference": {
+          "verdict": "VALID",
+          "errors": 0,
+          "warnings": 0,
+          "error_list": []
+         },
+         "exception": null,
+         "producer": {
+          "tool": "r2s2r-d2s recon",
+          "recon_dir": "recon_final"
+         }
+        },
+        "files": {
+         "compare_video": {
+          "sha": "4eb7688e6793",
+          "bytes": 2125057,
+          "content_type": "video/mp4"
+         },
+         "validation_json": {
+          "sha": "3d7ed468de7e",
+          "bytes": 6580,
+          "content_type": "application/json"
+         },
+         "viewer": {
+          "sha": "8a3a9d73b70e",
+          "bytes": 6707200,
+          "content_type": "application/x-tar"
+         }
+        }
        }
       ],
       "first_recon_utc": "2026-11-04T05:03:23Z",
@@ -62302,7 +62670,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-04T05:32:32Z",
+  "staged_utc": "2026-11-04T05:42:33Z",
   "tasks": {
    "cube": {
     "files": {
@@ -62386,7 +62754,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-04T05:32:32Z",
+  "staged_utc": "2026-11-04T05:42:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
