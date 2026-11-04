@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-04T04:32:33Z",
- "exported_utc": "2026-11-04T04:32:29Z",
+ "generated_utc": "2026-11-04T04:42:32Z",
+ "exported_utc": "2026-11-04T04:42:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-04T04:31:39",
+    "time": "2026-11-04T04:38:51",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -50348,6 +50348,219 @@
          "text": "Iteration2 r0014 fails0/20 despite final hold17/20 and wrist20/20. Physical integrity4/20. Most episodes execute three throws and regain ball, but first100ms support after initial contact is below80%; first spin displacement often only1.1rad, and third toss median rise.348m below.364m criterion. Do not relax criteria. Next continuation uses lower PPO exploration, a1kHz first-contact capture-continuity reward, smooth speed margin cost, supported spin progress, and phase-specific launch velocity shaping. Physics and hardware controller remain unchanged."
         },
         "files": {}
+       },
+       {
+        "id": "r0017",
+        "seq": 17,
+        "kind": "sim",
+        "version": 3,
+        "recorded_utc": "2026-11-04T04:33:55Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 1,
+         "simulator": {
+          "name": "MuJoCo",
+          "version": "3.17.0",
+          "timestep": 0.001,
+          "integrator": "implicitfast",
+          "solver_iterations": 30,
+          "contact": "rigid mesh convex hulls; sphere ball; solref .008 1; solimp .95 .99 .001 .5 2; friction hand .9 .005 .0001, ball .8 .005 .0001, condim4 ball"
+         },
+         "scene": {
+          "files_sha256": {
+           "research/sim/scene.xml": "860eb72bc194…",
+           "research/sim/reference.bin": "a69bcbd84e8a…",
+           "research/engine.cpp": "b2ead610932d…",
+           "research/native.py": "27819d513fb1…",
+           "research/prepare_reference.py": "e2caad3dfac7…",
+           "research/engine_fast.cpp": "26c80804c7e9…",
+           "research/engine_capture.cpp": "f75418f73897…"
+          },
+          "robot": "Public Wuji Hand 2.2 right URDF masses/inertias/meshes imported by MjSpec; fixed bodies fused; all20 joints retained. Connected knuckle assemblies and links of same finger excluded from self contact because CAD overlaps. Cross-finger collisions remain.",
+          "objects": "Sphere radius .0325m, mass .0577kg, diagonal shell inertia .000041 kg m²; floor z0; no constraints on ball"
+         },
+         "reference": {
+          "record": "r0003",
+          "method": "Palm axes from reconstructed wrist/middle MCP and index-pinky direction; filtered human joints, interpolated to500Hz, rigid translation to wrist z.65m. Object support center adapted to robot grasp; flights use measured contact timings and gravity, interpolated between retargeted release/catch centers. Finger baseline surface-distance IK cup/open pattern. Baseline launch feedforward vertical2.5m/s for100ms at each reconstructed release; policy learns residuals. Ball orientation absent from reconstruction and not imitated."
+         },
+         "wrist_and_fingers": {
+          "controller": "1kHz Cartesian impedance with specified gains 2000/60 linear,20/.4 angular, gravity compensation for hand only, force norm30N torque2Nm. Wrench applied at wrist origin with mj_applyFT. Executed wrist target at500Hz rate-limited2.5m/s and6rad/s, linear feedforward clipped2.5m/s; rotational feedforward0. Finger PD specified gains, torque clips at exact efforts, armatures from vendor .0005/.0002. No velocity projection or external impulse; actual speeds audited every1ms.",
+          "policy": "100Hz network residual held for five500Hz commands; reference recomputed500Hz. Finger target slew limited .65*URDF speed by policy action mapping, before specified PD, to reduce demand transients. Finger target residual .6rad*tanh, wrist position residual .10m*tanh, rotation residual .35rad*tanh. Encoder noise sigma .002rad,.05rad/s; no tactile/current sensing."
+         },
+         "initial_conditions": {
+          "wrist_pos": [
+           0.0,
+           0.0,
+           0.65
+          ],
+          "wrist_quat": [
+           0.8035823132424907,
+           0.47146169088869216,
+           -0.3121315615337188,
+           -0.18588498638336862
+          ],
+          "finger_q": [
+           0.5712411161893701,
+           -0.4709304237386792,
+           0.6754467838734238,
+           0.5519529284591991,
+           0.6156408673885289,
+           0.08804915260335622,
+           0.8174538559969563,
+           0.5382498335073134,
+           0.5949085762894463,
+           0.022836326557252155,
+           0.8065987933556504,
+           0.5346155402657328,
+           0.5208063127359741,
+           -0.025345664932539265,
+           0.7651500580440609,
+           0.5202516858763165,
+           0.5152891544314673,
+           -0.06642443827384063,
+           0.7591817493290929,
+           0.5199276663361306
+          ],
+          "ball_pos": [
+           0.07478050864850355,
+           0.10560086812696276,
+           0.6732450462916921
+          ],
+          "ball_local": [
+           0.0,
+           0.072,
+           -0.11
+          ],
+          "reason": "Reconstructed palm-up grasp adapted by collision surface distance IK to robot anatomy. Free wrist at .65m; no fixed mount, object attachment or floor support. Evaluation perturbations match criteria v1."
+         },
+         "episode": {
+          "duration_s": 10.5,
+          "policy_hz": 100,
+          "command_hz": 500,
+          "physics_and_pd_hz": 1000,
+          "training_termination": "time limit, floor contact, ball-reference distance>.20m, non-finite state; evaluation logs complete episode even on failure"
+         },
+         "validation": {
+          "robot_mass": 0.6878000000000001,
+          "joint_count": 20,
+          "ball_mass": 0.0577,
+          "ball_inertia": [
+           4.1e-05,
+           4.1e-05,
+           4.1e-05
+          ],
+          "ball_radius": 0.0325,
+          "baseline_stats": {
+           "max_speed_ratio": 0.8487153568943051,
+           "max_position_excess": 0.0,
+           "max_effort_ratio": 0.4419763550668179,
+           "saturated_motor_ticks": 0.0,
+           "violation_ticks": 0.0,
+           "ticks": 10500.0
+          },
+          "baseline_result": "Untrained zero residual fails: initial support .941, single flight rise .150m, no catch, ball hits floor; wrist RMS pose error 1.99deg,.00813m; no finger violations. Native batch throughput33475 decisions/s at32env16threads. This baseline is not a learned policy.",
+          "shared_model_equivalence": {
+           "observation_reward_max_difference": 0,
+           "complete_state_log_max_difference": 0.0,
+           "episodes": 4,
+           "seeds": [
+            1000,
+            1001,
+            1002,
+            1003
+           ],
+           "duration_s": 10.5,
+           "physics_and_controller": "Identical to simulation v1; only immutable model shared across per-env mjData",
+           "documentation": "https://mujoco.readthedocs.io/en/stable/programming/simulation.html#multi-threading"
+          },
+          "source": "https://mujoco.readthedocs.io/en/stable/programming/simulation.html#multi-threading",
+          "capture_backend_equivalence": {
+           "episodes": 4,
+           "seeds": [
+            1000,
+            1001,
+            1002,
+            1003
+           ],
+           "observation_max_difference": 0,
+           "complete_state_log_max_difference": 0.0,
+           "new_reward": "Only additional1kHz capture-continuity reward; no actor input/controller/physics change",
+           "capture_reward_totals": [
+            -33.900000274181366,
+            -55.80000013113022,
+            -222.60000121593475,
+            -86.39999890327454
+           ],
+           "checkpoint_used_for_backend_equivalence_only": "Already recorded iteration2, no new policy comparison or criteria verdict."
+          }
+         },
+         "media": {
+          "initial_image": "research/sim/replay/initial.png",
+          "kinematic_replay": "research/sim/replay/left.mp4",
+          "baseline_views": "research/sim/base_video/{top,left,right}.mp4"
+         },
+         "limitations": [
+          "Rigid felt/shell approximation, no soft pads/deformation/air drag; contact coefficients inferred.",
+          "No real-hardware validation; sphere orientation checked in simulated material frame only.",
+          "Reference wrist monocular and five invalid human frames interpolated for controller reference, not relabeled as observed."
+         ],
+         "change_from_v1": "Implementation-only: share one immutable mjModel across independent per-environment mjData, following official MuJoCo multithreading guidance. All physics/controller/reference/initialization equations unchanged. Four full episodes compare bit-identical observations/rewards/state logs against v1.",
+         "change_from_v2": "Adds reward-only capture-continuity helper at1kHz; unchanged physics/controller/observations/actions. After >=80ms unsupported, first renewed hand contact starts100ms window; +.3 each supported tick, -.6 each unsupported tick; at window end +15 if>=80 supported samples, else-15. Supported includes palm distance<.12m. Reward not fed to actor."
+        },
+        "files": {
+         "image": {
+          "sha": "2789e9099022",
+          "bytes": 104914,
+          "content_type": "image/png"
+         },
+         "replay_video": {
+          "sha": "490efea1b15a",
+          "bytes": 541542,
+          "content_type": "video/mp4"
+         },
+         "scene_1": {
+          "sha": "860eb72bc194",
+          "bytes": 22700,
+          "content_type": "application/xml"
+         },
+         "scene_2": {
+          "sha": "f75418f73897",
+          "bytes": 10806,
+          "content_type": "text/plain"
+         },
+         "scene_3": {
+          "sha": "66ccb23fea2b",
+          "bytes": 521,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0018",
+        "seq": 18,
+        "kind": "note",
+        "version": 9,
+        "recorded_utc": "2026-11-04T04:35:28Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Simulation3 r0017 adds reward-only1kHz capture continuity; four backend-equivalence episodes retain bit-identical physics/actor observations. Starting PPO iteration4 from iteration2 with lower exploration (std scale.35, caps sigma exp(-2) fingers/exp(-3) wrist), stronger hardware cost, smooth speed margin above70% limit, spin progress, launch velocity targets for.290/.330/.405m rises, and exact first100ms capture support reward. Capture reward is gated to first contact window per intended capture, preventing reward for extra micro-tosses. No physics/controller or criteria change. Iteration3 rotation variant continues independently."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0019",
+        "seq": 19,
+        "kind": "note",
+        "version": 10,
+        "recorded_utc": "2026-11-04T04:38:51Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Feasibility check for strict toss/catch thresholds: measured rises.285/.323/.389m imply vertical release speeds sqrt(2gh)=2.365/2.517/2.763m/s. Third toss needs about.263m/s beyond2.5m/s wrist target, compatible in scale with a40mm finger lever at6.6rad/s (below relevant joint speed limits), though coupled dynamics still matter. For capture, ball kinetic energy at2.7m/s is.210J. Following downward near2.3m/s reduces relative ball speed to.4m/s. A30N downward wrist wrench with.7455kg combined mass gives about50m/s² downward acceleration including gravity, reaching2.3m/s in46ms over53mm. This is a rough bound supporting gentle-capture feasibility, not a proof of controllability. It motivates learning anticipatory wrist descent while retaining all criteria."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-04T03:55:14Z",
@@ -60742,7 +60955,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-04T04:32:32Z",
+  "staged_utc": "2026-11-04T04:42:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -60826,7 +61039,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-04T04:32:32Z",
+  "staged_utc": "2026-11-04T04:42:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
