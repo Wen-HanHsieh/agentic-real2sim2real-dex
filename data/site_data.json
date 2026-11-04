@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-04T21:02:48Z",
- "exported_utc": "2026-11-04T21:02:31Z",
+ "generated_utc": "2026-11-04T21:12:35Z",
+ "exported_utc": "2026-11-04T21:12:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-04T20:57:36",
+    "time": "2026-11-04T21:10:05",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -677,7 +677,7 @@
    "best": "s04",
    "latest_candidate": "s06",
    "activity": {
-    "time": "2026-11-04T21:02:11",
+    "time": "2026-11-04T21:08:32",
     "verb": "other"
    },
    "record_chain": "intact (20 entries)",
@@ -95480,6 +95480,375 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0019",
+        "seq": 19,
+        "kind": "iter",
+        "version": 1,
+        "recorded_utc": "2026-11-04T21:10:04Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO",
+          "architecture": {
+           "actor": [
+            256,
+            256
+           ],
+           "critic": [
+            256,
+            256
+           ],
+           "activation": "tanh",
+           "observation_dim": 148,
+           "action_dim": 26
+          },
+          "hyperparameters": {
+           "out": "research/runs/iter001",
+           "steps": 2000000,
+           "envs": 64,
+           "threads": 32,
+           "seed": 7,
+           "resume": null,
+           "device": "cuda:0",
+           "phase_start": 0.7,
+           "phase_end": 0.0,
+           "algorithm": "PPO",
+           "learning_rate": 0.00025,
+           "clip": 0.2,
+           "gamma": 0.997,
+           "gae_lambda": 0.95,
+           "horizon": 256,
+           "batch": 16384,
+           "minibatch": 1024,
+           "epochs": 4,
+           "entropy_coefficient": 0.002,
+           "value_coefficient": 0.5,
+           "value_clipping": false,
+           "reward_scale_for_learning": 0.1,
+           "max_grad_norm": 0.5,
+           "policy_observations": "deployable",
+           "actor_layers": [
+            256,
+            256
+           ],
+           "critic_layers": [
+            256,
+            256
+           ],
+           "activation": "tanh",
+           "policy_hz": 50,
+           "command_hz": 500,
+           "pd_hz": 1000,
+           "observation_dimension": 148,
+           "action_dimension": 26,
+           "observation_normalization": "running moments; variance floor0.0004; clip10; frozen for evaluation"
+          },
+          "total_training_steps": 2015232
+         },
+         "reward_terms": [
+          {
+           "name": "object_position",
+           "formula": "sum_o weight*exp(-||p-p_ref||^2/0.035^2); weight2 active,.35 otherwise",
+           "weight": 1
+          },
+          {
+           "name": "object_axis",
+           "formula": "sum_o weight*exp(-blade_axis_angle^2/0.5^2); weight.7 active,.15 otherwise",
+           "weight": 1
+          },
+          {
+           "name": "wrist_tracking",
+           "formula": ".3exp(-position_error^2/.05^2)+.3exp(-rotation_error^2/.5^2)",
+           "weight": 1
+          },
+          {
+           "name": "finger_tracking",
+           "formula": "exp(-mean(q-q_ref)^2/.16)",
+           "weight": 0.2
+          },
+          {
+           "name": "opposed_contact",
+           "formula": "active:0.9 if thumb+index/middle opposed>=90deg, else0.15 for any hand contact; normal force>0.001N",
+           "weight": 1
+          },
+          {
+           "name": "lift_height",
+           "formula": "active clipped bottom height /(.025 white,.05 black)",
+           "weight": 0.4
+          },
+          {
+           "name": "settled",
+           "formula": "per-object upright left, base supported, speed small and no hand contact",
+           "weight": 1
+          },
+          {
+           "name": "milestones",
+           "formula": "first settled upright-left+8; first bottom clearance>1cm+2",
+           "weight": 1
+          },
+          {
+           "name": "action_smoothness",
+           "formula": "-.02mean(filtered_action^2)-.03mean(action_change^2)",
+           "weight": 1
+          },
+          {
+           "name": "joint_speed",
+           "formula": "-mean((qd/(.8*published_speed))^4)",
+           "weight": 0.1
+          },
+          {
+           "name": "ordered_rest",
+           "formula": "-2min(4,relu(black XY drift-.005)/.01) before white placed",
+           "weight": 1
+          },
+          {
+           "name": "penetration",
+           "formula": "-min(4,(max_[redacted]-.003)^2/.003^2) above3mm",
+           "weight": 0.2
+          },
+          {
+           "name": "terminal",
+           "formula": "-50 hardware violation;-25 dropped/nonfinite;+20 both final states stable1.6s (training goal only)",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "initial object XY",
+           "distribution": "independent uniform",
+           "range_m": [
+            -0.005,
+            0.005
+           ]
+          },
+          {
+           "quantity": "initial object yaw",
+           "distribution": "independent uniform",
+           "range_deg": [
+            -5,
+            5
+           ]
+          },
+          {
+           "quantity": "object mass and inertia multiplier",
+           "distribution": "uniform",
+           "range": [
+            0.9,
+            1.1
+           ],
+           "schedule": "amplitude0.25 to1 over first half of updates"
+          },
+          {
+           "quantity": "contact friction multiplier",
+           "distribution": "uniform",
+           "range": [
+            0.8,
+            1.2
+           ],
+           "schedule": "amplitude0.25 to1 over first half of updates"
+          },
+          {
+           "quantity": "joint encoder position",
+           "distribution": "independent Gaussian",
+           "sigma_rad": 0.002
+          },
+          {
+           "quantity": "joint encoder velocity",
+           "distribution": "independent Gaussian",
+           "sigma_radps": 0.05
+          }
+         ],
+         "curriculum": {
+          "method": "Reference state initialization, no attachments:frames37,71,254,360",
+          "phase_probability": [
+           0.7,
+           0.0
+          ],
+          "schedule": "linear to final probability by80% of updates; remaining20% at final probability"
+         },
+         "observation_space": "Noisy20q/20qd, wrist pose+velocities, previous20 finger targets+7 wrist target, two13D object states, time, and offline reference targets deterministically indexed by time. No contacts/forces/torques/physics parameters/images.",
+         "action_space": "26D Gaussian neural residual decoded to20 finger positions and wrist pose through the recorded reference controller;50Hz residual,500Hz commands,1kHz hardware PD.",
+         "checkpoint": {
+          "path": "research/runs/iter001/final.pt",
+          "sha256": "d7e594ee67f6…",
+          "deployable_npz": "research/runs/iter001/policy.npz",
+          "deployable_npz_sha256": "cee35abb523f…"
+         },
+         "compute": {
+          "wall_seconds": 342.79136538505554,
+          "allocated_gpu_hours": 0.09521982371807099,
+          "gpus": 1,
+          "gpu_type": "NVIDIA L40S",
+          "cpu_threads": 32
+         },
+         "evaluation": {
+          "checkpoint": "research/runs/iter001/final.pt",
+          "checkpoint_sha256": "d7e594ee67f6…",
+          "criteria_version": 1,
+          "sim_version": 2,
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violating_episodes": 20,
+          "per_criterion_pass_counts": {
+           "initial_scene": 20,
+           "white_then_black": 0,
+           "white_preserved": 0,
+           "hardware": 0,
+           "penetration": 20,
+           "wrist_similarity": 0,
+           "episode_duration": 20,
+           "plug_white_lift": 3,
+           "plug_white_physical_grasp": 3,
+           "plug_white_transport": 0,
+           "plug_white_final_standing": 0,
+           "plug_white_ordered_phases": 0,
+           "plug_white_grasp_duration": 0,
+           "plug_white_no_drop": 20,
+           "plug_black_lift": 0,
+           "plug_black_physical_grasp": 0,
+           "plug_black_transport": 0,
+           "plug_black_final_standing": 0,
+           "plug_black_ordered_phases": 0,
+           "plug_black_grasp_duration": 0,
+           "plug_black_no_drop": 20
+          },
+          "passed": false,
+          "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+          "inference_latency_max_s": 0.11795721899943601,
+          "evaluation_wall_seconds": 2.8863329887390137
+         },
+         "baseline": {
+          "path": "research/sim/baseline_eval/[redacted]",
+          "success_rate": 0.0,
+          "note": "Zero-residual reference tested on same20 initial cases; not a learned policy."
+         },
+         "reflection": "First2.015M-step PPO run improves training return but fails all20 full-start held-out episodes. White lift threshold is reached in3/20 cases, neither plug completes transport or upright placement. Every trial terminates on joint17 pinky MCP abduction overspeed. The kinematic IK drives non-contact fingers near their abduction limits to imitate human fingertips; this is an inappropriate robot retargeting priority. Next: relax ring/pinky fingertip tracking, regularize them to safe postures and reinforce actual opposed grip pressure before carrying. Criteria are unchanged.",
+         "limitations": [
+          "Simulation-only claim; no real-robot result.",
+          "Task contact timing currently sampled50Hz;1kHz hardware/penetration extrema. A candidate pass requires fine contact audit."
+         ]
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "d31ea73dc657",
+          "bytes": 56927,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "31ca14635bfd",
+          "bytes": 318872,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "e34f06c4af8e",
+          "bytes": 384922,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "ebe42cdac645",
+          "bytes": 363442,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0020",
+        "seq": 20,
+        "kind": "verify",
+        "version": 1,
+        "recorded_utc": "2026-11-04T21:10:05Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0019",
+         "criteria_version": 1,
+         "verdict": "fail",
+         "policy": {
+          "path": "research/runs/iter001/final.pt",
+          "sha256": "d7e594ee67f6…",
+          "deployable_npz": "research/runs/iter001/policy.npz",
+          "deployable_npz_sha256": "cee35abb523f…"
+         },
+         "episodes": 20,
+         "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+         "result": {
+          "criteria_version": 1,
+          "sim_version": 2,
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violating_episodes": 20,
+          "per_criterion_pass_counts": {
+           "initial_scene": 20,
+           "white_then_black": 0,
+           "white_preserved": 0,
+           "hardware": 0,
+           "penetration": 20,
+           "wrist_similarity": 0,
+           "episode_duration": 20,
+           "plug_white_lift": 3,
+           "plug_white_physical_grasp": 3,
+           "plug_white_transport": 0,
+           "plug_white_final_standing": 0,
+           "plug_white_ordered_phases": 0,
+           "plug_white_grasp_duration": 0,
+           "plug_white_no_drop": 20,
+           "plug_black_lift": 0,
+           "plug_black_physical_grasp": 0,
+           "plug_black_transport": 0,
+           "plug_black_final_standing": 0,
+           "plug_black_ordered_phases": 0,
+           "plug_black_grasp_duration": 0,
+           "plug_black_no_drop": 20
+          },
+          "passed": false,
+          "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+          "inference_latency_max_s": 0.11795721899943601,
+          "evaluation_wall_seconds": 2.8863329887390137
+         },
+         "evidence": {
+          "metrics": "research/runs/iter001/eval/[redacted]",
+          "rollout": "First held-out episode, seed1001; all per-case results supplied."
+         },
+         "limitations": [
+          "Simulation-only claim; no real-robot result.",
+          "Task contact timing currently sampled50Hz;1kHz hardware/penetration extrema. A candidate pass requires fine contact audit."
+         ],
+         "reflection": "First2.015M-step PPO run improves training return but fails all20 full-start held-out episodes. White lift threshold is reached in3/20 cases, neither plug completes transport or upright placement. Every trial terminates on joint17 pinky MCP abduction overspeed. The kinematic IK drives non-contact fingers near their abduction limits to imitate human fingertips; this is an inappropriate robot retargeting priority. Next: relax ring/pinky fingertip tracking, regularize them to safe postures and reinforce actual opposed grip pressure before carrying. Criteria are unchanged."
+        },
+        "files": {
+         "file_1": {
+          "sha": "9d41515c73bd",
+          "bytes": 87871,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "cee35abb523f",
+          "bytes": 803442,
+          "content_type": "application/octet-stream"
+         },
+         "video_left_failed": {
+          "sha": "31ca14635bfd",
+          "bytes": 318872,
+          "content_type": "video/mp4"
+         },
+         "video_right_failed": {
+          "sha": "e34f06c4af8e",
+          "bytes": 384922,
+          "content_type": "video/mp4"
+         },
+         "video_top_failed": {
+          "sha": "ebe42cdac645",
+          "bytes": 363442,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-04T19:41:44Z",
@@ -95980,6 +96349,19 @@
          "text": "Start time: 2026-11-04 21:01:58 UTC (date -u at first action; first message immediately preceded it). Hard deadline: 2026-11-05 05:01:58 UTC, with final records reserved before that time. Beginning the mandatory 60-minute reference reconstruction stage; no training simulation will be built before 2026-11-04 22:01:58 UTC and a reconstruction record. I will derive strict ordered pen-spin criteria from the video and instruction, then use PPO and report only evidence-supported simulation results."
         },
         "files": {}
+       },
+       {
+        "id": "r0002",
+        "seq": 2,
+        "kind": "note",
+        "version": 2,
+        "recorded_utc": "2026-11-04T21:08:32Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Elapsed ~7 minutes. Scene analysis identifies four clockwise turns and the instructed long-finger transfer order, with no thumb grasp and no floor contact. SAM3 with a white-pen box prompt captures the pen but adds shadow fragments; robust line filtering removes these. The initial default MANO fit has hand-mask IoU 0.813 but only 11% near-object contact because its absolute depth is inconsistent with the pen. Next: refit against the corrected whole-pen track, permit hand-to-scene scale adjustment, and resolve foreshortening using hand contact evidence. Pen axial roll and absolute focal/depth are unobservable; they will remain explicitly labelled."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": null,
@@ -96351,7 +96733,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-04T21:02:42Z",
+  "staged_utc": "2026-11-04T21:12:34Z",
   "tasks": {
    "cube": {
     "files": {
@@ -96435,7 +96817,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-04T21:02:41Z",
+  "staged_utc": "2026-11-04T21:12:33Z",
   "tasks": {
    "tennis": {
     "status": "available",
