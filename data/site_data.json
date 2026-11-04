@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-04T07:02:33Z",
- "exported_utc": "2026-11-04T07:02:29Z",
+ "generated_utc": "2026-11-04T07:12:33Z",
+ "exported_utc": "2026-11-04T07:12:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-04T06:56:46",
+    "time": "2026-11-04T07:06:50",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-04T06:54:11",
+    "time": "2026-11-04T07:10:57",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -52932,6 +52932,19 @@
          "text": "Run offline CEM only to study a partial first-throw reference: finger opening/closing targets and timing, small wrist translation bump, and catch translation. This is analysis/reference building, not an RL stage, teacher, or online planner. It does not spin the ball or execute the ordered task. If a resulting reference is used, publish its standalone performance and retain a deployable PPO residual for the reported policy."
         },
         "files": {}
+       },
+       {
+        "id": "r0026",
+        "seq": 26,
+        "kind": "note",
+        "version": 16,
+        "recorded_utc": "2026-11-04T07:06:50Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "The MANO fingertip-displacement reference is not a solution: isolated first-turn baseline has 3.76 rad angular path but only 0.73 rad excursion; second-turn reference loses retention (0.776, gap 224 ms). Both have no hardware violation in this test. This supports using reconstruction as a guide rather than treating collision-constrained IK as successful execution. Retain the original learned turn curriculum while testing whether a smaller reference contribution can help."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-04T05:01:02Z",
@@ -64298,6 +64311,568 @@
          "text": "A geometric diagnosis of the failing base: the white upright reference differs from the initial grasp by a nearly180degree turn of the local blade-gap Y axis, even though the specified rectangular body, identical blade pair and centered USB recess are invariant under180degrees about local Z. Forcing fixed labeled Y-side pads along that ambiguous symmetry branch drives white wrist IK49–54degrees from the measured wrist. I will test the symmetry-equivalent upright object goal (same geometry and blade-up task), retaining the original recorded wrist and every criterion unchanged. This is a retargeting/reference-controller revision, not a claim of new video evidence or a relaxation of verification."
         },
         "files": {}
+       },
+       {
+        "id": "r0025",
+        "seq": 25,
+        "kind": "iter",
+        "version": 1,
+        "recorded_utc": "2026-11-04T07:10:37Z",
+        "exception": false,
+        "body": {
+         "sim_version": 1,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "run": "ppo1",
+          "envs": 24,
+          "schedule": [
+           [
+            "white_grasp",
+            150000,
+            0.1
+           ],
+           [
+            "white",
+            150000,
+            0.2
+           ],
+           [
+            "black_grasp",
+            150000,
+            0.2
+           ],
+           [
+            "full",
+            300000,
+            0.3
+           ]
+          ],
+          "load": null,
+          "seed": 11,
+          "lr": 0.0003,
+          "algorithm": "PPO",
+          "architecture": [
+           256,
+           256
+          ],
+          "n_steps": 256,
+          "batch_size": 1024,
+          "n_epochs": 5,
+          "gamma": 0.995,
+          "gae_lambda": 0.98,
+          "clip_range": 0.2,
+          "ent_coef": 0.001,
+          "log_std_init": -2.3,
+          "observation_normalization": true,
+          "reward_normalization": false,
+          "initialization": "zero-centered residual; base is offline IK plus object-pose feedback",
+          "actor_hz": 50,
+          "base_hz": 500,
+          "PD_hz": 1000,
+          "observation_dimensions": 136,
+          "action_dimensions": 26,
+          "start_utc": "2026-11-04T06:51:33Z"
+         },
+         "observation_space": "Only LEARNING.md allowed noisy q/qd, own executed targets, wrist pose/velocity, object poses/velocities, time and fixed task-reference constants. FK relative pad positions/normals are calculated from noisy encoder q, not true simulator pad states. No contacts/forces/parameters/rewards.",
+         "action_space": "26 network residuals; first20 finger position targets,3 wrist-position offsets,3 wrist-rotation-vector offsets; exact gains and filtering in recorded source. Reference500Hz, PPO50Hz, PD1kHz.",
+         "reward_terms": [
+          {
+           "name": "position_tracking",
+           "weight": 1.5,
+           "formula": "exp(-(active object position error / .045m)^2)"
+          },
+          {
+           "name": "orientation_tracking",
+           "weight": 1.2,
+           "formula": "exp(-(full orientation rotation-vector norm / .5rad)^2)"
+          },
+          {
+           "name": "lift",
+           "weight": 3.0,
+           "formula": "During white3.2–6.8s or black8.9–12.6s, clip(body bottom/.035m,0,1)"
+          },
+          {
+           "name": "opposed_contact",
+           "weight": 1.0,
+           "formula": "During grasp, physical thumb+long-finger body contact with radial directions>=60degrees and normal force>.02N"
+          },
+          {
+           "name": "grasp_proximity",
+           "weight": 1.0,
+           "formula": "Mean exp(-(pad to body-Y-side target/.018m)^2), thumb/index localZ±.012m"
+          },
+          {
+           "name": "grasp_alignment",
+           "weight": 0.3,
+           "formula": "Mean positive pad-normal alignment with target body inward normal during grasp proximity window"
+          },
+          {
+           "name": "left_progress",
+           "weight": 0.8,
+           "formula": "clip(active object Y displacement / demonstration displacement,0,1)"
+          },
+          {
+           "name": "wrist",
+           "weight": -0.25,
+           "formula": "Squared wrist rotation error/25degrees plus squared position error/.04m; fixed original criteria reference"
+          },
+          {
+           "name": "speed_margin",
+           "weight": -0.8,
+           "formula": "Sum max(abs(realized joint velocity)/hardware velocity-.7,0)"
+          },
+          {
+           "name": "penetration",
+           "weight": -0.5,
+           "formula": "max(0,hand-table/object contact penetration-.001m)/.003m"
+          },
+          {
+           "name": "action",
+           "weight": -0.015,
+           "formula": "Mean squared raw network residual action"
+          },
+          {
+           "name": "white_preservation",
+           "weight": -0.5,
+           "formula": "After7.2s white goal-position error/.05m + max(tilt-10degrees,0)/45degrees"
+          },
+          {
+           "name": "placement",
+           "weight": 2.0,
+           "formula": "Number of previously lifted, translated objects currently upright table-supported on left and without hand contact"
+          },
+          {
+           "name": "failure",
+           "weight": -30.0,
+           "formula": "Episode termination for realized hardware violation or fall below-.08m"
+          },
+          {
+           "name": "completion",
+           "weight": 30.0,
+           "formula": "At curriculum horizon if stage-specific goal achieved; this training goal is not the full verification criteria"
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "encoder q noise",
+           "distribution": "independent Gaussian",
+           "sigma": 0.002,
+           "units": "rad"
+          },
+          {
+           "quantity": "encoder qd noise",
+           "distribution": "independent Gaussian",
+           "sigma": 0.05,
+           "units": "rad/s"
+          },
+          {
+           "quantity": "object mass and inertia scale",
+           "distribution": "uniform [1-.1r,1+.1r]",
+           "r": "Curriculum randomization factor in training_config schedule"
+          },
+          {
+           "quantity": "object initial XY",
+           "distribution": "uniform ±.005r m each axis"
+          },
+          {
+           "quantity": "object initial yaw",
+           "distribution": "uniform ±5r degrees"
+          },
+          {
+           "quantity": "wrist initial XYZ",
+           "distribution": "uniform ±.003r m each axis"
+          },
+          {
+           "quantity": "wrist initial rotation vector",
+           "distribution": "uniform ±3r degrees each axis"
+          },
+          {
+           "quantity": "table coefficient (object fixed .6 means effective table/body coefficient>=.6)",
+           "distribution": "uniform [.6-.15r,.6+.15r]"
+          },
+          {
+           "quantity": "pad sliding friction",
+           "distribution": "uniform [1-.2r,1+.2r]"
+          }
+         ],
+         "curriculum": [
+          [
+           "white_grasp",
+           150000,
+           0.1
+          ],
+          [
+           "white",
+           150000,
+           0.2
+          ],
+          [
+           "black_grasp",
+           150000,
+           0.2
+          ],
+          [
+           "full",
+           300000,
+           0.3
+          ]
+         ],
+         "compute": {
+          "wall_seconds": 1006.1401901245117,
+          "training_steps": 761856,
+          "end_utc": "2026-11-04T07:08:19Z",
+          "GPU": "1 x NVIDIA L40S, policy optimization only; 24 CPU MuJoCo environments",
+          "GPU_reserved_hours": 0.27948338866233824
+         },
+         "evaluation": {
+          "success": false,
+          "criteria_version": 3,
+          "episodes": [
+           {
+            "seed": "nominal",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 14.598053431511469,
+            "white_lift_m": 0.07107514520244845,
+            "black_lift_m": 0.7374522949198197
+           },
+           {
+            "seed": "100",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 2.1556094447898153,
+            "white_lift_m": 0.04673819922441897,
+            "black_lift_m": 0.024140096410871767
+           },
+           {
+            "seed": "101",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 1.7575454762699274,
+            "white_lift_m": 0.009324696463696764,
+            "black_lift_m": 0.047820043718379474
+           },
+           {
+            "seed": "102",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 1.6317647739789232,
+            "white_lift_m": 0.012516753056086002,
+            "black_lift_m": 0.030023214529656797
+           },
+           {
+            "seed": "103",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 1.9710752476083104,
+            "white_lift_m": 167.58394688017341,
+            "black_lift_m": 0.02487119542927946
+           },
+           {
+            "seed": "104",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 1.3601271563207302,
+            "white_lift_m": 0.0862329274611106,
+            "black_lift_m": 0.1841386746102535
+           },
+           {
+            "seed": "105",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 2.8704084876454576,
+            "white_lift_m": 0.037859896921551395,
+            "black_lift_m": 0.01510154836984974
+           },
+           {
+            "seed": "106",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 3.367749214059235,
+            "white_lift_m": 0.06885304363356853,
+            "black_lift_m": 0.03593649932267434
+           },
+           {
+            "seed": "107",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 2.972448620192409,
+            "white_lift_m": 0.3979690717206238,
+            "black_lift_m": 0.005473553446593525
+           },
+           {
+            "seed": "108",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 3.6730589562943,
+            "white_lift_m": 2.517564530054594,
+            "black_lift_m": 0.4047124299338633
+           },
+           {
+            "seed": "109",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 1.3348397790342195,
+            "white_lift_m": 0.01126948001468266,
+            "black_lift_m": 0.037790737061744274
+           },
+           {
+            "seed": "110",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 1.4155430823108774,
+            "white_lift_m": 0.020384551595324103,
+            "black_lift_m": 0.017843569605261535
+           },
+           {
+            "seed": "111",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 1.4040152729472142,
+            "white_lift_m": 0.0048220169887563565,
+            "black_lift_m": 0.023256032423417
+           },
+           {
+            "seed": "112",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 1.4511031045676386,
+            "white_lift_m": 0.005122387605563692,
+            "black_lift_m": 0.02001399334349593
+           },
+           {
+            "seed": "113",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 1.7629911118707473,
+            "white_lift_m": 0.05903082893753344,
+            "black_lift_m": 0.049816379248594125
+           },
+           {
+            "seed": "114",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 2.0255714837267815,
+            "white_lift_m": 0.36709603131109797,
+            "black_lift_m": 0.0032645482574510803
+           },
+           {
+            "seed": "115",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 1.5807178620133933,
+            "white_lift_m": 0.002459743069924216,
+            "black_lift_m": 0.09535457630330453
+           },
+           {
+            "seed": "116",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 1.4660773227188613,
+            "white_lift_m": 0.005023855807703263,
+            "black_lift_m": 0.04535658728501196
+           },
+           {
+            "seed": "117",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 12.306664903613715,
+            "white_lift_m": 0.03474859775245592,
+            "black_lift_m": 57948.13667468767
+           },
+           {
+            "seed": "118",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 2.427324759916861,
+            "white_lift_m": 0.038970744545761285,
+            "black_lift_m": 0.0005435115608138016
+           },
+           {
+            "seed": "119",
+            "success": false,
+            "passed": null,
+            "max_joint_speed_ratio": 1.322330378396012,
+            "white_lift_m": 0.0038172532998627315,
+            "black_lift_m": 0.033079100844480305
+           }
+          ],
+          "heldout_successes": 0,
+          "heldout_episodes": 20,
+          "hardware_failure_episodes": 21,
+          "nominal_success": false,
+          "per_criterion_pass_counts": {
+           "initial": 21,
+           "plug_white_pickup": 3,
+           "plug_white_transport_place": 0,
+           "plug_black_pickup": 5,
+           "plug_black_transport_place": 0,
+           "order": 0,
+           "final_stability": 0,
+           "wrist": 0,
+           "integrity": 0
+          },
+          "wall_seconds": 43.788713216781616
+         },
+         "criteria_version": 3,
+         "checkpoint": {
+          "path": "research/runs/ppo1/policy.zip",
+          "sha256": "20aafb7bca71…",
+          "normalization_sha256": "17581683c74f…",
+          "deterministic_evaluation": true
+         },
+         "baseline": "Failing IKv5 baseline in simulation1 r0022.",
+         "curves": "Each CSV row is one vector step: raw reward and every term averaged over24 parallel environments, timestep is total transitions. Rolling100-episode raw return/length/curriculum success/hardware.",
+         "reflection": "First PPO run trained761856 transitions across white grasp, white, black grasp and full episodes. Nominal and20heldout all fail:21hardware failures,0placements,3white pickups and5black pickups. The base gives unstable white grasp and incompatible white symmetry branch. Squared-exponential orientation reward is nearly flat at90degree error, and early reference IK diverges from a feasible grasp branch. Next: correct object symmetry, solve from feasible grasp backward/forward, use reconstructed lateral motion and three video-supported body contacts, replace orientation reward by dense blade-axis alignment, and fix table/body friction randomization. Thresholds remain unchanged.",
+         "limitations": [
+          "All results are own simulation claims, no official evaluation or real-robot transfer.",
+          "Evaluation runs full horizon even after hardware violation to diagnose dynamics; any violation fails that episode.",
+          "Simulation1 randomizes table coefficient but plastic .6 masks the lower half of effective table friction range. This is disclosed and fixed in simulation2; iteration1 cannot support the entire desired friction robustness claim."
+         ]
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "09f6fe1e44d2",
+          "bytes": 6015774,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "b2252cdf2fa2",
+          "bytes": 349335,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "6fea4f1599a5",
+          "bytes": 322472,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "85682e23c75d",
+          "bytes": 250881,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0026",
+        "seq": 26,
+        "kind": "verify",
+        "version": 1,
+        "recorded_utc": "2026-11-04T07:10:57Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0025",
+         "criteria_version": 3,
+         "verdict": "FAIL",
+         "claim": "Own simulation self-verification; not an official evaluation. No complete task performance demonstrated.",
+         "policy": {
+          "checkpoint": "research/runs/ppo1/policy.zip",
+          "sha256": "20aafb7bca71…",
+          "algorithm": "PPO residual,761856transitions",
+          "observations": "deployable",
+          "normalization": "research/runs/ppo1/normalization.pkl"
+         },
+         "episodes": {
+          "count": 21,
+          "nominal": 1,
+          "heldout_seeds": [
+           100,
+           101,
+           102,
+           103,
+           104,
+           105,
+           106,
+           107,
+           108,
+           109,
+           110,
+           111,
+           112,
+           113,
+           114,
+           115,
+           116,
+           117,
+           118,
+           119
+          ],
+          "initial_conditions": "Full episode t0 from recorded side-lying reconstruction. No RSI in evaluation. Exact initialqpos/masses/coefficients in [redacted]."
+         },
+         "results": {
+          "success": false,
+          "criteria_version": 3,
+          "episodes": 21,
+          "heldout_successes": 0,
+          "heldout_episodes": 20,
+          "hardware_failure_episodes": 21,
+          "nominal_success": false,
+          "per_criterion_pass_counts": {
+           "initial": 21,
+           "plug_white_pickup": 3,
+           "plug_white_transport_place": 0,
+           "plug_black_pickup": 5,
+           "plug_black_transport_place": 0,
+           "order": 0,
+           "final_stability": 0,
+           "wrist": 0,
+           "integrity": 0
+          },
+          "wall_seconds": 43.788713216781616
+         },
+         "evidence": {
+          "metrics": "summary.json contains all21per-criterion measurements and pass/fail; every tick hardwareaudit,2ms contact/pose snapshots.",
+          "videos": "Nominal failed physical rollout top/left/right; no successful episodes exist.",
+          "policy_weights": "NPZ state_dict+normalization means/variances, exact checkpoint hash in this record."
+         },
+         "limitations": [
+          "Rigid approximate pad contact and unspecified true friction/inertia.",
+          "Iteration1 randomized table coefficient but fixedbody .6 masks effectivefriction below.6, so its desiredfullfrictionrange is not covered; this cannot support a passing robustnessclaim.",
+          "Evaluation continues after failures for diagnosis;21/21hardware failures categoricallyfail before considering outcomes."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "59b9a71b67ae",
+          "bytes": 142481,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "9b2b4b755c5d",
+          "bytes": 781610,
+          "content_type": "application/octet-stream"
+         },
+         "video_left_failure": {
+          "sha": "b2252cdf2fa2",
+          "bytes": 349335,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "6fea4f1599a5",
+          "bytes": 322472,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "85682e23c75d",
+          "bytes": 250881,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0027",
+        "seq": 27,
+        "kind": "note",
+        "version": 14,
+        "recorded_utc": "2026-11-04T07:10:57Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Iteration1 r0025 and its verification failed all21full episodes: hardware failures21, placements0, isolated whitepickup3/21, blackpickup5/21. Full criteria remainv3. Diagnoses: IKbranch drift, unnecessary white symmetry turn, objectpath inconsistentwith wristreference, weak early orientationreward and failed graspcontacts. Analysis bases7/8 maintain white opposedgrasp and obeyhardware but keepitflat. Three-video-finger base10 matchesallwrist phases and hardware but thumb misses whileindex pushes. Nextincrease thumb/middle squeeze through physical PD targets, keepindexlight, usevideo-derived surfacecontacts, denseblade-axisreward and corrected frictionrandomization. This is evidenceof failure and next hypothesis, not stopping. UTC07:11, elapsed2h20, harddeadline12:51:22."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-04T05:03:23Z",
@@ -65149,7 +65724,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-04T07:02:32Z",
+  "staged_utc": "2026-11-04T07:12:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -65233,7 +65808,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-04T07:02:32Z",
+  "staged_utc": "2026-11-04T07:12:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
