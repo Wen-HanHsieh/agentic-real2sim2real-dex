@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-04T21:32:34Z",
- "exported_utc": "2026-11-04T21:32:29Z",
+ "generated_utc": "2026-11-04T21:42:34Z",
+ "exported_utc": "2026-11-04T21:42:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-04T21:31:36",
+    "time": "2026-11-04T21:37:13",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -677,7 +677,7 @@
    "best": "s04",
    "latest_candidate": "s06",
    "activity": {
-    "time": "2026-11-04T21:21:41",
+    "time": "2026-11-04T21:39:18",
     "verb": "other"
    },
    "record_chain": "intact (20 entries)",
@@ -96152,6 +96152,390 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0023",
+        "seq": 23,
+        "kind": "iter",
+        "version": 2,
+        "recorded_utc": "2026-11-04T21:35:50Z",
+        "exception": false,
+        "body": {
+         "sim_version": 3,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO",
+          "architecture": {
+           "actor": [
+            256,
+            256
+           ],
+           "critic": [
+            256,
+            256
+           ],
+           "activation": "tanh",
+           "observation_dim": 148,
+           "action_dim": 26
+          },
+          "hyperparameters": {
+           "out": "research/runs/iter002",
+           "steps": 10000000,
+           "envs": 64,
+           "threads": 32,
+           "seed": 202,
+           "resume": null,
+           "device": "cuda:0",
+           "phase_start": 0.8,
+           "phase_end": 0.0,
+           "algorithm": "PPO",
+           "learning_rate": 0.00025,
+           "clip": 0.2,
+           "gamma": 0.997,
+           "gae_lambda": 0.95,
+           "horizon": 256,
+           "batch": 16384,
+           "minibatch": 1024,
+           "epochs": 4,
+           "entropy_coefficient": 0.002,
+           "value_coefficient": 0.5,
+           "value_clipping": false,
+           "reward_scale_for_learning": 0.1,
+           "max_grad_norm": 0.5,
+           "policy_observations": "deployable",
+           "actor_layers": [
+            256,
+            256
+           ],
+           "critic_layers": [
+            256,
+            256
+           ],
+           "activation": "tanh",
+           "policy_hz": 50,
+           "command_hz": 500,
+           "pd_hz": 1000,
+           "observation_dimension": 148,
+           "action_dimension": 26,
+           "observation_normalization": "running moments; variance floor0.0004; clip10; frozen for evaluation"
+          },
+          "total_training_steps": 425984,
+          "attempted_steps_including_work_after_selected_checkpoint": 720896
+         },
+         "reward_terms": [
+          {
+           "name": "object_position",
+           "formula": "sum_o weight*exp(-||p-p_ref||^2/0.035^2); weight2 active,.35 otherwise",
+           "weight": 1
+          },
+          {
+           "name": "object_axis",
+           "formula": "sum_o weight*exp(-blade_axis_angle^2/0.5^2); weight.7 active,.15 otherwise",
+           "weight": 1
+          },
+          {
+           "name": "wrist_tracking",
+           "formula": ".3exp(-position_error^2/.05^2)+.3exp(-rotation_error^2/.5^2)",
+           "weight": 1
+          },
+          {
+           "name": "finger_tracking",
+           "formula": "exp(-mean(q-q_ref)^2/.16)",
+           "weight": 0.2
+          },
+          {
+           "name": "opposed_contact",
+           "formula": "active:0.9 if thumb+index/middle opposed>=90deg, else0.15 for any hand contact; normal force>0.001N",
+           "weight": 1
+          },
+          {
+           "name": "lift_height",
+           "formula": "active clipped bottom height /(.025 white,.05 black)",
+           "weight": 0.4
+          },
+          {
+           "name": "settled",
+           "formula": "per-object upright left, base supported, speed small and no hand contact",
+           "weight": 1
+          },
+          {
+           "name": "milestones",
+           "formula": "first settled upright-left+8; first bottom clearance>1cm+2",
+           "weight": 1
+          },
+          {
+           "name": "action_smoothness",
+           "formula": "-.02mean(filtered_action^2)-.03mean(action_change^2)",
+           "weight": 1
+          },
+          {
+           "name": "joint_speed",
+           "formula": "-mean((qd/(.8*published_speed))^4)",
+           "weight": 0.1
+          },
+          {
+           "name": "ordered_rest",
+           "formula": "-2min(4,relu(black XY drift-.005)/.01) before white placed",
+           "weight": 1
+          },
+          {
+           "name": "penetration",
+           "formula": "-min(4,(max_[redacted]-.003)^2/.003^2) above3mm",
+           "weight": 0.2
+          },
+          {
+           "name": "terminal",
+           "formula": "-50 hardware violation;-25 dropped/nonfinite;+20 both final states stable1.6s (training goal only)",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "initial object XY",
+           "distribution": "independent uniform",
+           "range_m": [
+            -0.005,
+            0.005
+           ]
+          },
+          {
+           "quantity": "initial object yaw",
+           "distribution": "independent uniform",
+           "range_deg": [
+            -5,
+            5
+           ]
+          },
+          {
+           "quantity": "object mass and inertia multiplier",
+           "distribution": "uniform",
+           "range": [
+            0.9,
+            1.1
+           ],
+           "schedule": "amplitude0.25 to1 over first half of updates"
+          },
+          {
+           "quantity": "contact friction multiplier",
+           "distribution": "uniform",
+           "range": [
+            0.8,
+            1.2
+           ],
+           "schedule": "amplitude0.25 to1 over first half of updates"
+          },
+          {
+           "quantity": "joint encoder position",
+           "distribution": "independent Gaussian",
+           "sigma_rad": 0.002
+          },
+          {
+           "quantity": "joint encoder velocity",
+           "distribution": "independent Gaussian",
+           "sigma_radps": 0.05
+          }
+         ],
+         "curriculum": {
+          "method": "Reference state initialization, no attachments:frames37,71,254,360",
+          "phase_probability": [
+           0.8,
+           0.0
+          ],
+          "schedule": "linear to final probability by80% of updates; remaining20% at final probability"
+         },
+         "observation_space": "Noisy20q/20qd, wrist pose+velocities, previous20 finger targets+7 wrist target, two13D object states, time, and offline reference targets deterministically indexed by time. No contacts/forces/torques/physics parameters/images.",
+         "action_space": "26D Gaussian neural residual decoded to20 finger positions and wrist pose through the recorded reference controller;50Hz residual,500Hz commands,1kHz hardware PD.",
+         "checkpoint": {
+          "path": "research/runs/iter002/final.pt",
+          "sha256": "b056d7118120…",
+          "deployable_npz": "research/runs/iter002/policy.npz",
+          "deployable_npz_sha256": "1f56395c0e4b…"
+         },
+         "compute": {
+          "wall_seconds": 131.95018458366394,
+          "allocated_gpu_hours": 0.036652829051017764,
+          "gpus": 1,
+          "gpu_type": "NVIDIA L40S",
+          "cpu_threads": 32
+         },
+         "evaluation": {
+          "checkpoint": "research/runs/iter002/final.pt",
+          "checkpoint_sha256": "b056d7118120…",
+          "criteria_version": 1,
+          "sim_version": 3,
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violating_episodes": 0,
+          "per_criterion_pass_counts": {
+           "initial_scene": 20,
+           "white_then_black": 0,
+           "white_preserved": 0,
+           "hardware": 20,
+           "penetration": 20,
+           "wrist_similarity": 0,
+           "episode_duration": 20,
+           "plug_white_lift": 0,
+           "plug_white_physical_grasp": 0,
+           "plug_white_transport": 0,
+           "plug_white_final_standing": 0,
+           "plug_white_ordered_phases": 0,
+           "plug_white_grasp_duration": 0,
+           "plug_white_no_drop": 20,
+           "plug_black_lift": 0,
+           "plug_black_physical_grasp": 0,
+           "plug_black_transport": 0,
+           "plug_black_final_standing": 0,
+           "plug_black_ordered_phases": 0,
+           "plug_black_grasp_duration": 0,
+           "plug_black_no_drop": 20
+          },
+          "passed": false,
+          "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+          "inference_latency_max_s": 0.12125395299972297,
+          "evaluation_wall_seconds": 5.160247564315796
+         },
+         "baseline": {
+          "path": "research/sim/baseline_eval_v3_functional/[redacted]",
+          "success_rate": 0.0,
+          "note": "Zero-residual reference tested on same20 initial cases; not a learned policy."
+         },
+         "reflection": "Stopped planned10M run early after discovering the later-frame reset curriculum creates12-16mm index-middle self-intersections and unavoidable first-tick overspeeds. Selected latest periodic checkpoint; complete attempted curves retained. Full-start zero-residual baseline is hardware-safe but0/20 tasks. This PPO checkpoint still fails task criteria; next simulation adds exact convex self-collision penalties to retargeting and rejects unsafe curriculum resets. Criteria unchanged.",
+         "limitations": [
+          "Simulation-only claim; no real-robot result.",
+          "Task contact timing currently sampled50Hz;1kHz hardware/penetration extrema. A candidate pass requires fine contact audit."
+         ],
+         "early_stop_reason": "Stopped planned10M run early after discovering unavoidable first-tick hardware violations in the phase-reset curriculum due to deep static index-middle intersections. Retained latest periodic checkpoint (~0.4M decisions); evaluate and record it. Training stdout and complete curves retained, including work after that checkpoint. No success claimed.\n"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "b3cfccef78a7",
+          "bytes": 21472,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "44be7efe0458",
+          "bytes": 385304,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "e18126325f7e",
+          "bytes": 432296,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "b3f95ceb304f",
+          "bytes": 430777,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0024",
+        "seq": 24,
+        "kind": "verify",
+        "version": 2,
+        "recorded_utc": "2026-11-04T21:35:51Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0023",
+         "criteria_version": 1,
+         "verdict": "fail",
+         "policy": {
+          "path": "research/runs/iter002/final.pt",
+          "sha256": "b056d7118120…",
+          "deployable_npz": "research/runs/iter002/policy.npz",
+          "deployable_npz_sha256": "1f56395c0e4b…"
+         },
+         "episodes": 20,
+         "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+         "result": {
+          "criteria_version": 1,
+          "sim_version": 3,
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violating_episodes": 0,
+          "per_criterion_pass_counts": {
+           "initial_scene": 20,
+           "white_then_black": 0,
+           "white_preserved": 0,
+           "hardware": 20,
+           "penetration": 20,
+           "wrist_similarity": 0,
+           "episode_duration": 20,
+           "plug_white_lift": 0,
+           "plug_white_physical_grasp": 0,
+           "plug_white_transport": 0,
+           "plug_white_final_standing": 0,
+           "plug_white_ordered_phases": 0,
+           "plug_white_grasp_duration": 0,
+           "plug_white_no_drop": 20,
+           "plug_black_lift": 0,
+           "plug_black_physical_grasp": 0,
+           "plug_black_transport": 0,
+           "plug_black_final_standing": 0,
+           "plug_black_ordered_phases": 0,
+           "plug_black_grasp_duration": 0,
+           "plug_black_no_drop": 20
+          },
+          "passed": false,
+          "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+          "inference_latency_max_s": 0.12125395299972297,
+          "evaluation_wall_seconds": 5.160247564315796
+         },
+         "evidence": {
+          "metrics": "research/runs/iter002/eval/[redacted]",
+          "rollout": "First held-out episode, seed1001; all per-case results supplied."
+         },
+         "limitations": [
+          "Simulation-only claim; no real-robot result.",
+          "Task contact timing currently sampled50Hz;1kHz hardware/penetration extrema. A candidate pass requires fine contact audit."
+         ],
+         "reflection": "Stopped planned10M run early after discovering the later-frame reset curriculum creates12-16mm index-middle self-intersections and unavoidable first-tick overspeeds. Selected latest periodic checkpoint; complete attempted curves retained. Full-start zero-residual baseline is hardware-safe but0/20 tasks. This PPO checkpoint still fails task criteria; next simulation adds exact convex self-collision penalties to retargeting and rejects unsafe curriculum resets. Criteria unchanged."
+        },
+        "files": {
+         "file_1": {
+          "sha": "ba710f0c95b2",
+          "bytes": 87308,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "1f56395c0e4b",
+          "bytes": 803179,
+          "content_type": "application/octet-stream"
+         },
+         "video_left_failed": {
+          "sha": "44be7efe0458",
+          "bytes": 385304,
+          "content_type": "video/mp4"
+         },
+         "video_right_failed": {
+          "sha": "e18126325f7e",
+          "bytes": 432296,
+          "content_type": "video/mp4"
+         },
+         "video_top_failed": {
+          "sha": "b3f95ceb304f",
+          "bytes": 430777,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0025",
+        "seq": 25,
+        "kind": "note",
+        "version": 12,
+        "recorded_utc": "2026-11-04T21:37:13Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Correction to iteration2 record r0023: its contact reward description was copied from iteration1 by the record helper. Actual training used sim3 attached source: active positional opposition0.6, else any hand0.1; balanced force bonus0.8*clip(min(thumbN,max(indexN,middleN))/.6,0,1) when positional opposition and force-weighted normals dot<-.5; thumb/index pad-to-body SDF bonuses0.4exp(-SDF^2/.02^2) each. All other recorded terms unchanged. The helper is corrected for future records. Verification r0024 remains FAIL0/20, hardware-safe20/20. Static diagnosis identifies up to16mm index-middle intersections in reset poses; add exact self-collision penalties and anatomically staggered thumb/index contact positions next."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-04T19:41:44Z",
@@ -96876,6 +97260,32 @@
          "text": "First reconstruction recorded as r0004 (version 1) at 21:20:48 UTC. check_reference.py reports VALID with 0 errors and 0 warnings; validate_reconstruction.py overall passes, with the expected thumb-opposition warning for long-finger pen passing. Pen replay median IoU is 0.831; all 180 right-hand frames remain valid and finger self-intersection count is zero. This is a kinematic reconstruction, not evidence of robot policy success. Stage 1 continues to 22:01:58 UTC; remaining effort targets uncertainty, precise pair-contact identity, timing and wrist-pose evidence. No training simulation has been built."
         },
         "files": {}
+       },
+       {
+        "id": "r0006",
+        "seq": 6,
+        "kind": "note",
+        "version": 5,
+        "recorded_utc": "2026-11-04T21:33:00Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "At ~31 minutes, reference version 1 remains preserved and VALID. Further inspection found fingertip errors hidden by high whole-hand IoU. I added 48 manually estimated visible fingertip points on 13 keyframes, then extra visible anchors and bidirectional image tracking (unsupported tracks are omitted). A refined MANO fit now follows these image measurements with roughly 3 px weighted error and still has no finger intersections. I also optimized pen endpoint depths jointly over time and contact evidence without changing their image rays: median centre correction 1.0 mm, p95 7.3 mm, one uncertain fast-spin frame shifts 35 mm. Version 2 is being validated; reconstruction now also includes Blender-built convex end-profile collisions rather than a uniform barrel-only collision model."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0007",
+        "seq": 7,
+        "kind": "note",
+        "version": 6,
+        "recorded_utc": "2026-11-04T21:39:18Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Additional reconstruction diagnostics: manual-tip RMS error drops from 31.6 px in reference v1 to 1.44 px in the candidate, and weighted tracked-tip RMS drops from 29.9 to 2.55 px. Full validation still passes and pen replay IoU improves to 0.846. However, a task-specific check finds that middle-ring surface points are not consistently opposite the pen, despite both fingers being near it; the generic thumb-opposition validator cannot resolve this. Next refinement strengthens stable-hold long-finger opposition using the nearest surface points, without forcing opposed grasps during dynamic transfers."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-04T21:20:48Z",
@@ -97247,7 +97657,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-04T21:32:34Z",
+  "staged_utc": "2026-11-04T21:42:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -97331,7 +97741,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-04T21:32:33Z",
+  "staged_utc": "2026-11-04T21:42:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
