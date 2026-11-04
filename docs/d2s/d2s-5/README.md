@@ -66,6 +66,7 @@ Reference reconstruction → Verification criteria → Training simulation → T
 - The manipulation should resemble the demonstration, especially the wrist pose (`TASK.md`).
 - Your verification criteria and verdicts are your own claims; state their evidence and limitations, and never present them as an official evaluation.
 - Do not access other agents' workspaces or records.
+- Work independently of earlier runs of this research: do not look at their records on the research website, in its source repository or in any other copy.
 - Do not modify the hardware specification, the object specifications or the provided tools' installed copies; work on your own copies.
 
 **Your objective is to autonomously discover and improve an effective solution, not to follow a predetermined research pipeline.**
