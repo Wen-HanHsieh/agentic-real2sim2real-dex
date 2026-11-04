@@ -189,7 +189,8 @@
   // Demo-to-Sim test page
 
   // Demo-to-Sim test page: training curves as small multiples (one mini chart per CSV column, own axis; points embedded at build time)
-  $$("[data-d2curves]").forEach(function (box) {
+  function drawCurves(root) { (root || document).querySelectorAll("[data-d2curves]").forEach(function (box) {
+    if (box.getAttribute("data-drawn")) return; box.setAttribute("data-drawn", "1");
     var data = JSON.parse(box.getAttribute("data-d2curves")), grid = $(".cgrid", box), W = 300, H = 120, m = { l: 44, r: 8, t: 8, b: 20 };
     var xs = data.x, xmax = Math.max.apply(null, xs) || 1;
     var el = function (n, a, p) { var e = document.createElementNS("http://www.w3.org/2000/svg", n); for (var k in a) e.setAttribute(k, a[k]); p.appendChild(e); return e; };
@@ -204,7 +205,11 @@
       var tx = el("text", { x: W - m.r, y: H - 6, "class": "tc-tx", "text-anchor": "end" }, svg); tx.textContent = "step → " + xmax;
       var cap = document.createElement("figcaption"); cap.textContent = s.name + " (last " + (s.y[s.y.length - 1] == null ? "–" : (+s.y[s.y.length - 1]).toPrecision(3)) + ")"; cell.appendChild(cap); grid.appendChild(cell);
     });
-  });
+  }); }
+  drawCurves(document);
+  // record bodies (videos, curves, tables) live in a <template> until their row is opened: the page starts without them
+  function hydrate(d) { var t = d.querySelector(":scope > template"), box = d.querySelector(":scope > .lazy"); if (!t || !box) return; box.appendChild(t.content.cloneNode(true)); t.remove(); drawCurves(box); }
+  $$("details.it, details.vf").forEach(function (d) { if (d.open) hydrate(d); d.addEventListener("toggle", function () { if (d.open) hydrate(d); }); });
 
   // synchronized training-sim / target-sim player
   var dataEl = $("#r2s2r-data");
