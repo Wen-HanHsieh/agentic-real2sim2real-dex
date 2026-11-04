@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-04T04:12:33Z",
- "exported_utc": "2026-11-04T04:12:29Z",
+ "generated_utc": "2026-11-04T04:22:32Z",
+ "exported_utc": "2026-11-04T04:22:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-04T04:10:01",
+    "time": "2026-11-04T04:20:00",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -48626,6 +48626,781 @@
          "text": "Additional controller check: same wrist impedance wrench applied at wrist origin, holding a static cup and ball for2s; last .5s mean wrist position offset 0.2830mm downward, zero finger hardware violation samples. This agrees with hardware/SPECS.md approximately0.3mm object-weight offset. Saved research/sim/static_controller_check.json. PPO iteration1 has switched from randomized reference-phase starts to complete episodes after2M decisions; no policy verification verdict yet."
         },
         "files": {}
+       },
+       {
+        "id": "r0009",
+        "seq": 9,
+        "kind": "iter",
+        "version": 1,
+        "recorded_utc": "2026-11-04T04:13:08Z",
+        "exception": false,
+        "body": {
+         "sim_version": 1,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "args": {
+           "out": "research/iter01",
+           "steps": 5000000,
+           "envs": 128,
+           "threads": 16,
+           "seed": 42,
+           "resume": null,
+           "rsi_steps": 2000000,
+           "lr": 0.0003
+          },
+          "steps": 4980736,
+          "wall_seconds": 282.9629759788513,
+          "episodes": 33145,
+          "gpu_hours": 0.0786008267932468,
+          "algorithm": "PPO",
+          "paper": "https://arxiv.org/abs/1707.06347",
+          "hyperparameters": {
+           "gamma": 0.995,
+           "gae_lambda": 0.95,
+           "clip": 0.2,
+           "epochs": 5,
+           "batch": 2048,
+           "rollout": 256,
+           "value_coefficient": 0.5,
+           "entropy_coefficient": 0.001,
+           "max_gradient_norm": 1,
+           "optimizer": "Adam"
+          },
+          "curriculum": "65% reference phase initialization until rsi_steps; then only complete episodes."
+         },
+         "architecture": "Separate actor and critic MLPs128->256tanh->256tanh->26/1; learned Gaussian logstd; PPO actor mean used for evaluation.",
+         "observation_space": "128: noisy finger q20 and qd20; wrist pose error6 and velocity6; ball relative position3, relative linear velocity3, angular velocity3, material quaternion4; previous residual26; step/time features7; constant reference finger20, ball-reference error3, reference ball velocity3, wrist velocity3, spin [redacted]. All reference values deterministic from step index/constant task settings. No contact, torque, physical parameters or privileged observation.",
+         "action_space": "26:20 finger target residuals .6*tanh rad,3 wrist target translation residuals .10*tanh m,3 orientation residuals .35*tanh rad. Outputs combined with disclosed fixed reference/base controller, then hardware controller. Network100Hz, target commands500Hz, physics/PD1000Hz.",
+         "reward_terms": [
+          {
+           "name": "object_position",
+           "formula": "4 exp(-||ball_position-reference_ball||²/.0036)",
+           "weight": 4
+          },
+          {
+           "name": "object_velocity",
+           "formula": "exp(-||ball_velocity-reference_velocity||²/1.0)",
+           "weight": 1
+          },
+          {
+           "name": "wrist_position",
+           "formula": ".3 exp(-||wrist_position-reference||²/.0036)",
+           "weight": 0.3
+          },
+          {
+           "name": "wrist_orientation",
+           "formula": ".3 exp(-angle_error²/.12)",
+           "weight": 0.3
+          },
+          {
+           "name": "spin",
+           "formula": ".8 exp(-(|ball angular speed|-target)²/(.5 target²))*hand_contact in spin phases; target4rad/s,12rad/s in short second spin",
+           "weight": 0.8
+          },
+          {
+           "name": "contact_phase",
+           "formula": "+.5 unsupported in recorded flight, -.5 hand contact there; +.5 hand contact otherwise, -.5 without",
+           "weight": 0.5
+          },
+          {
+           "name": "action_cost",
+           "formula": "-.005 sum tanh(action)²",
+           "weight": -0.005
+          },
+          {
+           "name": "action_change",
+           "formula": "-.01 sum (tanh(action)-previous)²",
+           "weight": -0.01
+          },
+          {
+           "name": "hardware",
+           "formula": "-.5 times number of physics ticks with position or speed violation during decision",
+           "weight": -0.5
+          },
+          {
+           "name": "settle",
+           "formula": "-.05*ball angular speed after9.95s while supported",
+           "weight": -0.05
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "initial ball position",
+           "distribution": "independent uniform",
+           "range_m": [
+            -0.003,
+            0.003
+           ],
+           "evaluation_range_m": [
+            -0.002,
+            0.002
+           ]
+          },
+          {
+           "quantity": "initial wrist axis-angle",
+           "distribution": "random unit axis with angle uniform",
+           "range_deg": [
+            -2,
+            2
+           ]
+          },
+          {
+           "quantity": "initial finger positions",
+           "distribution": "independent uniform",
+           "range_rad": [
+            -0.01,
+            0.01
+           ]
+          },
+          {
+           "quantity": "initial ball linear velocity",
+           "distribution": "independent uniform",
+           "range_mps": [
+            -0.01,
+            0.01
+           ]
+          },
+          {
+           "quantity": "encoders",
+           "distribution": "independent Gaussian",
+           "position_sigma_rad": 0.002,
+           "velocity_sigma_radps": 0.05
+          }
+         ],
+         "curriculum": "65% reference phase initialization until rsi_steps; then only complete episodes.",
+         "compute": {
+          "wall_seconds": 282.9629759788513,
+          "gpu_hours": 0.0786008267932468,
+          "device": "one L40S for PPO MLP, CPU MuJoCo batched OpenMP"
+         },
+         "checkpoint": {
+          "file": "research/iter01/final.pt",
+          "sha256": "70d2ce6260c8…"
+         },
+         "evaluation": {
+          "checkpoint": "research/iter01/final.pt",
+          "baseline": false,
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "criteria_version": 1,
+          "results": [
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.904,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1000,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.873,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1001,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.876,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1002,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.881,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1003,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.874,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1004,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.888,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1005,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.914,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1006,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.861,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1007,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.876,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1008,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.893,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1009,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.907,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1010,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.909,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1011,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.903,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1012,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.869,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1013,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.91,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1014,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.896,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1015,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.871,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1016,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.872,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1017,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.896,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1018,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.928,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1019,
+            "hardware_stats": null
+           }
+          ]
+         },
+         "baseline": "Zero-residual untrained controller fails v1 criteria: first toss rise .150m, no catch/floor loss. See sim v1 record r0006 and research/sim/base_eval.npz.",
+         "reflection": "First PPO run,4.98M decisions:0/20 full successes. Learns first toss/catch and substantial in-hand rotation; second toss launches close to measured height but second catch is unreliable, followed by floor loss before third toss. Hardware speed violations remain under learned actions. Wrist resemblance passes all20. Next: continue PPO with recurring phase initialization so late catches/spins remain sampled, stronger hardware penalty and reward for sustained post-catch support; preserve v1 criteria."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "8cd3a208ebc1",
+          "bytes": 50552,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "c1c6a371b1a0",
+          "bytes": 218544,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "4ab5db281435",
+          "bytes": 198024,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "99a88b6b179d",
+          "bytes": 291963,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0010",
+        "seq": 10,
+        "kind": "verify",
+        "version": 1,
+        "recorded_utc": "2026-11-04T04:13:20Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0009",
+         "criteria_version": 1,
+         "checkpoint": "research/iter01/final.pt",
+         "verdict": "fail",
+         "episodes": {
+          "number": 20,
+          "seeds": [
+           1000,
+           1001,
+           1002,
+           1003,
+           1004,
+           1005,
+           1006,
+           1007,
+           1008,
+           1009,
+           1010,
+           1011,
+           1012,
+           1013,
+           1014,
+           1015,
+           1016,
+           1017,
+           1018,
+           1019
+          ],
+          "initial_conditions": "Full initial held state; criteria v1 perturbations; no mid-episode resets; nominal physics."
+         },
+         "result": {
+          "checkpoint": "research/iter01/final.pt",
+          "baseline": false,
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "criteria_version": 1,
+          "results": [
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.904,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1000,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.873,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1001,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.876,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1002,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.881,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1003,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.874,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1004,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.888,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1005,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.914,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1006,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.861,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1007,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.876,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1008,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.893,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1009,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.907,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1010,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.909,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1011,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.903,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1012,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.869,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1013,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.91,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1014,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.896,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1015,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.871,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1016,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.872,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1017,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.896,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1018,
+            "hardware_stats": null
+           },
+           {
+            "pass_": false,
+            "checks": null,
+            "initial_support_fraction": 0.928,
+            "flights": null,
+            "spins": null,
+            "final_hold": null,
+            "wrist": null,
+            "integrity": null,
+            "seed": 1019,
+            "hardware_stats": null
+           }
+          ]
+         },
+         "evidence": {
+          "metrics": "research/iter01/evaluation/[redacted]",
+          "representative_failed_episode": "seed1000, top/left/right rollouts"
+         },
+         "limitations": [
+          "Own simulation verdict, no official evaluation.",
+          "Spin thresholds operational due unobservable demonstration rotation.",
+          "No real-hardware transfer demonstrated."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "9ceff77fbefd",
+          "bytes": 59824,
+          "content_type": "application/json"
+         },
+         "video_left_failure": {
+          "sha": "c1c6a371b1a0",
+          "bytes": 218544,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "4ab5db281435",
+          "bytes": 198024,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "99a88b6b179d",
+          "bytes": 291963,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0011",
+        "seq": 11,
+        "kind": "note",
+        "version": 6,
+        "recorded_utc": "2026-11-04T04:13:21Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Iteration1 r0009 verification fails0/20. First toss/catch passes11/20, second1/20; first median rise.381m and second.313m, gravity exact; no third intended toss survives. Wrist criterion passes20/20. Median9 speed-violation physics samples (max115); captures often bounce before100ms support. Hypothesis: late-phase under-sampling after curriculum removal and insufficient penalty for abrupt collision. Continue PPO with persistent phase starts, stronger hardware cost, and post-catch support emphasis; keep criteria v1 thresholds unchanged."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0012",
+        "seq": 12,
+        "kind": "note",
+        "version": 7,
+        "recorded_utc": "2026-11-04T04:20:00Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "A second concurrent PPO continuation (seed123, GPU1, same recorded simulation v1) tests a rotation-progress reward: supported positive increments toward cumulative pi path and pi/2 displacement in each spin phase, reconstructed from permitted state for reward computation only. No extra policy observations. Motivation: iteration1 first spin often has sufficient path but insufficient displacement, consistent with reversal. It keeps stronger hardware/post-catch costs and persistent phase sampling. All evaluated checkpoints will be recorded; no criteria changes."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-04T03:55:14Z",
@@ -58731,7 +59506,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-04T04:12:32Z",
+  "staged_utc": "2026-11-04T04:22:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -58815,7 +59590,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-04T04:12:32Z",
+  "staged_utc": "2026-11-04T04:22:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
