@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-04T03:52:31Z",
- "exported_utc": "2026-11-04T03:52:29Z",
+ "generated_utc": "2026-11-04T04:02:32Z",
+ "exported_utc": "2026-11-04T04:02:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-04T03:51:33",
+    "time": "2026-11-04T03:55:15",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-04T03:45:11",
+    "time": "2026-11-04T04:00:48",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -48221,9 +48221,216 @@
          "text": "Video analysis: three unsupported ball flights at approximately frames 52–66, 163–178, 199–215 (30 fps), separated by right-hand holds/regrasps. First fitted flight durations 0.50/0.533/0.567 s; independent gravity norms 9.742/9.753/9.930 m/s² after sphere-diameter and gravity calibration (focal 1248 px vs MoGe median 1305 px). Finger-occluded ball contours must exclude hand boundaries; otherwise false small radii create spurious depth jumps. MANO default gives median hand IoU .738 and contact fraction .933; testing fixed scale and stronger contact/penetration terms. Plan learned residual PPO around reconstruction-derived palm-up wrist reference, with baseline reported separately. Ball rotation is unobservable in the specified unmarked object, so spin verification will explicitly distinguish instruction-driven assumptions from measured translation and timing."
         },
         "files": {}
+       },
+       {
+        "id": "r0003",
+        "seq": 3,
+        "kind": "recon",
+        "version": 1,
+        "recorded_utc": "2026-11-04T03:55:14Z",
+        "exception": false,
+        "body": {
+         "summary": "VALID contract: 315-frame tennis reconstruction; calibrated ball translation, three gravity-consistent flights, Blender sphere, HaWoR+MANO right hand, contact phases, comparison and viewer. Quality warnings explicitly retained.",
+         "components": [
+          {
+           "name": "camera",
+           "method": "Sphere-diameter/gravity calibration with MoGe prior",
+           "status": "ok",
+           "note": "focal1248 px; static camera assumption"
+          },
+          {
+           "name": "object_geometry",
+           "method": "Blender UV sphere from SPECS",
+           "status": "from_specification",
+           "note": "65mm sphere, shell inertia"
+          },
+          {
+           "name": "object_6d",
+           "method": "SAM3 exposed-arc circle fit and physical ballistic fit",
+           "status": "partial",
+           "note": "Translation tracked except 2 fully hidden apex frames; rotation unobservable"
+          },
+          {
+           "name": "hand_motion",
+           "method": "HaWoR then fixed-scale MANO fit to SAM3 and object scene",
+           "status": "partial",
+           "note": "310/315 image-supported frames; 5 invalid near third launch"
+          },
+          {
+           "name": "contact_phases",
+           "method": "Frame-by-frame separation and support analysis",
+           "status": "ok",
+           "note": "Four inclusive supported phases; +/-1 frame boundaries"
+          },
+          {
+           "name": "ball_rotation",
+           "method": "Unmarked sphere orientation",
+           "status": "unobservable",
+           "note": "Identity convention only, no invented spin"
+          }
+         ],
+         "limitations": [
+          "Unmarked ball rotation unobservable; only translation and wrist/fingers guide reference. Two hidden apex frames invalid, five MANO frames invalid at third launch.",
+          "Monocular depth, inferred static camera and friction/compliance; MANO opposed-contact, penetration, self-intersection and continuity warnings documented in NOTES.md."
+         ],
+         "validation": {
+          "schema": "recon-validation/1",
+          "utc": "2026-11-04T03:52:41Z",
+          "thresholds": {
+           "contact_band_mm": 5.0,
+           "phase_fail_mm": 10.0,
+           "pen_warn_mm": 5.0,
+           "pen_fail_mm": 10.0,
+           "wrist_speed_mps": 3.0,
+           "wrist_accel_mps2": 150.0,
+           "tip_speed_mps": 5.0,
+           "bone_jump_deg": 60.0,
+           "obj_jump_m": 0.1,
+           "obj_rot_jump_deg": 45.0,
+           "g": 9.81,
+           "g_tol": 2.0,
+           "rest_drift_mm": 5.0,
+           "sink_mm": 3.0,
+           "hand_chain_mm": [
+            140.0,
+            230.0
+           ],
+           "iou_warn": 0.6,
+           "hand_precision_warn": 0.7,
+           "opposition_deg": 60.0,
+           "anatomical_min_frac": 0.5
+          },
+          "checks": {
+           "reprojection": {
+            "status": "pass",
+            "per_part": null,
+            "below_threshold": null,
+            "note": "against your own masks: agreement with them is necessary, not sufficient (3D errors along the viewing ray are invisible here)"
+           },
+           "fingertip_distance": {
+            "status": "pass",
+            "phases": null
+           },
+           "anatomical_contact": {
+            "status": "warn",
+            "phases": null,
+            "note": "a grasp needs the thumb and an opposing finger on opposite sides of the object; single-finger pushes or palm support are legitimate but must be stated in the analysis. Low penetration does not imply contact."
+           },
+           "penetration_hand_object": {
+            "status": "warn",
+            "max_mm": null,
+            "frames_over_warn": null,
+            "signed": null,
+            "note": "unsigned (lower bound) distances where the object mesh is not watertight"
+           },
+           "self_penetration": {
+            "status": "warn",
+            "finger_finger_frames": null,
+            "finger_finger_frac": 0.003,
+            "hand_hand_frames": null,
+            "note": "triangle intersections between different fingers (FCL); counts are not volumes"
+           },
+           "continuity": {
+            "status": "warn",
+            "flagged": null,
+            "count": 5
+           },
+           "physics": {
+            "status": "pass",
+            "flights": null,
+            "rests": null,
+            "note": "free-flight intervals are given with --flight OBJ=a:b; rest intervals default to object intervals without contact"
+           },
+           "handedness_scale": {
+            "status": "pass",
+            "per_side": null,
+            "note": "left/right are the demonstrator's anatomical hands; a hand is never mirrored"
+           },
+           "sync": {
+            "status": "pass",
+            "t_real_monotonic": true,
+            "fps_real": 30,
+            "compare_frames": 315,
+            "compare_matches": true,
+            "object_offset_check": null
+           },
+           "camera_focal": {
+            "status": "pass",
+            "focal_px": 1248.4,
+            "prior_px": 1304.7,
+            "ratio": 0.957,
+            "prior_source": "--focal-prior",
+            "focal_label": "estimated",
+            "threshold_ratio": 1.25,
+            "note": "MoGe intrinsics are a learned prior; the focal should be calibrated against known geometry (camera_calib.py pnp). A large disagreement needs its explanation in NOTES.md (which one is wrong, and why)."
+           }
+          },
+          "summary": {
+           "reprojection": "pass",
+           "fingertip_distance": "pass",
+           "anatomical_contact": "warn",
+           "penetration_hand_object": "warn",
+           "self_penetration": "warn",
+           "continuity": "warn",
+           "physics": "pass",
+           "handedness_scale": "pass",
+           "sync": "pass",
+           "camera_focal": "pass"
+          },
+          "failed": [],
+          "incomplete": [],
+          "missing_required": [],
+          "overall": "pass",
+          "overall_note": "pass"
+         },
+         "check_reference": {
+          "verdict": "VALID",
+          "errors": 0,
+          "warnings": 0,
+          "error_list": []
+         },
+         "exception": null,
+         "producer": {
+          "tool": "r2s2r-d2s recon",
+          "recon_dir": "recon"
+         }
+        },
+        "files": {
+         "compare_video": {
+          "sha": "6adbbcc624f6",
+          "bytes": 1512566,
+          "content_type": "video/mp4"
+         },
+         "validation_json": {
+          "sha": "86accd354688",
+          "bytes": 7366,
+          "content_type": "application/json"
+         },
+         "viewer": {
+          "sha": "158b0509bd8b",
+          "bytes": 5038080,
+          "content_type": "application/x-tar"
+         }
+        }
+       },
+       {
+        "id": "r0004",
+        "seq": 4,
+        "kind": "criteria",
+        "version": 1,
+        "recorded_utc": "2026-11-04T03:55:15Z",
+        "exception": false,
+        "body": {},
+        "files": {
+         "criteria_md": {
+          "sha": "a4347f2f2621",
+          "bytes": 8473,
+          "content_type": "text/markdown"
+         }
+        }
        }
       ],
-      "first_recon_utc": null,
+      "first_recon_utc": "2026-11-04T03:55:14Z",
       "chain_ok": true,
       "run": 5
      }
@@ -57228,6 +57435,32 @@
          "text": "Start time (date -u): 2026-11-04T03:45:00Z. Hard stop: 2026-11-04T11:45:00Z. I will reconstruct the single right-hand demonstration, record validation and limitations, define independent simulation verification criteria, build a physically actuated Wuji Hand 2.2 simulation, and train deployable closed-loop PPO policies. Reconstruction has its own 60-minute budget; incomplete or failed components will be recorded as an exception, never described as VALID."
         },
         "files": {}
+       },
+       {
+        "id": "r0002",
+        "seq": 2,
+        "kind": "note",
+        "version": 2,
+        "recorded_utc": "2026-11-04T03:55:37Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Elapsed about 11 minutes of 8 hours. Initial silhouette tracking gave implausible charger orientations and large depth drift at rest. I replaced it with support-constrained fitting and a shared camera estimated from background rotation plus resting-object anchors. Object-only median silhouette IoU is now 0.870 white and 0.784 black; unsupported hidden poses remain invalid. Hypothesis: a demonstration-derived wrist/fingertip reference with a deployable PPO residual can bridge hand morphology while preserving the observed palm-down approach and wrist reorientation. Baseline performance must be measured separately; no scripted baseline will be reported as a learned solution."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0003",
+        "seq": 3,
+        "kind": "note",
+        "version": 3,
+        "recorded_utc": "2026-11-04T04:00:48Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "The reconstruction currently passes check_reference.py format validation, but independent validation fails finger self-intersection (48.9% of valid frames), and opposing-thumb contact is weak (10.2% white, 8.2% black). I will not describe this as a successful quality reconstruction. The provided default MANO fit has no self-collision or mandatory opposing-finger loss, so I copied it into research/handlib_extended and added distal-finger capsule separation plus explicit thumb/opposing-finger surface-distance losses. Installed tools and hardware/object specifications remain unchanged. I will validate the modified fit and disclose its effect on silhouette agreement and anatomical contacts. PPO reference: Schulman et al., https://arxiv.org/abs/1707.06347; planned RL uses only its clipped-surrogate PPO family."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": null,
@@ -58079,7 +58312,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-04T03:52:31Z",
+  "staged_utc": "2026-11-04T04:02:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -58163,7 +58396,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-04T03:52:31Z",
+  "staged_utc": "2026-11-04T04:02:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
