@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-04T12:02:33Z",
- "exported_utc": "2026-11-04T12:02:29Z",
+ "generated_utc": "2026-11-04T12:12:33Z",
+ "exported_utc": "2026-11-04T12:12:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-04T11:58:02",
+    "time": "2026-11-04T12:08:28",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -65701,6 +65701,1259 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0054",
+        "seq": 54,
+        "kind": "iter",
+        "version": 14,
+        "recorded_utc": "2026-11-04T12:07:31Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "algorithm": "PPO, Stable-Baselines3 2.9.2",
+         "checkpoint": "research/iter09/checkpoint_n6002688.zip",
+         "checkpoint_sha256": "93add3103c58…",
+         "policy_observations": "deployable",
+         "sampled_environment_steps": 6002688,
+         "architecture": {
+          "actor_experts": 2,
+          "actor_per_expert": [
+           256,
+           256
+          ],
+          "critic": [
+           256,
+           256
+          ],
+          "activation": "tanh",
+          "observation_dim": 133,
+          "action_dim": 26,
+          "gating": "Task time selects PPO spin expert in2.6..5.0,6.033..6.567,and>=7.767s; PPO toss expert otherwise. Both experts fine-tuned jointly with PPO.",
+          "shared_log_std": true
+         },
+         "observation_space": "133 deployable features: noisy q/qd, wrist/object pose and velocity, previous targets and time; deterministic phase-relative goal features and12reference errors. Goal anchor memory is updated only from permitted wrist/object pose at fixed demonstrated phase times; no contacts/forces/torques/physical parameters in actor.",
+         "action_space": "20boundedfinger-targetresiduals,3wristpositionresiduals,3wristrotationresiduals;50Hznetwork,500Hzcommandstream,1000Hzprescribedcontrollers.",
+         "hyperparameters": {
+          "learning_rate": 0.0002,
+          "n_steps": 64,
+          "batch_size": 8192,
+          "epochs": 4,
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip_range": 0.2,
+          "entropy_coef": 0.001
+         },
+         "seeds": [
+          42
+         ],
+         "environments": 1024,
+         "reward_terms": [
+          {
+           "name": "ball_tracking",
+           "formula": "exp(-ball_error²/0.08²)",
+           "weight": 3
+          },
+          {
+           "name": "wrist_tracking",
+           "formula": "exp(-position_error²/0.04²-orientation_error²/0.4²)",
+           "weight": 1
+          },
+          {
+           "name": "phase_retention",
+           "formula": "retained AND outside expected flight windows(release+0.03..+0.44s)",
+           "weight": 2
+          },
+          {
+           "name": "spin_orientation_linear",
+           "formula": "-active_spin*relative_orientation_error",
+           "weight": 2
+          },
+          {
+           "name": "spin_velocity_tracking",
+           "formula": "retained*active_spin*exp(-||relative_omega-axis*goal_speed||²/4)",
+           "weight": 2
+          },
+          {
+           "name": "hold_stability",
+           "formula": "retained*held_phase*inactive_spin*exp(-||relative_omega||²/2)",
+           "weight": 0.5
+          },
+          {
+           "name": "release_velocity",
+           "formula": "in release-0.10..+0.08s: 1/(1+((vz-2.45)/0.9)²+||vxy||²/0.25)",
+           "weight": 3
+          },
+          {
+           "name": "catch_position",
+           "formula": "in release+0.30..+0.60s: 1/(1+||wrist_relative_ball-initial_local_ball||²/0.0025)",
+           "weight": 2
+          },
+          {
+           "name": "flight_release",
+           "formula": "expected_flight_phase AND no_hand_contact",
+           "weight": 1
+          },
+          {
+           "name": "catch_bonus",
+           "formula": "Contact after flight0.38..0.62s,rise0.23..0.40m,horizontal<=0.08m; shaping only",
+           "weight": 25
+          },
+          {
+           "name": "hardware_speed_risk",
+           "formula": "-max(0,max(abs(qd)/vlim)-0.65)²",
+           "weight": 20
+          },
+          {
+           "name": "action_cost",
+           "formula": "-sum(action²)",
+           "weight": 0.001
+          },
+          {
+           "name": "action_change",
+           "formula": "-sum((action-previous_action)²)",
+           "weight": 0.003
+          },
+          {
+           "name": "joint_speed_cost",
+           "formula": "-mean((qd/vlim)²)",
+           "weight": 0.02
+          },
+          {
+           "name": "termination_penalty",
+           "formula": "-100 for hardware violation; -30 for other terminal failure",
+           "weight": 1
+          },
+          {
+           "name": "flight_velocity",
+           "formula": "expected flight phase/(1+||ball_velocity-reference_ball_velocity||²/0.5)",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "initial_state_bank",
+           "distribution": "Uniform finite empirical bank conditioned on curriculum start type",
+           "states": 871,
+           "generation": "Finite871-state bank, research/warp_state_bank_v2/states.npz; see state-bank manifest for genuine settling and optional physical phase-boundary prefixes. Verification seeds are disjoint; fresh encoder noise each decision."
+          },
+          {
+           "name": "encoder_noise",
+           "distribution": "Fresh independent Gaussian each policy decision",
+           "q_sigma_rad": 0.002,
+           "qd_sigma_rad_s": 0.05
+          }
+         ],
+         "physics_randomization": "none",
+         "curriculum": [
+          [
+           1.0,
+           "full"
+          ]
+         ],
+         "compute": {
+          "PPO_wall_seconds": 439.3489284515381,
+          "allocated_GPU_hours": 0.12204136901431613,
+          "GPU_count": 1
+         },
+         "baseline": {
+          "method": "Zero neural residual, declared offline reference baseline7",
+          "nominal_successes": 0,
+          "episodes": 1,
+          "result": "One qualifying first toss/catch and>=0.20s retention; drops during first spin at4.74s. No full skill or scripted spin success.",
+          "evidence": "baseline07_full/[redacted]",
+          "first_flight": {
+           "release_s": 1.794,
+           "duration_s": 0.49,
+           "rise_m": 0.262325,
+           "horizontal_m": 0.03608
+          },
+          "finger_closing": "All four long fingers exceed0.20rad catch/flight flexion contrast.",
+          "fixed_seed_ablation": {
+           "episodes": 20,
+           "successes": 0,
+           "hardware_violation_episodes": 0,
+           "per_criterion_success_counts": {
+            "start_retained": 0,
+            "three_tosses_and_catches": 0,
+            "ordered_spins": 0,
+            "wrist_and_finger_motion": 0,
+            "final_hold": 0,
+            "hardware": 20,
+            "deadline": 20
+           },
+           "qualifying_flight_counts": [
+            1,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+           ]
+          }
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violation_episodes": 0,
+          "per_criterion_success_counts": {
+           "start_retained": 0,
+           "three_tosses_and_catches": 0,
+           "ordered_spins": 0,
+           "wrist_and_finger_motion": 0,
+           "final_hold": 0,
+           "hardware": 20,
+           "deadline": 20
+          },
+          "representative_failure": {
+           "support_measurement": "positive normal contact force>1e-5N",
+           "pass": false,
+           "criteria": {
+            "start_retained": false,
+            "three_tosses_and_catches": false,
+            "ordered_spins": false,
+            "wrist_and_finger_motion": false,
+            "final_hold": false,
+            "hardware": true,
+            "deadline": true
+           },
+           "duration_s": 6.22,
+           "floor_contact": true,
+           "qualifying_flights": [],
+           "all_separations": [
+            null,
+            null,
+            null
+           ],
+           "catch_retention": [],
+           "spins": [],
+           "finger_changes": [],
+           "wrist": {
+            "position_rms_m": 0.03140324922134987,
+            "position_max_m": 0.09501291554077748,
+            "orientation_rms_deg": 8.186255194472263,
+            "orientation_max_deg": 24.32789623810086,
+            "palm_up_retained_fraction": 0.9910786699107867
+           },
+           "hold": {
+            "pass": false,
+            "duration_s": 0.40199999999999947,
+            "relative_center_drift_m": 0.9332093952744684,
+            "relative_angular_excursion_rad": 3.1368598485389154,
+            "retained_fraction": 0.0
+           },
+           "hardware": {
+            "pass": true,
+            "max_speed_ratio": 0.8606730938208432,
+            "max_torque_ratio": 1.0,
+            "max_position_excess_rad": 0.004020972415038626
+           },
+           "seed": 1000,
+           "return_": 1516.1459433520297,
+           "trace": "episode_1000.npz",
+           "violation_first": null
+          }
+         },
+         "reflection": "Full-sequence PPO from the stronger final spin expert and12M trajectory-conditioned toss expert. All goals use full amplitude from the start. Native force-loaded verification identifies whether launch heights and expert transitions improve; criteria remain fixed.",
+         "final_reward_scale": 0.1,
+         "reward_definition": "Final training reward = final_reward_scale * sum(raw weighted terms listed here). Curves preserve raw component values and the scaled total.",
+         "initialization": {
+          "experts": {
+           "spin": "research/iter05/final.zip",
+           "toss": "research/iter09/toss_initial.zip"
+          },
+          "checkpoint": null,
+          "bc_steps": 0,
+          "reset_critic": false
+         },
+         "curriculum_execution": "Explicit configure_training environment-method calls, returned actual-state assertions; wrapper propagation and reward scaling validated.",
+         "training_state_bank": "Finite871-state bank, research/warp_state_bank_v2/states.npz; see state-bank manifest for genuine settling and optional physical phase-boundary prefixes. Verification seeds are disjoint; fresh encoder noise each decision.",
+         "backend": "MuJoCo Warp3.17.0 / Warp1.19.0, float32, scene identical to CPU; final verification on CPU float64",
+         "training_segment_diagnostics": {
+          "warning": "Training-segment diagnostic only, not a full-task success claim.",
+          "goal_scale": 1.0,
+          "excursion_definition": "Only retained samples, matching full verifier; older diagnostics included detached samples.",
+          "results": [
+           {
+            "segment": 0,
+            "seed": 1000,
+            "start": 2.6,
+            "end": 5.36,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9131064446053584,
+            "angular_path_retained": 7.255812773363644,
+            "max_excursion": 3.1400342351893107,
+            "hardware": true,
+            "return": 780.1771441648574
+           },
+           {
+            "segment": 0,
+            "seed": 1001,
+            "start": 2.6,
+            "end": 5.36,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9065894279507604,
+            "angular_path_retained": 7.285623289919777,
+            "max_excursion": 3.1415567995698326,
+            "hardware": true,
+            "return": 782.414473195577
+           },
+           {
+            "segment": 0,
+            "seed": 1002,
+            "start": 2.6,
+            "end": 5.36,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9036929761042722,
+            "angular_path_retained": 7.2905816842741125,
+            "max_excursion": 3.1399780419983387,
+            "hardware": true,
+            "return": 778.725536243375
+           },
+           {
+            "segment": 1,
+            "seed": 1000,
+            "start": 6.033333333333333,
+            "end": 6.933333333333,
+            "retained_fraction": 0.8736141906873615,
+            "support_fraction": 0.7560975609756098,
+            "angular_path_retained": 2.657185368513854,
+            "max_excursion": 2.6661863537456054,
+            "hardware": true,
+            "return": 222.37662952693339
+           },
+           {
+            "segment": 1,
+            "seed": 1001,
+            "start": 6.033333333333333,
+            "end": 6.933333333333,
+            "retained_fraction": 0.9157427937915743,
+            "support_fraction": 0.7827050997782705,
+            "angular_path_retained": 2.5272604013180726,
+            "max_excursion": 1.409991751383456,
+            "hardware": true,
+            "return": 222.81304381919537
+           },
+           {
+            "segment": 1,
+            "seed": 1002,
+            "start": 6.033333333333333,
+            "end": 6.933333333333,
+            "retained_fraction": 0.9201773835920177,
+            "support_fraction": 0.8381374722838137,
+            "angular_path_retained": 2.489292039974681,
+            "max_excursion": 1.163730937096662,
+            "hardware": true,
+            "return": 220.9529677441423
+           },
+           {
+            "segment": 2,
+            "seed": 1000,
+            "start": 7.766666666666667,
+            "end": 10.366666666667,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.883935434281322,
+            "angular_path_retained": 6.707800920528722,
+            "max_excursion": 3.1410101944595077,
+            "hardware": true,
+            "return": 622.9212911526363
+           },
+           {
+            "segment": 2,
+            "seed": 1001,
+            "start": 7.766666666666667,
+            "end": 10.366666666667,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.8923904688700999,
+            "angular_path_retained": 6.8509918461657975,
+            "max_excursion": 3.14148744134024,
+            "hardware": true,
+            "return": 669.8375873513671
+           },
+           {
+            "segment": 2,
+            "seed": 1002,
+            "start": 7.766666666666667,
+            "end": 10.366666666667,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.889315910837817,
+            "angular_path_retained": 6.8184972292274715,
+            "max_excursion": 3.1385873793432637,
+            "hardware": true,
+            "return": 655.6636760177693
+           }
+          ]
+         },
+         "toss_segment_diagnostics": {
+          "warning": "Isolated toss diagnostics, not full-task success.",
+          "results": [
+           {
+            "toss": 0,
+            "seed": 1000,
+            "end": 2.583333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 0,
+            "seed": 1001,
+            "end": 2.583333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 0,
+            "seed": 1002,
+            "end": 2.583333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 1,
+            "seed": 1000,
+            "end": 6.083333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 1,
+            "seed": 1001,
+            "end": 6.083333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 1,
+            "seed": 1002,
+            "end": 6.083333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 2,
+            "seed": 1000,
+            "end": 6.616666666667,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 2,
+            "seed": 1001,
+            "end": 6.616666666667,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 2,
+            "seed": 1002,
+            "end": 6.616666666667,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           }
+          ]
+         },
+         "curves_note": "Published means per PPO rollout/update; full denser raw CSV retained locally as research/iter09/curves_raw_n6002688.csv"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "85ec8ab8761a",
+          "bytes": 47635,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "db35d747db91",
+          "bytes": 147511,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "78b3de652926",
+          "bytes": 148807,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "08a30220313d",
+          "bytes": 135314,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0055",
+        "seq": 55,
+        "kind": "verify",
+        "version": 14,
+        "recorded_utc": "2026-11-04T12:07:32Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0054",
+         "criteria_version": 1,
+         "sim_version": 6,
+         "checkpoint": "research/iter09/checkpoint_n6002688.zip",
+         "sampled_environment_steps": 6002688,
+         "verdict": "fail",
+         "initial_conditions": "Fixed seeds1000-1019, wrist±2mm,fingers±0.01rad,ball±1mm independently uniform; specified Gaussian encoders active.",
+         "episodes": 20,
+         "successes": 0,
+         "success_rate": 0.0,
+         "per_criterion_success_counts": {
+          "start_retained": 0,
+          "three_tosses_and_catches": 0,
+          "ordered_spins": 0,
+          "wrist_and_finger_motion": 0,
+          "final_hold": 0,
+          "hardware": 20,
+          "deadline": 20
+         },
+         "hardware_violation_episodes": 0,
+         "evidence": {
+          "metrics": "research/iter09/eval_n6002688/[redacted]",
+          "representative_seed": 1000,
+          "trace": "research/iter09/eval_n6002688/episode_1000.npz",
+          "views": [
+           "top_failure",
+           "left_failure",
+           "right_failure"
+          ]
+         },
+         "diagnosis": "Full-sequence PPO from the stronger final spin expert and12M trajectory-conditioned toss expert. All goals use full amplitude from the start. Native force-loaded verification identifies whether launch heights and expert transitions improve; criteria remain fixed.",
+         "limitations": [
+          "Own simulation only; rigid convex CAD and inferred contact material.",
+          "Perfect object-state sensing; no physical validation.",
+          "Global demonstration object rotation unobservable; local spin interpretation and thresholds are own criteria."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "2affc2df919a",
+          "bytes": 70805,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "4b13feb2e318",
+          "bytes": 1934309,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "907819f989dc",
+          "bytes": 3323,
+          "content_type": "application/json"
+         },
+         "file_4": {
+          "sha": "9bcd7649c094",
+          "bytes": 811243,
+          "content_type": "application/octet-stream"
+         },
+         "file_5": {
+          "sha": "b48d3548f662",
+          "bytes": 7908,
+          "content_type": "application/json"
+         },
+         "file_6": {
+          "sha": "b2f24de0812c",
+          "bytes": 441656,
+          "content_type": "application/octet-stream"
+         },
+         "file_7": {
+          "sha": "721be5c32cbf",
+          "bytes": 54008,
+          "content_type": "application/json"
+         },
+         "file_8": {
+          "sha": "70622bfd3e99",
+          "bytes": 64053,
+          "content_type": "text/plain"
+         },
+         "video_left_failure": {
+          "sha": "db35d747db91",
+          "bytes": 147511,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "78b3de652926",
+          "bytes": 148807,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "08a30220313d",
+          "bytes": 135314,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0056",
+        "seq": 56,
+        "kind": "iter",
+        "version": 15,
+        "recorded_utc": "2026-11-04T12:08:28Z",
+        "exception": false,
+        "body": {
+         "sim_version": 7,
+         "algorithm": "PPO, Stable-Baselines3 2.9.2",
+         "checkpoint": "research/iter10/checkpoint_n6002688.zip",
+         "checkpoint_sha256": "8a263ce588cf…",
+         "policy_observations": "deployable",
+         "sampled_environment_steps": 6002688,
+         "architecture": {
+          "actor_experts": 2,
+          "actor_per_expert": [
+           256,
+           256
+          ],
+          "critic": [
+           256,
+           256
+          ],
+          "activation": "tanh",
+          "observation_dim": 136,
+          "action_dim": 29,
+          "gating": "Task time selects PPO spin expert in2.6..5.0,6.033..6.567,and>=7.767s; PPO toss expert otherwise. Both experts fine-tuned jointly with PPO.",
+          "shared_log_std": true
+         },
+         "observation_space": "136 deployable features: version5 features plus3own previous executed wrist feed-forward velocity targets. Phase goal memory uses only wrist/object pose and clock, never contacts/forces.",
+         "action_space": "29 neural outputs:20finger-target residuals,3wrist-position,3wrist-rotation,3world wrist-FF-velocity residuals (amplitude1.5m/s before prescribed2.5m/s clipping).32ms target filter,50Hznetwork/500Hzcommand/1000Hzcontrollers. CPUverification uses validated Python implementation of the same lowlevel controller.",
+         "hyperparameters": {
+          "learning_rate": 0.0002,
+          "n_steps": 64,
+          "batch_size": 8192,
+          "epochs": 4,
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip_range": 0.2,
+          "entropy_coef": 0.001
+         },
+         "seeds": [
+          42
+         ],
+         "environments": 1024,
+         "reward_terms": [
+          {
+           "name": "ball_tracking",
+           "formula": "exp(-ball_error²/0.08²)",
+           "weight": 3
+          },
+          {
+           "name": "wrist_tracking",
+           "formula": "exp(-position_error²/0.04²-orientation_error²/0.4²)",
+           "weight": 1
+          },
+          {
+           "name": "phase_retention",
+           "formula": "retained AND outside expected flight windows(release+0.03..+0.44s)",
+           "weight": 2
+          },
+          {
+           "name": "spin_orientation_linear",
+           "formula": "-active_spin*relative_orientation_error",
+           "weight": 2
+          },
+          {
+           "name": "spin_velocity_tracking",
+           "formula": "retained*active_spin*exp(-||relative_omega-axis*goal_speed||²/4)",
+           "weight": 2
+          },
+          {
+           "name": "hold_stability",
+           "formula": "retained*held_phase*inactive_spin*exp(-||relative_omega||²/2)",
+           "weight": 0.5
+          },
+          {
+           "name": "release_velocity",
+           "formula": "in release-0.10..+0.08s: 1/(1+((vz-2.45)/0.9)²+||vxy||²/0.25)",
+           "weight": 3
+          },
+          {
+           "name": "catch_position",
+           "formula": "in release+0.30..+0.60s: 1/(1+||wrist_relative_ball-initial_local_ball||²/0.0025)",
+           "weight": 2
+          },
+          {
+           "name": "flight_release",
+           "formula": "expected_flight_phase AND no_hand_contact",
+           "weight": 1
+          },
+          {
+           "name": "catch_bonus",
+           "formula": "Contact after flight0.38..0.62s,rise0.23..0.40m,horizontal<=0.08m; shaping only",
+           "weight": 25
+          },
+          {
+           "name": "hardware_speed_risk",
+           "formula": "-max(0,max(abs(qd)/vlim)-0.65)²",
+           "weight": 20
+          },
+          {
+           "name": "action_cost",
+           "formula": "-sum(action²)",
+           "weight": 0.001
+          },
+          {
+           "name": "action_change",
+           "formula": "-sum((action-previous_action)²)",
+           "weight": 0.003
+          },
+          {
+           "name": "joint_speed_cost",
+           "formula": "-mean((qd/vlim)²)",
+           "weight": 0.02
+          },
+          {
+           "name": "termination_penalty",
+           "formula": "-100 for hardware violation; -30 for other terminal failure",
+           "weight": 1
+          },
+          {
+           "name": "flight_velocity",
+           "formula": "expected flight phase/(1+||ball_velocity-reference_ball_velocity||²/0.5)",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "initial_state_bank",
+           "distribution": "Uniform finite empirical bank conditioned on curriculum start type",
+           "states": 871,
+           "generation": "Finite871-state bank, research/warp_state_bank_v2/states.npz; see state-bank manifest for genuine settling and optional physical phase-boundary prefixes. Verification seeds are disjoint; fresh encoder noise each decision."
+          },
+          {
+           "name": "encoder_noise",
+           "distribution": "Fresh independent Gaussian each policy decision",
+           "q_sigma_rad": 0.002,
+           "qd_sigma_rad_s": 0.05
+          }
+         ],
+         "physics_randomization": "none",
+         "curriculum": [
+          [
+           1.0,
+           "full"
+          ]
+         ],
+         "compute": {
+          "PPO_wall_seconds": 440.64348125457764,
+          "allocated_GPU_hours": 0.12240096701516046,
+          "GPU_count": 1
+         },
+         "baseline": {
+          "method": "Zero neural residual, declared offline reference baseline7",
+          "nominal_successes": 0,
+          "episodes": 1,
+          "result": "One qualifying first toss/catch and>=0.20s retention; drops during first spin at4.74s. No full skill or scripted spin success.",
+          "evidence": "baseline07_full/[redacted]",
+          "first_flight": {
+           "release_s": 1.794,
+           "duration_s": 0.49,
+           "rise_m": 0.262325,
+           "horizontal_m": 0.03608
+          },
+          "finger_closing": "All four long fingers exceed0.20rad catch/flight flexion contrast.",
+          "fixed_seed_ablation": {
+           "episodes": 20,
+           "successes": 0,
+           "hardware_violation_episodes": 0,
+           "per_criterion_success_counts": {
+            "start_retained": 0,
+            "three_tosses_and_catches": 0,
+            "ordered_spins": 0,
+            "wrist_and_finger_motion": 0,
+            "final_hold": 0,
+            "hardware": 20,
+            "deadline": 20
+           },
+           "qualifying_flight_counts": [
+            1,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+           ]
+          }
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violation_episodes": 6,
+          "per_criterion_success_counts": {
+           "start_retained": 5,
+           "three_tosses_and_catches": 0,
+           "ordered_spins": 0,
+           "wrist_and_finger_motion": 0,
+           "final_hold": 0,
+           "hardware": 14,
+           "deadline": 20
+          },
+          "representative_failure": {
+           "support_measurement": "positive normal contact force>1e-5N",
+           "pass": false,
+           "criteria": {
+            "start_retained": false,
+            "three_tosses_and_catches": false,
+            "ordered_spins": false,
+            "wrist_and_finger_motion": false,
+            "final_hold": false,
+            "hardware": false,
+            "deadline": true
+           },
+           "duration_s": 6.4,
+           "floor_contact": true,
+           "qualifying_flights": [],
+           "all_separations": [
+            null,
+            null,
+            null,
+            null,
+            null
+           ],
+           "catch_retention": [],
+           "spins": [],
+           "finger_changes": [],
+           "wrist": {
+            "position_rms_m": 0.029565473046628255,
+            "position_max_m": 0.0783090100764113,
+            "orientation_rms_deg": 8.040673625570216,
+            "orientation_max_deg": 22.0451658421539,
+            "palm_up_retained_fraction": 0.9900119856172593
+           },
+           "hold": {
+            "pass": false,
+            "duration_s": 0.40200000000000036,
+            "relative_center_drift_m": 0.5486443189627364,
+            "relative_angular_excursion_rad": 3.1312313166729435,
+            "retained_fraction": 0.07462686567164178
+           },
+           "hardware": {
+            "pass": false,
+            "max_speed_ratio": 1.1901366961450037,
+            "max_torque_ratio": 1.0,
+            "max_position_excess_rad": 0.00200652730835027
+           },
+           "seed": 1000,
+           "return_": 1296.2782642044222,
+           "trace": "episode_1000.npz",
+           "violation_first": {
+            "time": 6.883000000000633,
+            "speed_ratio": 1.0192681167978546,
+            "torque_ratio": 0.734557715447154,
+            "position_excess_rad": -0.12869620719915065
+           }
+          }
+         },
+         "reflection": "Matched full-sequence PPO comparison adds3learned wrist FF velocity residuals and own previous velocity targets. All hardware gains,force/torque/speedcaps and criteria unchanged; no object actuation. Extra means initializedzero preservingexpert26channels. Native CPU136feature/29action actor is checked with the validated Python lowlevel controller.",
+         "final_reward_scale": 0.1,
+         "reward_definition": "Final training reward = final_reward_scale * sum(raw weighted terms listed here). Curves preserve raw component values and the scaled total.",
+         "initialization": {
+          "experts": {
+           "spin": "research/iter05/final.zip",
+           "toss": "research/iter10/toss_initial.zip"
+          },
+          "checkpoint": null,
+          "bc_steps": 0,
+          "reset_critic": false
+         },
+         "curriculum_execution": "Explicit configure_training environment-method calls, returned actual-state assertions; wrapper propagation and reward scaling validated.",
+         "training_state_bank": "Finite871-state bank, research/warp_state_bank_v2/states.npz; see state-bank manifest for genuine settling and optional physical phase-boundary prefixes. Verification seeds are disjoint; fresh encoder noise each decision.",
+         "backend": "MuJoCo Warp3.17.0 / Warp1.19.0, float32, scene identical to CPU; final verification on CPU float64",
+         "training_segment_diagnostics": {
+          "warning": "Training-segment diagnostic only, not a full-task success claim.",
+          "goal_scale": 1.0,
+          "excursion_definition": "Only retained samples, matching full verifier; older diagnostics included detached samples.",
+          "results": [
+           {
+            "segment": 0,
+            "seed": 1000,
+            "start": 2.6,
+            "end": 5.36,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9080376538740044,
+            "angular_path_retained": 7.4310865229882985,
+            "max_excursion": 3.1371915469049507,
+            "hardware": true,
+            "return": 777.7688043116214
+           },
+           {
+            "segment": 0,
+            "seed": 1001,
+            "start": 2.6,
+            "end": 5.36,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9065894279507604,
+            "angular_path_retained": 7.4353787603315435,
+            "max_excursion": 3.139794617349356,
+            "hardware": true,
+            "return": 782.7234397458585
+           },
+           {
+            "segment": 0,
+            "seed": 1002,
+            "start": 2.6,
+            "end": 5.36,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9058653149891384,
+            "angular_path_retained": 7.4136871694736435,
+            "max_excursion": 3.1415417407458657,
+            "hardware": true,
+            "return": 777.8703681624203
+           },
+           {
+            "segment": 1,
+            "seed": 1000,
+            "start": 6.033333333333333,
+            "end": 6.613333333333,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9896907216494846,
+            "angular_path_retained": 1.2239732402239674,
+            "max_excursion": 0.8551907077186975,
+            "hardware": false,
+            "return": 70.19302015342642
+           },
+           {
+            "segment": 1,
+            "seed": 1001,
+            "start": 6.033333333333333,
+            "end": 6.613333333333,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9862542955326461,
+            "angular_path_retained": 1.2267707194437047,
+            "max_excursion": 0.8714740491844025,
+            "hardware": false,
+            "return": 71.50020383755317
+           },
+           {
+            "segment": 1,
+            "seed": 1002,
+            "start": 6.033333333333333,
+            "end": 6.613333333333,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9828178694158075,
+            "angular_path_retained": 1.2265690469506567,
+            "max_excursion": 0.8609742777012008,
+            "hardware": false,
+            "return": 70.67349842441791
+           },
+           {
+            "segment": 2,
+            "seed": 1000,
+            "start": 7.766666666666667,
+            "end": 10.366666666667,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.8931591083781706,
+            "angular_path_retained": 6.786110178670533,
+            "max_excursion": 3.1411112803890937,
+            "hardware": true,
+            "return": 642.2452897872586
+           },
+           {
+            "segment": 2,
+            "seed": 1001,
+            "start": 7.766666666666667,
+            "end": 10.366666666667,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.8923904688700999,
+            "angular_path_retained": 6.866729689580756,
+            "max_excursion": 3.140912093433801,
+            "hardware": true,
+            "return": 674.9844470915957
+           },
+           {
+            "segment": 2,
+            "seed": 1002,
+            "start": 7.766666666666667,
+            "end": 10.366666666667,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.8954650269023828,
+            "angular_path_retained": 6.853337721253922,
+            "max_excursion": 3.1398037038156357,
+            "hardware": true,
+            "return": 668.5008336400366
+           }
+          ]
+         },
+         "toss_segment_diagnostics": {
+          "warning": "Isolated toss diagnostics, not full-task success.",
+          "results": [
+           {
+            "toss": 0,
+            "seed": 1000,
+            "end": 2.583333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 0,
+            "seed": 1001,
+            "end": 2.583333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 0,
+            "seed": 1002,
+            "end": 2.583333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 1,
+            "seed": 1000,
+            "end": 6.283333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 1,
+            "seed": 1001,
+            "end": 6.063333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 1,
+            "seed": 1002,
+            "end": 6.063333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 2,
+            "seed": 1000,
+            "end": 6.616666666667,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 2,
+            "seed": 1001,
+            "end": 6.616666666667,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 2,
+            "seed": 1002,
+            "end": 6.616666666667,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           }
+          ]
+         },
+         "curves_note": "Published means per PPO rollout/update; full denser raw CSV retained locally as research/iter10/curves_raw_n6002688.csv"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "5d725f653c7c",
+          "bytes": 47782,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "b7157a33a6ca",
+          "bytes": 156614,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "3bcc04113ff0",
+          "bytes": 150086,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "e31d1befc466",
+          "bytes": 138498,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0057",
+        "seq": 57,
+        "kind": "verify",
+        "version": 15,
+        "recorded_utc": "2026-11-04T12:08:29Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0056",
+         "criteria_version": 1,
+         "sim_version": 7,
+         "checkpoint": "research/iter10/checkpoint_n6002688.zip",
+         "sampled_environment_steps": 6002688,
+         "verdict": "fail",
+         "initial_conditions": "Fixed seeds1000-1019, wrist±2mm,fingers±0.01rad,ball±1mm independently uniform; specified Gaussian encoders active.",
+         "episodes": 20,
+         "successes": 0,
+         "success_rate": 0.0,
+         "per_criterion_success_counts": {
+          "start_retained": 5,
+          "three_tosses_and_catches": 0,
+          "ordered_spins": 0,
+          "wrist_and_finger_motion": 0,
+          "final_hold": 0,
+          "hardware": 14,
+          "deadline": 20
+         },
+         "hardware_violation_episodes": 6,
+         "evidence": {
+          "metrics": "research/iter10/eval_n6002688/[redacted]",
+          "representative_seed": 1000,
+          "trace": "research/iter10/eval_n6002688/episode_1000.npz",
+          "views": [
+           "top_failure",
+           "left_failure",
+           "right_failure"
+          ]
+         },
+         "diagnosis": "Matched full-sequence PPO comparison adds3learned wrist FF velocity residuals and own previous velocity targets. All hardware gains,force/torque/speedcaps and criteria unchanged; no object actuation. Extra means initializedzero preservingexpert26channels. Native CPU136feature/29action actor is checked with the validated Python lowlevel controller.",
+         "limitations": [
+          "Own simulation only; rigid convex CAD and inferred contact material.",
+          "Perfect object-state sensing; no physical validation.",
+          "Global demonstration object rotation unobservable; local spin interpretation and thresholds are own criteria."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "65e88f482ee2",
+          "bytes": 96083,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "9c39d922211d",
+          "bytes": 1988558,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "07a196fa062a",
+          "bytes": 3287,
+          "content_type": "application/json"
+         },
+         "file_4": {
+          "sha": "7e7c94999d5b",
+          "bytes": 812432,
+          "content_type": "application/octet-stream"
+         },
+         "file_5": {
+          "sha": "455f451364f3",
+          "bytes": 8545,
+          "content_type": "application/json"
+         },
+         "file_6": {
+          "sha": "d806a5c465d0",
+          "bytes": 441962,
+          "content_type": "application/octet-stream"
+         },
+         "file_7": {
+          "sha": "721be5c32cbf",
+          "bytes": 54008,
+          "content_type": "application/json"
+         },
+         "file_8": {
+          "sha": "70622bfd3e99",
+          "bytes": 64053,
+          "content_type": "text/plain"
+         },
+         "video_left_failure": {
+          "sha": "b7157a33a6ca",
+          "bytes": 156614,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "3bcc04113ff0",
+          "bytes": 150086,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "e31d1befc466",
+          "bytes": 138498,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-04T08:08:13Z",
@@ -79643,7 +80896,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-04T12:02:32Z",
+  "staged_utc": "2026-11-04T12:12:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -79727,7 +80980,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-04T12:02:32Z",
+  "staged_utc": "2026-11-04T12:12:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
