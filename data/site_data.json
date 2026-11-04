@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-04T11:22:34Z",
- "exported_utc": "2026-11-04T11:22:29Z",
+ "generated_utc": "2026-11-04T11:32:33Z",
+ "exported_utc": "2026-11-04T11:32:30Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-04T11:21:29",
+    "time": "2026-11-04T11:31:52",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -60240,6 +60240,1070 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0035",
+        "seq": 35,
+        "kind": "verify",
+        "version": 6,
+        "recorded_utc": "2026-11-04T11:23:14Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0034",
+         "criteria_version": 1,
+         "sim_version": 4,
+         "checkpoint": "research/iter05/checkpoint_10m.zip",
+         "verdict": "fail",
+         "initial_conditions": "Fixed seeds1000-1019, wrist±2mm,fingers±0.01rad,ball±1mm independently uniform; specified Gaussian encoders active.",
+         "episodes": 20,
+         "successes": 0,
+         "success_rate": 0.0,
+         "per_criterion_success_counts": {
+          "start_retained": 20,
+          "three_tosses_and_catches": 0,
+          "ordered_spins": 0,
+          "wrist_and_finger_motion": 0,
+          "final_hold": 0,
+          "hardware": 0,
+          "deadline": 20
+         },
+         "hardware_violation_episodes": 20,
+         "evidence": {
+          "metrics": "research/iter05/eval_10m/[redacted]",
+          "representative_seed": 1000,
+          "trace": "research/iter05/eval_10m/episode_1000.npz",
+          "views": [
+           "top_failure",
+           "left_failure",
+           "right_failure"
+          ]
+         },
+         "diagnosis": "GPU PPO spin expert is tested on the native float64 CPU model with fresh verification seeds; training-bank starts are not reused. Isolated-spin diagnostics measure retained motion and excursion separately. Full task remains necessary and the declared baseline alone fails0/20. This spin-only training is not presented as full-task learning or success.",
+         "limitations": [
+          "Own simulation only; rigid convex CAD and inferred contact material.",
+          "Perfect object-state sensing; no physical validation.",
+          "Global demonstration object rotation unobservable; local spin interpretation and thresholds are own criteria."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "fc71a4c392ca",
+          "bytes": 29800,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "d6a54d22c841",
+          "bytes": 540805,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "6b8c0883e539",
+          "bytes": 3282,
+          "content_type": "application/json"
+         },
+         "file_4": {
+          "sha": "4a0305e8e0c3",
+          "bytes": 814597,
+          "content_type": "application/octet-stream"
+         },
+         "file_5": {
+          "sha": "721be5c32cbf",
+          "bytes": 54008,
+          "content_type": "application/json"
+         },
+         "video_left_failure": {
+          "sha": "f4c563aefa8e",
+          "bytes": 41704,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "e12be0a8866e",
+          "bytes": 42090,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "8494057d1f3a",
+          "bytes": 34803,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0036",
+        "seq": 36,
+        "kind": "note",
+        "version": 12,
+        "recorded_utc": "2026-11-04T11:23:46Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "At11:23UTC, GPU spin checkpoint10M (r0034/r0035) fails the full task, but independent native CPU spin diagnostics retain the ball100% with support above97% and no hardware violation in all9segment trials. Long-spin excursions improve to2.42..3.07rad, yet travel3.88..4.22rad remains below2π. Brief segment travel1.96..1.98rad/excursion0.97..1.00rad is promising, not a complete-skill pass. Baseline7 was separately checked on20fresh fixed seeds and fails all20. Phase-aware toss PPO is active. I will train the spin and toss components further and test a policy composed of PPO-trained experts with task-time gating and final full-sequence PPO fine-tuning; no scripted spin or planning is used. Segment diagnostics now compute excursion only over retained frames; the full verifier already did so."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0037",
+        "seq": 37,
+        "kind": "iter",
+        "version": 7,
+        "recorded_utc": "2026-11-04T11:30:04Z",
+        "exception": false,
+        "body": {
+         "sim_version": 5,
+         "algorithm": "PPO, Stable-Baselines3 2.9.2",
+         "checkpoint": "research/iter06/checkpoint_10m.zip",
+         "checkpoint_sha256": "c4366a7109d4…",
+         "policy_observations": "deployable",
+         "sampled_environment_steps": 10004480,
+         "architecture": {
+          "actor": [
+           256,
+           256
+          ],
+          "critic": [
+           256,
+           256
+          ],
+          "activation": "tanh",
+          "observation_dim": 121,
+          "action_dim": 26
+         },
+         "observation_space": "Noisy finger q/qd, wrist pose/velocity, object pose/velocity, own previous targets and time. Additional deterministic goal sin/cos/speed, relative orientation error, relative angular velocity and wrist-frame ball position/velocity use only allowed object/wrist states, time and constants. No contacts/forces/torques/physical parameters in actor.",
+         "action_space": "20boundedfinger-targetresiduals,3wristpositionresiduals,3wristrotationresiduals;50Hznetwork,500Hzcommandstream,1000Hzprescribedcontrollers.",
+         "hyperparameters": {
+          "learning_rate": 0.0002,
+          "n_steps": 64,
+          "batch_size": 8192,
+          "epochs": 4,
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip_range": 0.2,
+          "entropy_coef": 0.001
+         },
+         "seeds": [
+          42
+         ],
+         "environments": 1024,
+         "reward_terms": [
+          {
+           "name": "ball_tracking",
+           "formula": "exp(-ball_error²/0.08²)",
+           "weight": 3
+          },
+          {
+           "name": "wrist_tracking",
+           "formula": "exp(-position_error²/0.04²-orientation_error²/0.4²)",
+           "weight": 1
+          },
+          {
+           "name": "phase_retention",
+           "formula": "retained AND outside expected flight windows(release+0.03..+0.44s)",
+           "weight": 2
+          },
+          {
+           "name": "spin_orientation_linear",
+           "formula": "-active_spin*relative_orientation_error",
+           "weight": 2
+          },
+          {
+           "name": "spin_velocity_tracking",
+           "formula": "retained*active_spin*exp(-||relative_omega-axis*goal_speed||²/4)",
+           "weight": 2
+          },
+          {
+           "name": "hold_stability",
+           "formula": "retained*held_phase*inactive_spin*exp(-||relative_omega||²/2)",
+           "weight": 0.5
+          },
+          {
+           "name": "release_velocity",
+           "formula": "in release-0.10..+0.08s: exp(-((vz-2.45)/0.7)²-||vxy||²/0.04)",
+           "weight": 2
+          },
+          {
+           "name": "catch_position",
+           "formula": "in release+0.30..+0.60s: 1/(1+||wrist_relative_ball-initial_local_ball||²/0.0025)",
+           "weight": 2
+          },
+          {
+           "name": "flight_release",
+           "formula": "expected_flight_phase AND no_hand_contact",
+           "weight": 1
+          },
+          {
+           "name": "catch_bonus",
+           "formula": "Contact after flight0.38..0.62s,rise0.23..0.40m,horizontal<=0.08m; shaping only",
+           "weight": 25
+          },
+          {
+           "name": "hardware_speed_risk",
+           "formula": "-max(0,max(abs(qd)/vlim)-0.65)²",
+           "weight": 20
+          },
+          {
+           "name": "action_cost",
+           "formula": "-sum(action²)",
+           "weight": 0.001
+          },
+          {
+           "name": "action_change",
+           "formula": "-sum((action-previous_action)²)",
+           "weight": 0.003
+          },
+          {
+           "name": "joint_speed_cost",
+           "formula": "-mean((qd/vlim)²)",
+           "weight": 0.02
+          },
+          {
+           "name": "termination_penalty",
+           "formula": "-100 for hardware violation; -30 for other terminal failure",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "initial_state_bank",
+           "distribution": "Uniform finite empirical bank conditioned on curriculum start type",
+           "states": 672,
+           "generation": "96 independent wristXYZ±2mm,fingerq±0.01rad,ballXYZ±1mm samples at each of7reference starts, actual0.5s native CPU settle, seeds20000+ disjoint from verification. All retained."
+          },
+          {
+           "name": "encoder_noise",
+           "distribution": "Fresh independent Gaussian each policy decision",
+           "q_sigma_rad": 0.002,
+           "qd_sigma_rad_s": 0.05
+          }
+         ],
+         "physics_randomization": "none",
+         "curriculum": [
+          [
+           1.0,
+           "toss"
+          ]
+         ],
+         "compute": {
+          "PPO_wall_seconds": 669.9178168773651,
+          "allocated_GPU_hours": 0.18608828246593476,
+          "GPU_count": 1
+         },
+         "baseline": {
+          "method": "Zero neural residual, declared offline reference baseline7",
+          "nominal_successes": 0,
+          "episodes": 1,
+          "result": "One qualifying first toss/catch and>=0.20s retention; drops during first spin at4.74s. No full skill or scripted spin success.",
+          "evidence": "baseline07_full/[redacted]",
+          "first_flight": {
+           "release_s": 1.794,
+           "duration_s": 0.49,
+           "rise_m": 0.262325,
+           "horizontal_m": 0.03608
+          },
+          "finger_closing": "All four long fingers exceed0.20rad catch/flight flexion contrast.",
+          "fixed_seed_ablation": {
+           "episodes": 20,
+           "successes": 0,
+           "hardware_violation_episodes": 0,
+           "per_criterion_success_counts": {
+            "start_retained": 0,
+            "three_tosses_and_catches": 0,
+            "ordered_spins": 0,
+            "wrist_and_finger_motion": 0,
+            "final_hold": 0,
+            "hardware": 20,
+            "deadline": 20
+           },
+           "qualifying_flight_counts": [
+            1,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+           ]
+          }
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violation_episodes": 0,
+          "per_criterion_success_counts": {
+           "start_retained": 18,
+           "three_tosses_and_catches": 0,
+           "ordered_spins": 0,
+           "wrist_and_finger_motion": 0,
+           "final_hold": 0,
+           "hardware": 20,
+           "deadline": 20
+          },
+          "representative_failure": {
+           "pass": false,
+           "criteria": {
+            "start_retained": true,
+            "three_tosses_and_catches": false,
+            "ordered_spins": false,
+            "wrist_and_finger_motion": false,
+            "final_hold": false,
+            "hardware": true,
+            "deadline": true
+           },
+           "duration_s": 5.74,
+           "floor_contact": false,
+           "qualifying_flights": [],
+           "all_separations": [
+            null,
+            null,
+            null,
+            null
+           ],
+           "catch_retention": [],
+           "spins": [],
+           "finger_changes": [],
+           "wrist": {
+            "position_rms_m": 0.036655607847019635,
+            "position_max_m": 0.09650784953667113,
+            "orientation_rms_deg": 4.250278431856731,
+            "orientation_max_deg": 28.11249935462673,
+            "palm_up_retained_fraction": 0.9878934624697336
+           },
+           "hold": {
+            "pass": false,
+            "duration_s": 0.40200000000000036,
+            "relative_center_drift_m": 0.758947136564039,
+            "relative_angular_excursion_rad": 3.1302244070905676,
+            "retained_fraction": 0.27860696517412936
+           },
+           "hardware": {
+            "pass": true,
+            "max_speed_ratio": 0.770878027805811,
+            "max_torque_ratio": 1.0,
+            "max_position_excess_rad": 0.0007752303266165272
+           },
+           "seed": 1000,
+           "return_": 1057.2034333396518,
+           "trace": "episode_1000.npz",
+           "violation_first": null
+          }
+         },
+         "reflection": "Phase-aware PPO toss policy trained from reconstruction-derived segment starts. It disables retention incentives during expected flight and adds release/catch shaping plus speed-risk costs. Full task and all three isolated tosses are checked on fresh native CPU states. This is a component policy, not a full-task success claim.",
+         "final_reward_scale": 0.1,
+         "reward_definition": "Final training reward = final_reward_scale * sum(raw weighted terms listed here). Curves preserve raw component values and the scaled total.",
+         "initialization": {
+          "checkpoint": null,
+          "bc_steps": 0,
+          "reset_critic": false
+         },
+         "curriculum_execution": "Explicit configure_training environment-method calls, returned actual-state assertions; wrapper propagation and reward scaling validated.",
+         "training_state_bank": "Finite672-state bank generated by actual0.5s CPU settling at fresh training seeds20000+, disjoint from verification seeds; all96 samples per seven reference starts retained. Fresh encoder noise every decision.",
+         "backend": "MuJoCo Warp3.17.0 / Warp1.19.0, float32, scene identical to CPU; final verification on CPU float64",
+         "toss_segment_diagnostics": {
+          "warning": "Isolated toss diagnostics, not full-task success.",
+          "results": [
+           {
+            "toss": 0,
+            "seed": 1000,
+            "end": 2.583333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 0,
+            "seed": 1001,
+            "end": 2.583333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 0,
+            "seed": 1002,
+            "end": 2.583333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 1,
+            "seed": 1000,
+            "end": 5.723333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 1,
+            "seed": 1001,
+            "end": 5.723333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 1,
+            "seed": 1002,
+            "end": 5.723333333333,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 2,
+            "seed": 1000,
+            "end": 7.516666666667,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 2,
+            "seed": 1001,
+            "end": 7.516666666667,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           },
+           {
+            "toss": 2,
+            "seed": 1002,
+            "end": 7.516666666667,
+            "qualifying_flights": null,
+            "all_separations": null,
+            "catch_retention": null,
+            "finger_changes": null,
+            "hardware": null
+           }
+          ]
+         },
+         "curves_note": "Published means per PPO rollout/update; full denser raw CSV retained locally as research/iter06/curves_raw_10m.csv"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "7ca3e72c3b75",
+          "bytes": 79109,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "64e85f73c7b4",
+          "bytes": 121456,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "694a77513202",
+          "bytes": 121668,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "a20334fd7c0a",
+          "bytes": 115418,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0038",
+        "seq": 38,
+        "kind": "verify",
+        "version": 7,
+        "recorded_utc": "2026-11-04T11:30:05Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0037",
+         "criteria_version": 1,
+         "sim_version": 5,
+         "checkpoint": "research/iter06/checkpoint_10m.zip",
+         "verdict": "fail",
+         "initial_conditions": "Fixed seeds1000-1019, wrist±2mm,fingers±0.01rad,ball±1mm independently uniform; specified Gaussian encoders active.",
+         "episodes": 20,
+         "successes": 0,
+         "success_rate": 0.0,
+         "per_criterion_success_counts": {
+          "start_retained": 18,
+          "three_tosses_and_catches": 0,
+          "ordered_spins": 0,
+          "wrist_and_finger_motion": 0,
+          "final_hold": 0,
+          "hardware": 20,
+          "deadline": 20
+         },
+         "hardware_violation_episodes": 0,
+         "evidence": {
+          "metrics": "research/iter06/eval_10m/[redacted]",
+          "representative_seed": 1000,
+          "trace": "research/iter06/eval_10m/episode_1000.npz",
+          "views": [
+           "top_failure",
+           "left_failure",
+           "right_failure"
+          ]
+         },
+         "diagnosis": "Phase-aware PPO toss policy trained from reconstruction-derived segment starts. It disables retention incentives during expected flight and adds release/catch shaping plus speed-risk costs. Full task and all three isolated tosses are checked on fresh native CPU states. This is a component policy, not a full-task success claim.",
+         "limitations": [
+          "Own simulation only; rigid convex CAD and inferred contact material.",
+          "Perfect object-state sensing; no physical validation.",
+          "Global demonstration object rotation unobservable; local spin interpretation and thresholds are own criteria."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "73d375fd8eac",
+          "bytes": 69216,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "7e6ac4defe66",
+          "bytes": 1779071,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "cb3bec4033ed",
+          "bytes": 11690,
+          "content_type": "application/json"
+         },
+         "file_4": {
+          "sha": "635ede5d2575",
+          "bytes": 439151,
+          "content_type": "application/octet-stream"
+         },
+         "file_5": {
+          "sha": "721be5c32cbf",
+          "bytes": 54008,
+          "content_type": "application/json"
+         },
+         "video_left_failure": {
+          "sha": "64e85f73c7b4",
+          "bytes": 121456,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "694a77513202",
+          "bytes": 121668,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "a20334fd7c0a",
+          "bytes": 115418,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0039",
+        "seq": 39,
+        "kind": "iter",
+        "version": 8,
+        "recorded_utc": "2026-11-04T11:31:51Z",
+        "exception": false,
+        "body": {
+         "sim_version": 3,
+         "algorithm": "PPO, Stable-Baselines3 2.9.2",
+         "checkpoint": "research/iter04/checkpoint_final.zip",
+         "checkpoint_sha256": "3924c694d511…",
+         "policy_observations": "deployable",
+         "sampled_environment_steps": 2064656,
+         "architecture": {
+          "actor": [
+           256,
+           256
+          ],
+          "critic": [
+           256,
+           256
+          ],
+          "activation": "tanh",
+          "observation_dim": 121,
+          "action_dim": 26
+         },
+         "observation_space": "Noisy finger q/qd, wrist pose/velocity, object pose/velocity, own previous targets and time. Additional deterministic goal sin/cos/speed, relative orientation error, relative angular velocity and wrist-frame ball position/velocity use only allowed object/wrist states, time and constants. No contacts/forces/torques/physical parameters in actor.",
+         "action_space": "20boundedfinger-targetresiduals,3wristpositionresiduals,3wristrotationresiduals;50Hznetwork,500Hzcommandstream,1000Hzprescribedcontrollers.",
+         "hyperparameters": {
+          "learning_rate": 0.0002,
+          "n_steps": 256,
+          "batch_size": 2048,
+          "epochs": 5,
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip_range": 0.2,
+          "entropy_coef": 0.001
+         },
+         "seeds": [
+          7
+         ],
+         "environments": 8,
+         "reward_terms": [
+          {
+           "name": "ball_tracking",
+           "formula": "exp(-ball_error²/0.065²)",
+           "weight": 2
+          },
+          {
+           "name": "wrist_tracking",
+           "formula": "exp(-position_error²/0.04²-orientation_error²/0.4²)",
+           "weight": 1
+          },
+          {
+           "name": "retention",
+           "formula": "hand contact and ball-wrist distance<0.16m",
+           "weight": 2
+          },
+          {
+           "name": "spin_orientation_linear",
+           "formula": "-geodesic relative-orientation error to time-derived negative-palm-X goal",
+           "weight": 1.5
+          },
+          {
+           "name": "spin_velocity_tracking",
+           "formula": "retained*exp(-||relative_omega-negative_palm_X*goal_speed||²/4)",
+           "weight": 2
+          },
+          {
+           "name": "action_cost",
+           "formula": "-sum(action²)",
+           "weight": 0.001
+          },
+          {
+           "name": "action_change",
+           "formula": "-sum((action-previous_action)²)",
+           "weight": 0.003
+          },
+          {
+           "name": "joint_speed_cost",
+           "formula": "-mean((qd/vlim)²)",
+           "weight": 0.02
+          },
+          {
+           "name": "termination_penalty",
+           "formula": "failure terminal",
+           "weight": -20
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "initial_wrist_translation",
+           "distribution": "independentuniform",
+           "range_m": [
+            -0.002,
+            0.002
+           ]
+          },
+          {
+           "name": "initial_finger_positions",
+           "distribution": "independentuniform,clipped",
+           "range_rad": [
+            -0.01,
+            0.01
+           ]
+          },
+          {
+           "name": "initial_ball_translation",
+           "distribution": "independentuniform",
+           "range_m": [
+            -0.001,
+            0.001
+           ]
+          },
+          {
+           "name": "encoder_noise",
+           "distribution": "independentGaussian",
+           "q_sigma_rad": 0.002,
+           "qd_sigma_rad_s": 0.05
+          }
+         ],
+         "physics_randomization": "none",
+         "curriculum": [
+          [
+           1.0,
+           "spin"
+          ]
+         ],
+         "compute": {
+          "PPO_wall_seconds": 2567.5306038856506,
+          "allocated_GPU_hours": 0.7132029455237918,
+          "GPU_count": 1
+         },
+         "baseline": {
+          "method": "Zero neural residual, declared offline reference baseline7",
+          "nominal_successes": 0,
+          "episodes": 1,
+          "result": "One qualifying first toss/catch and>=0.20s retention; drops during first spin at4.74s. No full skill or scripted spin success.",
+          "evidence": "baseline07_full/[redacted]",
+          "first_flight": {
+           "release_s": 1.794,
+           "duration_s": 0.49,
+           "rise_m": 0.262325,
+           "horizontal_m": 0.03608
+          },
+          "finger_closing": "All four long fingers exceed0.20rad catch/flight flexion contrast.",
+          "fixed_seed_ablation": {
+           "episodes": 20,
+           "successes": 0,
+           "hardware_violation_episodes": 0,
+           "per_criterion_success_counts": {
+            "start_retained": 0,
+            "three_tosses_and_catches": 0,
+            "ordered_spins": 0,
+            "wrist_and_finger_motion": 0,
+            "final_hold": 0,
+            "hardware": 20,
+            "deadline": 20
+           },
+           "qualifying_flight_counts": [
+            1,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+           ]
+          }
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "episodes": 20,
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violation_episodes": 13,
+          "per_criterion_success_counts": {
+           "start_retained": 13,
+           "three_tosses_and_catches": 0,
+           "ordered_spins": 0,
+           "wrist_and_finger_motion": 0,
+           "final_hold": 0,
+           "hardware": 7,
+           "deadline": 20
+          },
+          "representative_failure": {
+           "pass": false,
+           "criteria": {
+            "start_retained": false,
+            "three_tosses_and_catches": false,
+            "ordered_spins": false,
+            "wrist_and_finger_motion": false,
+            "final_hold": false,
+            "hardware": true,
+            "deadline": true
+           },
+           "duration_s": 2.4,
+           "floor_contact": true,
+           "qualifying_flights": [],
+           "all_separations": [
+            null
+           ],
+           "catch_retention": [],
+           "spins": [],
+           "finger_changes": [],
+           "wrist": {
+            "position_rms_m": 0.03514145102739278,
+            "position_max_m": 0.06165660133842999,
+            "orientation_rms_deg": 10.678933617513852,
+            "orientation_max_deg": 15.807729140120493,
+            "palm_up_retained_fraction": 0.9684684684684685
+           },
+           "hold": {
+            "pass": false,
+            "duration_s": 0.4019999999999999,
+            "relative_center_drift_m": 0.9157784346005718,
+            "relative_angular_excursion_rad": 3.137977571723795,
+            "retained_fraction": 0.0
+           },
+           "hardware": {
+            "pass": true,
+            "max_speed_ratio": 0.8134950004884247,
+            "max_torque_ratio": 1.0,
+            "max_position_excess_rad": 0.00341745755191894
+           },
+           "seed": 1000,
+           "return_": 216.1578866343358,
+           "trace": "episode_1000.npz",
+           "violation_first": null
+          }
+         },
+         "reflection": "CPU spin comparison stopped after about2M PPO samples to concentrate compute on the faster validated GPU backend. It supplies a PPO initialization for GPU learning, not a successful complete skill. Native full-task and retained-segment metrics are reported without relaxing hardware or task criteria.",
+         "final_reward_scale": 0.1,
+         "reward_definition": "Final training reward = final_reward_scale * sum(raw weighted terms listed here). Curves preserve raw component values and the scaled total.",
+         "initialization": {
+          "checkpoint": null,
+          "bc_steps": 0,
+          "reset_critic": false
+         },
+         "curriculum_execution": "Explicit configure_training environment-method calls, returned actual-state assertions; wrapper propagation and reward scaling validated.",
+         "training_segment_diagnostics": {
+          "warning": "Training-segment diagnostic only, not a full-task success claim.",
+          "goal_scale": 1.0,
+          "excursion_definition": "Only retained samples, matching full verifier; older diagnostics included detached samples.",
+          "results": [
+           {
+            "segment": 0,
+            "seed": 1000,
+            "start": 2.6,
+            "end": 5.36,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.999275887038378,
+            "angular_path_retained": 7.043580821910209,
+            "max_excursion": 3.1398489996131365,
+            "hardware": true,
+            "return": 401.52378617576204
+           },
+           {
+            "segment": 0,
+            "seed": 1001,
+            "start": 2.6,
+            "end": 5.36,
+            "retained_fraction": 1.0,
+            "support_fraction": 1.0,
+            "angular_path_retained": 7.009521001072391,
+            "max_excursion": 3.139205035383024,
+            "hardware": true,
+            "return": 383.6672856514355
+           },
+           {
+            "segment": 0,
+            "seed": 1002,
+            "start": 2.6,
+            "end": 5.36,
+            "retained_fraction": 1.0,
+            "support_fraction": 1.0,
+            "angular_path_retained": 7.07641581275357,
+            "max_excursion": 3.1380383833135044,
+            "hardware": true,
+            "return": 380.4057174313193
+           },
+           {
+            "segment": 1,
+            "seed": 1000,
+            "start": 6.033333333333333,
+            "end": 6.933333333333,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9822616407982262,
+            "angular_path_retained": 3.216206606635274,
+            "max_excursion": 1.679624787989044,
+            "hardware": true,
+            "return": 137.29287959485146
+           },
+           {
+            "segment": 1,
+            "seed": 1001,
+            "start": 6.033333333333333,
+            "end": 6.933333333333,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9822616407982262,
+            "angular_path_retained": 3.7157971494237425,
+            "max_excursion": 1.880357879970084,
+            "hardware": true,
+            "return": 131.68664752026623
+           },
+           {
+            "segment": 1,
+            "seed": 1002,
+            "start": 6.033333333333333,
+            "end": 6.933333333333,
+            "retained_fraction": 1.0,
+            "support_fraction": 0.9844789356984479,
+            "angular_path_retained": 3.7520342128394097,
+            "max_excursion": 1.8573752969626696,
+            "hardware": true,
+            "return": 130.83262164974883
+           },
+           {
+            "segment": 2,
+            "seed": 1000,
+            "start": 7.766666666666667,
+            "end": 10.366666666667,
+            "retained_fraction": 1.0,
+            "support_fraction": 1.0,
+            "angular_path_retained": 6.649481103821868,
+            "max_excursion": 3.141547065142752,
+            "hardware": true,
+            "return": 321.36120733065314
+           },
+           {
+            "segment": 2,
+            "seed": 1001,
+            "start": 7.766666666666667,
+            "end": 10.366666666667,
+            "retained_fraction": 1.0,
+            "support_fraction": 1.0,
+            "angular_path_retained": 6.361860766793818,
+            "max_excursion": 3.1389706809478937,
+            "hardware": true,
+            "return": 313.4226320845809
+           },
+           {
+            "segment": 2,
+            "seed": 1002,
+            "start": 7.766666666666667,
+            "end": 10.366666666667,
+            "retained_fraction": 1.0,
+            "support_fraction": 1.0,
+            "angular_path_retained": 6.518481700416518,
+            "max_excursion": 3.1404176921844735,
+            "hardware": true,
+            "return": 308.02373002493744
+           }
+          ]
+         },
+         "curves_note": "Published means per PPO rollout/update; full denser raw CSV retained locally as research/iter04/curves_raw_final.csv"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "1d036c3a9670",
+          "bytes": 385544,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "3ca339fd7b1c",
+          "bytes": 66839,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "84d20c9c9169",
+          "bytes": 68601,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "bac939cc8a08",
+          "bytes": 57210,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0040",
+        "seq": 40,
+        "kind": "verify",
+        "version": 8,
+        "recorded_utc": "2026-11-04T11:31:52Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0039",
+         "criteria_version": 1,
+         "sim_version": 3,
+         "checkpoint": "research/iter04/checkpoint_final.zip",
+         "verdict": "fail",
+         "initial_conditions": "Fixed seeds1000-1019, wrist±2mm,fingers±0.01rad,ball±1mm independently uniform; specified Gaussian encoders active.",
+         "episodes": 20,
+         "successes": 0,
+         "success_rate": 0.0,
+         "per_criterion_success_counts": {
+          "start_retained": 13,
+          "three_tosses_and_catches": 0,
+          "ordered_spins": 0,
+          "wrist_and_finger_motion": 0,
+          "final_hold": 0,
+          "hardware": 7,
+          "deadline": 20
+         },
+         "hardware_violation_episodes": 13,
+         "evidence": {
+          "metrics": "research/iter04/eval_final/[redacted]",
+          "representative_seed": 1000,
+          "trace": "research/iter04/eval_final/episode_1000.npz",
+          "views": [
+           "top_failure",
+           "left_failure",
+           "right_failure"
+          ]
+         },
+         "diagnosis": "CPU spin comparison stopped after about2M PPO samples to concentrate compute on the faster validated GPU backend. It supplies a PPO initialization for GPU learning, not a successful complete skill. Native full-task and retained-segment metrics are reported without relaxing hardware or task criteria.",
+         "limitations": [
+          "Own simulation only; rigid convex CAD and inferred contact material.",
+          "Perfect object-state sensing; no physical validation.",
+          "Global demonstration object rotation unobservable; local spin interpretation and thresholds are own criteria."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "3442b7e40952",
+          "bytes": 35896,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "0f52355470dd",
+          "bytes": 754460,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "445539f63f52",
+          "bytes": 3207,
+          "content_type": "application/json"
+         },
+         "file_4": {
+          "sha": "d357d0ff0128",
+          "bytes": 815151,
+          "content_type": "application/octet-stream"
+         },
+         "file_5": {
+          "sha": "721be5c32cbf",
+          "bytes": 54008,
+          "content_type": "application/json"
+         },
+         "video_left_failure": {
+          "sha": "3ca339fd7b1c",
+          "bytes": 66839,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "84d20c9c9169",
+          "bytes": 68601,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "bac939cc8a08",
+          "bytes": 57210,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-04T08:08:13Z",
@@ -74182,7 +75246,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-04T11:22:32Z",
+  "staged_utc": "2026-11-04T11:32:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -74266,7 +75330,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-04T11:22:32Z",
+  "staged_utc": "2026-11-04T11:32:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
