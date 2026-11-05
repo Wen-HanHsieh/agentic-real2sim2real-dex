@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-05T08:23:55Z",
- "exported_utc": "2026-11-05T08:22:30Z",
+ "generated_utc": "2026-11-05T08:32:39Z",
+ "exported_utc": "2026-11-05T08:32:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-05T08:22:28",
+    "time": "2026-11-05T08:31:09",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -677,7 +677,7 @@
    "best": "s04",
    "latest_candidate": "s06",
    "activity": {
-    "time": "2026-11-05T08:21:30",
+    "time": "2026-11-05T08:29:23",
     "verb": "other"
    },
    "record_chain": "intact (20 entries)",
@@ -128948,6 +128948,1580 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0181",
+        "seq": 181,
+        "kind": "iter",
+        "version": 50,
+        "recorded_utc": "2026-11-05T08:22:44Z",
+        "exception": false,
+        "body": {
+         "sim_version": 26,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO",
+          "architecture": {
+           "actor": [
+            256,
+            256
+           ],
+           "critic": [
+            256,
+            256
+           ],
+           "activation": "tanh",
+           "observation_dim": 199,
+           "action_dim": 44,
+           "actor_experts": 2,
+           "gate": "Internal deployable reference phase>=240 selects black actor; white actor otherwise."
+          },
+          "hyperparameters": {
+           "out": "research/runs/carry_frame_v26_long",
+           "warp_start": 1.0,
+           "warp_end": 1.0,
+           "learning_rate": 1e-05,
+           "steps": 5000000,
+           "envs": 32,
+           "threads": 16,
+           "seed": 2636,
+           "resume": "research/runs/carry_frame_v26_long/init.pt",
+           "reset_optimizer": true,
+           "resume_rms_count": null,
+           "preserve_rms_function": false,
+           "value_huber": 5.0,
+           "dual_actor": true,
+           "black_resume": "research/runs/carry_frame_v26_long/init.pt",
+           "freeze_white": true,
+           "freeze_black": false,
+           "white_subtask": false,
+           "reset_frames": "37,60,220,240",
+           "gae_lambda": 0.99,
+           "physics_start": 0.0,
+           "physics_end": 0.0,
+           "reward_scale": 0.01,
+           "device": "cuda:1",
+           "phase_start": 0.1,
+           "phase_end": 0.0,
+           "algorithm": "PPO",
+           "clip": 0.2,
+           "gamma": 0.997,
+           "horizon": 256,
+           "batch": 8192,
+           "minibatch": 1024,
+           "epochs": 4,
+           "entropy_coefficient": 0.002,
+           "value_coefficient": 0.5,
+           "value_clipping": false,
+           "reward_scale_for_learning": 0.01,
+           "max_grad_norm": 0.5,
+           "policy_observations": "deployable",
+           "actor_layers": [
+            256,
+            256
+           ],
+           "critic_layers": [
+            256,
+            256
+           ],
+           "activation": "tanh",
+           "actor_experts": 2,
+           "black_normalization": "frozen at black-source checkpoint; raw input",
+           "policy_hz": 50,
+           "command_hz": 500,
+           "pd_hz": 1000,
+           "observation_dimension": 199,
+           "action_dimension": 44,
+           "observation_normalization": "both actor/critic normalization frozen at source; variance floor0.0004; clip10; white actor/logstd frozen; only black actor and common critic PPO updates"
+          },
+          "total_training_steps": 25198592,
+          "new_training_steps": 2260992,
+          "reported_checkpoint_step_counter": 25198592,
+          "total_unique_lineage_training_steps": 25198592
+         },
+         "reward_terms": [
+          {
+           "name": "object_position",
+           "formula": "sum_o weight*exp(-||p-p_ref||^2/0.035^2); weight2 active,.35 otherwise During blackaugmentation, physical reference target adds[0,-shift_y,lift_z]. Blacktracking target is transformed by the same current fixed-reference frame in25; humanwrist reward remains physical/untransformed.",
+           "weight": 1
+          },
+          {
+           "name": "object_axis",
+           "formula": "Active:2.5*(clip(dot(actual blade axis,reference blade axis),-1,1)+1)/2+2exp(-angle²/.35²); inactive:.15exp(-angle²/.5²). Blacktracking target is transformed by the same current fixed-reference frame in25; humanwrist reward remains physical/untransformed.",
+           "weight": 1
+          },
+          {
+           "name": "wrist_tracking",
+           "formula": "Physical wrist to unchanged human wrist arrays, with fixed training phase map declared in sim15. Black:.45exp(-position_error²/.055²)+.45exp(-SO3_error²/.45²)-min(4,3(relu(position_error-.08)/.03)²)-min(4,2(relu(SO3_error-1.0471975512)/.3)²). White:1.5exp(-position_error²/.055²)+1.5exp(-SO3_error²/.45²)-min(4,8(relu(position_error-.055)/.03)²)-min(4,4(relu(SO3_error-.70)/.3)²).",
+           "weight": 1
+          },
+          {
+           "name": "finger_tracking",
+           "formula": "exp(-mean(q-q_ref)^2/.16)",
+           "weight": 0.2
+          },
+          {
+           "name": "opposed_contact",
+           "formula": "Active:0.6 positional opposition else0.1 any hand;0.8 balanced force/0.6N with opposed normals;0.4exp(-pad-bodySDF^2/.02^2) each thumb/index/middle. Before supported upright left, add0.8*clip(min(three normal forces)/.3N)*clip(norm(cross(index-thumb,middle-thumb))/.0004m2), with opposition and three contacts. Once supported upright left, replace accumulated contact term by0.15*term-0.6*sum(three normal forces)+0.4 anyhand before release-due or-0.4 anyhand after. Always subtract0.15sum min(10,relu(force-4N)). Supported-before-release-due: add max_over_thumb,index,middle exp(-((bodySDF(padskin)-.0015)/.01)^2) to encourage gentle last contact. Release-ready additionally needs phase>=205 white or>=373 black. Release-due requires phase>=205white/373black and span>=3.6white/3.3black, without upper bound. Actual settled/milestone/terminal eligibility retains upper duration bounds through release-ready.",
+           "weight": 1
+          },
+          {
+           "name": "lift_height",
+           "formula": "Active phase100<=f<155white or280<=f<360black:2clip(bottom/(.015white,.035black),0,1)*(.3+.7exp(-tilt²/.45²)); after interval if left:exp(-bottom²/.005²)exp(-tilt²/.3²). Also active during black augmentation re-lift/carry stages2/3.",
+           "weight": 1
+          },
+          {
+           "name": "settled",
+           "formula": "Per-object upright left/base supported/velocity small/no hand AND release-ready. Release-ready: first sustained opposed grasp to final touch span3.6-5.8s white,3.3-5.4s black; reference-initialized preplaced objects exempt during curriculum.",
+           "weight": 1
+          },
+          {
+           "name": "milestones",
+           "formula": "First settled/release-ready+8; first bottom>1cm+2; one-off-20 for first supporting table contact on right after an upright-air sample. One-off-20 if bottom>5mm or rotation from actual initial orientation>10deg before100ms stable opposed grasp during active phase; stable grasp flag latches once achieved.",
+           "weight": 1
+          },
+          {
+           "name": "action_smoothness",
+           "formula": "-.02sum(filtered_action²/group_size)-.03sum(action_change²/group_size); legacy29 and extra15 each separately normalized.",
+           "weight": 1
+          },
+          {
+           "name": "joint_speed",
+           "formula": "-mean((qd/(.8*published_speed))^4)",
+           "weight": 0.1
+          },
+          {
+           "name": "ordered_rest",
+           "formula": "Before white first settled:-2min(4,relu(blackXYdrift-.005)/.01); active plug:-2clip((y-.13)/.04,0,1)*relu(blade_tilt-.34906585), no tilt upper cap.",
+           "weight": 1
+          },
+          {
+           "name": "penetration",
+           "formula": "-min(4,(max_[redacted]-.003)^2/.003^2) above3mm",
+           "weight": 0.2
+          },
+          {
+           "name": "terminal",
+           "formula": "-20000 hardware violation;-25 drop/nonfinite;-100 timeout without stable goal;+20000 both settled/release-ready continuously1.6s AND no hardware/drop/nonfinite and maximum physical penetration<=3mm. Full criteria independently checked.",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "initial object XY",
+           "distribution": "independent uniform",
+           "range_m": [
+            -0.005,
+            0.005
+           ]
+          },
+          {
+           "quantity": "initial object yaw",
+           "distribution": "independent uniform",
+           "range_deg": [
+            -5,
+            5
+           ]
+          },
+          {
+           "quantity": "object mass and inertia multiplier",
+           "distribution": "none (nominal)",
+           "range": [
+            1.0,
+            1.0
+           ],
+           "schedule": "amplitude0.0to0.0 overfirsthalfupdates"
+          },
+          {
+           "quantity": "contact friction multiplier",
+           "distribution": "none (nominal)",
+           "range": [
+            1.0,
+            1.0
+           ],
+           "schedule": "amplitude0.0to0.0 overfirsthalfupdates"
+          },
+          {
+           "quantity": "joint encoder position",
+           "distribution": "independent Gaussian",
+           "sigma_rad": 0.002
+          },
+          {
+           "quantity": "joint encoder velocity",
+           "distribution": "independent Gaussian",
+           "sigma_radps": 0.05
+          }
+         ],
+         "curriculum": {
+          "method": "Supported/pregrasp frames37,60,220,240 with old1mm penetration guard and no attachments. Full evaluation alwaysframe37, no curriculum. Warp begins after294; reset starts used here are all beforewarp. Initialize retained own PPO16prefix experts, both already PPO-trained; freezewhite while adaptingblack with PPO.",
+          "phase_probability": [
+           0.1,
+           0.0
+          ],
+          "schedule": "linear to final probability by80% of updates; remaining20% at final probability"
+         },
+         "observation_space": "199 deployable derived observations. Same21noisy fingerq/qd/FK, references and clock; wrist and activeblackobject pose/velocity transformed into known source reference coordinates using current fixed-lookup transform. Previous wrist targets use separately retained source-frame targets. Inverse transform includes rigid-frame translation/angular velocity; finger states unchanged. White worldstate unchanged. All inputs derive only from allowed noisy encoders, wrist/objectpose/velocity, previouscommands and known constant task-reference/controller history. No contacts, forces, torques, physicalparameters or reward signals. Physical qpos/qvel/contacts used by verification remain unmodified; only a separate observation-copy MjData is transformed. Currentreferenceframe is now also derived from allowed objectpose and fixedgeometry through the analytic carryclip; all199sourcefeatures remainpose/proprioception/time only. Branch normalizations frozen; phase>=240 selects black expert. White actor/logstd frozen; black actor and common critic trained with PPO.",
+         "action_space": "44 Gaussian neural residuals as21, decoded to20finger targets and one source-frame wrist target. Fingerdecoder,80msfilter,500Hzgentle encoder-based shaping and1kHzpublished PD unchanged. Transform the executed source wrist target by the fixed filtered frame reference, then apply the same2.5m/s and6rad/s physical target rate limits with encoder governor and finite-difference feedforward. Physical wrist impedance,30N/2Nm caps and own-handgravitycomp unchanged.",
+         "checkpoint": {
+          "path": "research/runs/carry_frame_v26_long_prefix02/final.pt",
+          "sha256": "e6266f7aa355…",
+          "deployable_npz": "research/runs/carry_frame_v26_long_prefix02/policy.npz",
+          "deployable_npz_sha256": "8f34479b1ab6…"
+         },
+         "compute": {
+          "wall_seconds": 1345.373328447342,
+          "allocated_gpu_hours": 0.373714813457595,
+          "gpus": 1,
+          "gpu_type": "NVIDIA L40S",
+          "cpu_threads": 16,
+          "accounting": "Cumulative training wall/GPU time through this prefix checkpoint; shared with later checkpoints of the same parent run, not an additional independent run."
+         },
+         "evaluation": {
+          "checkpoint": "research/runs/carry_frame_v26_long_prefix02/final.pt",
+          "checkpoint_sha256": "e6266f7aa355…",
+          "criteria_version": 1,
+          "sim_version": 26,
+          "episodes": 20,
+          "successes": 16,
+          "success_rate": 0.8,
+          "wilson95_success_interval": [
+           0.5839825677481064,
+           0.919342337420202
+          ],
+          "hardware_violating_episodes": 0,
+          "per_criterion_pass_counts": {
+           "initial_scene": 20,
+           "white_then_black": 20,
+           "white_preserved": 20,
+           "final_objects_separate": 20,
+           "global_phase_order": 18,
+           "hardware": 20,
+           "penetration": 20,
+           "wrist_similarity": 17,
+           "episode_duration": 20,
+           "plug_white_lift": 20,
+           "plug_white_physical_grasp": 20,
+           "plug_white_transport": 20,
+           "plug_white_final_standing": 20,
+           "plug_white_ordered_phases": 20,
+           "plug_white_grasp_duration": 20,
+           "plug_white_no_drop": 20,
+           "plug_black_lift": 20,
+           "plug_black_physical_grasp": 18,
+           "plug_black_transport": 18,
+           "plug_black_final_standing": 18,
+           "plug_black_ordered_phases": 18,
+           "plug_black_grasp_duration": 18,
+           "plug_black_no_drop": 20
+          },
+          "passed": false,
+          "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+          "inference_latency_max_s": 0.14090602899887017,
+          "evaluation_wall_seconds": 24.320292472839355,
+          "fine_audit": true,
+          "sampling_hz": 1000,
+          "simulation_directory": "research/sim_v26_frozen",
+          "trace_engine_sha256": "3dd297072a3e…",
+          "base_engine_sha256": "25ab616f3bab…",
+          "scene_sha256": "f72c66ffa15d…",
+          "reference_sha256": "39986c0a85ef…",
+          "evaluator_sha256": "d01b51463dde…",
+          "boundary_equivalence_validation": {
+           "policy_boundaries": 840,
+           "environments": 2,
+           "observations": 199,
+           "actions": 44,
+           "maximum_state_observation_reward_info_difference": 0.0,
+           "bitwise_equal": true,
+           "verification_states": "Actual physical states and contacts; no inverse reference transform in evidence."
+          },
+          "action_selection": "deterministic Gaussian mean, with encoder noise retained"
+         },
+         "baseline": {
+          "path": "research/sim_v26_frozen/baseline_eval/[redacted]",
+          "success_rate": 0.0,
+          "note": "Zero-residual reference tested on same20 initial cases; not a learned policy."
+         },
+         "reflection": "Second diagnostic prefix of continuing26black-onlyPPO, not independent training. Roughgoals rose toward50percent; evaluate fixedfullstart physicalcriteria1 without selecting seeds. Measured1kHz fixed20-case result: 16/20 successes, 0 hardware-violating episodes. Per-criterion counts: {\"initial_scene\": 20, \"white_then_black\": 20, \"white_preserved\": 20, \"final_objects_separate\": 20, \"global_phase_order\": 18, \"hardware\": 20, \"penetration\": 20, \"wrist_similarity\": 17, \"episode_duration\": 20, \"plug_white_lift\": 20, \"plug_white_physical_grasp\": 20, \"plug_white_transport\": 20, \"plug_white_final_standing\": 20, \"plug_white_ordered_phases\": 20, \"plug_white_grasp_duration\": 20, \"plug_white_no_drop\": 20, \"plug_black_lift\": 20, \"plug_black_physical_grasp\": 18, \"plug_black_transport\": 18, \"plug_black_final_standing\": 18, \"plug_black_ordered_phases\": 18, \"plug_black_grasp_duration\": 18, \"plug_black_no_drop\": 20}",
+         "limitations": [
+          "Simulation-only with oracle allowed object poses and specified noisy encoders; no real-robot claim.",
+          "Task/contact evidence at1kHz, force threshold1mN; finite-step rigid contact model.",
+          "Twenty fixed scene-specific seeds used for iterative diagnosis, not broad generalization evidence."
+         ],
+         "simulation_record_sha256": "0239c34bddbb…",
+         "training_lineage": {
+          "source_checkpoint": "research/runs/carry_frame_v26/final.pt",
+          "source_sha256": "5c97970ab56a…",
+          "prior_unique_steps": 22937600,
+          "step_counter_offset": 22937600,
+          "accounting": "Continue26from measured2/20strictsuccess checkpoint; source16ancestry plus262144PPO26steps counted once.",
+          "reference_adaptation": "Offline fixed rigid-grasp transform from own16teacher case0 and unchanged reconstruction5humanwrist. Finalpolicy is closedloop PPO residual; baselinezerooutputs separately0/20.",
+          "operator_extension_record": "r0164",
+          "hard_deadline_utc": "2026-11-05T14:24:56Z"
+         },
+         "checkpoint_prefix_evaluation": {
+          "parent_run": "research/runs/carry_frame_v26_long",
+          "selected_steps": 25198592,
+          "reason": "Diagnostic prefix while same PPO fine-tuning continues; cumulative curves/wall time through checkpoint, not independent training."
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "a1c39a2dc031",
+          "bytes": 125181,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "9aecbda9ef93",
+          "bytes": 449048,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "3909c2abeb41",
+          "bytes": 547842,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "5e6d5ead0ecd",
+          "bytes": 506975,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0182",
+        "seq": 182,
+        "kind": "verify",
+        "version": 52,
+        "recorded_utc": "2026-11-05T08:22:45Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0181",
+         "criteria_version": 1,
+         "verdict": "fail",
+         "policy": {
+          "path": "research/runs/carry_frame_v26_long_prefix02/final.pt",
+          "sha256": "e6266f7aa355…",
+          "deployable_npz": "research/runs/carry_frame_v26_long_prefix02/policy.npz",
+          "deployable_npz_sha256": "8f34479b1ab6…"
+         },
+         "episodes": 20,
+         "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+         "result": {
+          "criteria_version": 1,
+          "sim_version": 26,
+          "episodes": 20,
+          "successes": 16,
+          "success_rate": 0.8,
+          "wilson95_success_interval": [
+           0.5839825677481064,
+           0.919342337420202
+          ],
+          "hardware_violating_episodes": 0,
+          "per_criterion_pass_counts": {
+           "initial_scene": 20,
+           "white_then_black": 20,
+           "white_preserved": 20,
+           "final_objects_separate": 20,
+           "global_phase_order": 18,
+           "hardware": 20,
+           "penetration": 20,
+           "wrist_similarity": 17,
+           "episode_duration": 20,
+           "plug_white_lift": 20,
+           "plug_white_physical_grasp": 20,
+           "plug_white_transport": 20,
+           "plug_white_final_standing": 20,
+           "plug_white_ordered_phases": 20,
+           "plug_white_grasp_duration": 20,
+           "plug_white_no_drop": 20,
+           "plug_black_lift": 20,
+           "plug_black_physical_grasp": 18,
+           "plug_black_transport": 18,
+           "plug_black_final_standing": 18,
+           "plug_black_ordered_phases": 18,
+           "plug_black_grasp_duration": 18,
+           "plug_black_no_drop": 20
+          },
+          "passed": false,
+          "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+          "inference_latency_max_s": 0.14090602899887017,
+          "evaluation_wall_seconds": 24.320292472839355,
+          "fine_audit": true,
+          "sampling_hz": 1000,
+          "simulation_directory": "research/sim_v26_frozen",
+          "trace_engine_sha256": "3dd297072a3e…",
+          "base_engine_sha256": "25ab616f3bab…",
+          "scene_sha256": "f72c66ffa15d…",
+          "reference_sha256": "39986c0a85ef…",
+          "evaluator_sha256": "d01b51463dde…",
+          "boundary_equivalence_validation": {
+           "policy_boundaries": 840,
+           "environments": 2,
+           "observations": 199,
+           "actions": 44,
+           "maximum_state_observation_reward_info_difference": 0.0,
+           "bitwise_equal": true,
+           "verification_states": "Actual physical states and contacts; no inverse reference transform in evidence."
+          }
+         },
+         "evidence": {
+          "metrics": "research/runs/carry_frame_v26_long_prefix02/eval/[redacted]",
+          "rollout": {
+           "episode": 0,
+           "seed": 1001,
+           "success": true,
+           "description": "First successful fixed evaluation case, with a failed case separately where present."
+          }
+         },
+         "limitations": [
+          "Simulation-only with oracle allowed object poses and specified noisy encoders; no real-robot claim.",
+          "Task/contact evidence at1kHz, force threshold1mN; finite-step rigid contact model.",
+          "Twenty fixed scene-specific seeds used for iterative diagnosis, not broad generalization evidence."
+         ],
+         "reflection": "Second diagnostic prefix of continuing26black-onlyPPO, not independent training. Roughgoals rose toward50percent; evaluate fixedfullstart physicalcriteria1 without selecting seeds. Measured1kHz fixed20-case result: 16/20 successes, 0 hardware-violating episodes. Per-criterion counts: {\"initial_scene\": 20, \"white_then_black\": 20, \"white_preserved\": 20, \"final_objects_separate\": 20, \"global_phase_order\": 18, \"hardware\": 20, \"penetration\": 20, \"wrist_similarity\": 17, \"episode_duration\": 20, \"plug_white_lift\": 20, \"plug_white_physical_grasp\": 20, \"plug_white_transport\": 20, \"plug_white_final_standing\": 20, \"plug_white_ordered_phases\": 20, \"plug_white_grasp_duration\": 20, \"plug_white_no_drop\": 20, \"plug_black_lift\": 20, \"plug_black_physical_grasp\": 18, \"plug_black_transport\": 18, \"plug_black_final_standing\": 18, \"plug_black_ordered_phases\": 18, \"plug_black_grasp_duration\": 18, \"plug_black_no_drop\": 20}"
+        },
+        "files": {
+         "file_1": {
+          "sha": "b849b6ff4e5e",
+          "bytes": 157717,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "8f34479b1ab6",
+          "bytes": 1383631,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "8b2b465cb47f",
+          "bytes": 518911,
+          "content_type": "application/json"
+         },
+         "file_4": {
+          "sha": "6e95fbe5a83f",
+          "bytes": 5167164,
+          "content_type": "application/octet-stream"
+         },
+         "file_5": {
+          "sha": "eae5fd58051a",
+          "bytes": 5094576,
+          "content_type": "application/octet-stream"
+         },
+         "file_6": {
+          "sha": "f3e1fe222c11",
+          "bytes": 4709147,
+          "content_type": "application/octet-stream"
+         },
+         "file_7": {
+          "sha": "42c1778b8a4d",
+          "bytes": 4745222,
+          "content_type": "application/octet-stream"
+         },
+         "file_8": {
+          "sha": "0f15c89f05b6",
+          "bytes": 344,
+          "content_type": "application/json"
+         },
+         "video_left_failed": {
+          "sha": "875c1c1ba164",
+          "bytes": 441343,
+          "content_type": "video/mp4"
+         },
+         "video_left_successful": {
+          "sha": "9aecbda9ef93",
+          "bytes": 449048,
+          "content_type": "video/mp4"
+         },
+         "video_right_failed": {
+          "sha": "5060031d10bf",
+          "bytes": 541227,
+          "content_type": "video/mp4"
+         },
+         "video_right_successful": {
+          "sha": "3909c2abeb41",
+          "bytes": 547842,
+          "content_type": "video/mp4"
+         },
+         "video_top_failed": {
+          "sha": "ed6ce9d7fc40",
+          "bytes": 498673,
+          "content_type": "video/mp4"
+         },
+         "video_top_successful": {
+          "sha": "5e6d5ead0ecd",
+          "bytes": 506975,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0183",
+        "seq": 183,
+        "kind": "note",
+        "version": 47,
+        "recorded_utc": "2026-11-05T08:23:23Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Second26longprefix measured16/20strictcriteria1successes at1kHz: hardware20/20, penetration20/20, physicalblackgrasp18/20, blackstanding18/20, wrist17/20. Preservecheckpoint; continueexisting1e-5PPO and branchfromsameexactprefix at3e-6 for stable refinement. No criteria orphysicschange. Smooth28tested0/20; fixedplanarshift degraded grip and wristp95, so prioritize successful26adaptation."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0184",
+        "seq": 184,
+        "kind": "iter",
+        "version": 51,
+        "recorded_utc": "2026-11-05T08:26:11Z",
+        "exception": false,
+        "body": {
+         "sim_version": 26,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO",
+          "architecture": {
+           "actor": [
+            256,
+            256
+           ],
+           "critic": [
+            256,
+            256
+           ],
+           "activation": "tanh",
+           "observation_dim": 199,
+           "action_dim": 44,
+           "actor_experts": 2,
+           "gate": "Internal deployable reference phase>=240 selects black actor; white actor otherwise."
+          },
+          "hyperparameters": {
+           "out": "research/runs/carry_frame_v26_long",
+           "warp_start": 1.0,
+           "warp_end": 1.0,
+           "learning_rate": 1e-05,
+           "steps": 5000000,
+           "envs": 32,
+           "threads": 16,
+           "seed": 2636,
+           "resume": "research/runs/carry_frame_v26_long/init.pt",
+           "reset_optimizer": true,
+           "resume_rms_count": null,
+           "preserve_rms_function": false,
+           "value_huber": 5.0,
+           "dual_actor": true,
+           "black_resume": "research/runs/carry_frame_v26_long/init.pt",
+           "freeze_white": true,
+           "freeze_black": false,
+           "white_subtask": false,
+           "reset_frames": "37,60,220,240",
+           "gae_lambda": 0.99,
+           "physics_start": 0.0,
+           "physics_end": 0.0,
+           "reward_scale": 0.01,
+           "device": "cuda:1",
+           "phase_start": 0.1,
+           "phase_end": 0.0,
+           "algorithm": "PPO",
+           "clip": 0.2,
+           "gamma": 0.997,
+           "horizon": 256,
+           "batch": 8192,
+           "minibatch": 1024,
+           "epochs": 4,
+           "entropy_coefficient": 0.002,
+           "value_coefficient": 0.5,
+           "value_clipping": false,
+           "reward_scale_for_learning": 0.01,
+           "max_grad_norm": 0.5,
+           "policy_observations": "deployable",
+           "actor_layers": [
+            256,
+            256
+           ],
+           "critic_layers": [
+            256,
+            256
+           ],
+           "activation": "tanh",
+           "actor_experts": 2,
+           "black_normalization": "frozen at black-source checkpoint; raw input",
+           "policy_hz": 50,
+           "command_hz": 500,
+           "pd_hz": 1000,
+           "observation_dimension": 199,
+           "action_dimension": 44,
+           "observation_normalization": "both actor/critic normalization frozen at source; variance floor0.0004; clip10; white actor/logstd frozen; only black actor and common critic PPO updates"
+          },
+          "total_training_steps": 25608192,
+          "new_training_steps": 2670592,
+          "reported_checkpoint_step_counter": 25608192,
+          "total_unique_lineage_training_steps": 25608192
+         },
+         "reward_terms": [
+          {
+           "name": "object_position",
+           "formula": "sum_o weight*exp(-||p-p_ref||^2/0.035^2); weight2 active,.35 otherwise During blackaugmentation, physical reference target adds[0,-shift_y,lift_z]. Blacktracking target is transformed by the same current fixed-reference frame in25; humanwrist reward remains physical/untransformed.",
+           "weight": 1
+          },
+          {
+           "name": "object_axis",
+           "formula": "Active:2.5*(clip(dot(actual blade axis,reference blade axis),-1,1)+1)/2+2exp(-angle²/.35²); inactive:.15exp(-angle²/.5²). Blacktracking target is transformed by the same current fixed-reference frame in25; humanwrist reward remains physical/untransformed.",
+           "weight": 1
+          },
+          {
+           "name": "wrist_tracking",
+           "formula": "Physical wrist to unchanged human wrist arrays, with fixed training phase map declared in sim15. Black:.45exp(-position_error²/.055²)+.45exp(-SO3_error²/.45²)-min(4,3(relu(position_error-.08)/.03)²)-min(4,2(relu(SO3_error-1.0471975512)/.3)²). White:1.5exp(-position_error²/.055²)+1.5exp(-SO3_error²/.45²)-min(4,8(relu(position_error-.055)/.03)²)-min(4,4(relu(SO3_error-.70)/.3)²).",
+           "weight": 1
+          },
+          {
+           "name": "finger_tracking",
+           "formula": "exp(-mean(q-q_ref)^2/.16)",
+           "weight": 0.2
+          },
+          {
+           "name": "opposed_contact",
+           "formula": "Active:0.6 positional opposition else0.1 any hand;0.8 balanced force/0.6N with opposed normals;0.4exp(-pad-bodySDF^2/.02^2) each thumb/index/middle. Before supported upright left, add0.8*clip(min(three normal forces)/.3N)*clip(norm(cross(index-thumb,middle-thumb))/.0004m2), with opposition and three contacts. Once supported upright left, replace accumulated contact term by0.15*term-0.6*sum(three normal forces)+0.4 anyhand before release-due or-0.4 anyhand after. Always subtract0.15sum min(10,relu(force-4N)). Supported-before-release-due: add max_over_thumb,index,middle exp(-((bodySDF(padskin)-.0015)/.01)^2) to encourage gentle last contact. Release-ready additionally needs phase>=205 white or>=373 black. Release-due requires phase>=205white/373black and span>=3.6white/3.3black, without upper bound. Actual settled/milestone/terminal eligibility retains upper duration bounds through release-ready.",
+           "weight": 1
+          },
+          {
+           "name": "lift_height",
+           "formula": "Active phase100<=f<155white or280<=f<360black:2clip(bottom/(.015white,.035black),0,1)*(.3+.7exp(-tilt²/.45²)); after interval if left:exp(-bottom²/.005²)exp(-tilt²/.3²). Also active during black augmentation re-lift/carry stages2/3.",
+           "weight": 1
+          },
+          {
+           "name": "settled",
+           "formula": "Per-object upright left/base supported/velocity small/no hand AND release-ready. Release-ready: first sustained opposed grasp to final touch span3.6-5.8s white,3.3-5.4s black; reference-initialized preplaced objects exempt during curriculum.",
+           "weight": 1
+          },
+          {
+           "name": "milestones",
+           "formula": "First settled/release-ready+8; first bottom>1cm+2; one-off-20 for first supporting table contact on right after an upright-air sample. One-off-20 if bottom>5mm or rotation from actual initial orientation>10deg before100ms stable opposed grasp during active phase; stable grasp flag latches once achieved.",
+           "weight": 1
+          },
+          {
+           "name": "action_smoothness",
+           "formula": "-.02sum(filtered_action²/group_size)-.03sum(action_change²/group_size); legacy29 and extra15 each separately normalized.",
+           "weight": 1
+          },
+          {
+           "name": "joint_speed",
+           "formula": "-mean((qd/(.8*published_speed))^4)",
+           "weight": 0.1
+          },
+          {
+           "name": "ordered_rest",
+           "formula": "Before white first settled:-2min(4,relu(blackXYdrift-.005)/.01); active plug:-2clip((y-.13)/.04,0,1)*relu(blade_tilt-.34906585), no tilt upper cap.",
+           "weight": 1
+          },
+          {
+           "name": "penetration",
+           "formula": "-min(4,(max_[redacted]-.003)^2/.003^2) above3mm",
+           "weight": 0.2
+          },
+          {
+           "name": "terminal",
+           "formula": "-20000 hardware violation;-25 drop/nonfinite;-100 timeout without stable goal;+20000 both settled/release-ready continuously1.6s AND no hardware/drop/nonfinite and maximum physical penetration<=3mm. Full criteria independently checked.",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "initial object XY",
+           "distribution": "independent uniform",
+           "range_m": [
+            -0.005,
+            0.005
+           ]
+          },
+          {
+           "quantity": "initial object yaw",
+           "distribution": "independent uniform",
+           "range_deg": [
+            -5,
+            5
+           ]
+          },
+          {
+           "quantity": "object mass and inertia multiplier",
+           "distribution": "none (nominal)",
+           "range": [
+            1.0,
+            1.0
+           ],
+           "schedule": "amplitude0.0to0.0 overfirsthalfupdates"
+          },
+          {
+           "quantity": "contact friction multiplier",
+           "distribution": "none (nominal)",
+           "range": [
+            1.0,
+            1.0
+           ],
+           "schedule": "amplitude0.0to0.0 overfirsthalfupdates"
+          },
+          {
+           "quantity": "joint encoder position",
+           "distribution": "independent Gaussian",
+           "sigma_rad": 0.002
+          },
+          {
+           "quantity": "joint encoder velocity",
+           "distribution": "independent Gaussian",
+           "sigma_radps": 0.05
+          }
+         ],
+         "curriculum": {
+          "method": "Supported/pregrasp frames37,60,220,240 with old1mm penetration guard and no attachments. Full evaluation alwaysframe37, no curriculum. Warp begins after294; reset starts used here are all beforewarp. Initialize retained own PPO16prefix experts, both already PPO-trained; freezewhite while adaptingblack with PPO.",
+          "phase_probability": [
+           0.1,
+           0.0
+          ],
+          "schedule": "linear to final probability by80% of updates; remaining20% at final probability"
+         },
+         "observation_space": "199 deployable derived observations. Same21noisy fingerq/qd/FK, references and clock; wrist and activeblackobject pose/velocity transformed into known source reference coordinates using current fixed-lookup transform. Previous wrist targets use separately retained source-frame targets. Inverse transform includes rigid-frame translation/angular velocity; finger states unchanged. White worldstate unchanged. All inputs derive only from allowed noisy encoders, wrist/objectpose/velocity, previouscommands and known constant task-reference/controller history. No contacts, forces, torques, physicalparameters or reward signals. Physical qpos/qvel/contacts used by verification remain unmodified; only a separate observation-copy MjData is transformed. Currentreferenceframe is now also derived from allowed objectpose and fixedgeometry through the analytic carryclip; all199sourcefeatures remainpose/proprioception/time only. Branch normalizations frozen; phase>=240 selects black expert. White actor/logstd frozen; black actor and common critic trained with PPO.",
+         "action_space": "44 Gaussian neural residuals as21, decoded to20finger targets and one source-frame wrist target. Fingerdecoder,80msfilter,500Hzgentle encoder-based shaping and1kHzpublished PD unchanged. Transform the executed source wrist target by the fixed filtered frame reference, then apply the same2.5m/s and6rad/s physical target rate limits with encoder governor and finite-difference feedforward. Physical wrist impedance,30N/2Nm caps and own-handgravitycomp unchanged.",
+         "checkpoint": {
+          "path": "research/runs/carry_frame_v26_long_prefix03/final.pt",
+          "sha256": "52d3515562cd…",
+          "deployable_npz": "research/runs/carry_frame_v26_long_prefix03/policy.npz",
+          "deployable_npz_sha256": "7423557fb995…"
+         },
+         "compute": {
+          "wall_seconds": 1595.8929462432861,
+          "allocated_gpu_hours": 0.4433035961786906,
+          "gpus": 1,
+          "gpu_type": "NVIDIA L40S",
+          "cpu_threads": 16,
+          "accounting": "Cumulative training wall/GPU time through this prefix checkpoint; shared with later checkpoints of the same parent run, not an additional independent run."
+         },
+         "evaluation": {
+          "checkpoint": "research/runs/carry_frame_v26_long_prefix03/final.pt",
+          "checkpoint_sha256": "52d3515562cd…",
+          "criteria_version": 1,
+          "sim_version": 26,
+          "episodes": 20,
+          "successes": 13,
+          "success_rate": 0.65,
+          "wilson95_success_interval": [
+           0.43285427668523624,
+           0.818808175898918
+          ],
+          "hardware_violating_episodes": 0,
+          "per_criterion_pass_counts": {
+           "initial_scene": 20,
+           "white_then_black": 20,
+           "white_preserved": 20,
+           "final_objects_separate": 20,
+           "global_phase_order": 17,
+           "hardware": 20,
+           "penetration": 20,
+           "wrist_similarity": 15,
+           "episode_duration": 20,
+           "plug_white_lift": 20,
+           "plug_white_physical_grasp": 20,
+           "plug_white_transport": 20,
+           "plug_white_final_standing": 20,
+           "plug_white_ordered_phases": 20,
+           "plug_white_grasp_duration": 20,
+           "plug_white_no_drop": 20,
+           "plug_black_lift": 20,
+           "plug_black_physical_grasp": 16,
+           "plug_black_transport": 17,
+           "plug_black_final_standing": 17,
+           "plug_black_ordered_phases": 17,
+           "plug_black_grasp_duration": 17,
+           "plug_black_no_drop": 20
+          },
+          "passed": false,
+          "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+          "inference_latency_max_s": 0.14267782499882742,
+          "evaluation_wall_seconds": 25.342877864837646,
+          "fine_audit": true,
+          "sampling_hz": 1000,
+          "simulation_directory": "research/sim_v26_frozen",
+          "trace_engine_sha256": "3dd297072a3e…",
+          "base_engine_sha256": "25ab616f3bab…",
+          "scene_sha256": "f72c66ffa15d…",
+          "reference_sha256": "39986c0a85ef…",
+          "evaluator_sha256": "d01b51463dde…",
+          "boundary_equivalence_validation": {
+           "policy_boundaries": 840,
+           "environments": 2,
+           "observations": 199,
+           "actions": 44,
+           "maximum_state_observation_reward_info_difference": 0.0,
+           "bitwise_equal": true,
+           "verification_states": "Actual physical states and contacts; no inverse reference transform in evidence."
+          },
+          "action_selection": "deterministic Gaussian mean, with encoder noise retained"
+         },
+         "baseline": {
+          "path": "research/sim_v26_frozen/baseline_eval/[redacted]",
+          "success_rate": 0.0,
+          "note": "Zero-residual reference tested on same20 initial cases; not a learned policy."
+         },
+         "reflection": "Third saved prefix of the same continuing26PPO run. Test additional adaptation after16/20 measured prefix02. Same full20 fixed cases, criteria1, nominalphysics, physical1kHz contacts and frozenwhite actor; no seedselection. Measured1kHz fixed20-case result: 13/20 successes, 0 hardware-violating episodes. Per-criterion counts: {\"initial_scene\": 20, \"white_then_black\": 20, \"white_preserved\": 20, \"final_objects_separate\": 20, \"global_phase_order\": 17, \"hardware\": 20, \"penetration\": 20, \"wrist_similarity\": 15, \"episode_duration\": 20, \"plug_white_lift\": 20, \"plug_white_physical_grasp\": 20, \"plug_white_transport\": 20, \"plug_white_final_standing\": 20, \"plug_white_ordered_phases\": 20, \"plug_white_grasp_duration\": 20, \"plug_white_no_drop\": 20, \"plug_black_lift\": 20, \"plug_black_physical_grasp\": 16, \"plug_black_transport\": 17, \"plug_black_final_standing\": 17, \"plug_black_ordered_phases\": 17, \"plug_black_grasp_duration\": 17, \"plug_black_no_drop\": 20}",
+         "limitations": [
+          "Simulation-only with oracle allowed object poses and specified noisy encoders; no real-robot claim.",
+          "Task/contact evidence at1kHz, force threshold1mN; finite-step rigid contact model.",
+          "Twenty fixed scene-specific seeds used for iterative diagnosis, not broad generalization evidence."
+         ],
+         "simulation_record_sha256": "0239c34bddbb…",
+         "training_lineage": {
+          "source_checkpoint": "research/runs/carry_frame_v26/final.pt",
+          "source_sha256": "5c97970ab56a…",
+          "prior_unique_steps": 22937600,
+          "step_counter_offset": 22937600,
+          "accounting": "Continue26from measured2/20strictsuccess checkpoint; source16ancestry plus262144PPO26steps counted once.",
+          "reference_adaptation": "Offline fixed rigid-grasp transform from own16teacher case0 and unchanged reconstruction5humanwrist. Finalpolicy is closedloop PPO residual; baselinezerooutputs separately0/20.",
+          "operator_extension_record": "r0164",
+          "hard_deadline_utc": "2026-11-05T14:24:56Z"
+         },
+         "checkpoint_prefix_evaluation": {
+          "parent_run": "research/runs/carry_frame_v26_long",
+          "selected_steps": 25608192,
+          "reason": "Diagnostic prefix while same PPO fine-tuning continues; cumulative curves/wall time through checkpoint, not independent training."
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "813aee6b35b6",
+          "bytes": 147815,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "6c7ae7f4490c",
+          "bytes": 448392,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "e87493f8d29e",
+          "bytes": 542860,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "5968206e6e12",
+          "bytes": 502463,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0185",
+        "seq": 185,
+        "kind": "verify",
+        "version": 53,
+        "recorded_utc": "2026-11-05T08:26:13Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0184",
+         "criteria_version": 1,
+         "verdict": "fail",
+         "policy": {
+          "path": "research/runs/carry_frame_v26_long_prefix03/final.pt",
+          "sha256": "52d3515562cd…",
+          "deployable_npz": "research/runs/carry_frame_v26_long_prefix03/policy.npz",
+          "deployable_npz_sha256": "7423557fb995…"
+         },
+         "episodes": 20,
+         "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+         "result": {
+          "criteria_version": 1,
+          "sim_version": 26,
+          "episodes": 20,
+          "successes": 13,
+          "success_rate": 0.65,
+          "wilson95_success_interval": [
+           0.43285427668523624,
+           0.818808175898918
+          ],
+          "hardware_violating_episodes": 0,
+          "per_criterion_pass_counts": {
+           "initial_scene": 20,
+           "white_then_black": 20,
+           "white_preserved": 20,
+           "final_objects_separate": 20,
+           "global_phase_order": 17,
+           "hardware": 20,
+           "penetration": 20,
+           "wrist_similarity": 15,
+           "episode_duration": 20,
+           "plug_white_lift": 20,
+           "plug_white_physical_grasp": 20,
+           "plug_white_transport": 20,
+           "plug_white_final_standing": 20,
+           "plug_white_ordered_phases": 20,
+           "plug_white_grasp_duration": 20,
+           "plug_white_no_drop": 20,
+           "plug_black_lift": 20,
+           "plug_black_physical_grasp": 16,
+           "plug_black_transport": 17,
+           "plug_black_final_standing": 17,
+           "plug_black_ordered_phases": 17,
+           "plug_black_grasp_duration": 17,
+           "plug_black_no_drop": 20
+          },
+          "passed": false,
+          "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+          "inference_latency_max_s": 0.14267782499882742,
+          "evaluation_wall_seconds": 25.342877864837646,
+          "fine_audit": true,
+          "sampling_hz": 1000,
+          "simulation_directory": "research/sim_v26_frozen",
+          "trace_engine_sha256": "3dd297072a3e…",
+          "base_engine_sha256": "25ab616f3bab…",
+          "scene_sha256": "f72c66ffa15d…",
+          "reference_sha256": "39986c0a85ef…",
+          "evaluator_sha256": "d01b51463dde…",
+          "boundary_equivalence_validation": {
+           "policy_boundaries": 840,
+           "environments": 2,
+           "observations": 199,
+           "actions": 44,
+           "maximum_state_observation_reward_info_difference": 0.0,
+           "bitwise_equal": true,
+           "verification_states": "Actual physical states and contacts; no inverse reference transform in evidence."
+          }
+         },
+         "evidence": {
+          "metrics": "research/runs/carry_frame_v26_long_prefix03/eval/[redacted]",
+          "rollout": {
+           "episode": 0,
+           "seed": 1001,
+           "success": true,
+           "description": "First successful fixed evaluation case, with a failed case separately where present."
+          }
+         },
+         "limitations": [
+          "Simulation-only with oracle allowed object poses and specified noisy encoders; no real-robot claim.",
+          "Task/contact evidence at1kHz, force threshold1mN; finite-step rigid contact model.",
+          "Twenty fixed scene-specific seeds used for iterative diagnosis, not broad generalization evidence."
+         ],
+         "reflection": "Third saved prefix of the same continuing26PPO run. Test additional adaptation after16/20 measured prefix02. Same full20 fixed cases, criteria1, nominalphysics, physical1kHz contacts and frozenwhite actor; no seedselection. Measured1kHz fixed20-case result: 13/20 successes, 0 hardware-violating episodes. Per-criterion counts: {\"initial_scene\": 20, \"white_then_black\": 20, \"white_preserved\": 20, \"final_objects_separate\": 20, \"global_phase_order\": 17, \"hardware\": 20, \"penetration\": 20, \"wrist_similarity\": 15, \"episode_duration\": 20, \"plug_white_lift\": 20, \"plug_white_physical_grasp\": 20, \"plug_white_transport\": 20, \"plug_white_final_standing\": 20, \"plug_white_ordered_phases\": 20, \"plug_white_grasp_duration\": 20, \"plug_white_no_drop\": 20, \"plug_black_lift\": 20, \"plug_black_physical_grasp\": 16, \"plug_black_transport\": 17, \"plug_black_final_standing\": 17, \"plug_black_ordered_phases\": 17, \"plug_black_grasp_duration\": 17, \"plug_black_no_drop\": 20}"
+        },
+        "files": {
+         "file_1": {
+          "sha": "4064fcff8d35",
+          "bytes": 154291,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "7423557fb995",
+          "bytes": 1383535,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "8b2b465cb47f",
+          "bytes": 518911,
+          "content_type": "application/json"
+         },
+         "file_4": {
+          "sha": "41b222ac3ca2",
+          "bytes": 5166915,
+          "content_type": "application/octet-stream"
+         },
+         "file_5": {
+          "sha": "73d7884f8b85",
+          "bytes": 5082308,
+          "content_type": "application/octet-stream"
+         },
+         "file_6": {
+          "sha": "cc44a31ec9a0",
+          "bytes": 4703243,
+          "content_type": "application/octet-stream"
+         },
+         "file_7": {
+          "sha": "82a86e7a618c",
+          "bytes": 4729067,
+          "content_type": "application/octet-stream"
+         },
+         "file_8": {
+          "sha": "0f15c89f05b6",
+          "bytes": 344,
+          "content_type": "application/json"
+         },
+         "video_left_failed": {
+          "sha": "24f28af8ca6b",
+          "bytes": 440427,
+          "content_type": "video/mp4"
+         },
+         "video_left_successful": {
+          "sha": "6c7ae7f4490c",
+          "bytes": 448392,
+          "content_type": "video/mp4"
+         },
+         "video_right_failed": {
+          "sha": "d5c010d24894",
+          "bytes": 537097,
+          "content_type": "video/mp4"
+         },
+         "video_right_successful": {
+          "sha": "e87493f8d29e",
+          "bytes": 542860,
+          "content_type": "video/mp4"
+         },
+         "video_top_failed": {
+          "sha": "6ca7a14185e3",
+          "bytes": 497329,
+          "content_type": "video/mp4"
+         },
+         "video_top_successful": {
+          "sha": "5968206e6e12",
+          "bytes": 502463,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0186",
+        "seq": 186,
+        "kind": "note",
+        "version": 48,
+        "recorded_utc": "2026-11-05T08:28:09Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "PPO26 long prefix03 fell from16 to13 full successes despite18/20 standing. Black opposed airborne contact fractions of0.75-0.78 fail the unchanged80percent criterion. Test a reward-only penalty of40 per50Hz step for black clearance>5mm without opposed thumb/index-or-middle contact. Same frozen simulation26, observations199 and outputs44, white actor frozen; contacts enter reward only. Start from preserved16-success prefix02, lower learning rate3e-6, nominal physics and full starts. No criterion changes."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0187",
+        "seq": 187,
+        "kind": "note",
+        "version": 49,
+        "recorded_utc": "2026-11-05T08:28:28Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Correction to the immediately preceding contact-reward hypothesis note: prefix03 black final standing is17/20, not18/20. Its exact recorded metrics are in verification r0185: full successes13/20, opposed black grasp16/20, wrist15/20, hardware and penetration20/20. The18/20 standing value belongs to prefix02. This correction does not change the reward experiment or criteria."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0188",
+        "seq": 188,
+        "kind": "note",
+        "version": 50,
+        "recorded_utc": "2026-11-05T08:30:05Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Lineage metadata correction for the continuing26 run and its already-recorded prefixes: source_checkpoint path research/runs/carry_frame_v26/final.pt and prior step count22937600 were correct, but source_sha256 had inherited the original16 checksum. Actual26 source SHA256 is6f4e7558a367a393831108d9cb989ef0b8b710f5126b4be06dcf29964a3578cf. Reloaded initial checkpoint model tensors match this source bitwise(maximum difference0). Corrected parent metadata for later records; existing published records and evidence remain unchanged. Refinement and contact branches already have the correct prefix02 source hash e6266f7aa355…."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0189",
+        "seq": 189,
+        "kind": "iter",
+        "version": 52,
+        "recorded_utc": "2026-11-05T08:31:09Z",
+        "exception": false,
+        "body": {
+         "sim_version": 26,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO",
+          "architecture": {
+           "actor": [
+            256,
+            256
+           ],
+           "critic": [
+            256,
+            256
+           ],
+           "activation": "tanh",
+           "observation_dim": 199,
+           "action_dim": 44,
+           "actor_experts": 2,
+           "gate": "Internal deployable reference phase>=240 selects black actor; white actor otherwise."
+          },
+          "hyperparameters": {
+           "out": "research/runs/carry_frame_v26_long",
+           "warp_start": 1.0,
+           "warp_end": 1.0,
+           "learning_rate": 1e-05,
+           "steps": 5000000,
+           "envs": 32,
+           "threads": 16,
+           "seed": 2636,
+           "resume": "research/runs/carry_frame_v26_long/init.pt",
+           "reset_optimizer": true,
+           "resume_rms_count": null,
+           "preserve_rms_function": false,
+           "value_huber": 5.0,
+           "dual_actor": true,
+           "black_resume": "research/runs/carry_frame_v26_long/init.pt",
+           "freeze_white": true,
+           "freeze_black": false,
+           "white_subtask": false,
+           "reset_frames": "37,60,220,240",
+           "gae_lambda": 0.99,
+           "physics_start": 0.0,
+           "physics_end": 0.0,
+           "reward_scale": 0.01,
+           "device": "cuda:1",
+           "phase_start": 0.1,
+           "phase_end": 0.0,
+           "algorithm": "PPO",
+           "clip": 0.2,
+           "gamma": 0.997,
+           "horizon": 256,
+           "batch": 8192,
+           "minibatch": 1024,
+           "epochs": 4,
+           "entropy_coefficient": 0.002,
+           "value_coefficient": 0.5,
+           "value_clipping": false,
+           "reward_scale_for_learning": 0.01,
+           "max_grad_norm": 0.5,
+           "policy_observations": "deployable",
+           "actor_layers": [
+            256,
+            256
+           ],
+           "critic_layers": [
+            256,
+            256
+           ],
+           "activation": "tanh",
+           "actor_experts": 2,
+           "black_normalization": "frozen at black-source checkpoint; raw input",
+           "policy_hz": 50,
+           "command_hz": 500,
+           "pd_hz": 1000,
+           "observation_dimension": 199,
+           "action_dimension": 44,
+           "observation_normalization": "both actor/critic normalization frozen at source; variance floor0.0004; clip10; white actor/logstd frozen; only black actor and common critic PPO updates"
+          },
+          "total_training_steps": 26017792,
+          "new_training_steps": 3080192,
+          "reported_checkpoint_step_counter": 26017792,
+          "total_unique_lineage_training_steps": 26017792
+         },
+         "reward_terms": [
+          {
+           "name": "object_position",
+           "formula": "sum_o weight*exp(-||p-p_ref||^2/0.035^2); weight2 active,.35 otherwise During blackaugmentation, physical reference target adds[0,-shift_y,lift_z]. Blacktracking target is transformed by the same current fixed-reference frame in25; humanwrist reward remains physical/untransformed.",
+           "weight": 1
+          },
+          {
+           "name": "object_axis",
+           "formula": "Active:2.5*(clip(dot(actual blade axis,reference blade axis),-1,1)+1)/2+2exp(-angle²/.35²); inactive:.15exp(-angle²/.5²). Blacktracking target is transformed by the same current fixed-reference frame in25; humanwrist reward remains physical/untransformed.",
+           "weight": 1
+          },
+          {
+           "name": "wrist_tracking",
+           "formula": "Physical wrist to unchanged human wrist arrays, with fixed training phase map declared in sim15. Black:.45exp(-position_error²/.055²)+.45exp(-SO3_error²/.45²)-min(4,3(relu(position_error-.08)/.03)²)-min(4,2(relu(SO3_error-1.0471975512)/.3)²). White:1.5exp(-position_error²/.055²)+1.5exp(-SO3_error²/.45²)-min(4,8(relu(position_error-.055)/.03)²)-min(4,4(relu(SO3_error-.70)/.3)²).",
+           "weight": 1
+          },
+          {
+           "name": "finger_tracking",
+           "formula": "exp(-mean(q-q_ref)^2/.16)",
+           "weight": 0.2
+          },
+          {
+           "name": "opposed_contact",
+           "formula": "Active:0.6 positional opposition else0.1 any hand;0.8 balanced force/0.6N with opposed normals;0.4exp(-pad-bodySDF^2/.02^2) each thumb/index/middle. Before supported upright left, add0.8*clip(min(three normal forces)/.3N)*clip(norm(cross(index-thumb,middle-thumb))/.0004m2), with opposition and three contacts. Once supported upright left, replace accumulated contact term by0.15*term-0.6*sum(three normal forces)+0.4 anyhand before release-due or-0.4 anyhand after. Always subtract0.15sum min(10,relu(force-4N)). Supported-before-release-due: add max_over_thumb,index,middle exp(-((bodySDF(padskin)-.0015)/.01)^2) to encourage gentle last contact. Release-ready additionally needs phase>=205 white or>=373 black. Release-due requires phase>=205white/373black and span>=3.6white/3.3black, without upper bound. Actual settled/milestone/terminal eligibility retains upper duration bounds through release-ready.",
+           "weight": 1
+          },
+          {
+           "name": "lift_height",
+           "formula": "Active phase100<=f<155white or280<=f<360black:2clip(bottom/(.015white,.035black),0,1)*(.3+.7exp(-tilt²/.45²)); after interval if left:exp(-bottom²/.005²)exp(-tilt²/.3²). Also active during black augmentation re-lift/carry stages2/3.",
+           "weight": 1
+          },
+          {
+           "name": "settled",
+           "formula": "Per-object upright left/base supported/velocity small/no hand AND release-ready. Release-ready: first sustained opposed grasp to final touch span3.6-5.8s white,3.3-5.4s black; reference-initialized preplaced objects exempt during curriculum.",
+           "weight": 1
+          },
+          {
+           "name": "milestones",
+           "formula": "First settled/release-ready+8; first bottom>1cm+2; one-off-20 for first supporting table contact on right after an upright-air sample. One-off-20 if bottom>5mm or rotation from actual initial orientation>10deg before100ms stable opposed grasp during active phase; stable grasp flag latches once achieved.",
+           "weight": 1
+          },
+          {
+           "name": "action_smoothness",
+           "formula": "-.02sum(filtered_action²/group_size)-.03sum(action_change²/group_size); legacy29 and extra15 each separately normalized.",
+           "weight": 1
+          },
+          {
+           "name": "joint_speed",
+           "formula": "-mean((qd/(.8*published_speed))^4)",
+           "weight": 0.1
+          },
+          {
+           "name": "ordered_rest",
+           "formula": "Before white first settled:-2min(4,relu(blackXYdrift-.005)/.01); active plug:-2clip((y-.13)/.04,0,1)*relu(blade_tilt-.34906585), no tilt upper cap.",
+           "weight": 1
+          },
+          {
+           "name": "penetration",
+           "formula": "-min(4,(max_[redacted]-.003)^2/.003^2) above3mm",
+           "weight": 0.2
+          },
+          {
+           "name": "terminal",
+           "formula": "-20000 hardware violation;-25 drop/nonfinite;-100 timeout without stable goal;+20000 both settled/release-ready continuously1.6s AND no hardware/drop/nonfinite and maximum physical penetration<=3mm. Full criteria independently checked.",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "initial object XY",
+           "distribution": "independent uniform",
+           "range_m": [
+            -0.005,
+            0.005
+           ]
+          },
+          {
+           "quantity": "initial object yaw",
+           "distribution": "independent uniform",
+           "range_deg": [
+            -5,
+            5
+           ]
+          },
+          {
+           "quantity": "object mass and inertia multiplier",
+           "distribution": "none (nominal)",
+           "range": [
+            1.0,
+            1.0
+           ],
+           "schedule": "amplitude0.0to0.0 overfirsthalfupdates"
+          },
+          {
+           "quantity": "contact friction multiplier",
+           "distribution": "none (nominal)",
+           "range": [
+            1.0,
+            1.0
+           ],
+           "schedule": "amplitude0.0to0.0 overfirsthalfupdates"
+          },
+          {
+           "quantity": "joint encoder position",
+           "distribution": "independent Gaussian",
+           "sigma_rad": 0.002
+          },
+          {
+           "quantity": "joint encoder velocity",
+           "distribution": "independent Gaussian",
+           "sigma_radps": 0.05
+          }
+         ],
+         "curriculum": {
+          "method": "Supported/pregrasp frames37,60,220,240 with old1mm penetration guard and no attachments. Full evaluation alwaysframe37, no curriculum. Warp begins after294; reset starts used here are all beforewarp. Initialize retained own PPO16prefix experts, both already PPO-trained; freezewhite while adaptingblack with PPO.",
+          "phase_probability": [
+           0.1,
+           0.0
+          ],
+          "schedule": "linear to final probability by80% of updates; remaining20% at final probability"
+         },
+         "observation_space": "199 deployable derived observations. Same21noisy fingerq/qd/FK, references and clock; wrist and activeblackobject pose/velocity transformed into known source reference coordinates using current fixed-lookup transform. Previous wrist targets use separately retained source-frame targets. Inverse transform includes rigid-frame translation/angular velocity; finger states unchanged. White worldstate unchanged. All inputs derive only from allowed noisy encoders, wrist/objectpose/velocity, previouscommands and known constant task-reference/controller history. No contacts, forces, torques, physicalparameters or reward signals. Physical qpos/qvel/contacts used by verification remain unmodified; only a separate observation-copy MjData is transformed. Currentreferenceframe is now also derived from allowed objectpose and fixedgeometry through the analytic carryclip; all199sourcefeatures remainpose/proprioception/time only. Branch normalizations frozen; phase>=240 selects black expert. White actor/logstd frozen; black actor and common critic trained with PPO.",
+         "action_space": "44 Gaussian neural residuals as21, decoded to20finger targets and one source-frame wrist target. Fingerdecoder,80msfilter,500Hzgentle encoder-based shaping and1kHzpublished PD unchanged. Transform the executed source wrist target by the fixed filtered frame reference, then apply the same2.5m/s and6rad/s physical target rate limits with encoder governor and finite-difference feedforward. Physical wrist impedance,30N/2Nm caps and own-handgravitycomp unchanged.",
+         "checkpoint": {
+          "path": "research/runs/carry_frame_v26_long_prefix04/final.pt",
+          "sha256": "2ed83420cbc9…",
+          "deployable_npz": "research/runs/carry_frame_v26_long_prefix04/policy.npz",
+          "deployable_npz_sha256": "1d2b70cf6911…"
+         },
+         "compute": {
+          "wall_seconds": 1877.5133881568909,
+          "allocated_gpu_hours": 0.5215314967102475,
+          "gpus": 1,
+          "gpu_type": "NVIDIA L40S",
+          "cpu_threads": 16,
+          "accounting": "Cumulative training wall/GPU time through this prefix checkpoint; shared with later checkpoints of the same parent run, not an additional independent run."
+         },
+         "evaluation": {
+          "checkpoint": "research/runs/carry_frame_v26_long_prefix04/final.pt",
+          "checkpoint_sha256": "2ed83420cbc9…",
+          "criteria_version": 1,
+          "sim_version": 26,
+          "episodes": 20,
+          "successes": 17,
+          "success_rate": 0.85,
+          "wilson95_success_interval": [
+           0.6395811352592431,
+           0.9476312541037835
+          ],
+          "hardware_violating_episodes": 0,
+          "per_criterion_pass_counts": {
+           "initial_scene": 20,
+           "white_then_black": 20,
+           "white_preserved": 20,
+           "final_objects_separate": 20,
+           "global_phase_order": 20,
+           "hardware": 20,
+           "penetration": 20,
+           "wrist_similarity": 18,
+           "episode_duration": 20,
+           "plug_white_lift": 20,
+           "plug_white_physical_grasp": 20,
+           "plug_white_transport": 20,
+           "plug_white_final_standing": 20,
+           "plug_white_ordered_phases": 20,
+           "plug_white_grasp_duration": 20,
+           "plug_white_no_drop": 20,
+           "plug_black_lift": 20,
+           "plug_black_physical_grasp": 18,
+           "plug_black_transport": 20,
+           "plug_black_final_standing": 20,
+           "plug_black_ordered_phases": 20,
+           "plug_black_grasp_duration": 20,
+           "plug_black_no_drop": 20
+          },
+          "passed": false,
+          "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+          "inference_latency_max_s": 0.1422063589998288,
+          "evaluation_wall_seconds": 28.026129245758057,
+          "fine_audit": true,
+          "sampling_hz": 1000,
+          "simulation_directory": "research/sim_v26_frozen",
+          "trace_engine_sha256": "3dd297072a3e…",
+          "base_engine_sha256": "25ab616f3bab…",
+          "scene_sha256": "f72c66ffa15d…",
+          "reference_sha256": "39986c0a85ef…",
+          "evaluator_sha256": "d01b51463dde…",
+          "boundary_equivalence_validation": {
+           "policy_boundaries": 840,
+           "environments": 2,
+           "observations": 199,
+           "actions": 44,
+           "maximum_state_observation_reward_info_difference": 0.0,
+           "bitwise_equal": true,
+           "verification_states": "Actual physical states and contacts; no inverse reference transform in evidence."
+          },
+          "action_selection": "deterministic Gaussian mean, with encoder noise retained"
+         },
+         "baseline": {
+          "path": "research/sim_v26_frozen/baseline_eval/[redacted]",
+          "success_rate": 0.0,
+          "note": "Zero-residual reference tested on same20 initial cases; not a learned policy."
+         },
+         "reflection": "Fourth saved prefix of the same continuing26 PPO run. Preserve and compare full strict success, not rough placement goal. Parent lineage source hash corrected transparently in note r0188; checkpoint ancestry, exact steps and physics unchanged. Measured1kHz fixed20-case result: 17/20 successes, 0 hardware-violating episodes. Per-criterion counts: {\"initial_scene\": 20, \"white_then_black\": 20, \"white_preserved\": 20, \"final_objects_separate\": 20, \"global_phase_order\": 20, \"hardware\": 20, \"penetration\": 20, \"wrist_similarity\": 18, \"episode_duration\": 20, \"plug_white_lift\": 20, \"plug_white_physical_grasp\": 20, \"plug_white_transport\": 20, \"plug_white_final_standing\": 20, \"plug_white_ordered_phases\": 20, \"plug_white_grasp_duration\": 20, \"plug_white_no_drop\": 20, \"plug_black_lift\": 20, \"plug_black_physical_grasp\": 18, \"plug_black_transport\": 20, \"plug_black_final_standing\": 20, \"plug_black_ordered_phases\": 20, \"plug_black_grasp_duration\": 20, \"plug_black_no_drop\": 20}",
+         "limitations": [
+          "Simulation-only with oracle allowed object poses and specified noisy encoders; no real-robot claim.",
+          "Task/contact evidence at1kHz, force threshold1mN; finite-step rigid contact model.",
+          "Twenty fixed scene-specific seeds used for iterative diagnosis, not broad generalization evidence."
+         ],
+         "simulation_record_sha256": "0239c34bddbb…",
+         "training_lineage": {
+          "source_checkpoint": "research/runs/carry_frame_v26/final.pt",
+          "source_sha256": "6f4e7558a367…",
+          "prior_unique_steps": 22937600,
+          "step_counter_offset": 22937600,
+          "accounting": "Continue26from measured2/20strictsuccess checkpoint; source16ancestry plus262144PPO26steps counted once.",
+          "reference_adaptation": "Offline fixed rigid-grasp transform from own16teacher case0 and unchanged reconstruction5humanwrist. Finalpolicy is closedloop PPO residual; baselinezerooutputs separately0/20.",
+          "operator_extension_record": "r0164",
+          "hard_deadline_utc": "2026-11-05T14:24:56Z",
+          "hash_correction": "Source hash corrected after prefix03: earlier field inherited original16 hash while source path and step counters were correct. Public append-only correction note documents it."
+         },
+         "checkpoint_prefix_evaluation": {
+          "parent_run": "research/runs/carry_frame_v26_long",
+          "selected_steps": 26017792,
+          "reason": "Diagnostic prefix while same PPO fine-tuning continues; cumulative curves/wall time through checkpoint, not independent training."
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "4a549a29f9dc",
+          "bytes": 170464,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "4186ecec158e",
+          "bytes": 448718,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "35b9ffe3de87",
+          "bytes": 542968,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "d2016fce1b96",
+          "bytes": 505861,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0190",
+        "seq": 190,
+        "kind": "verify",
+        "version": 54,
+        "recorded_utc": "2026-11-05T08:31:10Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0189",
+         "criteria_version": 1,
+         "verdict": "fail",
+         "policy": {
+          "path": "research/runs/carry_frame_v26_long_prefix04/final.pt",
+          "sha256": "2ed83420cbc9…",
+          "deployable_npz": "research/runs/carry_frame_v26_long_prefix04/policy.npz",
+          "deployable_npz_sha256": "1d2b70cf6911…"
+         },
+         "episodes": 20,
+         "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+         "result": {
+          "criteria_version": 1,
+          "sim_version": 26,
+          "episodes": 20,
+          "successes": 17,
+          "success_rate": 0.85,
+          "wilson95_success_interval": [
+           0.6395811352592431,
+           0.9476312541037835
+          ],
+          "hardware_violating_episodes": 0,
+          "per_criterion_pass_counts": {
+           "initial_scene": 20,
+           "white_then_black": 20,
+           "white_preserved": 20,
+           "final_objects_separate": 20,
+           "global_phase_order": 20,
+           "hardware": 20,
+           "penetration": 20,
+           "wrist_similarity": 18,
+           "episode_duration": 20,
+           "plug_white_lift": 20,
+           "plug_white_physical_grasp": 20,
+           "plug_white_transport": 20,
+           "plug_white_final_standing": 20,
+           "plug_white_ordered_phases": 20,
+           "plug_white_grasp_duration": 20,
+           "plug_white_no_drop": 20,
+           "plug_black_lift": 20,
+           "plug_black_physical_grasp": 18,
+           "plug_black_transport": 20,
+           "plug_black_final_standing": 20,
+           "plug_black_ordered_phases": 20,
+           "plug_black_grasp_duration": 20,
+           "plug_black_no_drop": 20
+          },
+          "passed": false,
+          "initial_conditions": "Full frame37 start; independentU(+/-5mm)XY andU(+/-5deg)yaw, nominal masses/friction, specified encoder noise; seeds1001+7919i.",
+          "inference_latency_max_s": 0.1422063589998288,
+          "evaluation_wall_seconds": 28.026129245758057,
+          "fine_audit": true,
+          "sampling_hz": 1000,
+          "simulation_directory": "research/sim_v26_frozen",
+          "trace_engine_sha256": "3dd297072a3e…",
+          "base_engine_sha256": "25ab616f3bab…",
+          "scene_sha256": "f72c66ffa15d…",
+          "reference_sha256": "39986c0a85ef…",
+          "evaluator_sha256": "d01b51463dde…",
+          "boundary_equivalence_validation": {
+           "policy_boundaries": 840,
+           "environments": 2,
+           "observations": 199,
+           "actions": 44,
+           "maximum_state_observation_reward_info_difference": 0.0,
+           "bitwise_equal": true,
+           "verification_states": "Actual physical states and contacts; no inverse reference transform in evidence."
+          }
+         },
+         "evidence": {
+          "metrics": "research/runs/carry_frame_v26_long_prefix04/eval/[redacted]",
+          "rollout": {
+           "episode": 0,
+           "seed": 1001,
+           "success": true,
+           "description": "First successful fixed evaluation case, with a failed case separately where present."
+          }
+         },
+         "limitations": [
+          "Simulation-only with oracle allowed object poses and specified noisy encoders; no real-robot claim.",
+          "Task/contact evidence at1kHz, force threshold1mN; finite-step rigid contact model.",
+          "Twenty fixed scene-specific seeds used for iterative diagnosis, not broad generalization evidence."
+         ],
+         "reflection": "Fourth saved prefix of the same continuing26 PPO run. Preserve and compare full strict success, not rough placement goal. Parent lineage source hash corrected transparently in note r0188; checkpoint ancestry, exact steps and physics unchanged. Measured1kHz fixed20-case result: 17/20 successes, 0 hardware-violating episodes. Per-criterion counts: {\"initial_scene\": 20, \"white_then_black\": 20, \"white_preserved\": 20, \"final_objects_separate\": 20, \"global_phase_order\": 20, \"hardware\": 20, \"penetration\": 20, \"wrist_similarity\": 18, \"episode_duration\": 20, \"plug_white_lift\": 20, \"plug_white_physical_grasp\": 20, \"plug_white_transport\": 20, \"plug_white_final_standing\": 20, \"plug_white_ordered_phases\": 20, \"plug_white_grasp_duration\": 20, \"plug_white_no_drop\": 20, \"plug_black_lift\": 20, \"plug_black_physical_grasp\": 18, \"plug_black_transport\": 20, \"plug_black_final_standing\": 20, \"plug_black_ordered_phases\": 20, \"plug_black_grasp_duration\": 20, \"plug_black_no_drop\": 20}"
+        },
+        "files": {
+         "file_1": {
+          "sha": "5af3d7483174",
+          "bytes": 164833,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "1d2b70cf6911",
+          "bytes": 1383682,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "8b2b465cb47f",
+          "bytes": 518911,
+          "content_type": "application/json"
+         },
+         "file_4": {
+          "sha": "1abb8744c3f9",
+          "bytes": 5167552,
+          "content_type": "application/octet-stream"
+         },
+         "file_5": {
+          "sha": "725b6828bef4",
+          "bytes": 5083545,
+          "content_type": "application/octet-stream"
+         },
+         "file_6": {
+          "sha": "2687db31670e",
+          "bytes": 4679795,
+          "content_type": "application/octet-stream"
+         },
+         "file_7": {
+          "sha": "d34b402a19b0",
+          "bytes": 4709644,
+          "content_type": "application/octet-stream"
+         },
+         "file_8": {
+          "sha": "0f15c89f05b6",
+          "bytes": 344,
+          "content_type": "application/json"
+         },
+         "video_left_failed": {
+          "sha": "6bbe4558524b",
+          "bytes": 439803,
+          "content_type": "video/mp4"
+         },
+         "video_left_successful": {
+          "sha": "4186ecec158e",
+          "bytes": 448718,
+          "content_type": "video/mp4"
+         },
+         "video_right_failed": {
+          "sha": "7f92dfc523da",
+          "bytes": 539056,
+          "content_type": "video/mp4"
+         },
+         "video_right_successful": {
+          "sha": "35b9ffe3de87",
+          "bytes": 542968,
+          "content_type": "video/mp4"
+         },
+         "video_top_failed": {
+          "sha": "93c11211318f",
+          "bytes": 497432,
+          "content_type": "video/mp4"
+         },
+         "video_top_successful": {
+          "sha": "d2016fce1b96",
+          "bytes": 505861,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-04T19:41:44Z",
@@ -235984,6 +237558,671 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0224",
+        "seq": 224,
+        "kind": "iter",
+        "version": 64,
+        "recorded_utc": "2026-11-05T08:29:22Z",
+        "exception": false,
+        "body": {
+         "resume_history": null,
+         "run_name": "iter54_early",
+         "training_known_issues": [],
+         "initialization": {
+          "resume_checkpoint": "research/runs/iter54/initial.pt",
+          "resume_checkpoint_sha256": "5b13eae4b1fd…",
+          "starting_global_steps": 616562688,
+          "additional_transitions": 52428800,
+          "independent_policy_decisions": 2621440,
+          "action_repeat": 20
+         },
+         "sim_version": 11,
+         "policy_observations": "deployable",
+         "reward_terms": [
+          {
+           "name": "winding_and_terminal_optional",
+           "formula": "Rate -cw_tracking_weight*abs(reference_unwrapped_CW-observed_CW)/pi; scheduled pair contact multiplied by exp(-((CW-stage*pi)/contact_angle_gate)^2) when gate>0; final_hold_reward at>=6.2s times720deg Gaussian width0.3rad, IMforce clamp and original settling Gaussian; failure cost optional override. All reward-only.",
+           "weight": 1.0
+          },
+          {
+           "name": "continuation_reward_scales",
+           "formula": "Multiply existing object_position, joint_reference and pair_contact rate terms by configured scales; optional -thumb_clearance_penalty*exp(-max(dthumb-0.012,0)^2/0.012^2), distance from thumb sample sites to finite penaxis. Reward only; actor observes legal noisy encoders/object states.",
+           "weight": 1.0
+          },
+          {
+           "name": "discrete_task_scale",
+           "formula": "Multiply discrete milestone/receiving bonuses by milestone_bonus_scale and signed clockwise progress by angular_progress_scale; rate scale separate",
+           "weight": 1.0
+          },
+          {
+           "name": "optional_thumb_budget",
+           "formula": "Training-only termination at cumulative thumb/palm>0.05N duration>=0.325s; measured physical reset history included, geometric resets startzero; actor never sees counter; strict full verifier unchanged",
+           "weight": 1.0
+          },
+          {
+           "name": "wrist_quadratic",
+           "formula": "Optional quadratic_wrist_reward:-2*(position_error/0.03m)^2 -(rotation_error/15deg)^2. Optional training-only termination on instantaneous wrist error>0.05m or30deg; no physical clamp/workspace constraint.",
+           "weight": 1.0
+          },
+          {
+           "name": "contact_normal_override",
+           "formula": "Optional receiver_contact_normals: when both pair forces>=0.01N and resultant vectors nonzero, opposition=(1-dot(normalized summed solved normal-force directions))/2; otherwise use centerline geometry. Reward only, no actor access.",
+           "weight": 1.0
+          },
+          {
+           "name": "receiver_geometry_override",
+           "formula": "Optional receiver_geometry_reward: proximity width0.008m weight2.5; opposition*proximity weight4; paircontact*opposition weight2; anylongfinger contact weight2; excessivegrip weight-0.02; nonpair force weight-0.5 gated by acquired opposed receiving grasp. Acquisition:bothpair>=0.01N,opposition>0.7,proximity>0.5 continuously40ms, +2eventbonus; resets with pair/episode. Reward only, not verification.",
+           "weight": 1.0
+          },
+          {
+           "name": "reward_rate_scale",
+           "formula": "Multiply dt-integrated rate terms by configured reward_rate_scale; discrete milestone/progress/failure terms unchanged",
+           "weight": 1.0
+          },
+          {
+           "name": "nonpair_release",
+           "formula": "Optional handoff_reward:-1.5*sum(log(1+nonpair_force/0.1N) capped3)",
+           "weight": -1.5
+          },
+          {
+           "name": "excessive_grip",
+           "formula": "Optional handoff_reward:-0.1*sum(log(1+finger_force/0.5N)^2)",
+           "weight": -0.1
+          },
+          {
+           "name": "angular_progress",
+           "formula": "Task mode:2*delta(clip(unwrapped_clockwise_angle,0,4pi)/pi), discrete perstep; zero otherwise",
+           "weight": 2.0
+          },
+          {
+           "name": "projection_margin",
+           "formula": "-2*max(0,(0.35-horizontal_axis_norm)/0.35)",
+           "weight": -2.0
+          },
+          {
+           "name": "milestone_bonus",
+           "formula": "Discrete+1 for initial IM, +5 per ordered half-turn/pair; >=80ms 500Hz pair normal force>=0.01N, clockwise angle±25deg, first actual eligible interval checked against timingwindows; early/lateevents getnobonus andfail configureddeadlineconstraint. Reward shaping only; strict verifier uses both1kHz ticks.",
+           "weight": 5.0
+          },
+          {
+           "name": "object_position",
+           "formula": "2*exp(-||p-p_ref||^2/width^2); width0.04m in task mode,0.02m otherwise",
+           "weight": 2.0
+          },
+          {
+           "name": "object_axis",
+           "formula": "Task mode:3*(1-circular_heading_error/pi)+1*(1-axis_angle/pi); otherwise4*(1-axis_angle/pi)",
+           "weight": 4.0
+          },
+          {
+           "name": "heading_rate",
+           "formula": "1*exp(-(clockwise_heading_rate-reference_rate)^2/4^2)*1[horizontal_norm>=0.25]",
+           "weight": 1.0
+          },
+          {
+           "name": "pair_proximity",
+           "formula": "1.5*min(exp(-(nearest_finger_centerline_to_pen_distance-0.0125m)^2/0.02^2) for scheduled pair)",
+           "weight": 1.5
+          },
+          {
+           "name": "pair_opposition",
+           "formula": "0.3*(1-dot(radial_contact_normals))/2",
+           "weight": 0.3
+          },
+          {
+           "name": "velocity_margin",
+           "formula": "-0.2*mean(max(abs(qd)/vmax-0.8,0)^2)",
+           "weight": -0.2
+          },
+          {
+           "name": "joint_reference",
+           "formula": "0.2*exp(-mean((q-q_ref)^2)/0.5^2)",
+           "weight": 0.2
+          },
+          {
+           "name": "wrist_position",
+           "formula": "0.5*exp(-||p_w-p_w_ref||^2/0.03^2)",
+           "weight": 0.5
+          },
+          {
+           "name": "wrist_rotation",
+           "formula": "0.5*exp(-geodesic(q_w,q_w_ref)^2/0.3^2)",
+           "weight": 0.5
+          },
+          {
+           "name": "pair_contact",
+           "formula": "1*clamp(min(normal_force for scheduled pair)/0.15N,0,1)",
+           "weight": 1.0
+          },
+          {
+           "name": "terminal_settling",
+           "formula": "0.5*1[t>=5.8]*exp(-||relative_v||^2/0.03^2-||omega cross axis||^2/0.5^2)",
+           "weight": 0.5
+          },
+          {
+           "name": "thumb_palm_penalty",
+           "formula": "-2*1[thumb or palm normal force>0.05N]",
+           "weight": -2.0
+          },
+          {
+           "name": "effort",
+           "formula": "-0.005*mean((tau/effort_limit)^2)",
+           "weight": -0.005
+          },
+          {
+           "name": "alive",
+           "formula": "0.1 per second",
+           "weight": 0.1
+          },
+          {
+           "name": "failure",
+           "formula": "-5 in task mode, -2 otherwise, on hardware/simulator/projection/pen-loss or configured milestone-deadline/drawdown termination",
+           "weight": -5.0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "initial_pen_position",
+           "distribution": "uniform",
+           "range_m": [
+            -0.002,
+            0.002
+           ]
+          },
+          {
+           "name": "initial_pen_rotation_axis",
+           "distribution": "uniform",
+           "range_deg": [
+            -2.0,
+            2.0
+           ]
+          },
+          {
+           "name": "initial_joint_positions",
+           "distribution": "uniform",
+           "range_rad": [
+            -0.01,
+            0.01
+           ]
+          },
+          {
+           "name": "joint_encoder_position",
+           "distribution": "Gaussian",
+           "std_rad": 0.002
+          },
+          {
+           "name": "joint_encoder_velocity",
+           "distribution": "Gaussian",
+           "std_rad_s": 0.05
+          }
+         ],
+         "algorithm": {
+          "macro_start_seconds": 3.18,
+          "action_repeat": 20,
+          "policy_history": true,
+          "policy_history_description": "Three causal object-orientation memory features: winding/(4pi), drawdown/pi, unwrapped reference error/pi; only legal observed orientations and step index. Training physical resets initialize recorded past orientation memory. Full phasezero evaluation startszero.",
+          "cw_tracking_weight": 4.0,
+          "contact_angle_gate": 0.7,
+          "failure_cost": 50.0,
+          "final_hold_reward": 10.0,
+          "neural_decision_hz": 25.0,
+          "command_hz": 500,
+          "physics_hz": 1000,
+          "macro_discount": 0.9900473578023297,
+          "macro_gae_lambda": 0.9801888648295347,
+          "terminal_continuation": "Mask rewards after first termination within repeated-action chunk; reset before next decision; no credited assistance",
+          "joint_control_mode": "velocity_integrator",
+          "joint_control_switch": 3.18,
+          "velocity_action_filter": 0.2,
+          "joint_velocity_ratio": 0.8,
+          "prefix_filter_end_seconds": 1.4,
+          "object_position_reward_scale": 0.125,
+          "joint_reference_reward_scale": 0.25,
+          "pair_contact_reward_scale": 3.0,
+          "thumb_clearance_penalty": 1.0,
+          "milestone_bonus_scale": 5.0,
+          "angular_progress_scale": 5.0,
+          "initial_perturbation_scale": 1.0,
+          "require_thumb_contact_budget": true,
+          "thumb_budget_description": "Training-only cumulative thumb/palm budget0.325s, initialized from measured physical reset history when present; 500Hz shaping check, strict verifier uses1kHz actual episode fraction",
+          "warm_reset_progress_from_reference": true,
+          "warm_reset_progress_description": "Training-only state: physical reference uses measured stage and partial contact memory when present, otherwise teacher13 first turn>=1.72s; geometric future resets use nominal1.60/2.93/5.03/5.80s; phasezero no prior progress; strict verifier unchanged",
+          "receiving_ik_branch": null,
+          "actor_learning_rate": 0.0001,
+          "critic_learning_rate": 0.0003,
+          "target_kl": 0.02,
+          "kl_stop_per_minibatch": true,
+          "override_logstd": -2.2,
+          "quadratic_wrist_reward": true,
+          "enforce_wrist_envelope": false,
+          "reset_state_wrist_rot_scale": 0.25,
+          "pre_wrist_rot_scale": 0.25,
+          "wrist_rot_scale_switch": 5.02,
+          "reset_state_wrist_pos_scale": 0.08,
+          "receiver_contact_normals": false,
+          "augment_encoder_fk": false,
+          "receiver_geometry_reward": false,
+          "geometric_reset_pool_indices": null,
+          "geometric_reset_pool": null,
+          "frozen_ppo_prefix": {
+           "obs_dim": 122,
+           "encoder_fk": true,
+           "switch_seconds": 4.78,
+           "source_action_filter": 0.1,
+           "checkpoint": "research/runs/iter47_mid2/latest.pt",
+           "action_scale_factors": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+           ],
+           "sha256": "9f61d34716bc…",
+           "mode": "fourth_reference",
+           "source_filter_switch_seconds": 1.4,
+           "offset_indices": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25
+           ],
+           "offset_parameters": [
+            null,
+            null,
+            null
+           ],
+           "offset_times_seconds": [
+            5.02,
+            5.35,
+            5.8
+           ],
+           "offset_fade_end": 6.25,
+           "offset_fade_duration": 0.25,
+           "wrist_unit_switch_seconds": 5.02,
+           "post_wrist_unit_ratio": 0.20833333333333334,
+           "residual_start": 4.78,
+           "prefix_config": {
+            "obs_dim": 122,
+            "encoder_fk": true,
+            "switch_seconds": 3.18,
+            "source_action_filter": 0.1,
+            "checkpoint": "research/runs/iter40/latest.pt",
+            "action_scale_factors": null,
+            "sha256": "2014d8f5fcef…",
+            "mode": "prefix_only",
+            "prefix_config": null,
+            "ik_config": null,
+            "source_filter_switch_seconds": 1.4
+           },
+           "ik_config": null
+          },
+          "handoff_reward": false,
+          "reward_rate_scale": 10.0,
+          "task_oriented_reward": true,
+          "require_goal_deadlines": true,
+          "termination_conditions": {
+           "hardware": "strict every1kHz",
+           "pen_loss": ">15cm reference error or floor",
+           "projection": "terminate below0.25, reset pool margin0.35"
+          },
+          "algorithm": "PPO",
+          "clip": 0.2,
+          "gamma": 0.9995,
+          "gae_lambda": 0.999,
+          "value_clip": 10.0,
+          "value_coefficient": 0.5,
+          "initial_value_head_scale": 0.5,
+          "separate_gradient_clip": true,
+          "epochs": 4,
+          "minibatch_size": 16384,
+          "actor_critic": "Separate MLPs256-256-128 ELU Gaussian;122legal observations with60fixed staticFK features from noisyencoders and objectpose"
+         },
+         "curriculum": {
+          "reference_reset_phases": 116,
+          "initial_reset_probability": 0.7,
+          "final_initial_reset_probability": 0.95,
+          "reset_min_seconds": 4.78,
+          "initial_phase_seconds": 4.78,
+          "administrative_horizons_seconds": [
+           4.0,
+           4.0,
+           4.0,
+           4.0,
+           6.5
+          ],
+          "timeout_bootstrapping": true,
+          "object_assistance": false,
+          "phase_end_seconds": 6.5,
+          "initial_batch_reset_probability": 0.7
+         },
+         "observations": "Optional60staticFK features, from noisy encoder q and legal wrist/objectposes only. Three causal orientation-history features derived only from past legal penquaternions and stepindex. 122base dim: noisy joint q/qd, previous finger targets, wrist pose+velocity and previous wrist target, pen pose+linear/angular velocity, deterministic reference errors/q/phase. Contact/force/torque/parameters never reach actor.",
+         "actions": "PPO residual begins at4.78s over recorded frozen reference; jointposition residuals before3.18s then20normalized velocities integrate previoustargets at0.002*joint_velocity_ratio*vmax, filtered/clipped/noisyencoder governor bounded;6wrist reference residuals, actionunit changes inconfig; exact nativePD/impedance, no actualvelocity clamp",
+         "training": {
+          "status": "intermediate_checkpoint",
+          "parent_training_run": "research/runs/iter54",
+          "wall_seconds": 263.57903718948364,
+          "final_statistics": {
+           "update": 5,
+           "total_env_steps": 668991488,
+           "wall_seconds": 263.57903718948364,
+           "steps_per_second": 198911.11432473137,
+           "reward": 0.1344039887189865,
+           "credited_micro_steps": 10387971,
+           "policy_decisions_per_update": 524288,
+           "action_repeat": 20,
+           "episode_length_seconds": 1.108468,
+           "curriculum_horizon_seconds": 4.0,
+           "done_hardware": 0.0,
+           "done_pen": 7251.0,
+           "done_count": 19209,
+           "actor_optimizer_steps": 128,
+           "actor_kl_frozen": 0.0,
+           "actor_gradient_norm": 1.2715551853179932,
+           "critic_gradient_norm": 477.6939697265625,
+           "ppo_kl": 0.007130560930818319,
+           "policy_loss": -0.008488189429044724,
+           "value_loss": 557.8028564453125,
+           "reward_projection_margin": -0.014381098560988903,
+           "reward_object_position": 0.047290924936532974,
+           "reward_object_axis": 3.4606587886810303,
+           "reward_heading_rate": 0.4901789128780365,
+           "reward_joint_reference": 0.009966254234313965,
+           "reward_wrist_position": 0.3493461012840271,
+           "reward_wrist_rotation": 0.22289974987506866,
+           "reward_pair_contact": 1.5188724994659424,
+           "reward_pair_proximity": 1.4604436159133911,
+           "reward_pair_opposition": 0.13120990991592407,
+           "reward_velocity_margin": -5.062193331184517e-09,
+           "reward_terminal_settling": 0.001829574815928936,
+           "reward_thumb_palm_penalty": -0.004648399539291859,
+           "reward_effort": -0.00021794834174215794,
+           "reward_alive": 0.09906738251447678,
+           "reward_thumb_clearance": -0.007142300251871347,
+           "reward_wrist_position_quadratic": -0.7920883297920227,
+           "reward_wrist_rotation_quadratic": -1.730251669883728,
+           "reward_unwrapped_cw_tracking": -0.3480130732059479,
+           "reward_final_goal_hold": 0.01399039477109909,
+           "reward_angular_progress": 0.015874609351158142,
+           "reward_milestone_bonus": 0.05492448806762695,
+           "reward_failure": -0.034575462341308594,
+           "metric_simulation_overflow": 0.0,
+           "metric_position_error": 0.06033371761441231,
+           "metric_axis_error": 0.7651426196098328,
+           "metric_hardware_failure": 0.0,
+           "metric_pen_failure": 0.0006915092817507684,
+           "metric_thumb_palm": 0.0023241997696459293
+          },
+          "checkpoint_steps": 668991488,
+          "compute_note": "This is an intermediate checkpoint of the parent run, not independent additional compute."
+         },
+         "compute": {
+          "training_wall_seconds": 263.57903718948364,
+          "gpu_hours": 0.07321639921930101,
+          "device": "one NVIDIA L40S per run; training timing excludes initial simulator compilation"
+         },
+         "evaluation": {
+          "contact_label_version": 2,
+          "contact_label_definition": "Anatomical finger subtrees; exact native name prefixes checked independently against body-parent ancestry",
+          "policy": "research/runs/iter54_early/latest.pt",
+          "checkpoint_sha256": "5d19930c6f71…",
+          "criteria_version": 1,
+          "criteria_record": "r0014",
+          "sim_version": 11,
+          "sim_record": "r0223",
+          "episodes": 20,
+          "successful_episodes": 14,
+          "success_rate": 0.7,
+          "verdict": "fail",
+          "per_criterion_success_counts": {
+           "physical_validity_retention": 20,
+           "directed_rotation": 14,
+           "ordered_pair_support": 14,
+           "timing": 14,
+           "wrist_resemblance": 20,
+           "terminal_hold": 20
+          },
+          "max_ordered_progress": 4,
+          "max_valid_prefix_progress": 4,
+          "evaluation_wall_seconds": 124.14880275726318,
+          "numerical_abort": [],
+          "limitations": "Own simulator and criteria only; unknown real friction/compliance and imperfect human depth reconstruction. No official task score.",
+          "reference_action_baseline": null,
+          "per_episode_evidence": "Complete [redacted] accompanies verification record"
+         },
+         "base_controller_evaluation": {
+          "contact_label_version": 2,
+          "contact_label_definition": "Anatomical finger subtrees; exact native name prefixes checked independently against body-parent ancestry",
+          "policy": "research/sim_v11/base_controller.pt",
+          "checkpoint_sha256": "9eedaf0d468b…",
+          "criteria_version": 1,
+          "criteria_record": "r0014",
+          "sim_version": 11,
+          "sim_record": null,
+          "episodes": 20,
+          "successful_episodes": 14,
+          "success_rate": 0.7,
+          "verdict": "fail",
+          "per_criterion_success_counts": {
+           "physical_validity_retention": 20,
+           "directed_rotation": 15,
+           "ordered_pair_support": 15,
+           "timing": 15,
+           "wrist_resemblance": 20,
+           "terminal_hold": 16
+          },
+          "max_ordered_progress": 4,
+          "max_valid_prefix_progress": 4,
+          "evaluation_wall_seconds": 90.27063202857971,
+          "numerical_abort": [],
+          "limitations": "Own simulator and criteria only; unknown real friction/compliance and imperfect human depth reconstruction. No official task score.",
+          "reference_action_baseline": null
+         },
+         "reflection": "Early52Mphysicalstep checkpoint of complete-reference residualPPO54; originalfullcriteria1, fixed20seeds withoutreset, referencebaseline14/20 separatelyreported.",
+         "checkpoint": {
+          "path": "research/runs/iter54_early/latest.pt",
+          "sha256": "5d19930c6f71…",
+          "weights_evidence": "checkpoint_weights.npz",
+          "source_evidence": "source_bundle.json"
+         },
+         "limitations": "Own simulation and fixed criteria1 only, not an official task evaluation or real robot transfer. Initial batch phase0 fraction0.7; subsequent reset fraction follows recorded curriculum."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "4d191152f9da",
+          "bytes": 5012,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "a49e40bc98e4",
+          "bytes": 305636,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "89687c5569fb",
+          "bytes": 326931,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "9cd423692da7",
+          "bytes": 355602,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0225",
+        "seq": 225,
+        "kind": "verify",
+        "version": 71,
+        "recorded_utc": "2026-11-05T08:29:23Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0224",
+         "criteria_version": 1,
+         "criteria_record": "r0014",
+         "verdict": "fail",
+         "policy": {
+          "path": "research/runs/iter54_early/latest.pt",
+          "sha256": "5d19930c6f71…",
+          "weights_evidence": "checkpoint_weights.npz",
+          "source_evidence": "source_bundle.json"
+         },
+         "simulation_version": 11,
+         "simulation_record": "r0223",
+         "evaluation": {
+          "contact_label_version": 2,
+          "contact_label_definition": "Anatomical finger subtrees; exact native name prefixes checked independently against body-parent ancestry",
+          "policy": "research/runs/iter54_early/latest.pt",
+          "checkpoint_sha256": "5d19930c6f71…",
+          "criteria_version": 1,
+          "criteria_record": "r0014",
+          "sim_version": 11,
+          "sim_record": "r0223",
+          "episodes": 20,
+          "successful_episodes": 14,
+          "success_rate": 0.7,
+          "verdict": "fail",
+          "per_criterion_success_counts": {
+           "physical_validity_retention": 20,
+           "directed_rotation": 14,
+           "ordered_pair_support": 14,
+           "timing": 14,
+           "wrist_resemblance": 20,
+           "terminal_hold": 20
+          },
+          "max_ordered_progress": 4,
+          "max_valid_prefix_progress": 4,
+          "evaluation_wall_seconds": 124.14880275726318,
+          "numerical_abort": [],
+          "limitations": "Own simulator and criteria only; unknown real friction/compliance and imperfect human depth reconstruction. No official task score.",
+          "reference_action_baseline": null,
+          "per_episode_evidence": "[redacted] attachment: all20 episodes and every criterion/prefix measurement"
+         },
+         "evidence_sampling": "No resets:3250policy steps at500Hz; continuous-support uses minimum force over both1kHz ticks; thumb/palm fraction over all6500ticks; hardware flags monitored every1kHz tick; free pen with no assistance.",
+         "selected_rollouts": {
+          "representative": {
+           "seed": 202600,
+           "episode_index": 0
+          },
+          "success": {
+           "seed": 202600,
+           "episode_index": 0
+          },
+          "failure": {
+           "seed": 202603,
+           "episode_index": 3
+          }
+         },
+         "reflection": "Early52Mphysicalstep checkpoint of complete-reference residualPPO54; originalfullcriteria1, fixed20seeds withoutreset, referencebaseline14/20 separatelyreported.",
+         "training_known_issues": [],
+         "limitations": "Own simulator and criteria only; unknown real friction/compliance and imperfect human depth reconstruction. No official task score.",
+         "complete_metrics_sha256": "6bd9662b9c84…"
+        },
+        "files": {
+         "file_1": {
+          "sha": "6bd9662b9c84",
+          "bytes": 59997,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "e15bd670387c",
+          "bytes": 60342,
+          "content_type": "application/json"
+         },
+         "file_3": {
+          "sha": "a66a1ec64b19",
+          "bytes": 5404014,
+          "content_type": "application/octet-stream"
+         },
+         "file_4": {
+          "sha": "faa661ab3d66",
+          "bytes": 240443,
+          "content_type": "application/json"
+         },
+         "file_5": {
+          "sha": "765560fbe200",
+          "bytes": 1352923,
+          "content_type": "application/octet-stream"
+         },
+         "file_6": {
+          "sha": "2dca9ccb5ec5",
+          "bytes": 1354122,
+          "content_type": "application/octet-stream"
+         },
+         "video_left_failure": {
+          "sha": "29974266975e",
+          "bytes": 312595,
+          "content_type": "video/mp4"
+         },
+         "video_left_representative": {
+          "sha": "a49e40bc98e4",
+          "bytes": 305636,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "c32fe97966bb",
+          "bytes": 325554,
+          "content_type": "video/mp4"
+         },
+         "video_right_representative": {
+          "sha": "89687c5569fb",
+          "bytes": 326931,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "6fc2ba8ecd5a",
+          "bytes": 363011,
+          "content_type": "video/mp4"
+         },
+         "video_top_representative": {
+          "sha": "9cd423692da7",
+          "bytes": 355602,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-04T21:20:48Z",
@@ -236355,7 +238594,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-05T08:23:08Z",
+  "staged_utc": "2026-11-05T08:32:38Z",
   "tasks": {
    "cube": {
     "files": {
@@ -236439,7 +238678,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-05T08:23:07Z",
+  "staged_utc": "2026-11-05T08:32:37Z",
   "tasks": {
    "tennis": {
     "status": "available",
