@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-06T04:02:48Z",
- "exported_utc": "2026-11-06T04:02:30Z",
+ "generated_utc": "2026-11-06T04:15:02Z",
+ "exported_utc": "2026-11-06T04:12:30Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-06T04:01:10",
+    "time": "2026-11-06T04:10:12",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -290064,6 +290064,1735 @@
          "text": "Elapsed7h41m. Final24 full30 self-verificationFAIL0/30:10firstlegalgoals,1hardwarefailed episode;retention26/30,contact2/30,wrist/path0,solve0,release0. Lower hardware incidence mainly coincides with early floor failures and is not complete task improvement. Stop quadratic comparison25 now so its final30-seed evaluation/record finishes before deadline, freeing CPU for final logarithmic-cost PPO26 until04:09:58.26currentlyholds episodes~7.6s with~13%traininghardwarefailures and max1legalgoal; no fullsolve claim."
         },
         "files": {}
+       },
+       {
+        "id": "r0141",
+        "seq": 141,
+        "kind": "iter",
+        "version": 38,
+        "recorded_utc": "2026-11-06T04:04:23Z",
+        "exception": false,
+        "body": {
+         "sim_version": 22,
+         "criteria_version": 1,
+         "reconstruction_version": 3,
+         "policy_observations": "deployable",
+         "policy": {
+          "checkpoint": "research/training/iter25/policy.zip",
+          "sha256": "b8cca0b36e59…",
+          "normalization": "research/training/iter25/normalization.pkl",
+          "normalization_sha256": "dd06af26f7d1…",
+          "architecture": "{‘net_arch': {‘pi': [256, 256], 'vf': [256, 256]}, 'activation_fn': <class 'torch.nn.modules.activation.Tanh'>, 'log_std_init': -1.1}",
+          "observation_space": "102 deployable scalars: noisy proprioception, wrist/root cube pose and velocity, previous targets, clock; no cubie states/contacts/forces/parameters. For sim>=4 world wrist/target/velocity features use frozen reference-clock rigid-frame transform and subtract known reference feedforward.",
+          "action_space": "20 smoothed absolute finger target parameters and6 integrated unbounded wrist residual parameters",
+          "actor_input_dim": 102,
+          "critic_input_dim": 102,
+          "actor_privacy_audit": {
+           "actor_public_input_dim": 102,
+           "training_critic_input_dim": 102,
+           "private_perturbation_max_action_delta": 0.0,
+           "private_input_actor_gradient_max": 0.0,
+           "exported_actor_max_action_difference": 5.960464477539062e-07,
+           "deployable_actor_file": "research/training/iter25/deployable_actor.pt",
+           "actor_export_contains_critic": false,
+           "passed": true
+          },
+          "deployment_actor": "102-input exported actor from public actor-and-critic PPO stage"
+         },
+         "algorithm": {
+          "name": "PPO",
+          "implementation": "PPO with supervisedPPO-teacher replay anchoring andcriticwarmup",
+          "hyperparameters": {
+           "n_steps": 256,
+           "batch_size": 2048,
+           "n_epochs": 4,
+           "gamma": 0.995,
+           "gae_lambda": 0.95,
+           "clip_range": 0.2,
+           "ent_coef": 0.0002,
+           "target_kl": 0.02,
+           "vf_coef": 0.5,
+           "max_grad_norm": 1.0,
+           "learning_rate": 5e-05,
+           "policy_kwargs": "{‘net_arch': {‘pi': [256, 256], 'vf': [256, 256]}, 'activation_fn': <class 'torch.nn.modules.activation.Tanh'>, 'log_std_init': -1.1}",
+           "device": "cuda",
+           "seed": 49001,
+           "verbose": 0
+          },
+          "environments": 24,
+          "seed": 49001,
+          "supervised_anchor": {
+           "dataset": "research/distillation/combined_v3.npz",
+           "critic_only_warmup_steps": 25000,
+           "steps_per_PPO_update": 1,
+           "anchor_lr": 1e-05,
+           "actor_inputs": 102,
+           "critic_inputs": 102,
+           "purpose": "PreventforgettingPPOteacherbehaviors;PPOremainsonlyRLoptimizer"
+          }
+         },
+         "reward_terms": [
+          {
+           "name": "progress",
+           "formula": "80 times the difference of the negative mean squared cubiegoalerror minus0.25squared root/internal-angle couplingerror;wholecube-onlyrotationcannotgainprogress;omitrootterm afterthirdlegalgoal potential",
+           "weight": 80
+          },
+          {
+           "name": "milestone",
+           "formula": "First2legalcommits paidatonecontact-securedstep/rootwithin15deg;thirdafter0.2ssolvedhold;150firstsolveddwell. No intermediatepose/pathgate.",
+           "weight": [
+            1000,
+            150
+           ]
+          },
+          {
+           "name": "retention",
+           "formula": "0.05 per policy step if lowest cube point>5mm;0.5 extra after9.24s if solved and no hand contact",
+           "weight": [
+            0.05,
+            0.5
+           ]
+          },
+          {
+           "name": "wrist",
+           "formula": "During held time<=8.3s: -(position_error/.02)^2-0.3*(orientation_error/.35)^2, without saturation;0 after release",
+           "weight": [
+            -1,
+            -0.3
+           ]
+          },
+          {
+           "name": "cube_path",
+           "formula": "During held time<=8.3s: -1.5*(registered center path error/.025)^2, without saturation;0 after release",
+           "weight": -1.5
+          },
+          {
+           "name": "action",
+           "formula": "-0.003*mean(action^2)",
+           "weight": -0.003
+          },
+          {
+           "name": "speed",
+           "formula": "-10*max_joints(relu(abs(qd)/vmax-.6)^2)",
+           "weight": -10
+          },
+          {
+           "name": "failure",
+           "formula": "-150 for hardware/break/numerical failure;-100 for unsolved floor contact",
+           "weight": [
+            -150,
+            -100
+           ]
+          },
+          {
+           "name": "remaining_failure_cost",
+           "formula": "On physical failure, zero milestones and subtract200*(1-.995^remaining_steps)/.005",
+           "weight": -200
+          },
+          {
+           "name": "handoff",
+           "formula": "For0.4s after either intermediate paid goal: -20*mean(finger_action^2)-0.5*(norm(wrist_position_residual/.03)^2+norm(wrist_rotation_residual/.35)^2). Training subskills continue0.4s after goal and require secured contact at handoff; no controller reset or scripted recovery.",
+           "weight": [
+            -20,
+            -0.5
+           ]
+          },
+          {
+           "name": "placement",
+           "formula": "After7.5s: -0.2*min((finalcenterdistance/.025)^2,25)+0.2 if solved,nohandcontact,floorwithin1mm,speed<.02m/s,omega<.2rad/s",
+           "weight": [
+            -0.2,
+            0.2
+           ]
+          },
+          {
+           "name": "grasp",
+           "formula": "0.1 per thumb proximity/contact plus0.1 per opposed long-finger contact",
+           "weight": [
+            0.1,
+            0.1
+           ]
+          },
+          {
+           "name": "target_residual",
+           "formula": "During held time<=8.3s: -0.2*(norm(wrist_translation_residual/.02)^2+norm(wrist_rotation_residual/.35)^2);0 after release",
+           "weight": -0.2
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "cube_position_each_axis",
+           "distribution": "independent uniform",
+           "range": [
+            -0.002,
+            0.002
+           ],
+           "units": "m"
+          },
+          {
+           "name": "cube_orientation_rotvec_each_axis",
+           "distribution": "independent uniform",
+           "range": [
+            -3.0,
+            3.0
+           ],
+           "units": "deg"
+          },
+          {
+           "name": "wrist_position_each_axis",
+           "distribution": "independent uniform",
+           "range": [
+            -0.001,
+            0.001
+           ],
+           "units": "m"
+          },
+          {
+           "name": "wrist_orientation_rotvec_each_axis",
+           "distribution": "independent uniform",
+           "range": [
+            -2.0,
+            2.0
+           ],
+           "units": "deg"
+          },
+          {
+           "name": "finger_angle_each_joint",
+           "distribution": "independent uniform",
+           "range": [
+            -0.005,
+            0.005
+           ],
+           "units": "rad"
+          },
+          {
+           "name": "effective_finger_cube_friction",
+           "distribution": "independent uniform",
+           "range": [
+            0.8,
+            1.2
+           ],
+           "units": "coefficient"
+          },
+          {
+           "name": "layer_dry_resistance",
+           "distribution": "independent uniform",
+           "range": [
+            0.001,
+            0.002
+           ],
+           "units": "Nm"
+          }
+         ],
+         "encoder_noise": "Always independent Gaussian0.002rad/0.05rad/s at500Hz",
+         "curriculum": {
+          "legal_goal_count": 3,
+          "reference_motion_fraction": 1.0,
+          "initial_completed_turns": 0,
+          "full_start_rehearsal_probability": 0.0,
+          "configured_start_angle_range_deg": [
+           null,
+           null
+          ],
+          "adaptive_schedule": null,
+          "switch": "Training-only switches;partial goals are not task verification successes"
+         },
+         "compute": {
+          "wall_seconds": 1296.577828168869,
+          "steps": 4893432,
+          "finished_utc": "2026-11-06T04:01:09.752382+00:00",
+          "allocated_GPUs": 1,
+          "GPU_hours": 0.36016050782468584
+         },
+         "training_curves": "research/training/iter25/curves.csv",
+         "training_details": {
+          "algorithm": "PPO with supervisedPPO-teacher replay anchoring andcriticwarmup",
+          "args": {
+           "out": "research/training/iter25",
+           "freeze_obs_normalization": true,
+           "angle_hardware_limit": 0.05,
+           "anchor_dataset": "research/distillation/combined_v3.npz",
+           "critic_warmup_steps": 25000,
+           "anchor_lr": 1e-05,
+           "anchor_steps": 1,
+           "recurrent": false,
+           "asymmetric": false,
+           "log_std_offset": 0.0,
+           "finger_log_std_offset": 0.0,
+           "reset_action_head": false,
+           "finger_log_std": -1.5,
+           "wrist_log_std": -2.5,
+           "entropy": 0.0002,
+           "target_kl": 0.02,
+           "public_from": null,
+           "public_norm": null,
+           "reward_normalization": true,
+           "sim_version": 22,
+           "angle_min": null,
+           "angle_max": null,
+           "adaptive_angles": null,
+           "adaptive_domain": null,
+           "domain_success": 0.8,
+           "steps": 4000000,
+           "envs": 24,
+           "curriculum": 3,
+           "phase_mix": false,
+           "phase_angle_schedules": null,
+           "full_angle_prob": 0.0,
+           "angle_success": 0.8,
+           "start_time": 0.0,
+           "subskill_termination": false,
+           "start_progress": 0,
+           "rehearsal_prob": 0.0,
+           "motion": 1.0,
+           "randomization": 1.0,
+           "seed": 49001,
+           "load": "research/training/iter22/policy.zip",
+           "norm": "research/training/iter22/normalization.pkl",
+           "lr": 5e-05,
+           "minutes": 35.0
+          },
+          "hyperparameters": {
+           "n_steps": 256,
+           "batch_size": 2048,
+           "n_epochs": 4,
+           "gamma": 0.995,
+           "gae_lambda": 0.95,
+           "clip_range": 0.2,
+           "ent_coef": 0.0002,
+           "target_kl": 0.02,
+           "vf_coef": 0.5,
+           "max_grad_norm": 1.0,
+           "learning_rate": 5e-05,
+           "policy_kwargs": "{‘net_arch': {‘pi': [256, 256], 'vf': [256, 256]}, 'activation_fn': <class 'torch.nn.modules.activation.Tanh'>, 'log_std_init': -1.1}",
+           "device": "cuda",
+           "seed": 49001,
+           "verbose": 0
+          },
+          "actor_observation": "102 deployable scalars: noisy proprioception, wrist/root cube pose and velocity, previous targets, clock; no cubie states/contacts/forces/parameters. For sim>=4 world wrist/target/velocity features use frozen reference-clock rigid-frame transform and subtract known reference feedforward.",
+          "action": "20 smoothed absolute finger target parameters and6 integrated unbounded wrist residual parameters",
+          "sim_version": 22,
+          "criteria_version": 1,
+          "reconstruction_version": 3,
+          "reward_phase": "First2legalgoals paid atonecontact-securedstep/root15deg;finalgoal0.2ssolvedhold;dynamicroot/internalcoupling;placementafter7.5s",
+          "privileged_critic_training": false,
+          "policy_class": "stable_baselines3.common.policies.ActorCriticPolicy",
+          "actor_input_dim": 102,
+          "critic_input_dim": 102,
+          "ppo_reward_normalization": true,
+          "baseline_controller": "Loaded constant finger grasp plus human wrist reference; scheduled opening after8.3s; zero residual does not turn/solve cube"
+         },
+         "evaluation": {
+          "policy": "research/training/iter25/deployable_actor.pt",
+          "normalization": null,
+          "hardware_model_eligible": true,
+          "learning_stage_eligible": true,
+          "criteria_version": 1,
+          "sim_version": 22,
+          "episodes": 30,
+          "seed_start": 10000,
+          "randomization": "criteria_v1",
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violations": 6,
+          "verdict": "FAIL",
+          "representative_best_seed": 10005,
+          "representative_failure_seed": 10000,
+          "representative_worst_seed": 10026,
+          "per_criterion_rates": {
+           "retention": 0.8,
+           "solve": 0.0,
+           "wrist_and_path": 0.0,
+           "contact": 0.13333333333333333,
+           "release": 0.0
+          },
+          "progress_histogram": {
+           "0": 16,
+           "1": 14,
+           "2": 0,
+           "3": 0
+          },
+          "wall_seconds": 183.94402956962585,
+          "limitations": [
+           "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+           "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+           "Reference contains monocular uncertainty and morphological clearance corrections",
+           "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+          ],
+          "detailed_metrics_file": "research/evaluation/iter25/summary.json"
+         },
+         "zero_residual_baseline": {
+          "policy": "zero-residual reference controller (not learned)",
+          "normalization": null,
+          "hardware_model_eligible": true,
+          "learning_stage_eligible": true,
+          "criteria_version": 1,
+          "sim_version": 21,
+          "episodes": 30,
+          "seed_start": 10000,
+          "randomization": "criteria_v1",
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violations": 0,
+          "verdict": "FAIL",
+          "representative_best_seed": 10028,
+          "representative_failure_seed": 10000,
+          "representative_worst_seed": 10026,
+          "per_criterion_rates": {
+           "retention": 1.0,
+           "solve": 0.0,
+           "wrist_and_path": 0.0,
+           "contact": 1.0,
+           "release": 0.0
+          },
+          "progress_histogram": {
+           "0": 30,
+           "1": 0,
+           "2": 0,
+           "3": 0
+          },
+          "wall_seconds": 331.67235708236694,
+          "limitations": [
+           "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+           "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+           "Reference contains monocular uncertainty and morphological clearance corrections",
+           "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+          ]
+         },
+         "reflection": "Lower-exploration public original-start/full-DR PPO continuation with corrected reward22: remaining failure padding200 and cube path weight1.5. Continuous wrist/target and maximum-joint speed warning costs retained. Fixed criteria and original unsolved reset retained. Full-task evidence remains the frozen30-seed criteria test.",
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "ppo_reward_normalization": true,
+         "hardware_model_eligible": true
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "7ad4c7fec20f",
+          "bytes": 63332,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "3fded192d0a4",
+          "bytes": 212501,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "6411a5141af4",
+          "bytes": 159203,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "d8dcbb71e0eb",
+          "bytes": 176367,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0142",
+        "seq": 142,
+        "kind": "verify",
+        "version": 38,
+        "recorded_utc": "2026-11-06T04:04:24Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter25/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 22,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 6,
+         "verdict": "FAIL",
+         "representative_best_seed": 10005,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10026,
+         "per_criterion_rates": {
+          "retention": 0.8,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.13333333333333333,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 16,
+          "1": 14,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 183.94402956962585,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "iteration": "r0141",
+         "checkpoint": "research/training/iter25/policy.zip",
+         "diagnosis": "Lower-exploration public original-start/full-DR PPO continuation with corrected reward22: remaining failure padding200 and cube path weight1.5. Continuous wrist/target and maximum-joint speed warning costs retained. Fixed criteria and original unsolved reset retained. Full-task evidence remains the frozen30-seed criteria test.",
+         "claim": "Own self-verification;not an official evaluation. Exact origin-frame controller used."
+        },
+        "files": {
+         "file_1": {
+          "sha": "33b1fda32123",
+          "bytes": 97419,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "62823df58b9e",
+          "bytes": 85633,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "c001ea449b1a",
+          "bytes": 254893,
+          "content_type": "application/json"
+         },
+         "file_4": {
+          "sha": "788bfc53083c",
+          "bytes": 4588,
+          "content_type": "application/json"
+         },
+         "file_5": {
+          "sha": "cac880f99d0e",
+          "bytes": 3549670,
+          "content_type": "application/octet-stream"
+         },
+         "file_6": {
+          "sha": "45d9a501118c",
+          "bytes": 361,
+          "content_type": "application/json"
+         },
+         "video_left_failure": {
+          "sha": "3fded192d0a4",
+          "bytes": 212501,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "6411a5141af4",
+          "bytes": 159203,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "d8dcbb71e0eb",
+          "bytes": 176367,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0143",
+        "seq": 143,
+        "kind": "note",
+        "version": 40,
+        "recorded_utc": "2026-11-06T04:09:00Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Evaluator defect found during final selection at~7h48m: independent_audit.manifold_error copied an integer legal-base matrix after a commit, then assigned a floating partial rotation into it, truncating entries and falsely reporting~90deg manifold errors. Initial float-base checks were unaffected. Fix the temporary target to float explicitly; preserve all original published summaries and write separately corrected re-audits of saved trajectories. No physics, policy, reward, criterion threshold or seed changes. Full-task verdicts remain0/30 because solve/wrist/path/release alreadyfail independently. Corrected audits will be used for final candidate selection and verification, with the correction explicitly recorded."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0144",
+        "seq": 144,
+        "kind": "verify",
+        "version": 39,
+        "recorded_utc": "2026-11-06T04:10:01Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter14/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 13,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 7,
+         "verdict": "FAIL",
+         "representative_best_seed": 10012,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10020,
+         "per_criterion_rates": {
+          "retention": 0.9666666666666667,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.06666666666666667,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 27,
+          "1": 3,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 203.0156226158142,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter14/summary.json",
+          "corrected_utc": "2026-11-06T04:09:04.373674+00:00",
+          "passed_flags_changed": 3,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0077",
+         "correction_of_verification": "r0078",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "e84841912779",
+          "bytes": 126704,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0145",
+        "seq": 145,
+        "kind": "verify",
+        "version": 40,
+        "recorded_utc": "2026-11-06T04:10:01Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter14b/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 14,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 2,
+         "verdict": "FAIL",
+         "representative_best_seed": 10026,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10024,
+         "per_criterion_rates": {
+          "retention": 0.9333333333333333,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.06666666666666667,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 28,
+          "1": 2,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 109.69575023651123,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter14b/summary.json",
+          "corrected_utc": "2026-11-06T04:09:05.860067+00:00",
+          "passed_flags_changed": 3,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0085",
+         "correction_of_verification": "r0086",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "88bbec8ee5ce",
+          "bytes": 125745,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0146",
+        "seq": 146,
+        "kind": "verify",
+        "version": 41,
+        "recorded_utc": "2026-11-06T04:10:02Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter17/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 16,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 14,
+         "verdict": "FAIL",
+         "representative_best_seed": 10025,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10028,
+         "per_criterion_rates": {
+          "retention": 0.7,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.5,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 12,
+          "1": 18,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 277.27680945396423,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter17/summary.json",
+          "corrected_utc": "2026-11-06T04:09:09.998215+00:00",
+          "passed_flags_changed": 18,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0095",
+         "correction_of_verification": "r0096",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "0cf601569c8e",
+          "bytes": 131752,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0147",
+        "seq": 147,
+        "kind": "verify",
+        "version": 42,
+        "recorded_utc": "2026-11-06T04:10:03Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter18/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 17,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 0,
+         "verdict": "FAIL",
+         "representative_best_seed": 10027,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10006,
+         "per_criterion_rates": {
+          "retention": 0.9666666666666667,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.0,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 30,
+          "1": 0,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 88.3588535785675,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter18/summary.json",
+          "corrected_utc": "2026-11-06T04:09:11.368910+00:00",
+          "passed_flags_changed": 0,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0103",
+         "correction_of_verification": "r0104",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "dfa04467dec4",
+          "bytes": 129766,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0148",
+        "seq": 148,
+        "kind": "verify",
+        "version": 43,
+        "recorded_utc": "2026-11-06T04:10:04Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter18b/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 18,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 5,
+         "verdict": "FAIL",
+         "representative_best_seed": 10006,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10015,
+         "per_criterion_rates": {
+          "retention": 0.6,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.36666666666666664,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 16,
+          "1": 14,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 244.01417183876038,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter18b/summary.json",
+          "corrected_utc": "2026-11-06T04:09:15.037942+00:00",
+          "passed_flags_changed": 14,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0105",
+         "correction_of_verification": "r0106",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "3670377b9366",
+          "bytes": 130105,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0149",
+        "seq": 149,
+        "kind": "verify",
+        "version": 44,
+        "recorded_utc": "2026-11-06T04:10:04Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter18c_checkpoint1357152/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 18,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 16,
+         "verdict": "FAIL",
+         "representative_best_seed": 10013,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10011,
+         "per_criterion_rates": {
+          "retention": 0.7,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.6,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 13,
+          "1": 17,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 301.2677719593048,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter18c_checkpoint1357152/summary.json",
+          "corrected_utc": "2026-11-06T04:09:19.448747+00:00",
+          "passed_flags_changed": 17,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0107",
+         "correction_of_verification": "r0108",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "7cfbcb466f42",
+          "bytes": 132078,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0150",
+        "seq": 150,
+        "kind": "verify",
+        "version": 45,
+        "recorded_utc": "2026-11-06T04:10:05Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter18c/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 18,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 10,
+         "verdict": "FAIL",
+         "representative_best_seed": 10023,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10000,
+         "per_criterion_rates": {
+          "retention": 0.7,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.6666666666666666,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 18,
+          "1": 12,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 237.9650285243988,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter18c/summary.json",
+          "corrected_utc": "2026-11-06T04:09:23.785316+00:00",
+          "passed_flags_changed": 12,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0109",
+         "correction_of_verification": "r0110",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "3fd825e525ad",
+          "bytes": 130250,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0151",
+        "seq": 151,
+        "kind": "verify",
+        "version": 46,
+        "recorded_utc": "2026-11-06T04:10:06Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter19b_checkpoint3215520/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 19,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 8,
+         "verdict": "FAIL",
+         "representative_best_seed": 10023,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10019,
+         "per_criterion_rates": {
+          "retention": 0.6666666666666666,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.5,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 16,
+          "1": 14,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 277.1568069458008,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter19b_checkpoint3215520/summary.json",
+          "corrected_utc": "2026-11-06T04:09:27.974423+00:00",
+          "passed_flags_changed": 14,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0113",
+         "correction_of_verification": "r0114",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "9049495d7c0c",
+          "bytes": 130547,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0152",
+        "seq": 152,
+        "kind": "verify",
+        "version": 47,
+        "recorded_utc": "2026-11-06T04:10:06Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter19b/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 19,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 10,
+         "verdict": "FAIL",
+         "representative_best_seed": 10013,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10010,
+         "per_criterion_rates": {
+          "retention": 0.7,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.6666666666666666,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 19,
+          "1": 11,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 314.3532483577728,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter19b/summary.json",
+          "corrected_utc": "2026-11-06T04:09:32.377543+00:00",
+          "passed_flags_changed": 11,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0117",
+         "correction_of_verification": "r0118",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "bc9b3aec91f0",
+          "bytes": 130254,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0153",
+        "seq": 153,
+        "kind": "verify",
+        "version": 48,
+        "recorded_utc": "2026-11-06T04:10:07Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter21/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 20,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 4,
+         "verdict": "FAIL",
+         "representative_best_seed": 10020,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10002,
+         "per_criterion_rates": {
+          "retention": 0.6666666666666666,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.7333333333333333,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 15,
+          "1": 15,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 340.9867525100708,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter21/summary.json",
+          "corrected_utc": "2026-11-06T04:09:37.167474+00:00",
+          "passed_flags_changed": 15,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0119",
+         "correction_of_verification": "r0120",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "92b8e69c64d5",
+          "bytes": 129780,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0154",
+        "seq": 154,
+        "kind": "verify",
+        "version": 49,
+        "recorded_utc": "2026-11-06T04:10:08Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter20/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 20,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 10,
+         "verdict": "FAIL",
+         "representative_best_seed": 10029,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10004,
+         "per_criterion_rates": {
+          "retention": 0.6666666666666666,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.4666666666666667,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 16,
+          "1": 14,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 291.27025270462036,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter20/summary.json",
+          "corrected_utc": "2026-11-06T04:09:41.319330+00:00",
+          "passed_flags_changed": 14,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0124",
+         "correction_of_verification": "r0125",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "aab538983f26",
+          "bytes": 130679,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0155",
+        "seq": 155,
+        "kind": "verify",
+        "version": 50,
+        "recorded_utc": "2026-11-06T04:10:08Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter22/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 21,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 11,
+         "verdict": "FAIL",
+         "representative_best_seed": 10023,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10028,
+         "per_criterion_rates": {
+          "retention": 0.6666666666666666,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.06666666666666667,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 15,
+          "1": 15,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 219.75626921653748,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter22/summary.json",
+          "corrected_utc": "2026-11-06T04:09:44.370655+00:00",
+          "passed_flags_changed": 15,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0127",
+         "correction_of_verification": "r0128",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "e45407738bb2",
+          "bytes": 131611,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0156",
+        "seq": 156,
+        "kind": "verify",
+        "version": 51,
+        "recorded_utc": "2026-11-06T04:10:09Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter23/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 21,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 7,
+         "verdict": "FAIL",
+         "representative_best_seed": 10006,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10011,
+         "per_criterion_rates": {
+          "retention": 0.7,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.23333333333333334,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 12,
+          "1": 18,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 266.89563632011414,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter23/summary.json",
+          "corrected_utc": "2026-11-06T04:09:48.115829+00:00",
+          "passed_flags_changed": 18,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0129",
+         "correction_of_verification": "r0130",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "28e718c774eb",
+          "bytes": 131087,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0157",
+        "seq": 157,
+        "kind": "verify",
+        "version": 52,
+        "recorded_utc": "2026-11-06T04:10:10Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter24_checkpoint4302288/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 22,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 10,
+         "verdict": "FAIL",
+         "representative_best_seed": 10003,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10028,
+         "per_criterion_rates": {
+          "retention": 0.7,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.13333333333333333,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 15,
+          "1": 15,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 219.9657735824585,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter24_checkpoint4302288/summary.json",
+          "corrected_utc": "2026-11-06T04:09:51.091978+00:00",
+          "passed_flags_changed": 15,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0132",
+         "correction_of_verification": "r0133",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "2990e71c1024",
+          "bytes": 131514,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0158",
+        "seq": 158,
+        "kind": "verify",
+        "version": 53,
+        "recorded_utc": "2026-11-06T04:10:11Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter25_checkpoint4299120/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 22,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 11,
+         "verdict": "FAIL",
+         "representative_best_seed": 10007,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10015,
+         "per_criterion_rates": {
+          "retention": 0.6333333333333333,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.5333333333333333,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 12,
+          "1": 18,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 324.30742168426514,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter25_checkpoint4299120/summary.json",
+          "corrected_utc": "2026-11-06T04:09:55.585863+00:00",
+          "passed_flags_changed": 18,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0135",
+         "correction_of_verification": "r0136",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "e8219a4963da",
+          "bytes": 131642,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0159",
+        "seq": 159,
+        "kind": "verify",
+        "version": 54,
+        "recorded_utc": "2026-11-06T04:10:11Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter24/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 22,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 1,
+         "verdict": "FAIL",
+         "representative_best_seed": 10000,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10015,
+         "per_criterion_rates": {
+          "retention": 0.8666666666666667,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.06666666666666667,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 20,
+          "1": 10,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 232.4174063205719,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter24/summary.json",
+          "corrected_utc": "2026-11-06T04:09:58.516999+00:00",
+          "passed_flags_changed": 10,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0138",
+         "correction_of_verification": "r0139",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "4981fbdd0468",
+          "bytes": 129487,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0160",
+        "seq": 160,
+        "kind": "verify",
+        "version": 55,
+        "recorded_utc": "2026-11-06T04:10:12Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter25/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 22,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 6,
+         "verdict": "FAIL",
+         "representative_best_seed": 10005,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10026,
+         "per_criterion_rates": {
+          "retention": 0.8,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.13333333333333333,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 16,
+          "1": 14,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 183.94402956962585,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "audit_correction": {
+          "reason": "Float rotation assigned to integer target after legal commit in old evaluator.",
+          "original_summary": "research/evaluation/iter25/summary.json",
+          "corrected_utc": "2026-11-06T04:10:00.348548+00:00",
+          "passed_flags_changed": 14,
+          "validation": "research/sim/audit_dtype_validation.json",
+          "policy_dynamics_criteria_unchanged": true
+         },
+         "iteration": "r0141",
+         "correction_of_verification": "r0142",
+         "claim": "Corrected independent manifold re-audit of the identical saved poses. Original published records preserved. No physics, policy, seed or criterion change. Complete-task verdict remains FAIL."
+        },
+        "files": {
+         "file_1": {
+          "sha": "bfd0e4cabe55",
+          "bytes": 130608,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "722f4c7c9ded",
+          "bytes": 214,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-05T20:36:13Z",
@@ -290175,7 +291904,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-06T04:02:35Z",
+  "staged_utc": "2026-11-06T04:12:44Z",
   "tasks": {
    "cube": {
     "files": {
@@ -290259,7 +291988,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-06T04:02:35Z",
+  "staged_utc": "2026-11-06T04:12:43Z",
   "tasks": {
    "tennis": {
     "status": "available",
