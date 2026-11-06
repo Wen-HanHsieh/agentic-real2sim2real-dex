@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-06T04:15:02Z",
- "exported_utc": "2026-11-06T04:12:30Z",
+ "generated_utc": "2026-11-06T04:22:36Z",
+ "exported_utc": "2026-11-06T04:22:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-06T04:10:12",
+    "time": "2026-11-06T04:18:44",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -291793,6 +291793,705 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0161",
+        "seq": 161,
+        "kind": "iter",
+        "version": 39,
+        "recorded_utc": "2026-11-06T04:12:53Z",
+        "exception": false,
+        "body": {
+         "sim_version": 23,
+         "criteria_version": 1,
+         "reconstruction_version": 3,
+         "policy_observations": "deployable",
+         "policy": {
+          "checkpoint": "research/training/iter26/policy.zip",
+          "sha256": "9490f5d6e61a…",
+          "normalization": "research/training/iter26/normalization.pkl",
+          "normalization_sha256": "066a1bc19999…",
+          "architecture": "{‘net_arch': {‘pi': [256, 256], 'vf': [256, 256]}, 'activation_fn': <class 'torch.nn.modules.activation.Tanh'>, 'log_std_init': -1.1}",
+          "observation_space": "102 deployable scalars: noisy proprioception, wrist/root cube pose and velocity, previous targets, clock; no cubie states/contacts/forces/parameters. For sim>=4 world wrist/target/velocity features use frozen reference-clock rigid-frame transform and subtract known reference feedforward.",
+          "action_space": "20 smoothed absolute finger target parameters and6 integrated unbounded wrist residual parameters",
+          "actor_input_dim": 102,
+          "critic_input_dim": 102,
+          "actor_privacy_audit": {
+           "actor_public_input_dim": 102,
+           "training_critic_input_dim": 102,
+           "private_perturbation_max_action_delta": 0.0,
+           "private_input_actor_gradient_max": 0.0,
+           "exported_actor_max_action_difference": 5.960464477539062e-07,
+           "deployable_actor_file": "research/training/iter26/deployable_actor.pt",
+           "actor_export_contains_critic": false,
+           "passed": true
+          },
+          "deployment_actor": "102-input exported actor from public actor-and-critic PPO stage"
+         },
+         "algorithm": {
+          "name": "PPO",
+          "implementation": "PPO",
+          "hyperparameters": {
+           "n_steps": 256,
+           "batch_size": 2048,
+           "n_epochs": 4,
+           "gamma": 0.995,
+           "gae_lambda": 0.95,
+           "clip_range": 0.2,
+           "ent_coef": 0.001,
+           "target_kl": 0.02,
+           "vf_coef": 0.5,
+           "max_grad_norm": 1.0,
+           "learning_rate": 0.0001,
+           "policy_kwargs": "{‘net_arch': {‘pi': [256, 256], 'vf': [256, 256]}, 'activation_fn': <class 'torch.nn.modules.activation.Tanh'>, 'log_std_init': -1.1}",
+           "device": "cuda",
+           "seed": 51001,
+           "verbose": 0
+          },
+          "environments": 24,
+          "seed": 51001
+         },
+         "reward_terms": [
+          {
+           "name": "progress",
+           "formula": "80 times the difference of the negative mean squared cubiegoalerror minus0.25squared root/internal-angle couplingerror;wholecube-onlyrotationcannotgainprogress;omitrootterm afterthirdlegalgoal potential",
+           "weight": 80
+          },
+          {
+           "name": "milestone",
+           "formula": "First2legalcommits paidatonecontact-securedstep/rootwithin15deg;thirdafter0.2ssolvedhold;150firstsolveddwell. No intermediatepose/pathgate.",
+           "weight": [
+            1000,
+            150
+           ]
+          },
+          {
+           "name": "retention",
+           "formula": "0.05 per policy step if lowest cube point>5mm;0.5 extra after9.24s if solved and no hand contact",
+           "weight": [
+            0.05,
+            0.5
+           ]
+          },
+          {
+           "name": "wrist",
+           "formula": "Held<=8.3s: -log(1+(position_error/.02)^2)-.3*(orientation_error/.35)^2;0 after release",
+           "weight": [
+            -1,
+            -0.3
+           ]
+          },
+          {
+           "name": "cube_path",
+           "formula": "Held<=8.3s: -1.5*log(1+(registered center error/.025)^2);0 after release",
+           "weight": -1.5
+          },
+          {
+           "name": "action",
+           "formula": "-0.003*mean(action^2)",
+           "weight": -0.003
+          },
+          {
+           "name": "speed",
+           "formula": "-10*max_joints(relu(abs(qd)/vmax-.6)^2)",
+           "weight": -10
+          },
+          {
+           "name": "failure",
+           "formula": "-150 for hardware/break/numerical failure;-100 for unsolved floor contact",
+           "weight": [
+            -150,
+            -100
+           ]
+          },
+          {
+           "name": "remaining_failure_cost",
+           "formula": "On physical failure, zero milestones and subtract200*(1-.995^remaining_steps)/.005",
+           "weight": -200
+          },
+          {
+           "name": "handoff",
+           "formula": "For0.4s after intermediate goal payment: -20*mean(finger_action^2)-.5*log(1+norm(pres/.03)^2+norm(rres/.35)^2)",
+           "weight": [
+            -20,
+            -0.5
+           ]
+          },
+          {
+           "name": "placement",
+           "formula": "After7.5s: -0.2*min((finalcenterdistance/.025)^2,25)+0.2 if solved,nohandcontact,floorwithin1mm,speed<.02m/s,omega<.2rad/s",
+           "weight": [
+            -0.2,
+            0.2
+           ]
+          },
+          {
+           "name": "grasp",
+           "formula": "0.1 per thumb proximity/contact plus0.1 per opposed long-finger contact",
+           "weight": [
+            0.1,
+            0.1
+           ]
+          },
+          {
+           "name": "target_residual",
+           "formula": "Held<=8.3s: -.2*log(1+norm(pres/.02)^2+norm(rres/.35)^2);0 after release",
+           "weight": -0.2
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "cube_position_each_axis",
+           "distribution": "independent uniform",
+           "range": [
+            -0.002,
+            0.002
+           ],
+           "units": "m"
+          },
+          {
+           "name": "cube_orientation_rotvec_each_axis",
+           "distribution": "independent uniform",
+           "range": [
+            -3.0,
+            3.0
+           ],
+           "units": "deg"
+          },
+          {
+           "name": "wrist_position_each_axis",
+           "distribution": "independent uniform",
+           "range": [
+            -0.001,
+            0.001
+           ],
+           "units": "m"
+          },
+          {
+           "name": "wrist_orientation_rotvec_each_axis",
+           "distribution": "independent uniform",
+           "range": [
+            -2.0,
+            2.0
+           ],
+           "units": "deg"
+          },
+          {
+           "name": "finger_angle_each_joint",
+           "distribution": "independent uniform",
+           "range": [
+            -0.005,
+            0.005
+           ],
+           "units": "rad"
+          },
+          {
+           "name": "effective_finger_cube_friction",
+           "distribution": "independent uniform",
+           "range": [
+            0.8,
+            1.2
+           ],
+           "units": "coefficient"
+          },
+          {
+           "name": "layer_dry_resistance",
+           "distribution": "independent uniform",
+           "range": [
+            0.001,
+            0.002
+           ],
+           "units": "Nm"
+          }
+         ],
+         "encoder_noise": "Always independent Gaussian0.002rad/0.05rad/s at500Hz",
+         "curriculum": {
+          "legal_goal_count": 3,
+          "reference_motion_fraction": 1.0,
+          "initial_completed_turns": 0,
+          "full_start_rehearsal_probability": 0.0,
+          "configured_start_angle_range_deg": [
+           null,
+           null
+          ],
+          "adaptive_schedule": null,
+          "switch": "Training-only switches;partial goals are not task verification successes"
+         },
+         "compute": {
+          "wall_seconds": 825.1873013973236,
+          "steps": 4277304,
+          "finished_utc": "2026-11-06T04:09:58.085325+00:00",
+          "allocated_GPUs": 1,
+          "GPU_hours": 0.2292186948325899,
+          "cpu_affinity": {
+           "updated_utc": "2026-11-06T04:04:43.395788+00:00",
+           "reason": "Avoid SMT contention between physics workers during final single active PPO run; no model or algorithm changes.",
+           "logical_cpu_assignment_by_worker_index": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+           ]
+          }
+         },
+         "training_curves": "research/training/iter26/curves.csv",
+         "training_details": {
+          "algorithm": "PPO",
+          "args": {
+           "out": "research/training/iter26",
+           "freeze_obs_normalization": true,
+           "angle_hardware_limit": 0.05,
+           "anchor_dataset": null,
+           "critic_warmup_steps": 50000,
+           "anchor_lr": 0.0001,
+           "anchor_steps": 4,
+           "recurrent": false,
+           "asymmetric": false,
+           "log_std_offset": 0.0,
+           "finger_log_std_offset": 0.35,
+           "reset_action_head": false,
+           "finger_log_std": -1.5,
+           "wrist_log_std": -2.5,
+           "entropy": 0.001,
+           "target_kl": 0.02,
+           "public_from": null,
+           "public_norm": null,
+           "reward_normalization": true,
+           "sim_version": 23,
+           "angle_min": null,
+           "angle_max": null,
+           "adaptive_angles": null,
+           "adaptive_domain": null,
+           "domain_success": 0.8,
+           "steps": 2000000,
+           "envs": 24,
+           "curriculum": 3,
+           "phase_mix": false,
+           "phase_angle_schedules": null,
+           "full_angle_prob": 0.0,
+           "angle_success": 0.8,
+           "start_time": 0.0,
+           "subskill_termination": false,
+           "start_progress": 0,
+           "rehearsal_prob": 0.0,
+           "motion": 1.0,
+           "randomization": 1.0,
+           "seed": 51001,
+           "load": "research/training/iter21/policy.zip",
+           "norm": "research/training/iter21/normalization.pkl",
+           "lr": 0.0001,
+           "minutes": 20.0
+          },
+          "hyperparameters": {
+           "n_steps": 256,
+           "batch_size": 2048,
+           "n_epochs": 4,
+           "gamma": 0.995,
+           "gae_lambda": 0.95,
+           "clip_range": 0.2,
+           "ent_coef": 0.001,
+           "target_kl": 0.02,
+           "vf_coef": 0.5,
+           "max_grad_norm": 1.0,
+           "learning_rate": 0.0001,
+           "policy_kwargs": "{‘net_arch': {‘pi': [256, 256], 'vf': [256, 256]}, 'activation_fn': <class 'torch.nn.modules.activation.Tanh'>, 'log_std_init': -1.1}",
+           "device": "cuda",
+           "seed": 51001,
+           "verbose": 0
+          },
+          "actor_observation": "102 deployable scalars: noisy proprioception, wrist/root cube pose and velocity, previous targets, clock; no cubie states/contacts/forces/parameters. For sim>=4 world wrist/target/velocity features use frozen reference-clock rigid-frame transform and subtract known reference feedforward.",
+          "action": "20 smoothed absolute finger target parameters and6 integrated unbounded wrist residual parameters",
+          "sim_version": 23,
+          "criteria_version": 1,
+          "reconstruction_version": 3,
+          "reward_phase": "First2legalgoals paid atonecontact-securedstep/root15deg;finalgoal0.2ssolvedhold;dynamicroot/internalcoupling;placementafter7.5s",
+          "privileged_critic_training": false,
+          "policy_class": "stable_baselines3.common.policies.ActorCriticPolicy",
+          "actor_input_dim": 102,
+          "critic_input_dim": 102,
+          "ppo_reward_normalization": true,
+          "baseline_controller": "Loaded constant finger grasp plus human wrist reference; scheduled opening after8.3s; zero residual does not turn/solve cube"
+         },
+         "evaluation": {
+          "policy": "research/training/iter26/deployable_actor.pt",
+          "normalization": null,
+          "hardware_model_eligible": true,
+          "learning_stage_eligible": true,
+          "criteria_version": 1,
+          "sim_version": 23,
+          "episodes": 30,
+          "seed_start": 10000,
+          "randomization": "criteria_v1",
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violations": 10,
+          "verdict": "FAIL",
+          "representative_best_seed": 10011,
+          "representative_failure_seed": 10000,
+          "representative_worst_seed": 10024,
+          "per_criterion_rates": {
+           "retention": 0.8333333333333334,
+           "solve": 0.0,
+           "wrist_and_path": 0.0,
+           "contact": 0.06666666666666667,
+           "release": 0.0
+          },
+          "progress_histogram": {
+           "0": 12,
+           "1": 18,
+           "2": 0,
+           "3": 0
+          },
+          "wall_seconds": 166.40086150169373,
+          "limitations": [
+           "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+           "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+           "Reference contains monocular uncertainty and morphological clearance corrections",
+           "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+          ],
+          "detailed_metrics_file": "research/evaluation/iter26/summary.json"
+         },
+         "zero_residual_baseline": {
+          "policy": "zero-residual reference controller (not learned)",
+          "normalization": null,
+          "hardware_model_eligible": true,
+          "learning_stage_eligible": true,
+          "criteria_version": 1,
+          "sim_version": 21,
+          "episodes": 30,
+          "seed_start": 10000,
+          "randomization": "criteria_v1",
+          "successes": 0,
+          "success_rate": 0.0,
+          "hardware_violations": 0,
+          "verdict": "FAIL",
+          "representative_best_seed": 10028,
+          "representative_failure_seed": 10000,
+          "representative_worst_seed": 10026,
+          "per_criterion_rates": {
+           "retention": 1.0,
+           "solve": 0.0,
+           "wrist_and_path": 0.0,
+           "contact": 1.0,
+           "release": 0.0
+          },
+          "progress_histogram": {
+           "0": 30,
+           "1": 0,
+           "2": 0,
+           "3": 0
+          },
+          "wall_seconds": 331.67235708236694,
+          "limitations": [
+           "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+           "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+           "Reference contains monocular uncertainty and morphological clearance corrections",
+           "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+          ]
+         },
+         "reflection": "Final public PPO-only continuation from partial candidate21, with logarithmic tracking reward23, full-original/full-DR resets, moderate finger log-std increase0.35 and unchanged wrist exploration. This final stage has no supervised teacher replay. It tests large-cost early-failure avoidance while preserving a learned first-turn initializer. All complete task claims require the frozen30-seed criteria test; partial progress is not reproduction.",
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "ppo_reward_normalization": true,
+         "hardware_model_eligible": true
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "c9db45de9557",
+          "bytes": 46093,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "964bc3da85ed",
+          "bytes": 311548,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "16eb3498a18c",
+          "bytes": 253074,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "4ff337efc38e",
+          "bytes": 275440,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0162",
+        "seq": 162,
+        "kind": "verify",
+        "version": 56,
+        "recorded_utc": "2026-11-06T04:12:54Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter26/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 23,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 10,
+         "verdict": "FAIL",
+         "representative_best_seed": 10011,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10024,
+         "per_criterion_rates": {
+          "retention": 0.8333333333333334,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.06666666666666667,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 12,
+          "1": 18,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 166.40086150169373,
+         "limitations": [
+          "One fixed known three-face-move scramble, not arbitrary-scramble solving",
+          "Custom passive cube mechanism and unspecified contact parameters are modeled hypotheses",
+          "Reference contains monocular uncertainty and morphological clearance corrections",
+          "Actor only sees102 deployable observations; detailed metrics/contacts/cubie states are evaluator-only"
+         ],
+         "iteration": "r0161",
+         "checkpoint": "research/training/iter26/policy.zip",
+         "diagnosis": "Final public PPO-only continuation from partial candidate21, with logarithmic tracking reward23, full-original/full-DR resets, moderate finger log-std increase0.35 and unchanged wrist exploration. This final stage has no supervised teacher replay. It tests large-cost early-failure avoidance while preserving a learned first-turn initializer. All complete task claims require the frozen30-seed criteria test; partial progress is not reproduction.",
+         "claim": "Own self-verification;not an official evaluation. Exact origin-frame controller used."
+        },
+        "files": {
+         "file_1": {
+          "sha": "b5bbedbac238",
+          "bytes": 98292,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "4817617de650",
+          "bytes": 38208,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "acf149574ef8",
+          "bytes": 112473,
+          "content_type": "application/json"
+         },
+         "file_4": {
+          "sha": "601ab4fdaefa",
+          "bytes": 4404,
+          "content_type": "application/json"
+         },
+         "file_5": {
+          "sha": "3e7f286b41aa",
+          "bytes": 3549986,
+          "content_type": "application/octet-stream"
+         },
+         "file_6": {
+          "sha": "51d5d5939748",
+          "bytes": 361,
+          "content_type": "application/json"
+         },
+         "video_left_failure": {
+          "sha": "964bc3da85ed",
+          "bytes": 311548,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "16eb3498a18c",
+          "bytes": 253074,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "4ff337efc38e",
+          "bytes": 275440,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0163",
+        "seq": 163,
+        "kind": "verify",
+        "version": 57,
+        "recorded_utc": "2026-11-06T04:14:36Z",
+        "exception": false,
+        "body": {
+         "policy": "research/training/iter21/deployable_actor.pt",
+         "normalization": null,
+         "hardware_model_eligible": true,
+         "learning_stage_eligible": true,
+         "criteria_version": 1,
+         "sim_version": 20,
+         "episodes": 30,
+         "seed_start": 10000,
+         "randomization": "criteria_v1",
+         "successes": 0,
+         "success_rate": 0.0,
+         "hardware_violations": 4,
+         "verdict": "FAIL",
+         "representative_best_seed": 10020,
+         "representative_failure_seed": 10000,
+         "representative_worst_seed": 10002,
+         "per_criterion_rates": {
+          "retention": 0.6666666666666666,
+          "solve": 0.0,
+          "wrist_and_path": 0.0,
+          "contact": 0.7333333333333333,
+          "release": 0.0
+         },
+         "progress_histogram": {
+          "0": 15,
+          "1": 15,
+          "2": 0,
+          "3": 0
+         },
+         "wall_seconds": 340.9867525100708,
+         "limitations": [
+          "Human individual layer turns, scramble, and cubie0 identity cannot be recovered reliably from this monocular demonstration.",
+          "The custom passive cube interlock and contact parameters are simulation hypotheses requiring physical validation.",
+          "Monocular absolute depth uncertainty is approximately68mm; registered relative paths and robot morphology corrections remain modeling assumptions.",
+          "The fixed30 verification seeds were reused during iterative diagnosis and model selection; this is self-verification, not independent held-out generalization.",
+          "Full-task solve, human-like tracking, contact continuity, release, and hardware compliance must all pass together; isolated partial-start successes do not establish reproduction."
+         ],
+         "audit_correction": "The independent checker integer-target truncation defect was fixed and saved trajectories re-audited. Original published evidence is preserved. Restore the final evaluator patch after an older checkpoint bundle. No physics/policy/criteria changes; full task verdict unchanged.",
+         "iteration": "r0119",
+         "final": true,
+         "experiment": "D2S-CUBE-2",
+         "created_utc": "2026-11-06T04:14:35.135309+00:00",
+         "start_utc": "2026-11-05T20:19:58Z",
+         "hard_stop_utc": "2026-11-06T04:19:58Z",
+         "candidate_selection_method": "Select among public full30-seed evaluations by more complete task successes, then lexicographic counts reaching at least3/2/1 legal goals without hardware/break/independent-audit violations, then fewer hardware-failure episodes, then more wrist/path and contact criterion passes. This selects an incomplete candidate if all fail; it is not an official score and never changes the criteria verdict.",
+         "own_claim_only": "This is self-verification in a custom simulation, not an official evaluation, score, ranking, or real-robot result.",
+         "scope": "One fixed known nontrivial three-face-move scramble, with30fixed randomized trials. Human exact scramble and layer trajectory are unobservable.",
+         "checkpoint_sha256": "e4eb2b8b3f01…",
+         "actor_sha256": "ac7ee02beff8…",
+         "criteria_sha256": "59e1e8d62733…",
+         "baseline": {
+          "path": "research/evaluation/baseline_v21/summary.json",
+          "full_task_successes": 0,
+          "episodes": 30,
+          "legal_goal_histogram": {
+           "0": 30,
+           "1": 0,
+           "2": 0,
+           "3": 0
+          },
+          "hardware_violations": 0,
+          "equivalence": "Versions20 through23 share the same original-start physical model and zero-action controller; reward changes do not alter rollouts, and training boundary replay is disabled in evaluation. Baseline21 therefore uses identical physical dynamics and controller for the selected candidate."
+         },
+         "evidence": {
+          "all30_qpos_and_trace_archive": "research/final_trajectories.npz",
+          "manifest_contains_sha256": true,
+          "detailed_summary": "research/evaluation/iter21/summary_audit_corrected.json",
+          "checkpoint_bundle": "research/training/iter21/checkpoint_bundle.npz",
+          "representative_video_seed": 10020
+         },
+         "verdict_explanation": "The complete task was not reproduced under the frozen criteria. Legal-goal progress and partial-start training do not count as complete task success."
+        },
+        "files": {
+         "file_1": {
+          "sha": "92b8e69c64d5",
+          "bytes": 129780,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "aebfaea7d0ed",
+          "bytes": 21005,
+          "content_type": "application/json"
+         },
+         "file_3": {
+          "sha": "07a0b88aff71",
+          "bytes": 4250,
+          "content_type": "application/octet-stream"
+         },
+         "file_4": {
+          "sha": "a4e42d0fd76f",
+          "bytes": 2314,
+          "content_type": "application/json"
+         },
+         "file_5": {
+          "sha": "2877935d5967",
+          "bytes": 4437826,
+          "content_type": "application/octet-stream"
+         },
+         "file_6": {
+          "sha": "310f3781ed4c",
+          "bytes": 96814,
+          "content_type": "application/json"
+         },
+         "file_7": {
+          "sha": "ca6282328eb6",
+          "bytes": 3550081,
+          "content_type": "application/octet-stream"
+         },
+         "file_8": {
+          "sha": "d40e698d2c01",
+          "bytes": 361,
+          "content_type": "application/json"
+         },
+         "video_left_final": {
+          "sha": "1d1ba0df11cf",
+          "bytes": 338267,
+          "content_type": "video/mp4"
+         },
+         "video_right_final": {
+          "sha": "edd6834494f3",
+          "bytes": 263755,
+          "content_type": "video/mp4"
+         },
+         "video_top_final": {
+          "sha": "42ffd1bf88f2",
+          "bytes": 282158,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0164",
+        "seq": 164,
+        "kind": "note",
+        "version": 41,
+        "recorded_utc": "2026-11-06T04:18:44Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Final reflection for the 8-hour stop. Started 2026-11-05 20:19:58 UTC; hard stop 2026-11-06 04:19:58 UTC. Final self-verification r0163 is FAIL: 0/30 complete tasks. The selected public PPO policy completes one legal first turn in 15/30 trials; four other trials violate hardware limits. No eligible public policy completes a second legal goal in full original-start verification. Wrist/cube tracking and solved release remain unsatisfied.\n\nWhat worked: a VALID whole-cube and wrist reconstruction with explicit limits on unobservable layer turns and scramble; a free-wrist left-hand simulation with specified controllers and a passive cube; and PPO learning a first turn beyond the zero-residual baseline, which makes no turns or solves and has no hardware failures. Correcting the wrist velocity frame and freezing public observation normalization resolved major fidelity and policy-function errors.\n\nWhat failed: composing later-turn partial-start skills into actual handoffs, transferring to full wrist motion and randomization, and balancing tracking costs against early failure. The independent checker's integer-matrix truncation defect was fixed; 17 saved public evaluations were re-audited, preserving original evidence. Legal synthetic tests and an illegal 40-degree corner control validate the correction. Complete-task verdicts remain FAIL.\n\nNext I would train longer with a contact-secured recovery curriculum reached on policy, recurrent PPO using only public observations, longer credit assignment, and physically calibrated contact/interlock parameters. This is a single known-scramble simulation study, not an official evaluation or a real-robot result. Every evaluated iteration, final trajectories, checkpoint, training curves and three-view rollout evidence is preserved. All research training and evaluation processes have stopped."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-05T20:36:13Z",
@@ -291904,7 +292603,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-06T04:12:44Z",
+  "staged_utc": "2026-11-06T04:22:33Z",
   "tasks": {
    "cube": {
     "files": {
@@ -291988,7 +292687,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-06T04:12:43Z",
+  "staged_utc": "2026-11-06T04:22:33Z",
   "tasks": {
    "tennis": {
     "status": "available",
