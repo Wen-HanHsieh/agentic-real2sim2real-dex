@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-09T17:22:38Z",
- "exported_utc": "2026-11-09T17:22:29Z",
+ "generated_utc": "2026-11-09T17:32:38Z",
+ "exported_utc": "2026-11-09T17:32:30Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-09T17:18:28",
+    "time": "2026-11-09T17:31:30",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-09T17:18:43",
+    "time": "2026-11-09T17:24:57",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -192527,6 +192527,2478 @@
          "video_top_success": {
           "sha": "224019f19bb8",
           "bytes": 221485,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0098",
+        "seq": 98,
+        "kind": "iter",
+        "version": 35,
+        "recorded_utc": "2026-11-09T17:23:28Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "policy_observations": "deployable",
+         "reward_terms": [
+          {
+           "name": "reference_pose",
+           "formula": ".8exp(-(position_error/.05)^2)+.3exp(-(rotation_error/.6)^2)",
+           "weight": 0.02
+          },
+          {
+           "name": "reference_fingers",
+           "formula": "exp(-mean((q-q_reference)^2)/.06)",
+           "weight": 0.003
+          },
+          {
+           "name": "opposition",
+           "formula": "(.3thumb_case+.2other_case+1both_case)*I[[redacted]..6]",
+           "weight": 0.02
+          },
+          {
+           "name": "lift",
+           "formula": "clip(height_gain/.08,0,1)*I[phase3..5]",
+           "weight": 0.03
+          },
+          {
+           "name": "upright",
+           "formula": "signed blade_axis_dot_up*I[phase>=3 and hand_contact]",
+           "weight": 0.1
+          },
+          {
+           "name": "turn_progress",
+           "formula": "delta(blade_axis_dot_up)*I[phase>=3 and hand_contact]",
+           "weight": 0.2
+          },
+          {
+           "name": "left_goal",
+           "formula": "exp(-(object_XY_goal_distance/.07)^2)*I[phase>=5]",
+           "weight": 0.1
+          },
+          {
+           "name": "placement",
+           "formula": "I[left,tilt<=15deg,table,released,60msfinite-difference objectlinear<.02/angular<.15]",
+           "weight": 0.3
+          },
+          {
+           "name": "penetration",
+           "formula": "-max(depth-.003,0)/.01",
+           "weight": 0.8
+          },
+          {
+           "name": "motion",
+           "formula": "-mean(a^2)-mean((a-previous_a)^2)",
+           "weight": 0.0004
+          },
+          {
+           "name": "object_motion",
+           "formula": "-norm(object_angular_velocity)",
+           "weight": 0.0002
+          },
+          {
+           "name": "hardware",
+           "formula": "-I[hardware_speed_or_position_violation]",
+           "weight": 10.0
+          },
+          {
+           "name": "speed_margin",
+           "formula": "-max(max(abs(qd)/URDF_speed)-.5,0)^2",
+           "weight": 0.04
+          },
+          {
+           "name": "carry_distance",
+           "formula": "-object_XY_goal_distance*I[phase>=5]",
+           "weight": 0.08
+          },
+          {
+           "name": "case_proximity",
+           "formula": "(exp(-max(oriented_case_box_distance_from_FK_thumb_pad-.008,0)/.01)+max_other(exp(-max(box_distance-.008,0)/.01)))*I[[redacted]..6]",
+           "weight": 0.014
+          },
+          {
+           "name": "premature_turn",
+           "formula": "-I[ordinary episode,held,upright<=20deg,[redacted]..4,before5continuous20ms samples of lowest geometry>15mm AND center-rise>15mm]",
+           "weight": 2.0
+          },
+          {
+           "name": "demonstration_wrist",
+           "formula": "-max(rotation_geodesic_to_reconstructed_grasp_or_carry-.7rad,0)^2;initialblade-yaw alignment;grasp target phases0..3/carry4..8",
+           "weight": 0.1
+          },
+          {
+           "name": "numerical_failure",
+           "formula": "-I[nonfinite world;terminate and reset at episode boundary]",
+           "weight": 10.0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Independent Gaussian",
+           "q_sigma": 0.002,
+           "qd_sigma": 0.05
+          },
+          {
+           "name": "physical variants",
+           "distribution": "Uniform choice of16 independent seeded uniform-range physical draws per kind,fixed per world",
+           "parameters": "research/sim/meshbank_variants.json",
+           "mass_scale": [
+            0.7,
+            1.3
+           ],
+           "white_axis_scale": [
+            0.9,
+            1.1
+           ],
+           "black_dimensions_mm": [
+            null,
+            null,
+            null
+           ],
+           "COM_mm": [
+            -3,
+            3
+           ],
+           "hand_table_mu": [
+            0.3,
+            1.0
+           ],
+           "restitution": [
+            0,
+            0.15
+           ],
+           "torsional_radius_m": [
+            0.001,
+            0.006
+           ]
+          }
+         ],
+         "algorithm": {
+          "name": "PPO clipped/GAE",
+          "actor_learning_rate": 3e-05,
+          "critic_learning_rate": 0.0003,
+          "n_steps": 128,
+          "batch_size": 8192,
+          "epochs": 4,
+          "gamma": 0.999,
+          "gae_lambda": 0.995,
+          "clip": 0.2,
+          "target_kl": 0.03,
+          "entropy": 0.0001,
+          "BC_auxiliary_weight": 0.0,
+          "actor_grad_clip": 0.5,
+          "critic_grad_clip": 5.0,
+          "initial_log_std": {
+           "inherited": "36cp2M gSDE3x8matrix"
+          },
+          "head_learning_rate": 0.0003,
+          "root_head_effective_learning_rate": 3e-07,
+          "BC_action_weights": {
+           "fingers": 0.1,
+           "wrist": 10
+          },
+          "post_step_backtracking": "Each proposed actor update is repeatedly halved until actual batch KL<=.042,or restored after12tries.",
+          "force_head_learning_rate": 3e-05,
+          "root_residual_learning_rate": 3e-05,
+          "log_std_learning_rate": 1e-06,
+          "use_sde": true,
+          "sde_sample_freq": 32,
+          "exploration_hold_seconds": 0.64,
+          "exploration": "gSDE grip-gain sigma.606duringturnphase4,held.64s;post-lift angular9deg during4–5;smallnoise elsewhere. This explores complete-finger normal grip variation.",
+          "placement_velocity_proxy": "Three50Hzpose intervals=60ms;final verification uses exact causal50ms worldvelocity means and2mm/2degpose bounds."
+         },
+         "architecture": "Composed PPO neural policy:2grip-gain neurons(190-128-128-2Tanh),4family53-256-256-128-6root networks,and frozen PPO26linear kinematic joint field plus PPO14/15approach bases. All final numerical joint/wrist targets come from this network composition.",
+         "observation_space": "190deployable features:150priorencoder features plus20opposition-normal fingertipJacobian projections and20sums of link-heightJacobian columns. Pure public robot geometry/noisyq/wristR only; no masses,inertias,friction,contacts,forces or torques are observed.",
+         "action_space": "8latent PPO outputs:2dimensionless grip gains and6normalized absolute wrist coordinates. Gains1+.8clip(a) coherently modulate the J-dependent portion of the learned PPO26joint head;its learned link-height/bias portion remains. Selected finger targets use noisycurrentq+.05clip(composed neural output). Opening uses the frozen learned opening head. Hardware controllers unchanged.",
+         "curriculum": "65%reverse starts from old held states plus constructed upright held-goal states,validated200msnativephysics;goal samples multiplicity4. Goal reset yaw0andleftposition preserved. Remaining starts ordinary fixed deploymentSTART. All evaluation starts are ordinary table placements.",
+         "initialization": "Continue36cp2M; same190feature encoder,8latent PPO actions and frozen PPO26joint field. Learned grasp field active fromphase2progress.45. New placement reward proxy uses60ms object pose differences to suppress static contact chatter; physics/controller timestep remains1ms.",
+         "compute": {
+          "wall_seconds": 1035.2,
+          "gpu_hours": 0.28755555555555556,
+          "gpu": "OneL40S,cuda:0",
+          "environments": 4096
+         },
+         "training_steps": 6291456,
+         "evaluation": {
+          "criteria_version": 3,
+          "passed": false,
+          "episodes": 6,
+          "successes": 0,
+          "success_rate": 0.0,
+          "wilson_95_interval": [
+           0,
+           0.39033428790215224
+          ],
+          "by_count": {
+           "2": {
+            "episodes": 3,
+            "successes": 0
+           },
+           "3": {
+            "episodes": 3,
+            "successes": 0
+           }
+          },
+          "touching": {
+           "episodes": 2,
+           "successes": 0
+          },
+          "hardware_violating_episodes": 0,
+          "placement_failures": 0,
+          "correctly_standing_released_objects": 2,
+          "total_objects": 15,
+          "maximum_speed_ratio": 0.6160802316692808,
+          "maximum_penetration_m": 0.0009250352690816682
+         },
+         "criteria_comparison": {
+          "criteria_version": 3,
+          "passed": false,
+          "reason": "Development selection only: 0/6 episodes, 2/15 standing, 0 hardware-violating episodes. This is not the60fresh protocol."
+         },
+         "discrete_layer": "Highest/nearest unfinished object;9.3s learned phase sequence. Completion uses allowed observed50msmean velocities and1s2mm/2degpose history. No additional motion controller.",
+         "reflection": "Later PPO checkpoint assessed on the same six development seeds81000..81005. Curriculum success proxies do not establish forward multiobject performance. Select only before the final fresh audit; never deliver without a passing60trial verification.",
+         "curves_note": "EveryGPUvectorcollectorstepisrecordedwithmeanrewardterms,episodeage,success/hardwareproxies,andcompletedepisodemetrics. Curriculumoutcomesarenotdeploymentcriteria.",
+         "artifacts": {
+          "checkpoint": "research/training/iter_038/policy.zip",
+          "trainer": "research/gpu/train_meta38.py",
+          "policy": "research/gpu/meta_policy35.py",
+          "optimizer": "research/gpu/ppo_meta35.py",
+          "environment": "research/gpu/vec_env_meta38.py",
+          "encoder": "research/gpu/meta_torch35.py",
+          "numpy_encoder": "research/policy/meta_runtime35.py",
+          "kinematics": "research/policy/kinematics_geometry.json",
+          "parity": "research/gpu/geometric26_parity.json",
+          "evaluation": "research/evaluation/iter038_final_finish_debug_v3/evaluation.json",
+          "package": "research/packages/iter038_final_finish_v3",
+          "auditor": "research/evaluation/audit_v3.py"
+         },
+         "weight_update_collection_steps": 6291456,
+         "checkpoint_collection_note": "Final policy includes all completed PPO updates.",
+         "scripted_baseline_evaluation_note": "Separate central nominal30s single-object audits of all4corrected gravity-reference families pass each per-object criterion. This geometric analysis controller is not a learned policy and has not passed full randomized multiobject verification.",
+         "goal_curriculum": {
+          "unique_goal_states": 176,
+          "old_held_states": 466,
+          "multiplicity": 4,
+          "validation": "research/gpu/bank_validation_goal_highbias.json",
+          "limitations": "Constructed reset goals are not forward skill successes;context caches represent earlier table poses."
+         },
+         "baseline_evaluation_note": "Parent36cp2M had2/24in the older single-object instantaneous-speed proxy,with1HW. Parent35cp2Mfull6criterion3development:0/6,3/15standing,1HW. These are differently scoped diagnostics,not a paired improvement claim.",
+         "package_manifest_sha256": "dab352b73c5b…",
+         "evaluation_scope": "Full30s ordinary settled2/3-object development episodes with all criteria3 audited at1kHz,500Hz deployed interface. Reused development seeds,not a fresh verification."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "2d3f918f2a86",
+          "bytes": 364537,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "0cd7d7dbd9d2",
+          "bytes": 443960,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "23309c891aca",
+          "bytes": 305108,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "60f3f118860e",
+          "bytes": 297197,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0099",
+        "seq": 99,
+        "kind": "iter",
+        "version": 36,
+        "recorded_utc": "2026-11-09T17:23:28Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "policy_observations": "deployable",
+         "reward_terms": [
+          {
+           "name": "reference_pose",
+           "formula": ".8exp(-(position_error/.05)^2)+.3exp(-(rotation_error/.6)^2)",
+           "weight": 0.02
+          },
+          {
+           "name": "reference_fingers",
+           "formula": "exp(-mean((q-q_reference)^2)/.06)",
+           "weight": 0.003
+          },
+          {
+           "name": "opposition",
+           "formula": "(.3thumb_case+.2other_case+1both_case)*I[[redacted]..6]",
+           "weight": 0.02
+          },
+          {
+           "name": "lift",
+           "formula": "clip(height_gain/.08,0,1)*I[phase3..5]",
+           "weight": 0.03
+          },
+          {
+           "name": "upright",
+           "formula": "signed blade_axis_dot_up*I[phase>=3 and hand_contact]",
+           "weight": 0.1
+          },
+          {
+           "name": "turn_progress",
+           "formula": "delta(blade_axis_dot_up)*I[phase>=3 and hand_contact]",
+           "weight": 0.2
+          },
+          {
+           "name": "left_goal",
+           "formula": "exp(-(object_XY_goal_distance/.07)^2)*I[phase>=5]",
+           "weight": 0.1
+          },
+          {
+           "name": "placement",
+           "formula": "I[left,tilt<=15deg,table,released,60msfinite-difference objectlinear<.02/angular<.15]",
+           "weight": 0.3
+          },
+          {
+           "name": "penetration",
+           "formula": "-max(depth-.003,0)/.01",
+           "weight": 0.8
+          },
+          {
+           "name": "motion",
+           "formula": "-mean(a^2)-mean((a-previous_a)^2)",
+           "weight": 0.0004
+          },
+          {
+           "name": "object_motion",
+           "formula": "-norm(object_angular_velocity)",
+           "weight": 0.0002
+          },
+          {
+           "name": "hardware",
+           "formula": "-I[hardware_speed_or_position_violation]",
+           "weight": 10.0
+          },
+          {
+           "name": "speed_margin",
+           "formula": "-max(max(abs(qd)/URDF_speed)-.5,0)^2",
+           "weight": 0.04
+          },
+          {
+           "name": "carry_distance",
+           "formula": "-object_XY_goal_distance*I[phase>=5]",
+           "weight": 0.08
+          },
+          {
+           "name": "case_proximity",
+           "formula": "(exp(-max(oriented_case_box_distance_from_FK_thumb_pad-.008,0)/.01)+max_other(exp(-max(box_distance-.008,0)/.01)))*I[[redacted]..6]",
+           "weight": 0.014
+          },
+          {
+           "name": "premature_turn",
+           "formula": "-I[ordinary episode,held,upright<=20deg,[redacted]..4,before5continuous20ms samples of lowest geometry>15mm AND center-rise>15mm]",
+           "weight": 2.0
+          },
+          {
+           "name": "demonstration_wrist",
+           "formula": "-max(rotation_geodesic_to_reconstructed_grasp_or_carry-.7rad,0)^2;initialblade-yaw alignment;grasp target phases0..3/carry4..8",
+           "weight": 0.1
+          },
+          {
+           "name": "numerical_failure",
+           "formula": "-I[nonfinite world;terminate and reset at episode boundary]",
+           "weight": 10.0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Independent Gaussian",
+           "q_sigma": 0.002,
+           "qd_sigma": 0.05
+          },
+          {
+           "name": "physical variants",
+           "distribution": "Uniform choice of16 independent seeded uniform-range physical draws per kind,fixed per world",
+           "parameters": "research/sim/meshbank_variants.json",
+           "mass_scale": [
+            0.7,
+            1.3
+           ],
+           "white_axis_scale": [
+            0.9,
+            1.1
+           ],
+           "black_dimensions_mm": [
+            null,
+            null,
+            null
+           ],
+           "COM_mm": [
+            -3,
+            3
+           ],
+           "hand_table_mu": [
+            0.3,
+            1.0
+           ],
+           "restitution": [
+            0,
+            0.15
+           ],
+           "torsional_radius_m": [
+            0.001,
+            0.006
+           ]
+          }
+         ],
+         "algorithm": {
+          "name": "PPO clipped/GAE",
+          "actor_learning_rate": "Separate Adam groups:grip1e-4,root1e-6,logstd1e-6",
+          "critic_learning_rate": 0.0003,
+          "n_steps": 128,
+          "batch_size": 8192,
+          "epochs": 4,
+          "gamma": 0.999,
+          "gae_lambda": 0.995,
+          "clip": 0.2,
+          "target_kl": 0.03,
+          "entropy": 0.0001,
+          "BC_auxiliary_weight": 0.0,
+          "actor_grad_clip": 0.5,
+          "critic_grad_clip": 5.0,
+          "initial_log_std": {
+           "inherited": "36cp2M gSDE3x8matrix"
+          },
+          "BC_action_weights": {
+           "fingers": 0.1,
+           "wrist": 10
+          },
+          "post_step_backtracking": "Each proposed actor update is repeatedly halved until actual batch KL<=.042,or restored after12tries.",
+          "root_residual_learning_rate": 1e-06,
+          "log_std_learning_rate": 1e-06,
+          "use_sde": true,
+          "sde_sample_freq": 32,
+          "exploration_hold_seconds": 0.64,
+          "exploration": "gSDE grip-gain sigma.606duringturnphase4,held.64s;post-lift angular9deg during4–5;smallnoise elsewhere. This explores complete-finger normal grip variation.",
+          "placement_velocity_proxy": "Three50Hzpose intervals=60ms;final verification uses exact causal50ms worldvelocity means and2mm/2degpose bounds.",
+          "grip_head_learning_rate": 0.0001
+         },
+         "architecture": "Composed PPO neural policy:2grip-gain neurons(190-128-128-2Tanh),4family53-256-256-128-6root networks,and frozen PPO26linear kinematic joint field plus PPO14/15approach bases. All final numerical joint/wrist targets come from this network composition.",
+         "observation_space": "190deployable features:150priorencoder features plus20opposition-normal fingertipJacobian projections and20sums of link-heightJacobian columns. Pure public robot geometry/noisyq/wristR only; no masses,inertias,friction,contacts,forces or torques are observed.",
+         "action_space": "8latent PPO outputs:2dimensionless grip gains and6normalized absolute wrist coordinates. Gains1+.8clip(a) coherently modulate the J-dependent portion of the learned PPO26joint head;its learned link-height/bias portion remains. Selected finger targets use noisycurrentq+.05clip(composed neural output). Opening uses the frozen learned opening head. Hardware controllers unchanged.",
+         "curriculum": "65%reverse starts from old held states plus constructed upright held-goal states,validated200msnativephysics;goal samples multiplicity4. Goal reset yaw0andleftposition preserved. Remaining starts ordinary fixed deploymentSTART. All evaluation starts are ordinary table placements.",
+         "initialization": "Continue38cp4M with identical architecture/physics/reward/curriculum;split grip and root optimizer learning rates.",
+         "compute": {
+          "wall_seconds": 248.89,
+          "gpu_hours": 0.0691361111111111,
+          "gpu": "OneL40S,cuda:2",
+          "environments": 4096
+         },
+         "training_steps": 2002944,
+         "evaluation": {
+          "criteria_version": 3,
+          "passed": false,
+          "episodes": 6,
+          "successes": 0,
+          "success_rate": 0.0,
+          "wilson_95_interval": [
+           0,
+           0.39033428790215224
+          ],
+          "by_count": {
+           "2": {
+            "episodes": 3,
+            "successes": 0
+           },
+           "3": {
+            "episodes": 3,
+            "successes": 0
+           }
+          },
+          "touching": {
+           "episodes": 2,
+           "successes": 0
+          },
+          "hardware_violating_episodes": 1,
+          "placement_failures": 0,
+          "correctly_standing_released_objects": 3,
+          "total_objects": 15,
+          "maximum_speed_ratio": 1.812971439675558,
+          "maximum_penetration_m": 0.0011834973203179826
+         },
+         "criteria_comparison": {
+          "criteria_version": 3,
+          "passed": false,
+          "reason": "Development selection only: 0/6 episodes, 3/15 standing, 1 hardware-violating episodes. This is not the60fresh protocol."
+         },
+         "discrete_layer": "Highest/nearest unfinished object;9.3s learned phase sequence. Completion uses allowed observed50msmean velocities and1s2mm/2degpose history. No additional motion controller.",
+         "reflection": "Later PPO checkpoint assessed on the same six development seeds81000..81005. Curriculum success proxies do not establish forward multiobject performance. Select only before the final fresh audit; never deliver without a passing60trial verification.",
+         "curves_note": "EveryGPUvectorcollectorstepisrecordedwithmeanrewardterms,episodeage,success/hardwareproxies,andcompletedepisodemetrics. Curriculumoutcomesarenotdeploymentcriteria.",
+         "artifacts": {
+          "checkpoint": "research/training/iter_039/checkpoint_2002944.zip",
+          "trainer": "research/gpu/train_meta39.py",
+          "policy": "research/gpu/meta_policy35.py",
+          "optimizer": "research/gpu/ppo_meta39.py",
+          "environment": "research/gpu/vec_env_meta38.py",
+          "encoder": "research/gpu/meta_torch35.py",
+          "numpy_encoder": "research/policy/meta_runtime35.py",
+          "kinematics": "research/policy/kinematics_geometry.json",
+          "parity": "research/gpu/geometric26_parity.json",
+          "evaluation": "research/evaluation/iter039_finish_debug_v3/evaluation.json",
+          "package": "research/packages/iter039_finish_v3",
+          "auditor": "research/evaluation/audit_v3.py"
+         },
+         "weight_update_collection_steps": 1572864,
+         "checkpoint_collection_note": "Callback snapshot precedes the next128x4096 PPO update.",
+         "scripted_baseline_evaluation_note": "Separate central nominal30s single-object audits of all4corrected gravity-reference families pass each per-object criterion. This geometric analysis controller is not a learned policy and has not passed full randomized multiobject verification.",
+         "goal_curriculum": {
+          "unique_goal_states": 176,
+          "old_held_states": 466,
+          "multiplicity": 4,
+          "validation": "research/gpu/bank_validation_goal_highbias.json",
+          "limitations": "Constructed reset goals are not forward skill successes;context caches represent earlier table poses."
+         },
+         "baseline_evaluation_note": "Parent36cp2M had2/24in the older single-object instantaneous-speed proxy,with1HW. Parent35cp2Mfull6criterion3development:0/6,3/15standing,1HW. These are differently scoped diagnostics,not a paired improvement claim.",
+         "package_manifest_sha256": "b31456a1ff99…",
+         "evaluation_scope": "Full30s ordinary settled2/3-object development episodes with all criteria3 audited at1kHz,500Hz deployed interface. Reused development seeds,not a fresh verification."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "74727929958f",
+          "bytes": 111584,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "e8c77e4fafcf",
+          "bytes": 445533,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "e0b07b114455",
+          "bytes": 303289,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "0e1f7280ffa6",
+          "bytes": 300169,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0100",
+        "seq": 100,
+        "kind": "note",
+        "version": 43,
+        "recorded_utc": "2026-11-09T17:23:51Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "At17:24UTC,39cp2M full development remains0/6,3/15standing and1hardware episode. Reverse-held goal starts may dominate learning without repairing acquisition. Final continuation40 keeps the same learned architecture,physics,reward and optimizer,but uses reverse_probability=0 so every training reset starts from a table object and the deployment wrist pose. It continues39cp2M,not a hand-coded motion. Budget cap:stop training by17:36UTC;evaluate only if checkpoint and full audit fit before17:43:19UTC. Freeze the best previously evaluated package before each fresh audit;do not tune on those seeds."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0101",
+        "seq": 101,
+        "kind": "note",
+        "version": 44,
+        "recorded_utc": "2026-11-09T17:24:26Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Detailed criterion3 audit of frozen14,91000-series:112/150objects achieved opposed grasp/lift,93held crossing,48final standing/released,61wrist style,29complete per-object skill;4/60complete episodes. By layout:2/20separated,0/20touching,2/20scattered. Hardware violations7episodes,with4in touching layouts;no sustained penetration or simultaneous-lift violations. These counts overlap and are descriptive,not causal. Failures span acquisition,retention,release and event order,so changing only final stability cannot solve them. Full analysis saved atresearch/evaluation/iter014_random60_v3/failure_analysis.json. Artifact-path correction:r0095,r0098,r0099 inherited encoder labels35;the late-grasp implementation actually usesmeta_torch36/meta_runtime36 via vec_env_meta38 and the --late export. Checkpoint/package hashes and measured results are unchanged."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0102",
+        "seq": 102,
+        "kind": "iter",
+        "version": 37,
+        "recorded_utc": "2026-11-09T17:24:45Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "policy_observations": "deployable",
+         "reward_terms": [
+          {
+           "name": "reference_pose",
+           "formula": ".8exp(-(position_error/.05)^2)+.3exp(-(rotation_error/.6)^2)",
+           "weight": 0.02
+          },
+          {
+           "name": "reference_fingers",
+           "formula": "exp(-mean((q-q_reference)^2)/.06)",
+           "weight": 0.003
+          },
+          {
+           "name": "opposition",
+           "formula": "(.3thumb_case+.2other_case+1both_case)*I[[redacted]..6]",
+           "weight": 0.02
+          },
+          {
+           "name": "lift",
+           "formula": "clip(height_gain/.08,0,1)*I[phase3..5]",
+           "weight": 0.03
+          },
+          {
+           "name": "upright",
+           "formula": "signed blade_axis_dot_up*I[phase>=3 and hand_contact]",
+           "weight": 0.1
+          },
+          {
+           "name": "turn_progress",
+           "formula": "delta(blade_axis_dot_up)*I[phase>=3 and hand_contact]",
+           "weight": 0.2
+          },
+          {
+           "name": "left_goal",
+           "formula": "exp(-(object_XY_goal_distance/.07)^2)*I[phase>=5]",
+           "weight": 0.1
+          },
+          {
+           "name": "placement",
+           "formula": "I[left,tilt<=15deg,table_contact,released,linear_velocity<.02,angular_velocity<.15]",
+           "weight": 0.3
+          },
+          {
+           "name": "penetration",
+           "formula": "-max(depth-.003,0)/.01",
+           "weight": 0.8
+          },
+          {
+           "name": "motion",
+           "formula": "-mean(a^2)-mean((a-previous_a)^2)",
+           "weight": 0.0004
+          },
+          {
+           "name": "object_motion",
+           "formula": "-norm(object_angular_velocity)",
+           "weight": 0.0002
+          },
+          {
+           "name": "hardware",
+           "formula": "-I[hardware_speed_or_position_violation]",
+           "weight": 10.0
+          },
+          {
+           "name": "speed_margin",
+           "formula": "-max(max(abs(qd)/URDF_speed)-.5,0)^2",
+           "weight": 0.04
+          },
+          {
+           "name": "carry_distance",
+           "formula": "-object_XY_goal_distance*I[phase>=5]",
+           "weight": 0.08
+          },
+          {
+           "name": "case_proximity",
+           "formula": "(exp(-max(oriented_case_box_distance_from_FK_thumb_pad-.008,0)/.01)+max_other(exp(-max(box_distance-.008,0)/.01)))*I[[redacted]..6]",
+           "weight": 0.014
+          },
+          {
+           "name": "premature_turn",
+           "formula": "-I[ordinary episode,held,upright<=20deg,[redacted]..4,before5continuous20ms samples of lowest geometry>15mm AND center-rise>15mm]",
+           "weight": 2.0
+          },
+          {
+           "name": "demonstration_wrist",
+           "formula": "-max(rotation_geodesic_to_reconstructed_grasp_or_carry-.7rad,0)^2;initialblade-yaw alignment;grasp target phases0..3/carry4..8",
+           "weight": 0.1
+          },
+          {
+           "name": "numerical_failure",
+           "formula": "-I[nonfinite world;terminate and reset at episode boundary]",
+           "weight": 10.0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Independent Gaussian",
+           "q_sigma": 0.002,
+           "qd_sigma": 0.05
+          },
+          {
+           "name": "physical variants",
+           "distribution": "Uniform choice of16 independent seeded uniform-range physical draws per kind,fixed per world",
+           "parameters": "research/sim/meshbank_variants.json",
+           "mass_scale": [
+            0.7,
+            1.3
+           ],
+           "white_axis_scale": [
+            0.9,
+            1.1
+           ],
+           "black_dimensions_mm": [
+            null,
+            null,
+            null
+           ],
+           "COM_mm": [
+            -3,
+            3
+           ],
+           "hand_table_mu": [
+            0.3,
+            1.0
+           ],
+           "restitution": [
+            0,
+            0.15
+           ],
+           "torsional_radius_m": [
+            0.001,
+            0.006
+           ]
+          }
+         ],
+         "algorithm": {
+          "name": "PPO clipped/GAE",
+          "actor_learning_rate": 3e-05,
+          "critic_learning_rate": 0.0003,
+          "n_steps": 128,
+          "batch_size": 8192,
+          "epochs": 4,
+          "gamma": 0.999,
+          "gae_lambda": 0.995,
+          "clip": 0.2,
+          "target_kl": 0.03,
+          "entropy": 0.0001,
+          "BC_auxiliary_weight": 0.0,
+          "actor_grad_clip": 0.5,
+          "critic_grad_clip": 5.0,
+          "initial_log_std": {
+           "matrix": "3x8;turngripgain-.5,baselinegain-6,position-7.5,baselineangular-6.8,turncarryangular-3"
+          },
+          "post_step_backtracking": "Each proposed actor update is repeatedly halved until actual batch KL<=.042,or restored after12tries.",
+          "root_residual_learning_rate": 3e-05,
+          "log_std_learning_rate": 1e-06,
+          "use_sde": true,
+          "sde_sample_freq": 32,
+          "exploration_hold_seconds": 0.64,
+          "exploration": "gSDE grip-gain sigma.606duringturnphase4,held.64s;post-lift angular9deg during4–5;smallnoise elsewhere. This explores complete-finger normal grip variation.",
+          "grip_head_learning_rate": 3e-05
+         },
+         "architecture": "Composed PPO neural policy:2grip-gain neurons(190-128-128-2Tanh),4family53-256-256-128-6root networks,and frozen PPO26linear kinematic joint field plus PPO14/15approach bases. All final numerical joint/wrist targets come from this network composition.",
+         "observation_space": "190deployable features:150priorencoder features plus20opposition-normal fingertipJacobian projections and20sums of link-heightJacobian columns. Pure public robot geometry/noisyq/wristR only; no masses,inertias,friction,contacts,forces or torques are observed.",
+         "action_space": "8latent PPO outputs:2dimensionless grip gains and6normalized absolute wrist coordinates. Gains1+.8clip(a) coherently modulate the J-dependent portion of the learned PPO26joint head;its learned link-height/bias portion remains. Selected finger targets use noisycurrentq+.05clip(composed neural output). Opening uses the frozen learned opening head. Hardware controllers unchanged.",
+         "curriculum": "65%reverse starts from old held states plus constructed upright held-goal states,validated200msnativephysics;goal samples multiplicity4. Goal reset yaw0andleftposition preserved. Remaining starts ordinary fixed deploymentSTART. All evaluation starts are ordinary table placements.",
+         "initialization": "RootPPO28cp2M and frozen jointPPO26cp2M,with zero grip-gain residual;subsequentPPO trains root/gain networks. 36continues35cp2Mandactivates learned grip heads from phase2progress.45,while wrist remains at the learned grasp pose.",
+         "compute": {
+          "wall_seconds": 1441.0,
+          "gpu_hours": 0.4002777777777778,
+          "gpu": "OneL40S,cuda:1",
+          "environments": 4096
+         },
+         "training_steps": 8388608,
+         "evaluation": {
+          "criteria_version": 3,
+          "passed": false,
+          "episodes": 6,
+          "successes": 0,
+          "success_rate": 0.0,
+          "wilson_95_interval": [
+           0,
+           0.39033428790215224
+          ],
+          "by_count": {
+           "2": {
+            "episodes": 3,
+            "successes": 0
+           },
+           "3": {
+            "episodes": 3,
+            "successes": 0
+           }
+          },
+          "touching": {
+           "episodes": 2,
+           "successes": 0
+          },
+          "hardware_violating_episodes": 0,
+          "placement_failures": 0,
+          "correctly_standing_released_objects": 2,
+          "total_objects": 15,
+          "maximum_speed_ratio": 0.6745857797920572,
+          "maximum_penetration_m": 0.000977260597528297
+         },
+         "criteria_comparison": {
+          "criteria_version": 3,
+          "passed": false,
+          "reason": "Development selection only: 0/6 episodes, 2/15 standing, 0 hardware-violating episodes. This is not the60fresh protocol."
+         },
+         "discrete_layer": "Highest/nearest unfinished object;9.3s learned phase sequence. Completion uses allowed observed50msmean velocities and1s2mm/2degpose history. No additional motion controller.",
+         "reflection": "Later PPO checkpoint assessed on the same six development seeds81000..81005. Curriculum success proxies do not establish forward multiobject performance. Select only before the final fresh audit; never deliver without a passing60trial verification.",
+         "curves_note": "EveryGPUvectorcollectorstepisrecordedwithmeanrewardterms,episodeage,success/hardwareproxies,andcompletedepisodemetrics. Curriculumoutcomesarenotdeploymentcriteria.",
+         "artifacts": {
+          "checkpoint": "research/training/iter_036/policy.zip",
+          "trainer": "research/gpu/train_meta36.py",
+          "policy": "research/gpu/meta_policy36.py",
+          "optimizer": "research/gpu/ppo_meta35.py",
+          "environment": "research/gpu/vec_env_meta36.py",
+          "encoder": "research/gpu/meta_torch36.py",
+          "numpy_encoder": "research/policy/meta_runtime36.py",
+          "kinematics": "research/policy/kinematics_geometry.json",
+          "parity": "research/gpu/geometric26_parity.json",
+          "evaluation": "research/evaluation/iter036_final_finish_debug_v3/evaluation.json",
+          "package": "research/packages/iter036_final_finish_v3",
+          "auditor": "research/evaluation/audit_v3.py"
+         },
+         "weight_update_collection_steps": 8388608,
+         "checkpoint_collection_note": "Final policy includes all completed PPO updates.",
+         "scripted_baseline_evaluation_note": "Separate central nominal30s single-object audits of all4corrected gravity-reference families pass each per-object criterion. This geometric analysis controller is not a learned policy and has not passed full randomized multiobject verification.",
+         "baseline_evaluation_note": "Baseline diagnostic is still running; no baseline performance claim.",
+         "goal_curriculum": {
+          "unique_goal_states": 176,
+          "old_held_states": 466,
+          "multiplicity": 4,
+          "validation": "research/gpu/bank_validation_goal_highbias.json",
+          "limitations": "Constructed reset goals are not forward skill successes;context caches represent earlier table poses."
+         },
+         "package_manifest_sha256": "3d9610f8d619…",
+         "evaluation_scope": "Full30s ordinary settled2/3-object development episodes with all criteria3 audited at1kHz,500Hz deployed interface. Reused development seeds,not a fresh verification."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "562b97dcbcb9",
+          "bytes": 475921,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "5a9fa4c2f621",
+          "bytes": 441059,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "39f950fdaeae",
+          "bytes": 303841,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "fa1d22affc20",
+          "bytes": 296073,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0103",
+        "seq": 103,
+        "kind": "iter",
+        "version": 38,
+        "recorded_utc": "2026-11-09T17:24:46Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "policy_observations": "deployable",
+         "reward_terms": [
+          {
+           "name": "reference_pose",
+           "formula": ".8exp(-(position_error/.05)^2)+.3exp(-(rotation_error/.6)^2)",
+           "weight": 0.02
+          },
+          {
+           "name": "reference_fingers",
+           "formula": "exp(-mean((q-q_reference)^2)/.06)",
+           "weight": 0.003
+          },
+          {
+           "name": "opposition",
+           "formula": "(.3thumb_case+.2other_case+1both_case)*I[[redacted]..6]",
+           "weight": 0.02
+          },
+          {
+           "name": "lift",
+           "formula": "clip(height_gain/.08,0,1)*I[phase3..5]",
+           "weight": 0.03
+          },
+          {
+           "name": "upright",
+           "formula": "signed blade_axis_dot_up*I[phase>=3 and hand_contact]",
+           "weight": 0.1
+          },
+          {
+           "name": "turn_progress",
+           "formula": "delta(blade_axis_dot_up)*I[phase>=3 and hand_contact]",
+           "weight": 0.2
+          },
+          {
+           "name": "left_goal",
+           "formula": "exp(-(object_XY_goal_distance/.07)^2)*I[phase>=5]",
+           "weight": 0.1
+          },
+          {
+           "name": "placement",
+           "formula": "I[left,tilt<=15deg,table_contact,released,linear_velocity<.02,angular_velocity<.15]",
+           "weight": 0.3
+          },
+          {
+           "name": "penetration",
+           "formula": "-max(depth-.003,0)/.01",
+           "weight": 0.8
+          },
+          {
+           "name": "motion",
+           "formula": "-mean(a^2)-mean((a-previous_a)^2)",
+           "weight": 0.0004
+          },
+          {
+           "name": "object_motion",
+           "formula": "-norm(object_angular_velocity)",
+           "weight": 0.0002
+          },
+          {
+           "name": "hardware",
+           "formula": "-I[hardware_speed_or_position_violation]",
+           "weight": 10.0
+          },
+          {
+           "name": "speed_margin",
+           "formula": "-max(max(abs(qd)/URDF_speed)-.5,0)^2",
+           "weight": 0.04
+          },
+          {
+           "name": "carry_distance",
+           "formula": "-object_XY_goal_distance*I[phase>=5]",
+           "weight": 0.08
+          },
+          {
+           "name": "case_proximity",
+           "formula": "(exp(-max(oriented_case_box_distance_from_FK_thumb_pad-.008,0)/.01)+max_other(exp(-max(box_distance-.008,0)/.01)))*I[[redacted]..6]",
+           "weight": 0.014
+          },
+          {
+           "name": "premature_turn",
+           "formula": "-I[ordinary episode,held,upright<=20deg,[redacted]..4,before5continuous20ms samples of lowest geometry>15mm AND center-rise>15mm]",
+           "weight": 2.0
+          },
+          {
+           "name": "demonstration_wrist",
+           "formula": "-max(rotation_geodesic_to_reconstructed_grasp_or_carry-.7rad,0)^2;initialblade-yaw alignment;grasp target phases0..3/carry4..8",
+           "weight": 0.1
+          },
+          {
+           "name": "numerical_failure",
+           "formula": "-I[nonfinite world;terminate and reset at episode boundary]",
+           "weight": 10.0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Independent Gaussian",
+           "q_sigma": 0.002,
+           "qd_sigma": 0.05
+          },
+          {
+           "name": "physical variants",
+           "distribution": "Uniform choice of16 independent seeded uniform-range physical draws per kind,fixed per world",
+           "parameters": "research/sim/meshbank_variants.json",
+           "mass_scale": [
+            0.7,
+            1.3
+           ],
+           "white_axis_scale": [
+            0.9,
+            1.1
+           ],
+           "black_dimensions_mm": [
+            null,
+            null,
+            null
+           ],
+           "COM_mm": [
+            -3,
+            3
+           ],
+           "hand_table_mu": [
+            0.3,
+            1.0
+           ],
+           "restitution": [
+            0,
+            0.15
+           ],
+           "torsional_radius_m": [
+            0.001,
+            0.006
+           ]
+          }
+         ],
+         "algorithm": {
+          "name": "PPO clipped/GAE",
+          "actor_learning_rate": 3e-05,
+          "critic_learning_rate": 0.0003,
+          "n_steps": 128,
+          "batch_size": 8192,
+          "epochs": 4,
+          "gamma": 0.999,
+          "gae_lambda": 0.995,
+          "clip": 0.2,
+          "target_kl": 0.03,
+          "entropy": 0.0001,
+          "BC_auxiliary_weight": 0.0,
+          "actor_grad_clip": 0.5,
+          "critic_grad_clip": 5.0,
+          "initial_log_std": {
+           "matrix": "3x8;turngripgain-.5,baselinegain-6,position-7.5,baselineangular-6.8,turncarryangular-3"
+          },
+          "post_step_backtracking": "Each proposed actor update is repeatedly halved until actual batch KL<=.042,or restored after12tries.",
+          "root_residual_learning_rate": 3e-05,
+          "log_std_learning_rate": 1e-06,
+          "use_sde": true,
+          "sde_sample_freq": 32,
+          "exploration_hold_seconds": 0.64,
+          "exploration": "gSDE grip-gain sigma.606duringturnphase4,held.64s;post-lift angular9deg during4–5;smallnoise elsewhere. This explores complete-finger normal grip variation.",
+          "grip_head_learning_rate": 3e-05
+         },
+         "architecture": "Composed PPO neural policy:2grip-gain neurons(190-128-128-2Tanh),4family53-256-256-128-6root networks,and frozen PPO26linear kinematic joint field plus PPO14/15approach bases. All final numerical joint/wrist targets come from this network composition.",
+         "observation_space": "190deployable features:150priorencoder features plus20opposition-normal fingertipJacobian projections and20sums of link-heightJacobian columns. Pure public robot geometry/noisyq/wristR only; no masses,inertias,friction,contacts,forces or torques are observed.",
+         "action_space": "8latent PPO outputs:2dimensionless grip gains and6normalized absolute wrist coordinates. Gains1+.8clip(a) coherently modulate the J-dependent portion of the learned PPO26joint head;its learned link-height/bias portion remains. Selected finger targets use noisycurrentq+.05clip(composed neural output). Opening uses the frozen learned opening head. Hardware controllers unchanged.",
+         "curriculum": "65%reverse starts from old held states plus constructed upright held-goal states,validated200msnativephysics;goal samples multiplicity4. Goal reset yaw0andleftposition preserved. Remaining starts ordinary fixed deploymentSTART. All evaluation starts are ordinary table placements.",
+         "initialization": "RootPPO28cp2M and frozen jointPPO26cp2M,with zero grip-gain residual;subsequentPPO trains root/gain networks. 35activates grip heads inphases3..7.",
+         "compute": {
+          "wall_seconds": 1824.6,
+          "gpu_hours": 0.5068333333333334,
+          "gpu": "OneL40S,cuda:3",
+          "environments": 4096
+         },
+         "training_steps": 10485760,
+         "evaluation": {
+          "criteria_version": 3,
+          "passed": false,
+          "episodes": 6,
+          "successes": 0,
+          "success_rate": 0.0,
+          "wilson_95_interval": [
+           0,
+           0.39033428790215224
+          ],
+          "by_count": {
+           "2": {
+            "episodes": 3,
+            "successes": 0
+           },
+           "3": {
+            "episodes": 3,
+            "successes": 0
+           }
+          },
+          "touching": {
+           "episodes": 2,
+           "successes": 0
+          },
+          "hardware_violating_episodes": 0,
+          "placement_failures": 0,
+          "correctly_standing_released_objects": 3,
+          "total_objects": 15,
+          "maximum_speed_ratio": 0.6831554675808957,
+          "maximum_penetration_m": 0.0010914531980801136
+         },
+         "baseline_evaluation": {
+          "episodes": [
+           {
+            "seed": 7100,
+            "kind": 0,
+            "return_": 25.604707940123326,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12987509333617545,
+            "standing_steps": 0,
+            "held_steps": 79,
+            "tilt_degrees": 90.00022529734092,
+            "left_position": -0.041333733502696236,
+            "hardware": false,
+            "speed_ratio": 0.3849003214845672
+           },
+           {
+            "seed": 7101,
+            "kind": 1,
+            "return_": 42.37831716773191,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10002456243329709,
+            "standing_steps": 0,
+            "held_steps": 126,
+            "tilt_degrees": 89.99976449214732,
+            "left_position": 0.17548796070330028,
+            "hardware": false,
+            "speed_ratio": 0.5565133091247003
+           },
+           {
+            "seed": 7102,
+            "kind": 0,
+            "return_": 38.08171056472803,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13434724139845028,
+            "standing_steps": 0,
+            "held_steps": 131,
+            "tilt_degrees": 90.0010225853006,
+            "left_position": 0.2801142239984759,
+            "hardware": false,
+            "speed_ratio": 0.37754405476055075
+           },
+           {
+            "seed": 7103,
+            "kind": 1,
+            "return_": 52.87234978031393,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11137866877275036,
+            "standing_steps": 0,
+            "held_steps": 188,
+            "tilt_degrees": 90.00026792125661,
+            "left_position": 0.25240459585796343,
+            "hardware": false,
+            "speed_ratio": 0.26128262425589266
+           },
+           {
+            "seed": 7104,
+            "kind": 0,
+            "return_": 27.165133986401898,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13010465883713127,
+            "standing_steps": 0,
+            "held_steps": 100,
+            "tilt_degrees": 89.99987776963626,
+            "left_position": 0.0737269203216033,
+            "hardware": false,
+            "speed_ratio": 0.3837178595541173
+           },
+           {
+            "seed": 7105,
+            "kind": 1,
+            "return_": 14.410194027319008,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11671574229290876,
+            "standing_steps": 0,
+            "held_steps": 65,
+            "tilt_degrees": 0.0009621453228164174,
+            "left_position": -0.08933248594783567,
+            "hardware": false,
+            "speed_ratio": 0.3234211207613962
+           },
+           {
+            "seed": 7106,
+            "kind": 0,
+            "return_": 27.986041759598557,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13218421961177698,
+            "standing_steps": 0,
+            "held_steps": 105,
+            "tilt_degrees": 90.0022137632496,
+            "left_position": 0.1033138474146928,
+            "hardware": false,
+            "speed_ratio": 0.3872574361759559
+           },
+           {
+            "seed": 7107,
+            "kind": 1,
+            "return_": 57.28220069668824,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10901909699637302,
+            "standing_steps": 0,
+            "held_steps": 188,
+            "tilt_degrees": 89.99981481998529,
+            "left_position": 0.2645472748135673,
+            "hardware": false,
+            "speed_ratio": 0.2884372505662801
+           },
+           {
+            "seed": 7108,
+            "kind": 0,
+            "return_": 17.945627866152783,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11847720600818547,
+            "standing_steps": 0,
+            "held_steps": 47,
+            "tilt_degrees": 0.0016055056215110587,
+            "left_position": -0.08071313670721837,
+            "hardware": false,
+            "speed_ratio": 0.38081044000592407
+           },
+           {
+            "seed": 7109,
+            "kind": 1,
+            "return_": 98.03247747347818,
+            "steps": 490,
+            "success": true,
+            "max_lift": 0.09589357005243422,
+            "standing_steps": 124,
+            "held_steps": 193,
+            "tilt_degrees": 0.00022633376722672397,
+            "left_position": 0.20260828348071752,
+            "hardware": false,
+            "speed_ratio": 0.3321659497045958
+           },
+           {
+            "seed": 7110,
+            "kind": 0,
+            "return_": 9.289625325577958,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.006007323327269411,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 0.0005091934943395205,
+            "left_position": -0.11344697244235126,
+            "hardware": false,
+            "speed_ratio": 0.3644449279188389
+           },
+           {
+            "seed": 7111,
+            "kind": 1,
+            "return_": 22.853685980878723,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10755089915154305,
+            "standing_steps": 0,
+            "held_steps": 94,
+            "tilt_degrees": 90.00027657813197,
+            "left_position": 0.055941842756950515,
+            "hardware": false,
+            "speed_ratio": 0.5909134504951385
+           },
+           {
+            "seed": 7112,
+            "kind": 0,
+            "return_": 20.63522941313148,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13176971187399433,
+            "standing_steps": 0,
+            "held_steps": 88,
+            "tilt_degrees": 89.99942436598131,
+            "left_position": 0.0066438891636220075,
+            "hardware": false,
+            "speed_ratio": 0.3816191738242027
+           },
+           {
+            "seed": 7113,
+            "kind": 1,
+            "return_": 102.38936557317491,
+            "steps": 490,
+            "success": true,
+            "max_lift": 0.10279580940989065,
+            "standing_steps": 127,
+            "held_steps": 185,
+            "tilt_degrees": 0.0060101944508168005,
+            "left_position": 0.21344512835308546,
+            "hardware": false,
+            "speed_ratio": 0.33458361505726675
+           },
+           {
+            "seed": 7114,
+            "kind": 0,
+            "return_": 27.460227112186818,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13269875159934552,
+            "standing_steps": 0,
+            "held_steps": 109,
+            "tilt_degrees": 90.00025775189359,
+            "left_position": 0.06055507835450002,
+            "hardware": false,
+            "speed_ratio": 0.38376146202459094
+           },
+           {
+            "seed": 7115,
+            "kind": 1,
+            "return_": 46.53624552131018,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10202034863658925,
+            "standing_steps": 0,
+            "held_steps": 111,
+            "tilt_degrees": 89.99998917925339,
+            "left_position": 0.1993074935634399,
+            "hardware": false,
+            "speed_ratio": 0.5511939006670226
+           },
+           {
+            "seed": 7116,
+            "kind": 0,
+            "return_": 9.566508869562059,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.005273333226203544,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 0.0002623781298256087,
+            "left_position": -0.05466677812639454,
+            "hardware": false,
+            "speed_ratio": 0.3898375751880566
+           },
+           {
+            "seed": 7117,
+            "kind": 1,
+            "return_": 91.73116517863309,
+            "steps": 490,
+            "success": true,
+            "max_lift": 0.10304048456009506,
+            "standing_steps": 98,
+            "held_steps": 185,
+            "tilt_degrees": 0.003776694239344232,
+            "left_position": 0.24438210945677852,
+            "hardware": false,
+            "speed_ratio": 0.29638615326575873
+           },
+           {
+            "seed": 7118,
+            "kind": 0,
+            "return_": 54.786398075508316,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12903276123003887,
+            "standing_steps": 0,
+            "held_steps": 137,
+            "tilt_degrees": 89.99930243403826,
+            "left_position": 0.19760538864956426,
+            "hardware": false,
+            "speed_ratio": 0.38899672992251966
+           },
+           {
+            "seed": 7119,
+            "kind": 1,
+            "return_": 19.299011910847934,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11479975236562442,
+            "standing_steps": 0,
+            "held_steps": 86,
+            "tilt_degrees": 90.00032134191271,
+            "left_position": 0.05317192140810132,
+            "hardware": false,
+            "speed_ratio": 0.6917401851120895
+           },
+           {
+            "seed": 7120,
+            "kind": 0,
+            "return_": 54.776443415636926,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1027887531597339,
+            "standing_steps": 0,
+            "held_steps": 135,
+            "tilt_degrees": 89.99995584776293,
+            "left_position": 0.202767442254245,
+            "hardware": false,
+            "speed_ratio": 0.4540628682144361
+           },
+           {
+            "seed": 7121,
+            "kind": 1,
+            "return_": 54.84799082112694,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11703489106693032,
+            "standing_steps": 0,
+            "held_steps": 170,
+            "tilt_degrees": 89.99921652984708,
+            "left_position": 0.2608244263947262,
+            "hardware": false,
+            "speed_ratio": 0.39205351225312296
+           },
+           {
+            "seed": 7122,
+            "kind": 0,
+            "return_": 21.405697216561453,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1156898038843028,
+            "standing_steps": 0,
+            "held_steps": 82,
+            "tilt_degrees": 90.00182870698804,
+            "left_position": -0.013984075329900748,
+            "hardware": false,
+            "speed_ratio": 0.35900438703761156
+           },
+           {
+            "seed": 7123,
+            "kind": 1,
+            "return_": 10.001772606954349,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.08660336219286002,
+            "standing_steps": 0,
+            "held_steps": 21,
+            "tilt_degrees": 90.00007228089908,
+            "left_position": -0.09206866845295161,
+            "hardware": false,
+            "speed_ratio": 0.5626238459992885
+           }
+          ],
+          "success_rate": 0.125,
+          "hardware_violations": 0,
+          "scope": "Single-object9.8s curriculum diagnostic; not full30s/2or3object recorded criteria",
+          "mean_peak_lift": 0.10563025189266267
+         },
+         "criteria_comparison": {
+          "criteria_version": 3,
+          "passed": false,
+          "reason": "Development selection only: 0/6 episodes, 3/15 standing, 0 hardware-violating episodes. This is not the60fresh protocol."
+         },
+         "discrete_layer": "Highest/nearest unfinished object;9.3s learned phase sequence. Completion uses allowed observed50msmean velocities and1s2mm/2degpose history. No additional motion controller.",
+         "reflection": "Later PPO checkpoint assessed on the same six development seeds81000..81005. Curriculum success proxies do not establish forward multiobject performance. Select only before the final fresh audit; never deliver without a passing60trial verification.",
+         "curves_note": "EveryGPUvectorcollectorstepisrecordedwithmeanrewardterms,episodeage,success/hardwareproxies,andcompletedepisodemetrics. Curriculumoutcomesarenotdeploymentcriteria.",
+         "artifacts": {
+          "checkpoint": "research/training/iter_035/policy.zip",
+          "trainer": "research/gpu/train_meta35.py",
+          "policy": "research/gpu/meta_policy35.py",
+          "optimizer": "research/gpu/ppo_meta35.py",
+          "environment": "research/gpu/vec_env_meta35.py",
+          "encoder": "research/gpu/meta_torch35.py",
+          "numpy_encoder": "research/policy/meta_runtime35.py",
+          "kinematics": "research/policy/kinematics_geometry.json",
+          "parity": "research/gpu/geometric26_parity.json",
+          "evaluation": "research/evaluation/iter035_final_finish_debug_v3/evaluation.json",
+          "package": "research/packages/iter035_final_finish_v3",
+          "auditor": "research/evaluation/audit_v3.py"
+         },
+         "weight_update_collection_steps": 10485760,
+         "checkpoint_collection_note": "Final policy includes all completed PPO updates.",
+         "scripted_baseline_evaluation_note": "Separate central nominal30s single-object audits of all4corrected gravity-reference families pass each per-object criterion. This geometric analysis controller is not a learned policy and has not passed full randomized multiobject verification.",
+         "goal_curriculum": {
+          "unique_goal_states": 176,
+          "old_held_states": 466,
+          "multiplicity": 4,
+          "validation": "research/gpu/bank_validation_goal_highbias.json",
+          "limitations": "Constructed reset goals are not forward skill successes;context caches represent earlier table poses."
+         },
+         "package_manifest_sha256": "7124a2cbd008…",
+         "evaluation_scope": "Full30s ordinary settled2/3-object development episodes with all criteria3 audited at1kHz,500Hz deployed interface. Reused development seeds,not a fresh verification."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "77723ba53850",
+          "bytes": 609040,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "5950e7d841ad",
+          "bytes": 442102,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "d36d591dc599",
+          "bytes": 303084,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "8b0f8893e792",
+          "bytes": 292511,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0104",
+        "seq": 104,
+        "kind": "note",
+        "version": 45,
+        "recorded_utc": "2026-11-09T17:25:00Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Freeze r0096 package iter014_finish_v3 manifestSHA256 ed0065836512… for the next fresh60episode audit,seeds92000..92059,criteria3. Development6:0/6,7/15standing,0HW;all subsequently evaluated candidates35final,36final,38final,39cp2M have0/6andonly2..3/15standing,with39cp2M1HW. Selection rule favors zeroHW then complete-episode success then standing count. The60fresh audit is not for tuning;any later candidate must be selected on development data and use a new fresh seed range. No target delivery unless all recorded criteria pass."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0105",
+        "seq": 105,
+        "kind": "note",
+        "version": 46,
+        "recorded_utc": "2026-11-09T17:26:28Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Final parallel hypothesis41:35..40freeze the wrist base throughout acquisition,so grip-gain learning cannot repair wrist pose errors before lift.41uses90%frozen PPO14/15wrist output plus10%learned RootNetwork output from phase2progress.45throughliftphase3;phase4onward remains the learned root. The root was already BC/PPO trained,not a scripted pose. Same weights39cp2M,ordinary-only resets,8latent actions,190deployable features and PPO39optimizer. Export mirrors the blend and must pass numerical parity. Stop training by17:36UTC;record every checkpoint actually evaluated."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0106",
+        "seq": 106,
+        "kind": "iter",
+        "version": 39,
+        "recorded_utc": "2026-11-09T17:27:23Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "policy_observations": "deployable",
+         "reward_terms": [
+          {
+           "name": "reference_pose",
+           "formula": ".8exp(-(position_error/.05)^2)+.3exp(-(rotation_error/.6)^2)",
+           "weight": 0.02
+          },
+          {
+           "name": "reference_fingers",
+           "formula": "exp(-mean((q-q_reference)^2)/.06)",
+           "weight": 0.003
+          },
+          {
+           "name": "opposition",
+           "formula": "(.3thumb_case+.2other_case+1both_case)*I[[redacted]..6]",
+           "weight": 0.02
+          },
+          {
+           "name": "lift",
+           "formula": "clip(height_gain/.08,0,1)*I[phase3..5]",
+           "weight": 0.03
+          },
+          {
+           "name": "upright",
+           "formula": "signed blade_axis_dot_up*I[phase>=3 and hand_contact]",
+           "weight": 0.1
+          },
+          {
+           "name": "turn_progress",
+           "formula": "delta(blade_axis_dot_up)*I[phase>=3 and hand_contact]",
+           "weight": 0.2
+          },
+          {
+           "name": "left_goal",
+           "formula": "exp(-(object_XY_goal_distance/.07)^2)*I[phase>=5]",
+           "weight": 0.1
+          },
+          {
+           "name": "placement",
+           "formula": "I[left,tilt<=15deg,table,released,60msfinite-difference objectlinear<.02/angular<.15]",
+           "weight": 0.3
+          },
+          {
+           "name": "penetration",
+           "formula": "-max(depth-.003,0)/.01",
+           "weight": 0.8
+          },
+          {
+           "name": "motion",
+           "formula": "-mean(a^2)-mean((a-previous_a)^2)",
+           "weight": 0.0004
+          },
+          {
+           "name": "object_motion",
+           "formula": "-norm(object_angular_velocity)",
+           "weight": 0.0002
+          },
+          {
+           "name": "hardware",
+           "formula": "-I[hardware_speed_or_position_violation]",
+           "weight": 10.0
+          },
+          {
+           "name": "speed_margin",
+           "formula": "-max(max(abs(qd)/URDF_speed)-.5,0)^2",
+           "weight": 0.04
+          },
+          {
+           "name": "carry_distance",
+           "formula": "-object_XY_goal_distance*I[phase>=5]",
+           "weight": 0.08
+          },
+          {
+           "name": "case_proximity",
+           "formula": "(exp(-max(oriented_case_box_distance_from_FK_thumb_pad-.008,0)/.01)+max_other(exp(-max(box_distance-.008,0)/.01)))*I[[redacted]..6]",
+           "weight": 0.014
+          },
+          {
+           "name": "premature_turn",
+           "formula": "-I[ordinary episode,held,upright<=20deg,[redacted]..4,before5continuous20ms samples of lowest geometry>15mm AND center-rise>15mm]",
+           "weight": 2.0
+          },
+          {
+           "name": "demonstration_wrist",
+           "formula": "-max(rotation_geodesic_to_reconstructed_grasp_or_carry-.7rad,0)^2;initialblade-yaw alignment;grasp target phases0..3/carry4..8",
+           "weight": 0.1
+          },
+          {
+           "name": "numerical_failure",
+           "formula": "-I[nonfinite world;terminate and reset at episode boundary]",
+           "weight": 10.0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Independent Gaussian",
+           "q_sigma": 0.002,
+           "qd_sigma": 0.05
+          },
+          {
+           "name": "physical variants",
+           "distribution": "Uniform choice of16 independent seeded uniform-range physical draws per kind,fixed per world",
+           "parameters": "research/sim/meshbank_variants.json",
+           "mass_scale": [
+            0.7,
+            1.3
+           ],
+           "white_axis_scale": [
+            0.9,
+            1.1
+           ],
+           "black_dimensions_mm": [
+            null,
+            null,
+            null
+           ],
+           "COM_mm": [
+            -3,
+            3
+           ],
+           "hand_table_mu": [
+            0.3,
+            1.0
+           ],
+           "restitution": [
+            0,
+            0.15
+           ],
+           "torsional_radius_m": [
+            0.001,
+            0.006
+           ]
+          }
+         ],
+         "algorithm": {
+          "name": "PPO clipped/GAE",
+          "actor_learning_rate": "Separate Adam groups:grip1e-4,root1e-6,logstd1e-6",
+          "critic_learning_rate": 0.0003,
+          "n_steps": 128,
+          "batch_size": 8192,
+          "epochs": 4,
+          "gamma": 0.999,
+          "gae_lambda": 0.995,
+          "clip": 0.2,
+          "target_kl": 0.03,
+          "entropy": 0.0001,
+          "BC_auxiliary_weight": 0.0,
+          "actor_grad_clip": 0.5,
+          "critic_grad_clip": 5.0,
+          "initial_log_std": {
+           "inherited": "36cp2M gSDE3x8matrix"
+          },
+          "post_step_backtracking": "Each proposed actor update is repeatedly halved until actual batch KL<=.042,or restored after12tries.",
+          "root_residual_learning_rate": 1e-06,
+          "log_std_learning_rate": 1e-06,
+          "use_sde": true,
+          "sde_sample_freq": 32,
+          "exploration_hold_seconds": 0.64,
+          "exploration": "gSDE grip-gain sigma.606duringturnphase4,held.64s;post-lift angular9deg during4–5;smallnoise elsewhere. This explores complete-finger normal grip variation.",
+          "placement_velocity_proxy": "Three50Hzpose intervals=60ms;final verification uses exact causal50ms worldvelocity means and2mm/2degpose bounds.",
+          "grip_head_learning_rate": 0.0001
+         },
+         "architecture": "Composed PPO neural policy:2grip-gain neurons(190-128-128-2Tanh),4family53-256-256-128-6root networks,and frozen PPO26linear kinematic joint field plus PPO14/15approach bases. All final numerical joint/wrist targets come from this network composition.",
+         "observation_space": "190deployable features:150priorencoder features plus20opposition-normal fingertipJacobian projections and20sums of link-heightJacobian columns. Pure public robot geometry/noisyq/wristR only; no masses,inertias,friction,contacts,forces or torques are observed.",
+         "action_space": "8latent PPO outputs:2dimensionless grip gains and6normalized absolute wrist coordinates. Gains1+.8clip(a) coherently modulate the J-dependent portion of the learned PPO26joint head;its learned link-height/bias portion remains. Selected finger targets use noisycurrentq+.05clip(composed neural output). Opening uses the frozen learned opening head. Hardware controllers unchanged.",
+         "curriculum": "65%reverse starts from old held states plus constructed upright held-goal states,validated200msnativephysics;goal samples multiplicity4. Goal reset yaw0andleftposition preserved. Remaining starts ordinary fixed deploymentSTART. All evaluation starts are ordinary table placements.",
+         "initialization": "Continue38cp4M with identical architecture/physics/reward/curriculum;split grip and root optimizer learning rates.",
+         "compute": {
+          "wall_seconds": 614.89,
+          "gpu_hours": 0.17080277777777778,
+          "gpu": "OneL40S,cuda:2",
+          "environments": 4096
+         },
+         "training_steps": 4194304,
+         "evaluation": {
+          "criteria_version": 3,
+          "passed": false,
+          "episodes": 6,
+          "successes": 0,
+          "success_rate": 0.0,
+          "wilson_95_interval": [
+           0,
+           0.39033428790215224
+          ],
+          "by_count": {
+           "2": {
+            "episodes": 3,
+            "successes": 0
+           },
+           "3": {
+            "episodes": 3,
+            "successes": 0
+           }
+          },
+          "touching": {
+           "episodes": 2,
+           "successes": 0
+          },
+          "hardware_violating_episodes": 1,
+          "placement_failures": 0,
+          "correctly_standing_released_objects": 2,
+          "total_objects": 15,
+          "maximum_speed_ratio": 1.9154518411430896,
+          "maximum_penetration_m": 0.0008067888365817038
+         },
+         "criteria_comparison": {
+          "criteria_version": 3,
+          "passed": false,
+          "reason": "Development selection only: 0/6 episodes, 2/15 standing, 1 hardware-violating episodes. This is not the60fresh protocol."
+         },
+         "discrete_layer": "Highest/nearest unfinished object;9.3s learned phase sequence. Completion uses allowed observed50msmean velocities and1s2mm/2degpose history. No additional motion controller.",
+         "reflection": "Later PPO checkpoint assessed on the same six development seeds81000..81005. Curriculum success proxies do not establish forward multiobject performance. Select only before the final fresh audit; never deliver without a passing60trial verification.",
+         "curves_note": "EveryGPUvectorcollectorstepisrecordedwithmeanrewardterms,episodeage,success/hardwareproxies,andcompletedepisodemetrics. Curriculumoutcomesarenotdeploymentcriteria.",
+         "artifacts": {
+          "checkpoint": "research/training/iter_039/policy.zip",
+          "trainer": "research/gpu/train_meta39.py",
+          "policy": "research/gpu/meta_policy35.py",
+          "optimizer": "research/gpu/ppo_meta39.py",
+          "environment": "research/gpu/vec_env_meta38.py",
+          "encoder": "research/gpu/meta_torch36.py",
+          "numpy_encoder": "research/policy/meta_runtime36.py",
+          "kinematics": "research/policy/kinematics_geometry.json",
+          "parity": "research/gpu/geometric26_parity.json",
+          "evaluation": "research/evaluation/iter039_final_finish_debug_v3/evaluation.json",
+          "package": "research/packages/iter039_final_finish_v3",
+          "auditor": "research/evaluation/audit_v3.py"
+         },
+         "weight_update_collection_steps": 4194304,
+         "checkpoint_collection_note": "Final policy includes all completed PPO updates.",
+         "scripted_baseline_evaluation_note": "Separate central nominal30s single-object audits of all4corrected gravity-reference families pass each per-object criterion. This geometric analysis controller is not a learned policy and has not passed full randomized multiobject verification.",
+         "goal_curriculum": {
+          "unique_goal_states": 176,
+          "old_held_states": 466,
+          "multiplicity": 4,
+          "validation": "research/gpu/bank_validation_goal_highbias.json",
+          "limitations": "Constructed reset goals are not forward skill successes;context caches represent earlier table poses."
+         },
+         "baseline_evaluation_note": "Parent36cp2M had2/24in the older single-object instantaneous-speed proxy,with1HW. Parent35cp2Mfull6criterion3development:0/6,3/15standing,1HW. These are differently scoped diagnostics,not a paired improvement claim.",
+         "package_manifest_sha256": "1e5d0c59e3e1…",
+         "evaluation_scope": "Full30s ordinary settled2/3-object development episodes with all criteria3 audited at1kHz,500Hz deployed interface. Reused development seeds,not a fresh verification."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "413bd3bcac31",
+          "bytes": 239862,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "6b043a1cb826",
+          "bytes": 443301,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "c297b33a461b",
+          "bytes": 303656,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "fca7ba30406a",
+          "bytes": 299705,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0107",
+        "seq": 107,
+        "kind": "note",
+        "version": 47,
+        "recorded_utc": "2026-11-09T17:28:14Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Final42addresses a specific exploration mismatch:earlier grip-gain gSDE was active only during turnphase4,while missed acquisition cannot be repaired by negligible early gain noise.42keeps the exact deterministic architecture/decoder but activates coherent grip-gain exploration also during phase2progress>=.45andphase3. It continues40cp2M,ordinary resets only,1024worlds and128steprollouts to obtain more PPO updates per collected transition. Planned2Msteps,stop by17:38UTC. Initial deterministic policy equals40cp2M;all inference remains8latent PPO outputs with190deployable observations. No change to criteria or physical controls."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0108",
+        "seq": 108,
+        "kind": "verify",
+        "version": 5,
+        "recorded_utc": "2026-11-09T17:28:25Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0096",
+         "criteria_version": 3,
+         "passed": false,
+         "package_sha256": "ed0065836512…",
+         "verdict": "Fails my own simulation criteria;not eligible for target delivery. This is my claim,not an official evaluation.",
+         "protocol": {
+          "episodes": 60,
+          "seed_first": 92000,
+          "seed_last": 92059,
+          "counts": {
+           "2": 30,
+           "3": 30
+          },
+          "layouts_per_count": {
+           "separated": 10,
+           "touching": 10,
+           "scattered": 10
+          },
+          "object_kind_totals": {
+           "white": 75,
+           "black": 75
+          },
+          "seconds": 30,
+          "control_hz": 500,
+          "physics_hz": 1000,
+          "selection": "Frozen on development evidence before this fresh seed range;see decision note."
+         },
+         "results": {
+          "criteria_version": 3,
+          "passed": false,
+          "episodes": 60,
+          "successes": 1,
+          "success_rate": 0.016666666666666666,
+          "wilson_95_interval": [
+           0.0029481597947863605,
+           0.08855129727589747
+          ],
+          "by_count": {
+           "2": {
+            "episodes": 30,
+            "successes": 1
+           },
+           "3": {
+            "episodes": 30,
+            "successes": 0
+           }
+          },
+          "touching": {
+           "episodes": 20,
+           "successes": 0
+          },
+          "hardware_violating_episodes": 3,
+          "placement_failures": 0,
+          "correctly_standing_released_objects": 39,
+          "total_objects": 150,
+          "maximum_speed_ratio": 1.2345118084482956,
+          "maximum_penetration_m": 0.001834729820584492
+         },
+         "criterion_object_pass_counts": {
+          "opposed_case_grasp": 116,
+          "lift": 117,
+          "held_crossing": 93,
+          "standing_last_second": 39,
+          "upright_before_release": 73,
+          "opening": 81,
+          "wrist_style": 77
+         },
+         "evidence": {
+          "metrics": "research/evaluation/final014_random60_v3/evaluation.json",
+          "detailed": "All60result.json,audit.json and1kHz audit.npz retained locally",
+          "videos": "episode_000 plus successful/failed replay where available"
+         },
+         "limitations": [
+          "Finite simulation sample with uncertain physical priors and convex case models.",
+          "Reconstruction contract VALID has disclosed dense hand/table penetration,bone discontinuity and unobserved components;not perfect geometric reconstruction.",
+          "Current criteria3 uses50ms world object velocity means plus1s2mm/2degpose bounds;instantaneous hand speed/position/torque limits unchanged.",
+          "No target inference follows from a local contract check."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "4be06a7819a3",
+          "bytes": 841008,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "d5648e5f3a77",
+          "bytes": 1375,
+          "content_type": "application/json"
+         },
+         "video_left_failure": {
+          "sha": "558899fda763",
+          "bytes": 386835,
+          "content_type": "video/mp4"
+         },
+         "video_left_success": {
+          "sha": "fd9d08325e01",
+          "bytes": 298034,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "bb4da7726d93",
+          "bytes": 398787,
+          "content_type": "video/mp4"
+         },
+         "video_right_success": {
+          "sha": "8ba4e5b24037",
+          "bytes": 221003,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "70c69cc384df",
+          "bytes": 323644,
+          "content_type": "video/mp4"
+         },
+         "video_top_success": {
+          "sha": "8e0dafe54f18",
+          "bytes": 215012,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0109",
+        "seq": 109,
+        "kind": "iter",
+        "version": 40,
+        "recorded_utc": "2026-11-09T17:29:30Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "policy_observations": "deployable",
+         "reward_terms": [
+          {
+           "name": "reference_pose",
+           "formula": ".8exp(-(position_error/.05)^2)+.3exp(-(rotation_error/.6)^2)",
+           "weight": 0.02
+          },
+          {
+           "name": "reference_fingers",
+           "formula": "exp(-mean((q-q_reference)^2)/.06)",
+           "weight": 0.003
+          },
+          {
+           "name": "opposition",
+           "formula": "(.3thumb_case+.2other_case+1both_case)*I[[redacted]..6]",
+           "weight": 0.02
+          },
+          {
+           "name": "lift",
+           "formula": "clip(height_gain/.08,0,1)*I[phase3..5]",
+           "weight": 0.03
+          },
+          {
+           "name": "upright",
+           "formula": "signed blade_axis_dot_up*I[phase>=3 and hand_contact]",
+           "weight": 0.1
+          },
+          {
+           "name": "turn_progress",
+           "formula": "delta(blade_axis_dot_up)*I[phase>=3 and hand_contact]",
+           "weight": 0.2
+          },
+          {
+           "name": "left_goal",
+           "formula": "exp(-(object_XY_goal_distance/.07)^2)*I[phase>=5]",
+           "weight": 0.1
+          },
+          {
+           "name": "placement",
+           "formula": "I[left,tilt<=15deg,table,released,60msfinite-difference objectlinear<.02/angular<.15]",
+           "weight": 0.3
+          },
+          {
+           "name": "penetration",
+           "formula": "-max(depth-.003,0)/.01",
+           "weight": 0.8
+          },
+          {
+           "name": "motion",
+           "formula": "-mean(a^2)-mean((a-previous_a)^2)",
+           "weight": 0.0004
+          },
+          {
+           "name": "object_motion",
+           "formula": "-norm(object_angular_velocity)",
+           "weight": 0.0002
+          },
+          {
+           "name": "hardware",
+           "formula": "-I[hardware_speed_or_position_violation]",
+           "weight": 10.0
+          },
+          {
+           "name": "speed_margin",
+           "formula": "-max(max(abs(qd)/URDF_speed)-.5,0)^2",
+           "weight": 0.04
+          },
+          {
+           "name": "carry_distance",
+           "formula": "-object_XY_goal_distance*I[phase>=5]",
+           "weight": 0.08
+          },
+          {
+           "name": "case_proximity",
+           "formula": "(exp(-max(oriented_case_box_distance_from_FK_thumb_pad-.008,0)/.01)+max_other(exp(-max(box_distance-.008,0)/.01)))*I[[redacted]..6]",
+           "weight": 0.014
+          },
+          {
+           "name": "premature_turn",
+           "formula": "-I[ordinary episode,held,upright<=20deg,[redacted]..4,before5continuous20ms samples of lowest geometry>15mm AND center-rise>15mm]",
+           "weight": 2.0
+          },
+          {
+           "name": "demonstration_wrist",
+           "formula": "-max(rotation_geodesic_to_reconstructed_grasp_or_carry-.7rad,0)^2;initialblade-yaw alignment;grasp target phases0..3/carry4..8",
+           "weight": 0.1
+          },
+          {
+           "name": "numerical_failure",
+           "formula": "-I[nonfinite world;terminate and reset at episode boundary]",
+           "weight": 10.0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Independent Gaussian",
+           "q_sigma": 0.002,
+           "qd_sigma": 0.05
+          },
+          {
+           "name": "physical variants",
+           "distribution": "Uniform choice of16 independent seeded uniform-range physical draws per kind,fixed per world",
+           "parameters": "research/sim/meshbank_variants.json",
+           "mass_scale": [
+            0.7,
+            1.3
+           ],
+           "white_axis_scale": [
+            0.9,
+            1.1
+           ],
+           "black_dimensions_mm": [
+            null,
+            null,
+            null
+           ],
+           "COM_mm": [
+            -3,
+            3
+           ],
+           "hand_table_mu": [
+            0.3,
+            1.0
+           ],
+           "restitution": [
+            0,
+            0.15
+           ],
+           "torsional_radius_m": [
+            0.001,
+            0.006
+           ]
+          }
+         ],
+         "algorithm": {
+          "name": "PPO clipped/GAE",
+          "actor_learning_rate": "Separate Adam groups:grip1e-4,root1e-6,logstd1e-6",
+          "critic_learning_rate": 0.0003,
+          "n_steps": 128,
+          "batch_size": 8192,
+          "epochs": 4,
+          "gamma": 0.999,
+          "gae_lambda": 0.995,
+          "clip": 0.2,
+          "target_kl": 0.03,
+          "entropy": 0.0001,
+          "BC_auxiliary_weight": 0.0,
+          "actor_grad_clip": 0.5,
+          "critic_grad_clip": 5.0,
+          "initial_log_std": {
+           "inherited": "36cp2M gSDE3x8matrix"
+          },
+          "post_step_backtracking": "Each proposed actor update is repeatedly halved until actual batch KL<=.042,or restored after12tries.",
+          "root_residual_learning_rate": 1e-06,
+          "log_std_learning_rate": 1e-06,
+          "use_sde": true,
+          "sde_sample_freq": 32,
+          "exploration_hold_seconds": 0.64,
+          "exploration": "gSDE grip-gain sigma.606duringturnphase4,held.64s;post-lift angular9deg during4–5;smallnoise elsewhere. This explores complete-finger normal grip variation.",
+          "placement_velocity_proxy": "Three50Hzpose intervals=60ms;final verification uses exact causal50ms worldvelocity means and2mm/2degpose bounds.",
+          "grip_head_learning_rate": 0.0001
+         },
+         "architecture": "Composed PPO neural policy:2grip-gain neurons(190-128-128-2Tanh),4family53-256-256-128-6root networks,and frozen PPO26linear kinematic joint field plus PPO14/15approach bases. All final numerical joint/wrist targets come from this network composition.",
+         "observation_space": "190deployable features:150priorencoder features plus20opposition-normal fingertipJacobian projections and20sums of link-heightJacobian columns. Pure public robot geometry/noisyq/wristR only; no masses,inertias,friction,contacts,forces or torques are observed.",
+         "action_space": "8latent PPO outputs:2dimensionless grip gains and6normalized absolute wrist coordinates. Gains1+.8clip(a) coherently modulate the J-dependent portion of the learned PPO26joint head;its learned link-height/bias portion remains. Selected finger targets use noisycurrentq+.05clip(composed neural output). Opening uses the frozen learned opening head. Hardware controllers unchanged.",
+         "curriculum": "0%reverse starts;all training episodes start with one table object and fixed deployment wrist pose. XY/yaw/side and physical variants randomized. Full multiobject conditions appear in evaluation,not in this singleobject curriculum.",
+         "initialization": "Continue39cp2M;ordinary-only resets.",
+         "compute": {
+          "wall_seconds": 200.66,
+          "gpu_hours": 0.055738888888888886,
+          "gpu": "OneL40S,cuda:0",
+          "environments": 4096
+         },
+         "training_steps": 2002944,
+         "evaluation": {
+          "criteria_version": 3,
+          "passed": false,
+          "episodes": 6,
+          "successes": 0,
+          "success_rate": 0.0,
+          "wilson_95_interval": [
+           0,
+           0.39033428790215224
+          ],
+          "by_count": {
+           "2": {
+            "episodes": 3,
+            "successes": 0
+           },
+           "3": {
+            "episodes": 3,
+            "successes": 0
+           }
+          },
+          "touching": {
+           "episodes": 2,
+           "successes": 0
+          },
+          "hardware_violating_episodes": 0,
+          "placement_failures": 0,
+          "correctly_standing_released_objects": 2,
+          "total_objects": 15,
+          "maximum_speed_ratio": 0.6716834123418407,
+          "maximum_penetration_m": 0.001136456326650402
+         },
+         "criteria_comparison": {
+          "criteria_version": 3,
+          "passed": false,
+          "reason": "Development selection only: 0/6 episodes, 2/15 standing, 0 hardware-violating episodes. This is not the60fresh protocol."
+         },
+         "discrete_layer": "Highest/nearest unfinished object;9.3s learned phase sequence. Completion uses allowed observed50msmean velocities and1s2mm/2degpose history. No additional motion controller.",
+         "reflection": "Later PPO checkpoint assessed on the same six development seeds81000..81005. Curriculum success proxies do not establish forward multiobject performance. Select only before the final fresh audit; never deliver without a passing60trial verification.",
+         "curves_note": "EveryGPUvectorcollectorstepisrecordedwithmeanrewardterms,episodeage,success/hardwareproxies,andcompletedepisodemetrics. Curriculumoutcomesarenotdeploymentcriteria.",
+         "artifacts": {
+          "checkpoint": "research/training/iter_040/checkpoint_2002944.zip",
+          "trainer": "research/gpu/train_meta39.py",
+          "policy": "research/gpu/meta_policy36.py",
+          "optimizer": "research/gpu/ppo_meta39.py",
+          "environment": "research/gpu/vec_env_meta38.py",
+          "encoder": "research/gpu/meta_torch36.py",
+          "numpy_encoder": "research/policy/meta_runtime36.py",
+          "kinematics": "research/policy/kinematics_geometry.json",
+          "parity": "research/gpu/geometric26_parity.json",
+          "evaluation": "research/evaluation/iter040_finish_debug_v3/evaluation.json",
+          "package": "research/packages/iter040_finish_v3",
+          "auditor": "research/evaluation/audit_v3.py"
+         },
+         "weight_update_collection_steps": 1572864,
+         "checkpoint_collection_note": "Callback snapshot precedes the next128x4096 PPO update.",
+         "scripted_baseline_evaluation_note": "Separate central nominal30s single-object audits of all4corrected gravity-reference families pass each per-object criterion. This geometric analysis controller is not a learned policy and has not passed full randomized multiobject verification.",
+         "baseline_evaluation_note": "Parent checkpoint development evidence is retained separately;an independent paired baseline for this final continuation was not rerun.",
+         "package_manifest_sha256": "acd82ae15c35…",
+         "evaluation_scope": "Full30s ordinary settled2/3-object development episodes with all criteria3 audited at1kHz,500Hz deployed interface. Reused development seeds,not a fresh verification."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "1883dc3f46f8",
+          "bytes": 98171,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "d7893c8ea379",
+          "bytes": 445869,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "2631adba9730",
+          "bytes": 303016,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "96d01dc1add3",
+          "bytes": 300547,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0110",
+        "seq": 110,
+        "kind": "note",
+        "version": 48,
+        "recorded_utc": "2026-11-09T17:30:16Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Fresh frozen14-finisher audit r0108failed1/60,1/30two-object,0/30three-object,0/20touching,3hardware episodes,39/150standing. Success92023replay agrees with original;all3views saved. Earlier base14audit4/60used different seeds,so this is not a paired degradation estimate. Final training provenance correction:35/36/38actual actorAdam3e-5+logstd1e-6;39/40/41/42grip1e-4/root1e-6/logstd1e-6;allcritic3e-4,BCaux0,GAE.995,n_steps128. Some inherited training.json prose and obsolete record fields report BC.03,actor3e-7orheadLRs;these are stale text,not executed settings. Actual code and research/training/final_implementation_metadata.json are canonical. No metrics/checkpoints were changed."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0111",
+        "seq": 111,
+        "kind": "iter",
+        "version": 41,
+        "recorded_utc": "2026-11-09T17:31:30Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "policy_observations": "deployable",
+         "reward_terms": [
+          {
+           "name": "reference_pose",
+           "formula": ".8exp(-(position_error/.05)^2)+.3exp(-(rotation_error/.6)^2)",
+           "weight": 0.02
+          },
+          {
+           "name": "reference_fingers",
+           "formula": "exp(-mean((q-q_reference)^2)/.06)",
+           "weight": 0.003
+          },
+          {
+           "name": "opposition",
+           "formula": "(.3thumb_case+.2other_case+1both_case)*I[[redacted]..6]",
+           "weight": 0.02
+          },
+          {
+           "name": "lift",
+           "formula": "clip(height_gain/.08,0,1)*I[phase3..5]",
+           "weight": 0.03
+          },
+          {
+           "name": "upright",
+           "formula": "signed blade_axis_dot_up*I[phase>=3 and hand_contact]",
+           "weight": 0.1
+          },
+          {
+           "name": "turn_progress",
+           "formula": "delta(blade_axis_dot_up)*I[phase>=3 and hand_contact]",
+           "weight": 0.2
+          },
+          {
+           "name": "left_goal",
+           "formula": "exp(-(object_XY_goal_distance/.07)^2)*I[phase>=5]",
+           "weight": 0.1
+          },
+          {
+           "name": "placement",
+           "formula": "I[left,tilt<=15deg,table,released,60msfinite-difference objectlinear<.02/angular<.15]",
+           "weight": 0.3
+          },
+          {
+           "name": "penetration",
+           "formula": "-max(depth-.003,0)/.01",
+           "weight": 0.8
+          },
+          {
+           "name": "motion",
+           "formula": "-mean(a^2)-mean((a-previous_a)^2)",
+           "weight": 0.0004
+          },
+          {
+           "name": "object_motion",
+           "formula": "-norm(object_angular_velocity)",
+           "weight": 0.0002
+          },
+          {
+           "name": "hardware",
+           "formula": "-I[hardware_speed_or_position_violation]",
+           "weight": 10.0
+          },
+          {
+           "name": "speed_margin",
+           "formula": "-max(max(abs(qd)/URDF_speed)-.5,0)^2",
+           "weight": 0.04
+          },
+          {
+           "name": "carry_distance",
+           "formula": "-object_XY_goal_distance*I[phase>=5]",
+           "weight": 0.08
+          },
+          {
+           "name": "case_proximity",
+           "formula": "(exp(-max(oriented_case_box_distance_from_FK_thumb_pad-.008,0)/.01)+max_other(exp(-max(box_distance-.008,0)/.01)))*I[[redacted]..6]",
+           "weight": 0.014
+          },
+          {
+           "name": "premature_turn",
+           "formula": "-I[ordinary episode,held,upright<=20deg,[redacted]..4,before5continuous20ms samples of lowest geometry>15mm AND center-rise>15mm]",
+           "weight": 2.0
+          },
+          {
+           "name": "demonstration_wrist",
+           "formula": "-max(rotation_geodesic_to_reconstructed_grasp_or_carry-.7rad,0)^2;initialblade-yaw alignment;grasp target phases0..3/carry4..8",
+           "weight": 0.1
+          },
+          {
+           "name": "numerical_failure",
+           "formula": "-I[nonfinite world;terminate and reset at episode boundary]",
+           "weight": 10.0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Independent Gaussian",
+           "q_sigma": 0.002,
+           "qd_sigma": 0.05
+          },
+          {
+           "name": "physical variants",
+           "distribution": "Uniform choice of16 independent seeded uniform-range physical draws per kind,fixed per world",
+           "parameters": "research/sim/meshbank_variants.json",
+           "mass_scale": [
+            0.7,
+            1.3
+           ],
+           "white_axis_scale": [
+            0.9,
+            1.1
+           ],
+           "black_dimensions_mm": [
+            null,
+            null,
+            null
+           ],
+           "COM_mm": [
+            -3,
+            3
+           ],
+           "hand_table_mu": [
+            0.3,
+            1.0
+           ],
+           "restitution": [
+            0,
+            0.15
+           ],
+           "torsional_radius_m": [
+            0.001,
+            0.006
+           ]
+          }
+         ],
+         "algorithm": {
+          "name": "PPO clipped/GAE",
+          "actor_learning_rate": "Separate Adam groups:grip1e-4,root1e-6,logstd1e-6",
+          "critic_learning_rate": 0.0003,
+          "n_steps": 128,
+          "batch_size": 8192,
+          "epochs": 4,
+          "gamma": 0.999,
+          "gae_lambda": 0.995,
+          "clip": 0.2,
+          "target_kl": 0.03,
+          "entropy": 0.0001,
+          "BC_auxiliary_weight": 0.0,
+          "actor_grad_clip": 0.5,
+          "critic_grad_clip": 5.0,
+          "initial_log_std": {
+           "inherited": "36cp2M gSDE3x8matrix"
+          },
+          "post_step_backtracking": "Each proposed actor update is repeatedly halved until actual batch KL<=.042,or restored after12tries.",
+          "root_residual_learning_rate": 1e-06,
+          "log_std_learning_rate": 1e-06,
+          "use_sde": true,
+          "sde_sample_freq": 32,
+          "exploration_hold_seconds": 0.64,
+          "exploration": "gSDE grip-gain sigma.606duringturnphase4,held.64s;post-lift angular9deg during4–5;smallnoise elsewhere. This explores complete-finger normal grip variation.",
+          "placement_velocity_proxy": "Three50Hzpose intervals=60ms;final verification uses exact causal50ms worldvelocity means and2mm/2degpose bounds.",
+          "grip_head_learning_rate": 0.0001
+         },
+         "architecture": "Composed PPO neural policy:2grip-gain neurons(190-128-128-2Tanh),4family53-256-256-128-6root networks,and frozen PPO26linear kinematic joint field plus PPO14/15approach bases. All final numerical joint/wrist targets come from this network composition. During phase2progress>=.45andphase3,wrist outputs blend90%frozen PPO14/15base plus10%trainable root output;atphase4onward100%root.",
+         "observation_space": "190deployable features:150priorencoder features plus20opposition-normal fingertipJacobian projections and20sums of link-heightJacobian columns. Pure public robot geometry/noisyq/wristR only; no masses,inertias,friction,contacts,forces or torques are observed.",
+         "action_space": "8latent PPO outputs:2dimensionless grip gains and6normalized absolute wrist coordinates. Gains1+.8clip(a) coherently modulate the J-dependent portion of the learned PPO26joint head;its learned link-height/bias portion remains. Selected finger targets use noisycurrentq+.05clip(composed neural output). Opening uses the frozen learned opening head. Hardware controllers unchanged.",
+         "curriculum": "0%reverse starts;all training episodes start with one table object and fixed deployment wrist pose. XY/yaw/side and physical variants randomized. Full multiobject conditions appear in evaluation,not in this singleobject curriculum.",
+         "initialization": "Continue39cp2M;ordinary-only resets.",
+         "compute": {
+          "wall_seconds": 197.63,
+          "gpu_hours": 0.05489722222222222,
+          "gpu": "OneL40S,cuda:1",
+          "environments": 4096
+         },
+         "training_steps": 2002944,
+         "evaluation": {
+          "criteria_version": 3,
+          "passed": false,
+          "episodes": 6,
+          "successes": 0,
+          "success_rate": 0.0,
+          "wilson_95_interval": [
+           0,
+           0.39033428790215224
+          ],
+          "by_count": {
+           "2": {
+            "episodes": 3,
+            "successes": 0
+           },
+           "3": {
+            "episodes": 3,
+            "successes": 0
+           }
+          },
+          "touching": {
+           "episodes": 2,
+           "successes": 0
+          },
+          "hardware_violating_episodes": 0,
+          "placement_failures": 0,
+          "correctly_standing_released_objects": 3,
+          "total_objects": 15,
+          "maximum_speed_ratio": 0.7244975792584696,
+          "maximum_penetration_m": 0.0010092466623631733
+         },
+         "criteria_comparison": {
+          "criteria_version": 3,
+          "passed": false,
+          "reason": "Development selection only: 0/6 episodes, 3/15 standing, 0 hardware-violating episodes. This is not the60fresh protocol."
+         },
+         "discrete_layer": "Highest/nearest unfinished object;9.3s learned phase sequence. Completion uses allowed observed50msmean velocities and1s2mm/2degpose history. No additional motion controller.",
+         "reflection": "Later PPO checkpoint assessed on the same six development seeds81000..81005. Curriculum success proxies do not establish forward multiobject performance. Select only before the final fresh audit; never deliver without a passing60trial verification.",
+         "curves_note": "EveryGPUvectorcollectorstepisrecordedwithmeanrewardterms,episodeage,success/hardwareproxies,andcompletedepisodemetrics. Curriculumoutcomesarenotdeploymentcriteria.",
+         "artifacts": {
+          "checkpoint": "research/training/iter_041/checkpoint_2002944.zip",
+          "trainer": "research/gpu/train_meta41.py",
+          "policy": "research/gpu/meta_policy41.py",
+          "optimizer": "research/gpu/ppo_meta39.py",
+          "environment": "research/gpu/vec_env_meta38.py",
+          "encoder": "research/gpu/meta_torch36.py",
+          "numpy_encoder": "research/policy/meta_runtime36.py",
+          "kinematics": "research/policy/kinematics_geometry.json",
+          "parity": "research/gpu/geometric26_parity.json",
+          "evaluation": "research/evaluation/iter041_finish_debug_v3/evaluation.json",
+          "package": "research/packages/iter041_finish_v3",
+          "auditor": "research/evaluation/audit_v3.py",
+          "exporter": "research/policy/export_meta41.py"
+         },
+         "weight_update_collection_steps": 1572864,
+         "checkpoint_collection_note": "Callback snapshot precedes the next128x4096 PPO update.",
+         "scripted_baseline_evaluation_note": "Separate central nominal30s single-object audits of all4corrected gravity-reference families pass each per-object criterion. This geometric analysis controller is not a learned policy and has not passed full randomized multiobject verification.",
+         "baseline_evaluation_note": "Parent checkpoint development evidence is retained separately;an independent paired baseline for this final continuation was not rerun.",
+         "package_manifest_sha256": "bcc9c114818a…",
+         "evaluation_scope": "Full30s ordinary settled2/3-object development episodes with all criteria3 audited at1kHz,500Hz deployed interface. Reused development seeds,not a fresh verification."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "57373a0511de",
+          "bytes": 98430,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "856cb487500e",
+          "bytes": 445722,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "63f00764a36c",
+          "bytes": 305013,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "f69691296410",
+          "bytes": 303403,
           "content_type": "video/mp4"
          }
         },
@@ -408325,6 +410797,1342 @@
          "text": "PPO22full640:4G1,0completecases;G3/G4pass640/640,butS1only1/640. Finalarchitecture24pairsitsfinger20outputswithPPO10wrist6outputs;bothlearnedPPO,no newgradientupdates. Completefixedsuite evaluationusesunchangednativearchive18 with12explicitphysicsOpenMPthreads,keepingactorTorchthreads4. A matched8world1s randomcommandprobe gave bitwiseidenticalqposfor4vs12threads;onlycomputeresourceallocationchanges,not solver,hardware,initialstates,criteria,orpolicy. This accelerates finalverificationbeforeharddeadline17:43:30Z."
         },
         "files": {}
+       },
+       {
+        "id": "r0119",
+        "seq": 119,
+        "kind": "iter",
+        "version": 23,
+        "recorded_utc": "2026-11-09T17:24:51Z",
+        "exception": false,
+        "body": {
+         "sim_version": 19,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "algorithm": "CompositionofalreadyPPOtrainedactors",
+          "component_records": {
+           "22": "r0115",
+           "10": "r0066"
+          },
+          "component_simulations": [
+           19,
+           8
+          ],
+          "new_gradient_updates": 0,
+          "partition": "20fingeroutputsfromPPO22,6wristoutputsfromPPO10,shared239allowedrawfeatures/physicalprevioustargets/finitegoalplanner3",
+          "main_config": {
+           "algorithm": "PPO",
+           "seed": 22,
+           "stage": 2,
+           "domain_randomization": true,
+           "envs": 2048,
+           "threads": 16,
+           "network": "Separate actor/critic MLP245-256-256-256,tanh;Gaussian26tanh,delta targets",
+           "learning_rate": 2.5e-05,
+           "gamma": 0.99,
+           "gae_lambda": 0.95,
+           "clip": 0.2,
+           "value_coef": 0.5,
+           "entropy_coef": 0.0001,
+           "epochs": 4,
+           "minibatch": 2048,
+           "max_grad_norm": 0.5,
+           "target_kl": 0.03,
+           "control_hz": 10,
+           "controller_hz": 1000,
+           "interface_hz": 500,
+           "policy_observations": "deployable",
+           "observation_dim": 245,
+           "action_dim": 26,
+           "hashes": {
+            "sim/scene.xml": "7db399a5469e…",
+            "sim/scene.mjb": "1dc7b769114b…",
+            "code/gpu_relative_env.py": "6642276679de…",
+            "code/relative_decoder.py": "aedce8419c7d…",
+            "code/gpu_reference_env.py": "4a42fa447bea…",
+            "analysis/reference_curriculum20/states.npz": "d014e2130622…",
+            "analysis/reference_curriculum20/provenance.json": "d8c9a5ce503b…",
+            "analysis/reference_state20/physical_parameters.json": "a8b92a6fb49b…",
+            "code/motion_gate.py": "0fd1d538526a…",
+            "code/gpu_feature_env.py": "46ed8b263856…",
+            "code/goal_features.py": "53da7d47cd94…",
+            "code/gpu_goalset_env.py": "fe484ab2dff6…",
+            "code/gpu_velocity_env.py": "12c4c6eaa739…",
+            "code/velocity_decoder.py": "76ded5d364fe…",
+            "code/gpu_partial_env.py": "af10ce25840f…",
+            "code/gpu_skill_env.py": "59f354884e7c…",
+            "code/gpu_env_dr.py": "5b65fe84c52d…",
+            "code/warp_forces_dr.py": "5a5f88a577b8…",
+            "code/warp_checks.py": "2d877deaea11…",
+            "code/torch_geometry.py": "1bc27015f9a8…",
+            "code/train_gpu_relative_dr.py": "35f8087206da…",
+            "code/policy_net.py": "c263dc7a601f…"
+           },
+           "load": "research/iterations/iter22/parent.pt",
+           "steps_requested": 1000000,
+           "source_reference_version": 3,
+           "simulation_version": 19,
+           "physical_domain_transfer": true,
+           "relative_position_range_rad": 0.05,
+           "warm_actor_logit_scale": 0.8,
+           "motion_gate_v1": true,
+           "inference_float64_quantized": true,
+           "reference_reset_probability": [
+            0.75,
+            0.25
+           ],
+           "reference_source": "OwnPPO10r0067successfulG1butfailedS1",
+           "training_margin_curriculum_m": [
+            0.003,
+            0.002
+           ],
+           "subthreshold_strain_cost_weight": 3.0,
+           "tracking_error_cost_scale_rad": 0.02,
+           "tracking_error_cost_weight": 0.01,
+           "feature_version": 2,
+           "domain_probability": 0.5,
+           "state_dependent_exploration": "Constant latent covariance; action=tanh(u)*(.05+.95*clip((max_goal_error-.052)/(pi/6-.052),0,1))",
+           "action_decoder": "relative500",
+           "decision_layer_version": 3,
+           "partial_turn_min_deg": 90.0,
+           "partial_full_quarter_fraction": 0.25,
+           "horizon_steps": 1500,
+           "target_kl_stop": "perminibatch>.03",
+           "reward_scale": 0.1,
+           "initial_std": 0.1,
+           "separate_critic": true,
+           "value_clipping": false,
+           "grasp_weight": 1.0,
+           "style_weight": 4.0,
+           "physics": "MuJoCo Warp float32 CUDA",
+           "exploration_covariance_factor": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+           ],
+           "exploration_covariance": "Constant latent L L^T+diag(exp(logstd)^2); actual action tanh(u) multiplied by allowed-state goal_motion_scale",
+           "composition": "Finger20commandsfromPPO22,wrist6commandsfromPPO10;sharedstate,previousphysicaltargetsandfinitegoalplanner3",
+           "new_training_updates": 0,
+           "component_simulations": [
+            19,
+            8
+           ],
+           "component_checkpoint_sha256": {
+            "22": "5eddbf74dc96…",
+            "10": "0a6a6e0db9e4…"
+           }
+          },
+          "inference": "BothactorMLPsfloat64,tanhthenfloat32;PPO22cubegoal-magnitudegateappliesfingersonly,wrist6usePPO10outputs."
+         },
+         "checkpoint_sha256": "568cbf737a66…",
+         "checkpoint": "final.pt",
+         "parent_checkpoint_sha256": "5eddbf74dc96…",
+         "reward_terms": [
+          {
+           "name": "hold",
+           "formula": "exp(-((cube_wrist_distance-.12)/.05)^2)",
+           "weight": 0.015,
+           "global_scale": 0.1
+          },
+          {
+           "name": "fingertip_reach",
+           "formula": "mean5 exp(-((tip_cube_distance-.035)/.035)^2)",
+           "weight": 0.03,
+           "global_scale": 0.1
+          },
+          {
+           "name": "opposed_grasp",
+           "formula": "thumb/longfinger oppositecontactangle>=60deg",
+           "weight": 0.1,
+           "global_scale": 0.1
+          },
+          {
+           "name": "wrist_style",
+           "formula": "[1-.8*((palm_normal_z-.259)^2+(finger_axis_z-.5)^2)] after.3s",
+           "weight": 0.4,
+           "global_scale": 0.1
+          },
+          {
+           "name": "goal_progress",
+           "formula": "Previousminuscurrentminimummean8cornererroroftwoequivalentobjectgoals;positivepartmaskedonfailure",
+           "weight": 10.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "action_cost",
+           "formula": "mean26(a^2)",
+           "weight": -0.0015,
+           "global_scale": 0.1
+          },
+          {
+           "name": "speed_cost",
+           "formula": "max(0,maxjointvelocityratio-.7)",
+           "weight": -0.015,
+           "global_scale": 0.1
+          },
+          {
+           "name": "penetration_cost",
+           "formula": "max(0,lifetimemaxpenetration-.001)",
+           "weight": -10.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "turn_bonus",
+           "formula": "max8goalerror<.052rad for.1s at50Hz;maskedonfailedactions;alsoonealignedsolvedswitchbonusper episode",
+           "weight": 10.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "training_success_bonus",
+           "formula": "solvedstable.5s,style>.95,step>50,stage>0;perstep,notterminal;maskedonfailedactions",
+           "weight": 0.2,
+           "global_scale": 0.1
+          },
+          {
+           "name": "failure_cost",
+           "formula": "drop/hardware/integrity/numeric",
+           "weight": -2.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "compactness_integrity_cost",
+           "formula": "-.03*(wristdisplacement/.1)^2-3*max(0,maxstrain/.002-1)",
+           "weight": 0.1,
+           "global_scale": 0.1
+          },
+          {
+           "name": "goal_alignment",
+           "formula": "clamp(1-mean8goalerror/(pi/4),0,1);maskedonfailedactions",
+           "weight": 0.2,
+           "global_scale": 0.1
+          },
+          {
+           "name": "solved_alignment",
+           "formula": "exp(-max8cornererrorunderGnearestcorner0/.20);maskedonfailedactions",
+           "weight": 0.1,
+           "global_scale": 0.1
+          },
+          {
+           "name": "tracking_error_cost",
+           "formula": "mean20(((command_target-actual_joint_angle)/.02rad)^2)",
+           "weight": -0.001,
+           "global_scale": 0.1
+          },
+          {
+           "name": "subthreshold_strain_cost",
+           "formula": "max(0,(lifetimeforbiddenstrain-.001m)/.001m)",
+           "weight": -0.30000000000000004,
+           "global_scale": 0.1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "encoderposition",
+           "distribution": "Gaussianindependent",
+           "sigma_rad": 0.002
+          },
+          {
+           "quantity": "encodervelocity",
+           "distribution": "Gaussianindependent",
+           "sigma_rad_s": 0.05
+          },
+          {
+           "quantity": "quarterturnface",
+           "distribution": "uniformdiscrete",
+           "values": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+           ]
+          },
+          {
+           "quantity": "quarterturndirection",
+           "distribution": "uniformdiscrete",
+           "values": [
+            -1,
+            1
+           ]
+          },
+          {
+           "quantity": "size,mass",
+           "distribution": "uniformchoicefrom1024independentuniformsamples,bankseed8999800",
+           "size_m": [
+            0.049,
+            0.053
+           ],
+           "mass_kg": [
+            0.045,
+            0.07
+           ]
+          },
+          {
+           "quantity": "friction",
+           "distribution": "uniform",
+           "range": [
+            0.4,
+            1.2
+           ]
+          },
+          {
+           "quantity": "faceresistance",
+           "distribution": "uniform",
+           "range_Nm": [
+            0.0002,
+            0.006
+           ]
+          },
+          {
+           "quantity": "restitutionprior",
+           "distribution": "uniform",
+           "range": [
+            0,
+            0.15
+           ]
+          },
+          {
+           "quantity": "palmXYoffset",
+           "distribution": "independentuniform",
+           "range_m": [
+            -0.015,
+            0.015
+           ]
+          },
+          {
+           "quantity": "faceup",
+           "distribution": "uniform24cardinalrotations"
+          },
+          {
+           "quantity": "yaw",
+           "distribution": "uniform",
+           "range_rad": [
+            -3.141592654,
+            3.141592654
+           ]
+          },
+          {
+           "quantity": "tiltXY",
+           "distribution": "independentuniformrotationvector",
+           "range_deg": [
+            -15,
+            15
+           ]
+          },
+          {
+           "quantity": "releasegap",
+           "distribution": "uniform",
+           "range_m": [
+            0,
+            0.002
+           ]
+          },
+          {
+           "quantity": "nominal_vs_randomized_mixture",
+           "distribution": "Bernoulli per reset",
+           "randomized_probability": 0.5,
+           "nominal_probability": 0.5
+          },
+          {
+           "quantity": "reference_state_reset",
+           "probability_range": [
+            0.75,
+            0.25
+           ],
+           "frames": 72,
+           "distribution": "uniformsourceframe;onlytraining",
+           "prototype_parameters": {
+            "seed": 100261,
+            "mass_kg": 0.04974335759118717,
+            "size_m": 0.05148246518038597,
+            "friction": 0.8985134013412676,
+            "face_resistance_Nm": 0.0008336089071106996,
+            "desired_restitution_prior": 0.13885404493126333,
+            "contact_damping_ratio": 0.5320974681533055,
+            "coupling_Nm_rad": 1.0,
+            "bearing_viscosity_Nms_rad": 5e-05,
+            "detent_energy_J": 0.00025,
+            "stress": false
+           }
+          }
+         ],
+         "curriculum": {
+          "stage": 2,
+          "horizon_steps": 1500,
+          "initial_scrambles": "Originalpalmupstartwithonefullquartermixedwith72ownPPO10referencegraspstates,rigidlyrotatedatresettoS1medianranges;referenceprobabilitylinearly.75to.25,velocitieszeroedatreset. Referencealwaysabsentatdeployment.",
+          "switching": "Referenceprobability.75to.25 andtrainingpenetration/strainmargin3mmto2mm linearlyoverrequestedsteps,updatedafterPPOupdate. No active physicalstateedits.",
+          "termination": "failed/horizon;stablesuccesscontinuestoberewarded",
+          "horizon_seconds": 30.0
+         },
+         "observation_space": "245featuresfrom14allowedstatefields:noisy20q/20qd,previous20targets,wristpose/velocity/previoustarget,cuberootpose/velocity,8relativepartposes/velocities,finitecube-goalaxis/direction/8targetquaternions,holdflag,time. Extra6ifpresentarehand-framegoalaxis/errorfromthesameposes.No contacts/forces/torques/parameters/images/rewards.",
+         "action_space": "PPO26tanhoutputsheld100ms;fingerpositiongoal=noisymeasuredjointangle+.05rad*NNoutput,clampedtoURDFtargetlimits;500Hzslewmax.003radper2ms.Wristoutputsdecodeat.1m/speraxisand2rad/speraxiswithin.1mtargetsphere;1kHzPD/effortlimitsunchanged. Goal-magnitudegate.05to1 multipliesNNoutputs. No actualstateclamp,all directions PPO.",
+         "decision_layer": "Finite44971statecubegraph,depth7,canonicalmaterialcorner0;goalquarteronly,no physical/trajectory search;allmotionPPO.Equivalentoppositelayerselectionbyphysicalcornererror.Bothcandidateobjectgoalsretainedandreselectedeachstep;alignedsolvedstatebecomesholdgoal.",
+         "compute": {
+          "training_steps": 0,
+          "new_gpu_hours": 0,
+          "evaluation_cpu_wall_s": 127.13169455528259
+         },
+         "evaluation": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "568cbf737a66…",
+          "criteria_version": 2,
+          "simulation_version": 18,
+          "episodes": 640,
+          "full_640_suite": true,
+          "passed": false,
+          "success_count": 0,
+          "success_rate": 0.0,
+          "per_criterion_count": {
+           "G1": 0,
+           "G2": 11,
+           "G3": 638,
+           "G4": 640,
+           "S1": 25,
+           "S2": 640,
+           "S3": 2,
+           "S4_source_audit": 640
+          },
+          "wall_s": 127.13169455528259,
+          "native_physics_threads": 12,
+          "actor_threads": 4,
+          "source_hashes": {
+           "<path>": "571190039d7e…"
+          },
+          "nominal_physics_diagnostic": false,
+          "limits": [
+           "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+           "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+           "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+           "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+           "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+          ]
+         },
+         "reflection": "ComposedPPOactorsfull640verdict 0/640 completecases,counts {‘G1': 0, 'G2': 11, 'G3': 638, 'G4': 640, 'S1': 25, 'S2': 640, 'S3': 2, 'S4_source_audit': 640}. Staticfinger/wristpartitiontestsreuseoflearnedmotionoutputs;any performanceisownnativecriterion2evidence,not an officialevaluation.",
+         "evidence": "Fullper-episodecriteria/initialparameters/losslessauditaggregatesattachedtothefollowingverificationrecord;representative3viewsattachedhere.",
+         "fixed_nominal_single_turn_diagnostic": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "5eddbf74dc96…",
+          "criteria_version": 2,
+          "simulation_version": 18,
+          "episodes": 24,
+          "full_640_suite": false,
+          "passed": false,
+          "success_count": 0,
+          "success_rate": 0.0,
+          "per_criterion_count": {
+           "G1": 0,
+           "G2": 22,
+           "G3": 24,
+           "G4": 24,
+           "S1": 0,
+           "S2": 24,
+           "S3": 20,
+           "S4_source_audit": 24
+          },
+          "wall_s": 82.68313217163086,
+          "source_hashes": {
+           "<path>": "571190039d7e…"
+          },
+          "nominal_physics_diagnostic": true,
+          "limits": [
+           "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+           "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+           "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+           "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+           "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+          ]
+         },
+         "render_source_sha256": "24a2a0cea184…",
+         "render_visual_geometry": "Corner meshes/stickers scaled to actual evaluated size in new renders; physics trajectories and metrics unchanged.",
+         "metric_units": {
+          "episode_length": "20ms base ticks;divide by50forseconds",
+          "training_step": "vectorizedpolicyenvironmenttransitionsat10Hzforvelocity/relative,50Hzforlegacy"
+         },
+         "component_checkpoint_sha256": {
+          "22": "5eddbf74dc96…",
+          "10": "0a6a6e0db9e4…"
+         },
+         "training_curves": "CSVattachedisinheritedPPO22traininghistory;PPO10historyandbothparentsfullperformanceintheirrecords. No newtrainingforcomposition.",
+         "component_performance": {
+          "22": {
+           "checkpoint": "<path>",
+           "checkpoint_sha256": "5eddbf74dc96…",
+           "criteria_version": 2,
+           "simulation_version": 18,
+           "episodes": 640,
+           "full_640_suite": true,
+           "passed": false,
+           "success_count": 0,
+           "success_rate": 0.0,
+           "per_criterion_count": {
+            "G1": 4,
+            "G2": 499,
+            "G3": 640,
+            "G4": 640,
+            "S1": 1,
+            "S2": 640,
+            "S3": 92,
+            "S4_source_audit": 640
+           },
+           "wall_s": 1545.621720790863,
+           "source_hashes": {
+            "<path>": "571190039d7e…"
+           },
+           "nominal_physics_diagnostic": false,
+           "limits": [
+            "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+            "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+            "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+            "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+            "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+           ]
+          },
+          "10": {
+           "checkpoint": "<path>",
+           "checkpoint_sha256": "0a6a6e0db9e4…",
+           "criteria_version": 2,
+           "simulation_version": 10,
+           "episodes": 640,
+           "full_640_suite": true,
+           "passed": false,
+           "success_count": 0,
+           "success_rate": 0.0,
+           "per_criterion_count": {
+            "G1": 1,
+            "G2": 411,
+            "G3": 367,
+            "G4": 633,
+            "S1": 202,
+            "S2": 640,
+            "S3": 297,
+            "S4_source_audit": 640
+           },
+           "wall_s": 1272.9359593391418,
+           "source_hashes": {
+            "<path>": "571190039d7e…"
+           },
+           "nominal_physics_diagnostic": false,
+           "limits": [
+            "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+            "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+            "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+            "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+            "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+           ]
+          }
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "6d5df0e26147",
+          "bytes": 200036,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "2823cf2890e3",
+          "bytes": 50061,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "60c767a5dcf0",
+          "bytes": 61003,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "bedecdbdc742",
+          "bytes": 89247,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0120",
+        "seq": 120,
+        "kind": "iter",
+        "version": 24,
+        "recorded_utc": "2026-11-09T17:24:52Z",
+        "exception": false,
+        "body": {
+         "sim_version": 17,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "algorithm": "CompositionofalreadyPPOtrainedactors",
+          "component_records": {
+           "20": "r0100",
+           "10": "r0066"
+          },
+          "component_simulations": [
+           17,
+           8
+          ],
+          "new_gradient_updates": 0,
+          "partition": "20fingeroutputsfromPPO20,6wristoutputsfromPPO10,shared239allowedrawfeatures/physicalprevioustargets/finitegoalplanner3",
+          "main_config": {
+           "algorithm": "PPO",
+           "seed": 20,
+           "stage": 2,
+           "domain_randomization": false,
+           "envs": 2048,
+           "threads": 16,
+           "network": "Separate actor/critic MLP245-256-256-256,tanh;Gaussian26tanh,delta targets",
+           "learning_rate": 2.5e-05,
+           "gamma": 0.99,
+           "gae_lambda": 0.95,
+           "clip": 0.2,
+           "value_coef": 0.5,
+           "entropy_coef": 0.0001,
+           "epochs": 4,
+           "minibatch": 2048,
+           "max_grad_norm": 0.5,
+           "target_kl": 0.03,
+           "control_hz": 10,
+           "controller_hz": 1000,
+           "interface_hz": 500,
+           "policy_observations": "deployable",
+           "observation_dim": 245,
+           "action_dim": 26,
+           "hashes": {
+            "sim/scene.xml": "7db399a5469e…",
+            "sim/scene.mjb": "1dc7b769114b…",
+            "code/gpu_reference_env.py": "b344c6001971…",
+            "analysis/reference_curriculum20/states.npz": "d014e2130622…",
+            "analysis/reference_curriculum20/provenance.json": "d8c9a5ce503b…",
+            "analysis/reference_state20/physical_parameters.json": "a8b92a6fb49b…",
+            "code/motion_gate.py": "0fd1d538526a…",
+            "code/gpu_feature_env.py": "46ed8b263856…",
+            "code/goal_features.py": "53da7d47cd94…",
+            "code/gpu_goalset_env.py": "fe484ab2dff6…",
+            "code/gpu_velocity_env.py": "12c4c6eaa739…",
+            "code/velocity_decoder.py": "76ded5d364fe…",
+            "code/gpu_partial_env.py": "af10ce25840f…",
+            "code/gpu_skill_env.py": "59f354884e7c…",
+            "code/gpu_env_dr.py": "5b65fe84c52d…",
+            "code/warp_forces_dr.py": "5a5f88a577b8…",
+            "code/warp_checks.py": "2d877deaea11…",
+            "code/torch_geometry.py": "1bc27015f9a8…",
+            "code/train_gpu_reference.py": "0db8e08f6f6b…",
+            "code/policy_net.py": "c263dc7a601f…"
+           },
+           "load": "research/iterations/iter20/parent.pt",
+           "steps_requested": 1500000,
+           "source_reference_version": 3,
+           "simulation_version": 17,
+           "warm_actor_logit_scale": 0.5,
+           "motion_gate_v1": true,
+           "inference_float64_quantized": true,
+           "reference_reset_probability": [
+            0.75,
+            0.25
+           ],
+           "reference_source": "OwnPPO10r0067successfulG1butfailedS1",
+           "training_margin_curriculum_m": [
+            0.003,
+            0.002
+           ],
+           "subthreshold_strain_cost_weight": 3.0,
+           "tracking_error_cost_scale_rad": 0.02,
+           "tracking_error_cost_weight": 0.01,
+           "feature_version": 2,
+           "domain_probability": 0.5,
+           "state_dependent_exploration": "Constant latent covariance; action=tanh(u)*(.05+.95*clip((max_goal_error-.052)/(pi/6-.052),0,1))",
+           "action_decoder": "velocity500",
+           "decision_layer_version": 3,
+           "partial_turn_min_deg": 90.0,
+           "partial_full_quarter_fraction": 0.25,
+           "horizon_steps": 1500,
+           "target_kl_stop": "perminibatch>.03",
+           "reward_scale": 0.1,
+           "initial_std": 0.1,
+           "separate_critic": true,
+           "value_clipping": false,
+           "grasp_weight": 1.0,
+           "style_weight": 4.0,
+           "physics": "MuJoCo Warp float32 CUDA",
+           "exploration_covariance_factor": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+           ],
+           "exploration_covariance": "Constant latent L L^T+diag(exp(logstd)^2); actual action tanh(u) multiplied by allowed-state goal_motion_scale",
+           "composition": "Finger20commandsfromPPO20,wrist6commandsfromPPO10;sharedgoalplanner3andpreviousphysicaltargets;bothactorsfloat64thenfloat32commands",
+           "new_training_updates": 0,
+           "component_simulations": [
+            17,
+            8
+           ],
+           "component_checkpoint_sha256": {
+            "20": "361004eb6778…",
+            "10": "0a6a6e0db9e4…"
+           }
+          },
+          "inference": "BothactorMLPsfloat64,tanhthenfloat32;PPO20cubegoal-magnitudegateappliesfingersonly,wrist6usePPO10outputs."
+         },
+         "checkpoint_sha256": "0a5e5b0f9b5a…",
+         "checkpoint": "final.pt",
+         "parent_checkpoint_sha256": {
+          "20": "361004eb6778…",
+          "10": "0a6a6e0db9e4…"
+         },
+         "reward_terms": [
+          {
+           "name": "hold",
+           "formula": "exp(-((cube_wrist_distance-.12)/.05)^2)",
+           "weight": 0.015,
+           "global_scale": 0.1
+          },
+          {
+           "name": "fingertip_reach",
+           "formula": "mean5 exp(-((tip_cube_distance-.035)/.035)^2)",
+           "weight": 0.03,
+           "global_scale": 0.1
+          },
+          {
+           "name": "opposed_grasp",
+           "formula": "thumb/longfinger oppositecontactangle>=60deg",
+           "weight": 0.1,
+           "global_scale": 0.1
+          },
+          {
+           "name": "wrist_style",
+           "formula": "[1-.8*((palm_normal_z-.259)^2+(finger_axis_z-.5)^2)] after.3s",
+           "weight": 0.4,
+           "global_scale": 0.1
+          },
+          {
+           "name": "goal_progress",
+           "formula": "Previousminuscurrentminimummean8cornererroroftwoequivalentobjectgoals;positivepartmaskedonfailure",
+           "weight": 10.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "action_cost",
+           "formula": "mean26(a^2)",
+           "weight": -0.0015,
+           "global_scale": 0.1
+          },
+          {
+           "name": "speed_cost",
+           "formula": "max(0,maxjointvelocityratio-.7)",
+           "weight": -0.015,
+           "global_scale": 0.1
+          },
+          {
+           "name": "penetration_cost",
+           "formula": "max(0,lifetimemaxpenetration-.001)",
+           "weight": -10.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "turn_bonus",
+           "formula": "max8goalerror<.052rad for.1s at50Hz;maskedonfailedactions;alsoonealignedsolvedswitchbonusper episode",
+           "weight": 10.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "training_success_bonus",
+           "formula": "solvedstable.5s,style>.95,step>50,stage>0;perstep,notterminal;maskedonfailedactions",
+           "weight": 0.2,
+           "global_scale": 0.1
+          },
+          {
+           "name": "failure_cost",
+           "formula": "drop/hardware/integrity/numeric",
+           "weight": -2.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "compactness_integrity_cost",
+           "formula": "-.03*(wristdisplacement/.1)^2-3*max(0,maxstrain/.002-1)",
+           "weight": 0.1,
+           "global_scale": 0.1
+          },
+          {
+           "name": "goal_alignment",
+           "formula": "clamp(1-mean8goalerror/(pi/4),0,1);maskedonfailedactions",
+           "weight": 0.2,
+           "global_scale": 0.1
+          },
+          {
+           "name": "solved_alignment",
+           "formula": "exp(-max8cornererrorunderGnearestcorner0/.20);maskedonfailedactions",
+           "weight": 0.1,
+           "global_scale": 0.1
+          },
+          {
+           "name": "tracking_error_cost",
+           "formula": "mean20(((command_target-actual_joint_angle)/.02rad)^2)",
+           "weight": -0.001,
+           "global_scale": 0.1
+          },
+          {
+           "name": "subthreshold_strain_cost",
+           "formula": "max(0,(lifetimeforbiddenstrain-.001m)/.001m)",
+           "weight": -0.30000000000000004,
+           "global_scale": 0.1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "encoderposition",
+           "distribution": "Gaussianindependent",
+           "sigma_rad": 0.002
+          },
+          {
+           "quantity": "encodervelocity",
+           "distribution": "Gaussianindependent",
+           "sigma_rad_s": 0.05
+          },
+          {
+           "quantity": "quarterturnface",
+           "distribution": "uniformdiscrete",
+           "values": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+           ]
+          },
+          {
+           "quantity": "quarterturndirection",
+           "distribution": "uniformdiscrete",
+           "values": [
+            -1,
+            1
+           ]
+          },
+          {
+           "quantity": "reference_state_reset",
+           "probability_range": [
+            0.75,
+            0.25
+           ],
+           "frames": 72,
+           "distribution": "uniformsourceframe;onlytraining",
+           "prototype_parameters": {
+            "seed": 100261,
+            "mass_kg": 0.04974335759118717,
+            "size_m": 0.05148246518038597,
+            "friction": 0.8985134013412676,
+            "face_resistance_Nm": 0.0008336089071106996,
+            "desired_restitution_prior": 0.13885404493126333,
+            "contact_damping_ratio": 0.5320974681533055,
+            "coupling_Nm_rad": 1.0,
+            "bearing_viscosity_Nms_rad": 5e-05,
+            "detent_energy_J": 0.00025,
+            "stress": false
+           }
+          }
+         ],
+         "curriculum": {
+          "stage": 2,
+          "horizon_steps": 1500,
+          "initial_scrambles": "Originalpalmupstartwithonefullquartermixedwith72ownPPO10referencegraspstates,rigidlyrotatedatresettoS1medianranges;referenceprobabilitylinearly.75to.25,velocitieszeroedatreset. Referencealwaysabsentatdeployment.",
+          "switching": "Referenceprobability.75to.25 andtrainingpenetration/strainmargin3mmto2mm linearlyoverrequestedsteps,updatedafterPPOupdate. No active physicalstateedits.",
+          "termination": "failed/horizon;stablesuccesscontinuestoberewarded"
+         },
+         "observation_space": "245featuresfrom14allowedstatefields:noisy20q/20qd,previous20targets,wristpose/velocity/previoustarget,cuberootpose/velocity,8relativepartposes/velocities,finitecube-goalaxis/direction/8targetquaternions,holdflag,time. Extra6ifpresentarehand-framegoalaxis/errorfromthesameposes.No contacts/forces/torques/parameters/images/rewards.",
+         "action_space": "PPO26tanhvelocityparametersheld100ms;500Hzdecoderintegratesjointtargets1.5*a rad/s,wrist.1*a m/s,worldrotation2*a rad/speraxis;wristtargetradius.1m;authoritative1kHzPD,zerofeedforward. AllmotionvaluesfromPPO.",
+         "decision_layer": "Finite44971statecubegraph,depth7,canonicalmaterialcorner0;goalquarteronly,no physical/trajectory search;allmotionPPO.Equivalentoppositelayerselectionbyphysicalcornererror.Bothcandidateobjectgoalsretainedandreselectedeachstep;alignedsolvedstatebecomesholdgoal.",
+         "compute": {
+          "training_steps": 0,
+          "new_gpu_hours": 0,
+          "evaluation_cpu_wall_s": 1490.1693971157074
+         },
+         "evaluation": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "0a5e5b0f9b5a…",
+          "criteria_version": 2,
+          "simulation_version": 10,
+          "episodes": 640,
+          "full_640_suite": true,
+          "passed": false,
+          "success_count": 0,
+          "success_rate": 0.0,
+          "per_criterion_count": {
+           "G1": 1,
+           "G2": 423,
+           "G3": 457,
+           "G4": 639,
+           "S1": 109,
+           "S2": 640,
+           "S3": 265,
+           "S4_source_audit": 640
+          },
+          "wall_s": 1490.1693971157074,
+          "source_hashes": {
+           "<path>": "571190039d7e…"
+          },
+          "nominal_physics_diagnostic": false,
+          "limits": [
+           "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+           "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+           "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+           "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+           "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+          ]
+         },
+         "reflection": "ComposedPPOactorsfull640verdict 0/640 completecases,counts {‘G1': 1, 'G2': 423, 'G3': 457, 'G4': 639, 'S1': 109, 'S2': 640, 'S3': 265, 'S4_source_audit': 640}. Staticfinger/wristpartitiontestsreuseoflearnedmotionoutputs;any performanceisownnativecriterion2evidence,not an officialevaluation.",
+         "evidence": "Fullper-episodecriteria/initialparameters/losslessauditaggregatesattachedtothefollowingverificationrecord;representative3viewsattachedhere.",
+         "fixed_nominal_single_turn_diagnostic": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "361004eb6778…",
+          "criteria_version": 2,
+          "simulation_version": 10,
+          "episodes": 24,
+          "full_640_suite": false,
+          "passed": false,
+          "success_count": 0,
+          "success_rate": 0.0,
+          "per_criterion_count": {
+           "G1": 0,
+           "G2": 23,
+           "G3": 23,
+           "G4": 24,
+           "S1": 11,
+           "S2": 24,
+           "S3": 21,
+           "S4_source_audit": 24
+          },
+          "wall_s": 96.34165334701538,
+          "source_hashes": {
+           "<path>": "571190039d7e…"
+          },
+          "nominal_physics_diagnostic": true,
+          "limits": [
+           "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+           "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+           "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+           "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+           "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+          ]
+         },
+         "render_source_sha256": "24a2a0cea184…",
+         "render_visual_geometry": "Corner meshes/stickers scaled to actual evaluated size in new renders; physics trajectories and metrics unchanged.",
+         "training_curves": "CSVattachedisinheritedPPO20traininghistory;PPO10historyandbothparentsfullperformanceintheirrecords. No newtrainingforcomposition.",
+         "component_performance": {
+          "20": {
+           "checkpoint": "<path>",
+           "checkpoint_sha256": "361004eb6778…",
+           "criteria_version": 2,
+           "simulation_version": 10,
+           "episodes": 640,
+           "full_640_suite": true,
+           "passed": false,
+           "success_count": 0,
+           "success_rate": 0.0,
+           "per_criterion_count": {
+            "G1": 5,
+            "G2": 552,
+            "G3": 418,
+            "G4": 639,
+            "S1": 201,
+            "S2": 640,
+            "S3": 324,
+            "S4_source_audit": 640
+           },
+           "wall_s": 1611.8774662017822,
+           "source_hashes": {
+            "<path>": "571190039d7e…"
+           },
+           "nominal_physics_diagnostic": false,
+           "limits": [
+            "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+            "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+            "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+            "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+            "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+           ]
+          },
+          "10": {
+           "checkpoint": "<path>",
+           "checkpoint_sha256": "0a6a6e0db9e4…",
+           "criteria_version": 2,
+           "simulation_version": 10,
+           "episodes": 640,
+           "full_640_suite": true,
+           "passed": false,
+           "success_count": 0,
+           "success_rate": 0.0,
+           "per_criterion_count": {
+            "G1": 1,
+            "G2": 411,
+            "G3": 367,
+            "G4": 633,
+            "S1": 202,
+            "S2": 640,
+            "S3": 297,
+            "S4_source_audit": 640
+           },
+           "wall_s": 1272.9359593391418,
+           "source_hashes": {
+            "<path>": "571190039d7e…"
+           },
+           "nominal_physics_diagnostic": false,
+           "limits": [
+            "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+            "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+            "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+            "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+            "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+           ]
+          }
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "82b82147c65c",
+          "bytes": 280530,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "e7724632ff83",
+          "bytes": 72522,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "2984b092c406",
+          "bytes": 77098,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "6ca2990813d1",
+          "bytes": 108395,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0121",
+        "seq": 121,
+        "kind": "verify",
+        "version": 25,
+        "recorded_utc": "2026-11-09T17:24:52Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0119",
+         "criteria_version": 2,
+         "passed": false,
+         "checkpoint_sha256": "568cbf737a66…",
+         "simulation_version": 10,
+         "episodes": 640,
+         "conditions": "Originalfrozen512nominal+128stresssuite1,standalonedeployabletwoactorPPOcomposition,1kHzhardwareand2kHzphysicschecksunchanged.",
+         "result": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "568cbf737a66…",
+          "criteria_version": 2,
+          "simulation_version": 18,
+          "episodes": 640,
+          "full_640_suite": true,
+          "passed": false,
+          "success_count": 0,
+          "success_rate": 0.0,
+          "per_criterion_count": {
+           "G1": 0,
+           "G2": 11,
+           "G3": 638,
+           "G4": 640,
+           "S1": 25,
+           "S2": 640,
+           "S3": 2,
+           "S4_source_audit": 640
+          },
+          "wall_s": 127.13169455528259,
+          "native_physics_threads": 12,
+          "actor_threads": 4,
+          "source_hashes": {
+           "<path>": "571190039d7e…"
+          },
+          "nominal_physics_diagnostic": false,
+          "limits": [
+           "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+           "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+           "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+           "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+           "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+          ]
+         },
+         "evidence": "Fullper-episodevalues,losslessmetrics,parametersandfrozenmanifestattached.",
+         "limitations": [
+          "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+          "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+          "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+          "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+          "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements.",
+          "Parentfullpolicyperformanceisreported;subspacearbitrationwasnotseparatelyretrained."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "bbcbdc5beb5f",
+          "bytes": 1476396,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "c85a5a354736",
+          "bytes": 3866359,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "a814f662db6b",
+          "bytes": 260733,
+          "content_type": "application/json"
+         },
+         "file_4": {
+          "sha": "d399a3da5484",
+          "bytes": 657,
+          "content_type": "application/json"
+         },
+         "file_5": {
+          "sha": "e2b176b3dc7c",
+          "bytes": 13865,
+          "content_type": "text/plain"
+         },
+         "video_left_failure": {
+          "sha": "5a28faf09dfe",
+          "bytes": 50192,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "2a026c1b4840",
+          "bytes": 61294,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "48598aacbaa5",
+          "bytes": 89308,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0122",
+        "seq": 122,
+        "kind": "note",
+        "version": 49,
+        "recorded_utc": "2026-11-09T17:24:52Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "ComposedPPOactorsfull640verdict 0/640 completecases,counts {‘G1': 0, 'G2': 11, 'G3': 638, 'G4': 640, 'S1': 25, 'S2': 640, 'S3': 2, 'S4_source_audit': 640}. Staticfinger/wristpartitiontestsreuseoflearnedmotionoutputs;any performanceisownnativecriterion2evidence,not an officialevaluation."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0123",
+        "seq": 123,
+        "kind": "verify",
+        "version": 26,
+        "recorded_utc": "2026-11-09T17:24:56Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0120",
+         "criteria_version": 2,
+         "passed": false,
+         "checkpoint_sha256": "0a5e5b0f9b5a…",
+         "simulation_version": 10,
+         "episodes": 640,
+         "conditions": "Originalfrozen512nominal+128stresssuite1,standalonedeployabletwoactorPPOcomposition,1kHzhardwareand2kHzphysicschecksunchanged.",
+         "result": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "0a5e5b0f9b5a…",
+          "criteria_version": 2,
+          "simulation_version": 10,
+          "episodes": 640,
+          "full_640_suite": true,
+          "passed": false,
+          "success_count": 0,
+          "success_rate": 0.0,
+          "per_criterion_count": {
+           "G1": 1,
+           "G2": 423,
+           "G3": 457,
+           "G4": 639,
+           "S1": 109,
+           "S2": 640,
+           "S3": 265,
+           "S4_source_audit": 640
+          },
+          "wall_s": 1490.1693971157074,
+          "source_hashes": {
+           "<path>": "571190039d7e…"
+          },
+          "nominal_physics_diagnostic": false,
+          "limits": [
+           "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+           "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+           "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+           "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+           "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+          ]
+         },
+         "evidence": "Fullper-episodevalues,losslessmetrics,parametersandfrozenmanifestattached.",
+         "limitations": [
+          "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+          "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+          "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+          "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+          "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements.",
+          "Parentfullpolicyperformanceisreported;subspacearbitrationwasnotseparatelyretrained."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "29c92e605957",
+          "bytes": 1504843,
+          "content_type": "application/json"
+         },
+         "file_10": {
+          "sha": "e5f383388aaf",
+          "bytes": 1716103,
+          "content_type": "application/octet-stream"
+         },
+         "file_11": {
+          "sha": "9f9f2d8c49f2",
+          "bytes": 1006143,
+          "content_type": "application/octet-stream"
+         },
+         "file_12": {
+          "sha": "beb15bf53f34",
+          "bytes": 1130093,
+          "content_type": "application/octet-stream"
+         },
+         "file_13": {
+          "sha": "a814f662db6b",
+          "bytes": 260733,
+          "content_type": "application/json"
+         },
+         "file_14": {
+          "sha": "d399a3da5484",
+          "bytes": 657,
+          "content_type": "application/json"
+         },
+         "file_15": {
+          "sha": "e2b176b3dc7c",
+          "bytes": 13865,
+          "content_type": "text/plain"
+         },
+         "file_2": {
+          "sha": "57f5ae65cbf3",
+          "bytes": 3436,
+          "content_type": "application/json"
+         },
+         "file_3": {
+          "sha": "f2ca500e00c4",
+          "bytes": 1895026,
+          "content_type": "application/octet-stream"
+         },
+         "file_4": {
+          "sha": "3951f793ced9",
+          "bytes": 1994787,
+          "content_type": "application/octet-stream"
+         },
+         "file_5": {
+          "sha": "554424dcc574",
+          "bytes": 2123494,
+          "content_type": "application/octet-stream"
+         },
+         "file_6": {
+          "sha": "c040228d73c7",
+          "bytes": 2034694,
+          "content_type": "application/octet-stream"
+         },
+         "file_7": {
+          "sha": "6001dab8e962",
+          "bytes": 1778969,
+          "content_type": "application/octet-stream"
+         },
+         "file_8": {
+          "sha": "620467a182eb",
+          "bytes": 1693393,
+          "content_type": "application/octet-stream"
+         },
+         "file_9": {
+          "sha": "12491e536cbf",
+          "bytes": 1804701,
+          "content_type": "application/octet-stream"
+         },
+         "video_left_failure": {
+          "sha": "db76a25db021",
+          "bytes": 72398,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "2984b092c406",
+          "bytes": 77098,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "de78dc526d41",
+          "bytes": 108405,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0124",
+        "seq": 124,
+        "kind": "note",
+        "version": 50,
+        "recorded_utc": "2026-11-09T17:24:57Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "ComposedPPOactorsfull640verdict 0/640 completecases,counts {‘G1': 1, 'G2': 423, 'G3': 457, 'G4': 639, 'S1': 109, 'S2': 640, 'S3': 265, 'S4_source_audit': 640}. Staticfinger/wristpartitiontestsreuseoflearnedmotionoutputs;any performanceisownnativecriterion2evidence,not an officialevaluation."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-09T09:55:05Z",
@@ -408340,7 +412148,7 @@
    "plug": {
     "runs": {
      "8": {
-      "exported_utc": "2026-11-09T17:20:01Z",
+      "exported_utc": "2026-11-09T17:30:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -408598,7 +412406,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-09T17:22:34Z",
+  "staged_utc": "2026-11-09T17:32:34Z",
   "tasks": {
    "cube": {
     "files": {
@@ -408682,7 +412490,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-09T17:22:34Z",
+  "staged_utc": "2026-11-09T17:32:34Z",
   "tasks": {
    "tennis": {
     "status": "available",
