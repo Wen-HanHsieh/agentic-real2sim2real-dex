@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-09T02:22:35Z",
- "exported_utc": "2026-11-09T02:22:29Z",
+ "generated_utc": "2026-11-09T02:32:35Z",
+ "exported_utc": "2026-11-09T02:32:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-09T02:19:56",
+    "time": "2026-11-09T02:25:54",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -142472,6 +142472,207 @@
           "sha": "8277137eeae7",
           "bytes": 520,
           "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0021",
+        "seq": 21,
+        "kind": "note",
+        "version": 16,
+        "recorded_utc": "2026-11-09T02:23:19Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "First PPO exploration run is not viable: after1.31 million transitions, stochastic rollout task success0%, all512 episodes had at least one hardware flag, maximum sampled finger speed ratio4.04. Base zero residual did not show these failures. Independent20ms wrist/finger residual changes appear to create jerks and back-driven joints. Stopped the run after checkpoint20 (later unevaluated updates retained in curves). Next PPO run filters the residual with alpha0.15 at50Hz and reduces initial Gaussian standard deviation from0.223 to0.100. These changes filter commanded targets, never clamp actual states. Native deterministic checkpoint evaluation follows and will be recorded even if it fails."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0022",
+        "seq": 22,
+        "kind": "iter",
+        "version": 1,
+        "recorded_utc": "2026-11-09T02:25:48Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO clipped",
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "epochs": 4,
+          "minibatches": 8,
+          "learning_rate": 0.0003,
+          "entropy_coefficient": 0.001,
+          "value_coefficient": 0.5,
+          "max_gradient_norm": 1,
+          "rollout_steps": 128,
+          "environments": 512,
+          "seed": 2026,
+          "checkpoint_update": 20,
+          "transitions": 1310720
+         },
+         "architecture": "Separate256-tanh-256-tanh actor/critic; Gaussian26-dimensional residual, initial std0.223, actor126-dimensional deployable state.",
+         "observation_space": "No contacts/rewards/parameters. Noisy q/qd, wrist pose/velocity, selected object pose/velocity, allowed reference-memory phase and targets, object_kind, previous residual.",
+         "action_space": "20 joint residuals scaled0.18rad,3 wrist translation residuals scaled15mm,3 world rotation residuals scaled0.12rad. Residual50Hz held across10 contract steps with exact wrist target limiting; baseline prior and joint target ramp3rad/s.",
+         "reward_terms": [
+          {
+           "name": "position",
+           "formula": "2*exp(-80*||object_position-reference_position||^2), multiplied by1 in phases>=close,0.2 earlier",
+           "weight": 1
+          },
+          {
+           "name": "orientation",
+           "formula": "exp(-2*||log(q_object*q_reference^-1)||^2), same phase multiplier",
+           "weight": 1
+          },
+          {
+           "name": "lift",
+           "formula": "0.5 when object centre exceeds initial centre by20mm during lift/carry",
+           "weight": 1
+          },
+          {
+           "name": "complete",
+           "formula": "3*exp(-80*position_goal_error^2)*exp(-3*orientation_goal_error^2) during place/release/retreat",
+           "weight": 1
+          },
+          {
+           "name": "action",
+           "formula": "-0.005*mean(clipped_residual^2)",
+           "weight": 1
+          },
+          {
+           "name": "smooth",
+           "formula": "-0.01*mean((residual-previous_residual)^2)",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-10 on any sampled speed or position violation at50Hz; native verification checks every1kHz tick",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "object xy",
+           "distribution": "uniform",
+           "range": {
+            "x": null,
+            "y": null
+           }
+          },
+          {
+           "quantity": "object orientation",
+           "distribution": "uniform yaw; equal two side faces",
+           "range": "yaw[-pi,pi], lying on bodyX orY face"
+          }
+         ],
+         "curriculum": "Single fixed level;3 objects kinds0,1,0. No physics DR.",
+         "compute": {
+          "checkpoint_training_wall_s": 149.8,
+          "gpu_hours": 0.04161111111111111,
+          "hardware": "one NVIDIA L40S"
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "seeds": [
+           45000,
+           45001,
+           45002,
+           45003,
+           45004,
+           45005,
+           45006,
+           45007,
+           45008,
+           45009,
+           45010,
+           45011,
+           45012,
+           45013,
+           45014,
+           45015
+          ],
+          "episodes": 16,
+          "successes": 10,
+          "success_rate": 0.625,
+          "per_final_criterion_counts": {
+           "left": 10,
+           "upright": 10,
+           "base": 16,
+           "table": 16,
+           "hand_free": 16,
+           "linear_still": 16,
+           "angular_still": 16
+          },
+          "hardware_violations": 0,
+          "base_alone_successes_same_seeds": 10,
+          "baseline_reference_note": "Neither the baseline nor this policy passes strict128/128 criteria; the exact same six reach failures remained.",
+          "stochastic_training": "0/512 simplified task successes; all episodes flagged hardware violations under unfiltered exploration."
+         },
+         "reflection": "No held-out improvement over baseline. Exploration jerks caused hardware violations; deterministic actions were physically safe on these16 episodes but could not rescue unreachable grasps. Next filter actions and expand reach/grasp coverage. This is a failed iteration.",
+         "package_sha256": "292553cfc483…"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "856ad60b78c6",
+          "bytes": 8377,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "405901b358fb",
+          "bytes": 184572,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "ffc482241354",
+          "bytes": 219159,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "1409406a13e1",
+          "bytes": 194815,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0023",
+        "seq": 23,
+        "kind": "verify",
+        "version": 1,
+        "recorded_utc": "2026-11-09T02:25:54Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0022",
+         "criteria_version": 1,
+         "passed": false,
+         "package_sha256": "292553cfc483…",
+         "episodes": 16,
+         "successful_episodes": 10,
+         "evidence": "Six of16 tested seeds fail pickup and final left/upright criteria; therefore full128/128 pass is already impossible. Did not deliver. Full per-trial evidence attached.",
+         "limitations": "Only first16 nominal distribution seeds evaluated; physics/touch/edge criteria groups untested in this verdict. No official evaluation claim."
+        },
+        "files": {
+         "file_1": {
+          "sha": "90ca0e457159",
+          "bytes": 45457,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "a401928bfe59",
+          "bytes": 90869,
+          "content_type": "application/json"
+         },
+         "video_top_failure": {
+          "sha": "1409406a13e1",
+          "bytes": 194815,
+          "content_type": "video/mp4"
          }
         },
         "out_of_order": false
@@ -294195,7 +294396,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-09T02:22:32Z",
+  "staged_utc": "2026-11-09T02:32:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -294279,7 +294480,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-09T02:22:32Z",
+  "staged_utc": "2026-11-09T02:32:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
