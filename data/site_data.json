@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-09T11:22:38Z",
- "exported_utc": "2026-11-09T11:22:29Z",
+ "generated_utc": "2026-11-09T11:32:37Z",
+ "exported_utc": "2026-11-09T11:32:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-09T11:20:04",
+    "time": "2026-11-09T11:23:16",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-09T11:16:31",
+    "time": "2026-11-09T11:28:02",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -158074,6 +158074,19 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0023",
+        "seq": 23,
+        "kind": "note",
+        "version": 11,
+        "recorded_utc": "2026-11-09T11:23:16Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Offline tripod turning diagnosis: the IK helper reused the live MuJoCo data and altered hand qpos while constructing successive reference waypoints. Those turning baselines are invalid physical executions; their apparent joint-speed failures cannot diagnose a true commanded trajectory. The helper now uses separate MjData, so geometric calculations cannot change live hand/object states. The earlier grasp-only baselines reset after IK, and both PPO training environments use a pure NumPy stored-template teacher, so neither PPO run has this mutation. I will rerun the corrected physical turning baseline and retain the failed artifacts as diagnostics."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-09T09:57:49Z",
@@ -347677,6 +347690,273 @@
          "text": "Simulation mechanism design: eight material corner bodies rotate about the cube center using ball joints; a passive restoring potential couples their rotations to the nearest legal single-face-turn manifold, with periodic magnetic detents and implicit bearing damping/friction. A face is selected from observed deformation, never the goal; qpos is not projected or overwritten during execution. The reference well changes by a quarter-turn at a periodic-energy boundary without moving the parts. Integrity checks reject illegal deformation. This is an idealized compliant mechanism, not a measured GAN internal model; validate passivity, coherent turns and robustness before relying on it. A symbolic finite cube-state lookup selects high-level next turns only from observed corner orientations; all robot motion remains PPO network output. Initial receiving-pose checks now hold the cube for3s without drops or hardware violations; palm-up static baseline has no opposed grasp and does not solve the task."
         },
         "files": {}
+       },
+       {
+        "id": "r0012",
+        "seq": 12,
+        "kind": "sim",
+        "version": 1,
+        "recorded_utc": "2026-11-09T11:28:02Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 3,
+         "simulator": {
+          "name": "MuJoCo",
+          "version": "3.17.0",
+          "physics_dt_s": 0.0005,
+          "integrator": "implicitfast",
+          "solver": "Newton20",
+          "tolerance": 1e-08,
+          "contact": "elliptic friction cone, solref .005/damping ratio, solimp .95 .99 .001; default e=0",
+          "native_backend": "C++/OpenMP, shared observation/action contract, no GPU physics"
+         },
+         "scene": {
+          "files_sha256": {
+           "sim/scene.xml": "7db399a5469e…",
+           "sim/scene.mjb": "1dc7b769114b…",
+           "sim/model_meta.json": "00e52d4a47ee…",
+           "sim/initial_pose.json": "b626e955624c…",
+           "code/build_sim.py": "f95a374593d5…",
+           "code/backend.cpp": "4f9ec158c965…",
+           "code/policy_net.py": "3a4c86a02cde…",
+           "code/train_ppo.py": "0c95cf9e3841…"
+          },
+          "robot": "Authoritative left URDF, all inertias/joints/armatures and fixed pads/covers, mass0.7088kg",
+          "floor": "z=0, gravity(0,0,-9.81)",
+          "cube": "Eight material corner bodies, nominal51mm/55g prior, core3g with inertia4e-7kgm²; each6.5g corner has diagonal own-COM inertia m*(25mm)^2/6. Box collision approximates rounded Blender meshes within submillimeter scale. Parts and frame conventions from reconstruction3."
+         },
+         "mechanism": {
+          "type": "Passive nearest legal single-face-turn manifold coupled corner ball joints",
+          "coupling_Nm_rad": 1.0,
+          "joint_viscous_damping_Nms_rad": 5e-05,
+          "face_coulomb_resistance_Nm": 0.0007,
+          "detent_energy_J": 0.00025,
+          "max_[redacted]_Nm": 0.001,
+          "object_joint_armature_kgm2": 1e-07,
+          "implementation": "At each physics step choose deformation-consistent face; couple corner orientation errors by restoring torques and periodic detents. Bearing damping/friction solved implicitly. At45deg change periodic reference well by90deg without changing qpos. All actual corner poses remain physics states. No goal-dependent forces or object actuator in policy step.",
+          "limitations": "Idealized compliant mechanism; no measured GAN CAD/fracture model. Test torque probes are apparatus only, separate from policy step."
+         },
+         "hardware": {
+          "wrist": "Free l_mount, specified Cartesian impedance gains2000/60 and20/.4, hand-only weight/COM compensation, 30N/2Nm norm saturation. Generalized wrench about root origin. No feedforward velocities.",
+          "fingers": "Specified1kHz PD and effort saturation; strict actual position/speed checks, no state clamping. All20 URDF limits and armatures preserved.",
+          "policy_hz": 50,
+          "interface_hz": 500,
+          "controller_hz": 1000,
+          "network_action": "26 tanh outputs:20 joint target increments(.06rad), wrist position increments(.002m), world rotation-vector increments(.04rad). Targets held for10 successive500Hz calls, PD at1kHz. Maximum network target speeds below wrist hardware maxima.",
+          "encoders": "independent Gaussian sigma.002rad/.05rad_s on observations",
+          "collision_filter": "Only integral proximal/abduction housing-to-palm pairs and directly attached link pairs excluded due vendor convex-hull/soft-cover overlap; distal-to-palm, inter-finger and every hand/cube collision retained."
+         },
+         "reference": {
+          "record": "r0008",
+          "version": 3,
+          "use": "Wrist gravity-relative tilt, compact cube/wrist relation, thumb/opposing-finger contact roles. No reference replay or IK in policy execution.",
+          "retarget_baseline": {
+           "method": "Offline fingertip IK to the recorded left MANO hand, robot-aligned wrist basis, yaw-only world alignment. No policy execution uses IK or replay.",
+           "frames": [
+            79,
+            341
+           ],
+           "wall_s": 7.234601259231567,
+           "median_fingertip_error_m": 0.00244317878505773,
+           "max_fingertip_error_m": 0.01058121338400978,
+           "max_hand_object_penetration_m": 0.02249644442338548,
+           "limitations": "Kinematic baseline, not a feasible dynamic policy. Robot finger morphology and human contacts differ; hidden layer state was not reconstructed. PPO will use wrist/contact style rather than replay these targets."
+          },
+          "retarget_verdict": "Offline IK is NOT dynamically feasible: max22.5mm penetration, despite median2.44mm tip error. This failure motivates contact-aware PPO; no IK trajectories are commanded by the policy."
+         },
+         "initial_conditions": {
+          "hand": {
+           "wrist_pos_quat_wxyz": [
+            0.0,
+            0.0,
+            0.28,
+            0.7071067811865476,
+            -0.7071067811865475,
+            0.0,
+            0.0
+           ],
+           "q0": [
+            -0.15,
+            -0.65,
+            0.3,
+            0.2,
+            0.25,
+            -0.1,
+            0.5,
+            0.25,
+            0.25,
+            0.0,
+            0.5,
+            0.25,
+            0.3,
+            0.08,
+            0.55,
+            0.3,
+            0.4,
+            0.16,
+            0.6,
+            0.3
+           ],
+           "cube_pos_quat_wxyz": [
+            0.0,
+            -0.095,
+            0.3288989829593863,
+            1.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           "surface_height_m": 0.29244892018202995,
+           "ray_geom": 57,
+           "description": "Initial receiving bowl, palm-up. Cube centered near palm/finger bases. To be tested for variation before accepting.",
+           "fingers": {
+            "l_thumb_tip_sensor_frame_site": null,
+            "l_index_finger_tip_sensor_frame_site": null,
+            "l_middle_finger_tip_sensor_frame_site": null,
+            "l_ring_finger_tip_sensor_frame_site": null,
+            "l_pinky_tip_sensor_frame_site": null
+           }
+          },
+          "placement": "Roughly centered palm starts, six face-up choices plus yaw/tilt and offsets. Raise cube only during initial-state construction to avoid geometric interpenetration; then release to physics, no filtering of failed episodes.",
+          "scrambles": "Curriculum: solved receive/hold, partial turns, then1/2/3 legal full turns, stress4-5. Material corner identities retained.",
+          "domain_randomization": [
+           {
+            "quantity": "cube size",
+            "distribution": "uniform",
+            "range_m": null
+           },
+           {
+            "quantity": "cube mass",
+            "distribution": "uniform",
+            "range_kg": null
+           },
+           {
+            "quantity": "sliding friction",
+            "distribution": "uniform",
+            "range": null
+           },
+           {
+            "quantity": "desired linear restitution prior",
+            "distribution": "uniform",
+            "range": null,
+            "implementation": "Converted to contact damping ratio using linear oscillator formula; actual nonlinear rebound not separately calibrated."
+           },
+           {
+            "quantity": "face resistance",
+            "distribution": "uniform",
+            "range_Nm": null
+           },
+           {
+            "quantity": "palm offset",
+            "distribution": "uniform independently",
+            "range_m": null
+           },
+           {
+            "quantity": "tilt",
+            "range_deg": null
+           },
+           {
+            "quantity": "yaw",
+            "range_rad": null
+           }
+          ]
+         },
+         "episode": {
+          "training_horizon_s": "5s hold curriculum initially; later longer stages explicitly recorded",
+          "verification_horizon_s": 30,
+          "termination": "Drop/floor contact, any strict finger hardware violation, nonfinite state/action, or gross illegal deformation>8mm/.45rad or penetration>8mm. These are training terminations; recorded verification uses stricter criteria v1, not these loose gross integrity cutoffs."
+         },
+         "decision_layer": {
+          "type": "Finite symbolic cube-state BFS lookup, depth7, canonicalized by material corner0",
+          "states": 44971,
+          "bad_reverse_moves": 0,
+          "observations": "Only corner orientations plus constant canonical frame identities; no physics rollout or trajectory search.",
+          "output": "High-level next face/quarter direction and desired corner orientations; every robot motion target comes from PPO network."
+         },
+         "validation": {
+          "hand_mass_kg": 0.7088000000000002,
+          "nominal_zero_action_hold_s": 3.0,
+          "nominal_hardware_velocity_ratio_max": 0.04803912714123726,
+          "nominal_hand_cube_penetration_m": 0.00041937135392799973,
+          "nominal_illegal_deformation_m": 0.00043359113624319434,
+          "nominal_wrist_displacement_m": 0.00038801479968242347,
+          "randomized_receiving": {
+           "episodes": 16,
+           "duration_s": 0.58,
+           "drops": 1,
+           "hardware_failures": 0
+          },
+          "mechanism_probes": {
+           "conditions": "No hand contact; cube in free fall above floor; known differential torque0.003Nm for.14s, test apparatus only. Task retention failure code1 expected in this isolated test.",
+           "faces": 6,
+           "quarter_reference_changes": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+           ],
+           "max_forbidden_rotation_rad": 0.000914792380460329,
+           "max_forbidden_displacement_m": 1.8470685832267308e-05,
+           "limitations": "Coherent layer motion verified; final pulse stop is about85deg, not an accurately solved policy turn. PPO still must align within3deg."
+          }
+         },
+         "baseline": {
+          "type": "Constant receiving pose, not learned",
+          "result": "Retains nominal cube but lacks thumb opposition and sideways wrist style; no solve claim. Does not pass criteria v1."
+         },
+         "limitations": [
+          "Physical parameters and mechanism inferred, not measured.",
+          "Collision approximations and housing exclusions require transfer caution.",
+          "Retargeted IK replay has severe penetration and is not executable.",
+          "No policy has yet been evaluated or verified.",
+          "Only own simulation claims; no target rounds."
+         ]
+        },
+        "files": {
+         "image": {
+          "sha": "4fd473d0868e",
+          "bytes": 173560,
+          "content_type": "image/png"
+         },
+         "replay_video": {
+          "sha": "621acfbfccb0",
+          "bytes": 747869,
+          "content_type": "video/mp4"
+         },
+         "scene_1": {
+          "sha": "7db399a5469e",
+          "bytes": 74523,
+          "content_type": "application/xml"
+         },
+         "scene_2": {
+          "sha": "4f9ec158c965",
+          "bytes": 29156,
+          "content_type": "text/plain"
+         },
+         "scene_3": {
+          "sha": "00e52d4a47ee",
+          "bytes": 7819,
+          "content_type": "application/json"
+         },
+         "scene_4": {
+          "sha": "b626e955624c",
+          "bytes": 1489,
+          "content_type": "application/json"
+         },
+         "scene_5": {
+          "sha": "90ee43abd90f",
+          "bytes": 14527,
+          "content_type": "application/json"
+         },
+         "scene_6": {
+          "sha": "e9c2b7e1c0ee",
+          "bytes": 9418,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-09T09:55:05Z",
@@ -347692,7 +347972,7 @@
    "plug": {
     "runs": {
      "8": {
-      "exported_utc": "2026-11-09T11:20:01Z",
+      "exported_utc": "2026-11-09T11:30:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -347950,7 +348230,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-09T11:22:33Z",
+  "staged_utc": "2026-11-09T11:32:33Z",
   "tasks": {
    "cube": {
     "files": {
@@ -348034,7 +348314,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-09T11:22:33Z",
+  "staged_utc": "2026-11-09T11:32:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
