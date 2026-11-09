@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-09T12:22:37Z",
- "exported_utc": "2026-11-09T12:22:29Z",
+ "generated_utc": "2026-11-09T12:32:37Z",
+ "exported_utc": "2026-11-09T12:32:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-09T12:15:05",
+    "time": "2026-11-09T12:31:55",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-09T12:10:09",
+    "time": "2026-11-09T12:31:36",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -160713,6 +160713,962 @@
          "video_top": {
           "sha": "898f459408c7",
           "bytes": 56860,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0033",
+        "seq": 33,
+        "kind": "note",
+        "version": 16,
+        "recorded_utc": "2026-11-09T12:28:00Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Iteration6 redesign: use physically tested upright holding endpoints for all4kind/rest-face cases, with native self/table/case collision-aware offline continuation and separate actual joint poses versus motor preload targets.40reset diagnostics accepted15of23reverse-start attempts after100ms real dynamics, opposed case contact and hardware/penetration checks; invalid attempts fall back to ordinary table starts. Curriculum draws40%full starts,35%turn,15%lowering,10%release; no state changes occur after a rollout begins. Reward is uniformly scaled0.02 for value learning, with an added pre-limit joint-speed penalty and stronger hardware penalty. Finger increments reduce to0.025rad and wrist rotation increments to0.03rad at50Hz. Physical deployment verification still starts from the documented open hand and right-side table plugs for30s; reverse starts are training only."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0034",
+        "seq": 34,
+        "kind": "iter",
+        "version": 5,
+        "recorded_utc": "2026-11-09T12:31:55Z",
+        "exception": false,
+        "body": {
+         "sim_version": 3,
+         "policy_observations": "deployable",
+         "reward_terms": [
+          {
+           "name": "reference_pose",
+           "formula": ".8exp(-(position_error/.05)^2)+.3exp(-(rotation_error/.6)^2)",
+           "weight": 1
+          },
+          {
+           "name": "reference_fingers",
+           "formula": "exp(-mean((q-q_reference)^2)/.06)",
+           "weight": 0.15
+          },
+          {
+           "name": "opposition",
+           "formula": "(.3thumb+.2other+1both)*I[[redacted]..6]",
+           "weight": 1
+          },
+          {
+           "name": "lift",
+           "formula": "clip(height_gain/.08,0,1)*I[phase3..5]",
+           "weight": 1.5
+          },
+          {
+           "name": "upright",
+           "formula": "max(0,blade_axis_dot_up)*I[phase>=3 and hand_contact]",
+           "weight": 5
+          },
+          {
+           "name": "turn_progress",
+           "formula": "delta(blade_axis_dot_up)*I[phase>=3 and hand_contact]",
+           "weight": 10
+          },
+          {
+           "name": "left_goal",
+           "formula": "exp(-(object_XY_goal_distance/.07)^2)*I[phase>=5]",
+           "weight": 5
+          },
+          {
+           "name": "placement",
+           "formula": "I[left,tilt<=15deg,table_contact,released,linear_velocity<.02,angular_velocity<.15]",
+           "weight": 15
+          },
+          {
+           "name": "penetration",
+           "formula": "-max(depth-.003,0)/.01",
+           "weight": 40
+          },
+          {
+           "name": "motion",
+           "formula": "-mean(a^2)-mean((a-previous_a)^2)",
+           "weight": 0.02
+          },
+          {
+           "name": "object_motion",
+           "formula": "-norm(object_angular_velocity)",
+           "weight": 0.01
+          },
+          {
+           "name": "hardware",
+           "formula": "-I[hardware_speed_or_position_violation]",
+           "weight": 100
+          }
+         ],
+         "domain_randomization": [],
+         "algorithm": {
+          "name": "PPO clipped surrogate with GAE",
+          "actor_lr": 1e-05,
+          "critic_lr": 0.0003,
+          "epochs": 6,
+          "n_steps": 512,
+          "batch_size": 2048,
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "target_kl": 0.03,
+          "entropy": 0.0001,
+          "actor_grad_clip": 0.5,
+          "critic_grad_clip": 5.0,
+          "auxiliary_BC_weight": 0.05,
+          "seed": 10
+         },
+         "architecture": "Separate actor/critic MLP256,256,128 Tanh,26Gaussian actions,log_std=-2.5",
+         "observation_space": "150features: canonical initial-object-yaw146features with other-object/count slots masked to a per-object skill, phase progress and world wrist position. Exact object/wrist state, noisy q/qd, owned target histories and cached initial object pose; no contacts/forces/physical parameters.",
+         "action_space": "20integrated previous-command finger increments<=.035rad,3world-transformed canonical wrist translations<=.01m norm,3rotvec increments<=.05rad norm,50Hz neural inference held over500Hz calls with1kHz hardware controllers.",
+         "curriculum": "One object9.8s full approach/descend/close/lift/turn/carry/lower/release/retreat; two nominal rest-face families,random yaw/XY/left slot. Physical parameters nominal, encoder noise specified. No reverse starts were used in this iteration.",
+         "initialization": "100000synthetic geometric reference samples,100supervised epochs; BC initializer evaluated separately. Offline tip-only geometric reference; no runtime IK/reference/replay/base controller in package.",
+         "compute": {
+          "wall_seconds": 1276.479279756546,
+          "gpu_hours": 0.3545775777101517,
+          "gpu": "One L40S",
+          "environments": 16
+         },
+         "training_steps": 1007616,
+         "evaluation": {
+          "episodes": [
+           {
+            "seed": 7100,
+            "kind": 0,
+            "return_": 1485.1098248229132,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10829519145537585,
+            "standing_steps": 0,
+            "held_steps": 210,
+            "tilt_degrees": 89.999999999944,
+            "left_position": 0.2444722277504943,
+            "hardware": false,
+            "speed_ratio": 0.3077523739084944
+           },
+           {
+            "seed": 7101,
+            "kind": 1,
+            "return_": 635.0120966080392,
+            "steps": 331,
+            "success": false,
+            "max_lift": 0.10383460794074878,
+            "standing_steps": 0,
+            "held_steps": 171,
+            "tilt_degrees": 122.27521861718313,
+            "left_position": 0.2693578855847909,
+            "hardware": true,
+            "speed_ratio": 1.1975390369919925
+           },
+           {
+            "seed": 7102,
+            "kind": 0,
+            "return_": 931.0552247351804,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1086025239136182,
+            "standing_steps": 0,
+            "held_steps": 210,
+            "tilt_degrees": 89.99999999991768,
+            "left_position": 0.07252014072706356,
+            "hardware": false,
+            "speed_ratio": 0.32502067219129027
+           },
+           {
+            "seed": 7103,
+            "kind": 1,
+            "return_": 428.3056909638508,
+            "steps": 304,
+            "success": false,
+            "max_lift": 0.10434336064827963,
+            "standing_steps": 0,
+            "held_steps": 143,
+            "tilt_degrees": 152.16918360509138,
+            "left_position": -0.0612846371298757,
+            "hardware": true,
+            "speed_ratio": 1.8682315804430476
+           },
+           {
+            "seed": 7104,
+            "kind": 0,
+            "return_": 998.7765057364223,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10462098587706789,
+            "standing_steps": 0,
+            "held_steps": 211,
+            "tilt_degrees": 89.99999999989656,
+            "left_position": 0.1006850800641219,
+            "hardware": false,
+            "speed_ratio": 0.3204545940547156
+           },
+           {
+            "seed": 7105,
+            "kind": 1,
+            "return_": 384.4869458961507,
+            "steps": 302,
+            "success": false,
+            "max_lift": 0.10594849352009514,
+            "standing_steps": 0,
+            "held_steps": 142,
+            "tilt_degrees": 147.70180055694328,
+            "left_position": -0.00027468917990464283,
+            "hardware": true,
+            "speed_ratio": 1.1849130635156024
+           },
+           {
+            "seed": 7106,
+            "kind": 0,
+            "return_": 220.1590718581084,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.00027814319815947647,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999997723,
+            "left_position": 0.19793098431970024,
+            "hardware": false,
+            "speed_ratio": 0.30244511975971344
+           },
+           {
+            "seed": 7107,
+            "kind": 1,
+            "return_": 991.7172444842678,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.14412056630040332,
+            "standing_steps": 0,
+            "held_steps": 279,
+            "tilt_degrees": 88.50425340154547,
+            "left_position": -0.2650659320885729,
+            "hardware": false,
+            "speed_ratio": 0.31202743081006107
+           },
+           {
+            "seed": 7108,
+            "kind": 0,
+            "return_": 1407.060548532149,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10800765028251776,
+            "standing_steps": 0,
+            "held_steps": 210,
+            "tilt_degrees": 89.99999999997577,
+            "left_position": 0.26187675293493784,
+            "hardware": false,
+            "speed_ratio": 0.31260836116064816
+           },
+           {
+            "seed": 7109,
+            "kind": 1,
+            "return_": 404.718748126249,
+            "steps": 325,
+            "success": false,
+            "max_lift": 0.10520752199506606,
+            "standing_steps": 0,
+            "held_steps": 165,
+            "tilt_degrees": 165.34116070771466,
+            "left_position": -0.3373231660487491,
+            "hardware": true,
+            "speed_ratio": 1.2588658019284296
+           },
+           {
+            "seed": 7110,
+            "kind": 0,
+            "return_": 927.9224622463242,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10856478917324389,
+            "standing_steps": 0,
+            "held_steps": 213,
+            "tilt_degrees": 89.99999999972034,
+            "left_position": 0.011789262830800682,
+            "hardware": false,
+            "speed_ratio": 0.3189756297696337
+           },
+           {
+            "seed": 7111,
+            "kind": 1,
+            "return_": 1149.8162908249394,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1194023708623308,
+            "standing_steps": 0,
+            "held_steps": 294,
+            "tilt_degrees": 83.33894329963069,
+            "left_position": 0.13872319373788067,
+            "hardware": false,
+            "speed_ratio": 0.2922794290329913
+           },
+           {
+            "seed": 7112,
+            "kind": 0,
+            "return_": 925.0566744460763,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10765852144568569,
+            "standing_steps": 0,
+            "held_steps": 210,
+            "tilt_degrees": 89.9999999999949,
+            "left_position": -0.40266502811623406,
+            "hardware": false,
+            "speed_ratio": 0.2975307629871848
+           },
+           {
+            "seed": 7113,
+            "kind": 1,
+            "return_": 1299.0328655856251,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12619514100095736,
+            "standing_steps": 0,
+            "held_steps": 280,
+            "tilt_degrees": 85.38519119842222,
+            "left_position": 0.21405687627400338,
+            "hardware": false,
+            "speed_ratio": 0.333032461535424
+           },
+           {
+            "seed": 7114,
+            "kind": 0,
+            "return_": 984.6416090939396,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10808423732019429,
+            "standing_steps": 0,
+            "held_steps": 210,
+            "tilt_degrees": 89.99999999992559,
+            "left_position": 0.16632482094985251,
+            "hardware": false,
+            "speed_ratio": 0.31243249462376976
+           },
+           {
+            "seed": 7115,
+            "kind": 1,
+            "return_": 629.4126958972018,
+            "steps": 329,
+            "success": false,
+            "max_lift": 0.10425269208564242,
+            "standing_steps": 0,
+            "held_steps": 168,
+            "tilt_degrees": 120.6795478160327,
+            "left_position": 0.20816070129318714,
+            "hardware": true,
+            "speed_ratio": 1.6362986544244356
+           },
+           {
+            "seed": 7116,
+            "kind": 0,
+            "return_": 1043.495186276636,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1081848972625688,
+            "standing_steps": 0,
+            "held_steps": 270,
+            "tilt_degrees": 132.02240821693994,
+            "left_position": 0.40266456429014935,
+            "hardware": false,
+            "speed_ratio": 0.3114995742393109
+           },
+           {
+            "seed": 7117,
+            "kind": 1,
+            "return_": 1161.2689955776827,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12776931567339844,
+            "standing_steps": 0,
+            "held_steps": 286,
+            "tilt_degrees": 72.1169348573993,
+            "left_position": -0.3246542242592135,
+            "hardware": false,
+            "speed_ratio": 0.2845333434207305
+           },
+           {
+            "seed": 7118,
+            "kind": 0,
+            "return_": 908.0417010225725,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1074446193299953,
+            "standing_steps": 0,
+            "held_steps": 210,
+            "tilt_degrees": 89.99999999993578,
+            "left_position": -0.33399835915569004,
+            "hardware": false,
+            "speed_ratio": 0.30201342809982384
+           },
+           {
+            "seed": 7119,
+            "kind": 1,
+            "return_": 1138.2471343300108,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13943555358930618,
+            "standing_steps": 0,
+            "held_steps": 255,
+            "tilt_degrees": 74.90796038800553,
+            "left_position": -0.49302053906551696,
+            "hardware": false,
+            "speed_ratio": 0.30806569012422436
+           },
+           {
+            "seed": 7120,
+            "kind": 0,
+            "return_": 931.7265345023134,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1018534928893298,
+            "standing_steps": 0,
+            "held_steps": 209,
+            "tilt_degrees": 89.99999999997758,
+            "left_position": -0.175229494119246,
+            "hardware": false,
+            "speed_ratio": 0.30244471408716295
+           },
+           {
+            "seed": 7121,
+            "kind": 1,
+            "return_": 564.6252879714514,
+            "steps": 337,
+            "success": false,
+            "max_lift": 0.10442705918420132,
+            "standing_steps": 0,
+            "held_steps": 176,
+            "tilt_degrees": 121.02110413806533,
+            "left_position": -0.06378527607754082,
+            "hardware": true,
+            "speed_ratio": 1.3962560696208912
+           },
+           {
+            "seed": 7122,
+            "kind": 0,
+            "return_": 399.73501419186186,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.042273300713747006,
+            "standing_steps": 0,
+            "held_steps": 11,
+            "tilt_degrees": 90.00000000145711,
+            "left_position": -0.1762395025859129,
+            "hardware": false,
+            "speed_ratio": 0.30225503871147674
+           },
+           {
+            "seed": 7123,
+            "kind": 1,
+            "return_": 471.9003022185839,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10451422772479582,
+            "standing_steps": 0,
+            "held_steps": 102,
+            "tilt_degrees": 90.00000000667312,
+            "left_position": 0.06046888363038843,
+            "hardware": false,
+            "speed_ratio": 0.3239450142820119
+           }
+          ],
+          "success_rate": 0.0,
+          "hardware_violations": 6,
+          "scope": "Single-object9.8s curriculum diagnostic; not full30s/2or3object recorded criteria",
+          "mean_peak_lift": 0.10430496930778038
+         },
+         "baseline_evaluation": {
+          "episodes": [
+           {
+            "seed": 7100,
+            "kind": 0,
+            "return_": 1529.991009144741,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10821882908972119,
+            "standing_steps": 0,
+            "held_steps": 209,
+            "tilt_degrees": 89.99999999969712,
+            "left_position": 0.2678813508889645,
+            "hardware": false,
+            "speed_ratio": 0.3144820329901122
+           },
+           {
+            "seed": 7101,
+            "kind": 1,
+            "return_": 789.230205463198,
+            "steps": 354,
+            "success": false,
+            "max_lift": 0.10389490330592263,
+            "standing_steps": 0,
+            "held_steps": 191,
+            "tilt_degrees": 101.64111471487892,
+            "left_position": 0.27181132920781176,
+            "hardware": true,
+            "speed_ratio": 1.475030975468874
+           },
+           {
+            "seed": 7102,
+            "kind": 0,
+            "return_": 923.0388202702374,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10865452449375784,
+            "standing_steps": 0,
+            "held_steps": 209,
+            "tilt_degrees": 89.99999999984388,
+            "left_position": 0.08335020633342738,
+            "hardware": false,
+            "speed_ratio": 0.3274514818705336
+           },
+           {
+            "seed": 7103,
+            "kind": 1,
+            "return_": 519.6512223179616,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10338317849968083,
+            "standing_steps": 0,
+            "held_steps": 82,
+            "tilt_degrees": 90.00000000236017,
+            "left_position": -0.05776463234329647,
+            "hardware": false,
+            "speed_ratio": 0.32358744388715577
+           },
+           {
+            "seed": 7104,
+            "kind": 0,
+            "return_": 951.4771861435936,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10904092609987226,
+            "standing_steps": 0,
+            "held_steps": 211,
+            "tilt_degrees": 89.99999999996834,
+            "left_position": 0.15387126187285768,
+            "hardware": false,
+            "speed_ratio": 0.3250115105361578
+           },
+           {
+            "seed": 7105,
+            "kind": 1,
+            "return_": 743.8960412661698,
+            "steps": 354,
+            "success": false,
+            "max_lift": 0.10505985736288548,
+            "standing_steps": 0,
+            "held_steps": 192,
+            "tilt_degrees": 100.12226024044233,
+            "left_position": 0.2802190729075637,
+            "hardware": true,
+            "speed_ratio": 1.0229192886770735
+           },
+           {
+            "seed": 7106,
+            "kind": 0,
+            "return_": 221.31198850612307,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.00024308259416767376,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999996456,
+            "left_position": 0.17442594789862575,
+            "hardware": false,
+            "speed_ratio": 0.3071425989732149
+           },
+           {
+            "seed": 7107,
+            "kind": 1,
+            "return_": 250.56528418501534,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.002323725119164302,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999470766,
+            "left_position": -0.2380373929622561,
+            "hardware": false,
+            "speed_ratio": 0.6506029104693107
+           },
+           {
+            "seed": 7108,
+            "kind": 0,
+            "return_": 1408.1291031078588,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10798525385315726,
+            "standing_steps": 0,
+            "held_steps": 209,
+            "tilt_degrees": 90.00000000000759,
+            "left_position": 0.285108918107314,
+            "hardware": false,
+            "speed_ratio": 0.3181050859314199
+           },
+           {
+            "seed": 7109,
+            "kind": 1,
+            "return_": 511.6905547722765,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1042216087739702,
+            "standing_steps": 0,
+            "held_steps": 80,
+            "tilt_degrees": 90.00000000477411,
+            "left_position": -0.21537646893544699,
+            "hardware": false,
+            "speed_ratio": 0.4980081080321518
+           },
+           {
+            "seed": 7110,
+            "kind": 0,
+            "return_": 910.1425717132238,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11011156067484928,
+            "standing_steps": 0,
+            "held_steps": 213,
+            "tilt_degrees": 89.99999999985228,
+            "left_position": -0.008283693365592105,
+            "hardware": false,
+            "speed_ratio": 0.320558762833735
+           },
+           {
+            "seed": 7111,
+            "kind": 1,
+            "return_": 269.23088589391864,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.0023100628299071967,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999377735,
+            "left_position": 0.09487023373216028,
+            "hardware": false,
+            "speed_ratio": 0.32592292414579477
+           },
+           {
+            "seed": 7112,
+            "kind": 0,
+            "return_": 923.6320435842299,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10726950495750333,
+            "standing_steps": 0,
+            "held_steps": 209,
+            "tilt_degrees": 89.99999999997827,
+            "left_position": -0.4127493036763848,
+            "hardware": false,
+            "speed_ratio": 0.303236795351427
+           },
+           {
+            "seed": 7113,
+            "kind": 1,
+            "return_": 266.52339700021975,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.0023349717758099527,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.000000005808,
+            "left_position": 0.021779787783174354,
+            "hardware": false,
+            "speed_ratio": 0.31802407483685646
+           },
+           {
+            "seed": 7114,
+            "kind": 0,
+            "return_": 982.124521564046,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1080794547977423,
+            "standing_steps": 0,
+            "held_steps": 209,
+            "tilt_degrees": 89.99999999992325,
+            "left_position": 0.1796236422499605,
+            "hardware": false,
+            "speed_ratio": 0.3186790843682211
+           },
+           {
+            "seed": 7115,
+            "kind": 1,
+            "return_": 645.7628598820534,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1040005148838754,
+            "standing_steps": 0,
+            "held_steps": 109,
+            "tilt_degrees": 89.99999999580434,
+            "left_position": 0.05159980729956353,
+            "hardware": false,
+            "speed_ratio": 0.505530010701707
+           },
+           {
+            "seed": 7116,
+            "kind": 0,
+            "return_": 1066.2521786735351,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10813692273575316,
+            "standing_steps": 0,
+            "held_steps": 209,
+            "tilt_degrees": 89.99999999971911,
+            "left_position": 0.29744660363421344,
+            "hardware": false,
+            "speed_ratio": 0.3158085076486455
+           },
+           {
+            "seed": 7117,
+            "kind": 1,
+            "return_": 279.9687941117596,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.00231436337257674,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999661819,
+            "left_position": -0.07471024258011859,
+            "hardware": false,
+            "speed_ratio": 0.28360300201670785
+           },
+           {
+            "seed": 7118,
+            "kind": 0,
+            "return_": 912.586691384282,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10704865239632999,
+            "standing_steps": 0,
+            "held_steps": 209,
+            "tilt_degrees": 89.99999999964697,
+            "left_position": -0.33378339915856264,
+            "hardware": false,
+            "speed_ratio": 0.3057992393799118
+           },
+           {
+            "seed": 7119,
+            "kind": 1,
+            "return_": 256.3667487504583,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.002316843216195748,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999179641,
+            "left_position": -0.1844257302741644,
+            "hardware": false,
+            "speed_ratio": 0.43102123698580563
+           },
+           {
+            "seed": 7120,
+            "kind": 0,
+            "return_": 533.1212949884354,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.0961542500871925,
+            "standing_steps": 0,
+            "held_steps": 74,
+            "tilt_degrees": 90.00000000125314,
+            "left_position": -0.030115940685799703,
+            "hardware": false,
+            "speed_ratio": 0.33599972388216104
+           },
+           {
+            "seed": 7121,
+            "kind": 1,
+            "return_": 369.4922494806568,
+            "steps": 303,
+            "success": false,
+            "max_lift": 0.10355033506200007,
+            "standing_steps": 0,
+            "held_steps": 141,
+            "tilt_degrees": 151.22483364967567,
+            "left_position": -0.002463844552758054,
+            "hardware": true,
+            "speed_ratio": 1.819249680754347
+           },
+           {
+            "seed": 7122,
+            "kind": 0,
+            "return_": 573.2716953235044,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.09663247150266198,
+            "standing_steps": 0,
+            "held_steps": 88,
+            "tilt_degrees": 89.9999999999895,
+            "left_position": -0.17416614727405694,
+            "hardware": false,
+            "speed_ratio": 0.6009235608517481
+           },
+           {
+            "seed": 7123,
+            "kind": 1,
+            "return_": 748.8592432089221,
+            "steps": 354,
+            "success": false,
+            "max_lift": 0.10414152855770642,
+            "standing_steps": 0,
+            "held_steps": 193,
+            "tilt_degrees": 99.41165276812347,
+            "left_position": 0.41387335766487027,
+            "hardware": true,
+            "speed_ratio": 1.2952967633305474
+           }
+          ],
+          "success_rate": 0.0,
+          "hardware_violations": 4,
+          "scope": "Single-object9.8s curriculum diagnostic; not full30s/2or3object recorded criteria",
+          "mean_peak_lift": 0.07947613858510015
+         },
+         "deployment_diagnostic": {
+          "criteria_version": 2,
+          "passed": false,
+          "episodes": 6,
+          "successes": 0,
+          "success_rate": 0.0,
+          "wilson_95_interval": [
+           0,
+           0.39033428790215224
+          ],
+          "by_count": {
+           "2": {
+            "episodes": 3,
+            "successes": 0
+           },
+           "3": {
+            "episodes": 3,
+            "successes": 0
+           }
+          },
+          "touching": {
+           "episodes": 2,
+           "successes": 0
+          },
+          "hardware_violating_episodes": 2,
+          "placement_failures": 0,
+          "correctly_standing_released_objects": 0,
+          "total_objects": 15,
+          "maximum_speed_ratio": 1.699571690793324,
+          "maximum_penetration_m": 0.0008628593460388463
+         },
+         "criteria_comparison": {
+          "criteria_version": 2,
+          "passed": false,
+          "reason": "0/6nominal30s multiobject debug episodes pass;2hardware-violating episodes;0/15objects standing/released. Diagnostic is smaller than the required60and lacks physical randomization, so it cannot establish verification even aside from behavioral failures."
+         },
+         "discrete_layer": "Select highest/nearest unfinished plug, assign constant left-side slot, advance9phases over9.8s, retry remaining objects and idle through the learned retreat phase once all appear upright on left. No physics/planning/IK at execution time; every numeric motion command comes from the PPO actor.",
+         "package": "research/packages/iter005",
+         "package_manifest_sha256": "d60c8929d39e…",
+         "reflection": "No full-task success. Pose-only reference fitted tips while other hand links could collide with case/table/self, and reverse-start diagnostics revealed unstable grasps; those starts were not used. Rebuild reference with native collision constraints, actual-pose/preload separation and physically tested upright held endpoints, add validated reverse starts,scale rewards0.02 for value fitting and reduce increments in iteration6.",
+         "curves_note": "Every vector collection row is retained with4significant digits; episode_time is mean elapsed curriculum episode time, and evaluation contains completed episode lengths. Reward terms and total reward are unscaled in this iteration. Actor and value optimizers are separate;BC auxiliary loss is not an execution-time reward/controller.",
+         "artifacts": {
+          "trainer": "research/training/train_full.py",
+          "PPO_implementation": "research/training/ppo_anchored.py",
+          "environment": "research/training/full_env.py",
+          "reference": "research/sim/full_templates_v2.json",
+          "checkpoint": "research/training/iter_005/policy.zip",
+          "deployment_metrics": "research/evaluation/iter005_debug/evaluation.json"
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "ec1c8bcab988",
+          "bytes": 7211170,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "2c83b369b183",
+          "bytes": 126406,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "16dca66eb7e0",
+          "bytes": 130754,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "f49736cce4c1",
+          "bytes": 104991,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0035",
+        "seq": 35,
+        "kind": "verify",
+        "version": 1,
+        "recorded_utc": "2026-11-09T12:31:55Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0034",
+         "criteria_version": 2,
+         "passed": false,
+         "package_sha256": "d60c8929d39e…",
+         "simulation_version": 3,
+         "verdict": "Fails my recorded criteria; not an official evaluation. No target delivery.",
+         "evidence": {
+          "criteria_version": 2,
+          "passed": false,
+          "episodes": 6,
+          "successes": 0,
+          "success_rate": 0.0,
+          "wilson_95_interval": [
+           0,
+           0.39033428790215224
+          ],
+          "by_count": {
+           "2": {
+            "episodes": 3,
+            "successes": 0
+           },
+           "3": {
+            "episodes": 3,
+            "successes": 0
+           }
+          },
+          "touching": {
+           "episodes": 2,
+           "successes": 0
+          },
+          "hardware_violating_episodes": 2,
+          "placement_failures": 0,
+          "correctly_standing_released_objects": 0,
+          "total_objects": 15,
+          "maximum_speed_ratio": 1.699571690793324,
+          "maximum_penetration_m": 0.0008628593460388463
+         },
+         "coverage": "Six nominal30s debug episodes:3two-plug and3three-plug,one of each layout percount. All starts pass1.5srest/drift/hand-clear checks. This is smaller than the required60and omits physical randomization; behavioral failure alone already establishes a negative verdict.",
+         "failures": "0/6episode success,0/15standing released plugs,2hardware-violating episodes,failed grasp/turn/carry/style components as itemized per object in metrics. All1ms physics samples audited; no missing phase counts as a style match.",
+         "limitations": "Nominal debug test, side-rest families and yaw only; no robustness claim. Hand/object reconstruction has previously recorded occlusion and table-outlier limitations;90neighbor housing collision exclusions remain.",
+         "next": "Continue iteration6 with collision-aware references,physically accepted reverse curriculum,uniform0.02reward scaling,smaller increments and joint-speed penalty."
+        },
+        "files": {
+         "file_1": {
+          "sha": "10ac9bff972f",
+          "bytes": 66459,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "60c6cf3dbfd2",
+          "bytes": 9160,
+          "content_type": "text/plain"
+         },
+         "video_left_failure": {
+          "sha": "0cfd21026bf9",
+          "bytes": 322786,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "28beaedee240",
+          "bytes": 334955,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "ac96cff6d207",
+          "bytes": 278437,
           "content_type": "video/mp4"
          }
         },
@@ -351882,6 +352838,961 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0023",
+        "seq": 23,
+        "kind": "note",
+        "version": 13,
+        "recorded_utc": "2026-11-09T12:25:29Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Portablewrapper nowmatchesnative239features over1984states,maxabsdifference1.32e-6,goalfeatures0difference afterfixing180degquaternionrepresentations. DRmassmatrixvalidation8casesagreesCPU/GPU:maxcomponent7.74e-8,smallinertia1.70e-10. DRsmoke254/256supports1s;2drops. Recordsim4beforeDRPPO. Thesearemodel/interfacechecks,notpolicysuccess."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0024",
+        "seq": 24,
+        "kind": "sim",
+        "version": 4,
+        "recorded_utc": "2026-11-09T12:25:29Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 3,
+         "simulator": {
+          "name": "MuJoCo / MuJoCo Warp",
+          "version": "MuJoCo3.17.0 /MuJoCo Warp3.17.0 /Warp1.19.0",
+          "physics_dt_s": 0.0005,
+          "integrator": "implicitfast",
+          "solver": "Newton20",
+          "tolerance": 1e-08,
+          "contact": "elliptic friction cone, solref .005/damping ratio, solimp .95 .99 .001; default e=0",
+          "native_backend": "CPU C++/OpenMP retained for evaluation; GPU Warp float32 for training, same physical model/controllers/passive forces"
+         },
+         "scene": {
+          "files_sha256": {
+           "sim/scene.xml": "7db399a5469e…",
+           "sim/scene.mjb": "1dc7b769114b…",
+           "sim/model_meta.json": "00e52d4a47ee…",
+           "sim/initial_pose.json": "b626e955624c…",
+           "code/build_sim.py": "f95a374593d5…",
+           "code/backend.cpp": "4f9ec158c965…",
+           "code/policy_net.py": "3a4c86a02cde…",
+           "code/train_ppo.py": "0c95cf9e3841…"
+          },
+          "robot": "Authoritative left URDF, all inertias/joints/armatures and fixed pads/covers, mass0.7088kg",
+          "floor": "z=0, gravity(0,0,-9.81)",
+          "cube": "Eight material corner bodies, nominal51mm/55g prior, core3g with inertia4e-7kgm²; each6.5g corner has diagonal own-COM inertia m*(25mm)^2/6. Box collision approximates rounded Blender meshes within submillimeter scale. Parts and frame conventions from reconstruction3."
+         },
+         "mechanism": {
+          "type": "Passive nearest legal single-face-turn manifold coupled corner ball joints",
+          "coupling_Nm_rad": 1.0,
+          "joint_viscous_damping_Nms_rad": 5e-05,
+          "face_coulomb_resistance_Nm": 0.0007,
+          "detent_energy_J": 0.00025,
+          "max_[redacted]_Nm": 0.001,
+          "object_joint_armature_kgm2": 1e-07,
+          "implementation": "At each physics step choose deformation-consistent face; couple corner orientation errors by restoring torques and periodic detents. Bearing damping/friction solved implicitly. At45deg change periodic reference well by90deg without changing qpos. All actual corner poses remain physics states. No goal-dependent forces or object actuator in policy step.",
+          "limitations": "Idealized compliant mechanism; no measured GAN CAD/fracture model. Test torque probes are apparatus only, separate from policy step."
+         },
+         "hardware": {
+          "wrist": "Free l_mount, specified Cartesian impedance gains2000/60 and20/.4, hand-only weight/COM compensation, 30N/2Nm norm saturation. Generalized wrench about root origin. No feedforward velocities.",
+          "fingers": "Specified1kHz PD and effort saturation; strict actual position/speed checks, no state clamping. All20 URDF limits and armatures preserved.",
+          "policy_hz": 50,
+          "interface_hz": 500,
+          "controller_hz": 1000,
+          "network_action": "26 tanh outputs:20 joint target increments(.06rad), wrist position increments(.002m), world rotation-vector increments(.04rad). Targets held for10 successive500Hz calls, PD at1kHz. Maximum network target speeds below wrist hardware maxima.",
+          "encoders": "independent Gaussian sigma.002rad/.05rad_s on observations",
+          "collision_filter": "Only integral proximal/abduction housing-to-palm pairs and directly attached link pairs excluded due vendor convex-hull/soft-cover overlap; distal-to-palm, inter-finger and every hand/cube collision retained."
+         },
+         "reference": {
+          "record": "r0008",
+          "version": 3,
+          "use": "Wrist gravity-relative tilt, compact cube/wrist relation, thumb/opposing-finger contact roles. No reference replay or IK in policy execution.",
+          "retarget_baseline": {
+           "method": "Offline fingertip IK to the recorded left MANO hand, robot-aligned wrist basis, yaw-only world alignment. No policy execution uses IK or replay.",
+           "frames": [
+            79,
+            341
+           ],
+           "wall_s": 7.234601259231567,
+           "median_fingertip_error_m": 0.00244317878505773,
+           "max_fingertip_error_m": 0.01058121338400978,
+           "max_hand_object_penetration_m": 0.02249644442338548,
+           "limitations": "Kinematic baseline, not a feasible dynamic policy. Robot finger morphology and human contacts differ; hidden layer state was not reconstructed. PPO will use wrist/contact style rather than replay these targets."
+          },
+          "retarget_verdict": "Offline IK is NOT dynamically feasible: max22.5mm penetration, despite median2.44mm tip error. This failure motivates contact-aware PPO; no IK trajectories are commanded by the policy."
+         },
+         "initial_conditions": {
+          "hand": {
+           "wrist_pos_quat_wxyz": [
+            0.0,
+            0.0,
+            0.28,
+            0.7071067811865476,
+            -0.7071067811865475,
+            0.0,
+            0.0
+           ],
+           "q0": [
+            -0.15,
+            -0.65,
+            0.3,
+            0.2,
+            0.25,
+            -0.1,
+            0.5,
+            0.25,
+            0.25,
+            0.0,
+            0.5,
+            0.25,
+            0.3,
+            0.08,
+            0.55,
+            0.3,
+            0.4,
+            0.16,
+            0.6,
+            0.3
+           ],
+           "cube_pos_quat_wxyz": [
+            0.0,
+            -0.095,
+            0.3288989829593863,
+            1.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           "surface_height_m": 0.29244892018202995,
+           "ray_geom": 57,
+           "description": "Initial receiving bowl, palm-up. Cube centered near palm/finger bases. To be tested for variation before accepting.",
+           "fingers": {
+            "l_thumb_tip_sensor_frame_site": null,
+            "l_index_finger_tip_sensor_frame_site": null,
+            "l_middle_finger_tip_sensor_frame_site": null,
+            "l_ring_finger_tip_sensor_frame_site": null,
+            "l_pinky_tip_sensor_frame_site": null
+           }
+          },
+          "placement": "Roughly centered palm starts, six face-up choices plus yaw/tilt and offsets. Raise cube only during initial-state construction to avoid geometric interpenetration; then release to physics, no filtering of failed episodes.",
+          "scrambles": "Curriculum: solved receive/hold, partial turns, then1/2/3 legal full turns, stress4-5. Material corner identities retained.",
+          "domain_randomization": [
+           {
+            "quantity": "cube size",
+            "distribution": "uniform",
+            "range_m": null
+           },
+           {
+            "quantity": "cube mass",
+            "distribution": "uniform",
+            "range_kg": null
+           },
+           {
+            "quantity": "sliding friction",
+            "distribution": "uniform",
+            "range": null
+           },
+           {
+            "quantity": "desired linear restitution prior",
+            "distribution": "uniform",
+            "range": null,
+            "implementation": "Converted to contact damping ratio using linear oscillator formula; actual nonlinear rebound not separately calibrated."
+           },
+           {
+            "quantity": "face resistance",
+            "distribution": "uniform",
+            "range_Nm": null
+           },
+           {
+            "quantity": "palm offset",
+            "distribution": "uniform independently",
+            "range_m": null
+           },
+           {
+            "quantity": "tilt",
+            "range_deg": null
+           },
+           {
+            "quantity": "yaw",
+            "range_rad": null
+           }
+          ]
+         },
+         "episode": {
+          "training_horizon_s": "5s hold curriculum initially; later longer stages explicitly recorded",
+          "verification_horizon_s": 30,
+          "termination": "Drop/floor contact, any strict finger hardware violation, nonfinite state/action, or gross illegal deformation>8mm/.45rad or penetration>8mm. These are training terminations; recorded verification uses stricter criteria v1, not these loose gross integrity cutoffs."
+         },
+         "decision_layer": {
+          "type": "Finite symbolic cube-state BFS lookup, depth7, canonicalized by material corner0",
+          "states": 44971,
+          "bad_reverse_moves": 0,
+          "observations": "Only corner orientations plus constant canonical frame identities; no physics rollout or trajectory search.",
+          "output": "High-level next face/quarter direction and desired corner orientations; every robot motion target comes from PPO network.",
+          "gpu_port": "Same exported44971state finite table, vectorized exact canonicalization; fixed12 symbolic move fallback outside table. No physics search."
+         },
+         "validation": {
+          "hand_mass_kg": 0.7088000000000002,
+          "nominal_zero_action_hold_s": 3.0,
+          "nominal_hardware_velocity_ratio_max": 0.04803912714123726,
+          "nominal_hand_cube_penetration_m": 0.00041937135392799973,
+          "nominal_illegal_deformation_m": 0.00043359113624319434,
+          "nominal_wrist_displacement_m": 0.00038801479968242347,
+          "randomized_receiving": {
+           "episodes": 16,
+           "duration_s": 0.58,
+           "drops": 1,
+           "hardware_failures": 0
+          },
+          "mechanism_probes": {
+           "conditions": "No hand contact; cube in free fall above floor; known differential torque0.003Nm for.14s, test apparatus only. Task retention failure code1 expected in this isolated test.",
+           "faces": 6,
+           "quarter_reference_changes": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+           ],
+           "max_forbidden_rotation_rad": 0.000914792380460329,
+           "max_forbidden_displacement_m": 1.8470685832267308e-05,
+           "limitations": "Coherent layer motion verified; final pulse stop is about85deg, not an accurately solved policy turn. PPO still must align within3deg."
+          }
+         },
+         "baseline": {
+          "type": "Constant receiving pose, not learned",
+          "result": "Retains nominal cube but lacks thumb opposition and sideways wrist style; no solve claim. Does not pass criteria v1.",
+          "gpu_hold": "Nominal1024 copies1s: contact fraction1, no overflow, no drop/hardware failure. No thumb opposition or skill success.",
+          "partial_turn_zero_action": {
+           "episodes": 128,
+           "initial_partial_turn_radians": [
+            -0.35,
+            0.35
+           ],
+           "duration_s": 4,
+           "stable_solved_without_actions": 19,
+           "not_a_learned_policy": true,
+           "conclusion": "Partialturncurriculumisnotreliableskillevidence;requirefullturnsandcomposedfrozenevaluation."
+          }
+         },
+         "limitations": [
+          "Physical parameters and mechanism inferred, not measured.",
+          "Collision approximations and housing exclusions require transfer caution.",
+          "Retargeted IK replay has severe penetration and is not executable.",
+          "No policy has yet been evaluated or verified.",
+          "Only own simulation claims; no target rounds.",
+          "GPU port validated only on nominal hold at this point, not full turn transfer. GPU training nominal scope disclosed per iteration."
+         ],
+         "previous_sim_version": 3,
+         "gpu_training_scope": "Nominalphysical/poseDR nowavailable;stress ranges remainheldoutCPUverification. GPUstage andrewardweights recordedperiteration.",
+         "gpu_implementation": {
+          "warp_version": "1.19.0",
+          "control": "40 physics steps per50Hz network action,1kHz PD,500Hz command holds",
+          "diagnostics": "Every physics step: speed and joint position, penetration, legal manifold strain, floor/drop/nonfinite/overflow, contact and opposing contact; no diagnostics enter actor.",
+          "contact_threshold_m": 0.0002,
+          "hardware_failure_velocity_ratio": 1.000001,
+          "precision_limitation": "Float32 GPU solver is not bitwise equivalent to float64 CPU; all positive claims still require CPU fixed-suite verification.",
+          "parity": {
+           "cpu_metrics": [
+            0.0,
+            0.0,
+            50.0,
+            13.714585304260254,
+            0.04803912714123726,
+            0.0,
+            0.00041937135392799973,
+            0.019919266924262047,
+            0.00043359113624319434,
+            0.0,
+            1.0,
+            0.0,
+            0.12744319438934326,
+            0.00038801479968242347,
+            0.0,
+            0.0,
+            0.15420806407928467,
+            90.1541976928711,
+            0.10855879634618759,
+            0.0
+           ],
+           "gpu_metrics": [
+            0.0,
+            0.0,
+            50.0,
+            15.601229667663574,
+            0.04803921654820442,
+            0.0,
+            0.00041945267003029585,
+            0.02004077285528183,
+            0.0004364889464341104,
+            0.0,
+            1.0,
+            0.0,
+            0.12677128612995148,
+            0.0003862281155306846,
+            0.0,
+            0.0,
+            0.15450505912303925,
+            90.15438079833984,
+            0.10872188955545425,
+            0.0
+           ],
+           "qpos_max_abs": 0.002113087996541422,
+           "qvel_max_abs": 0.008677360710601002,
+           "wrist_position_difference_m": 5.216749247662781e-07,
+           "cube_position_difference_m": 0.00022862410063721828,
+           "gpu_overflow": [
+            0
+           ]
+          },
+          "benchmark": {
+           "worlds": 512,
+           "wall_s": 3.5036652088165283,
+           "env_control_steps": 25600,
+           "fps": 7306.634188557986,
+           "physics_steps_per_control": 40,
+           "setup_s": 259.8415253162384,
+           "max_illegal_rad": 0.02004331350326538,
+           "max_strain_m": 0.0004365475906524807,
+           "qpos_finite": true,
+           "wrist_pos": [
+            -1.963378903901969e-10,
+            8.330494072339434e-10,
+            0.27973076701164246
+           ],
+           "cube_pos": [
+            0.001467833062633872,
+            -0.09995677322149277,
+            0.32247427105903625
+           ]
+          },
+          "termination_difference": "GPU flags violations at every0.5ms tick but completesremainingticksin20mscapturedgraph before resettingatcontrolboundary;CPU freezesonfirstfailure. Training reward state aftera failed action can thereforediffer;allpositiveclaimsrequirestrictCPUverification.",
+          "randomization": "1024fixeduniform(size,mass)samples,uniformbankindexperreset;continuousindependentfriction/resistance/restitution/pose. No parametersenteractor."
+         },
+         "gpu_source_hashes": {
+          "research/code/gpu_env.py": "49494948013f…",
+          "research/code/warp_forces.py": "18013b1e37a2…",
+          "research/code/warp_checks.py": "3c597aa5c64e…",
+          "research/code/torch_geometry.py": "1bc27015f9a8…",
+          "research/code/train_gpu_ppo.py": "b3232ec59022…",
+          "research/code/policy_net.py": "a935798f3617…",
+          "research/sim/cube_graph.npz": "a26230893da8…"
+         },
+         "changes_from_previous": [
+          "GPU perworld physical randomization via1024 independently sampled(size,mass)bank,seed8999800. All mass,inertia,COM,inverseweights,collisionbounds recomputedwithMuJoCo mj_setConst beforecopyingtoGPU. Continuousfriction,resistance,restitution andpose/offset randomization atreset.",
+          "Size49–53mm,mass45–70g sampleduniformlyintofinitebank;eachresetdrawsuniformbankindex. Friction.4–1.2,resistance.0002–.006Nm,restitution0–.15continuousuniformindependent. Root24orientations+continuousyaw±pi,tiltXY±15deg,offsetXY±15mm,gap0–2mm.",
+          "GPU initialplacementnowchecksactualcollisionandraisesonlyatresetuntilhand/cubeinitialpenetration<10um,max60attempts;noresetfilteringbypolicyoutcome.",
+          "Curriculum stage2onefullturn,stage3two,stage4uniform1–3fullturns;rejectsymbolicallyalready-solvedstarts,notphysicalfailures. Stage0/1holding/partialturn remainanalysiscurricula.",
+          "Only buffertruncation/CCD capacityoverflow isGPU numericfailure;Newton20iterationlimit andlinesearchlimit counteddiagnostically,consistentwithCPU.",
+          "Addedstandalone policywrapper withonly14allowedstatefields andabsolutetargetoutputs. HalfturnquaternionsuseexportedMuJoCorepresentationtoavoidactorinputsignmismatch. Nativeclean-observation/statepackermethodsforinterfaceaudits only."
+         ],
+         "strict_verifier": "research/code/verify_strict.py",
+         "fixed_suite": {
+          "criteria_version": 1,
+          "episodes": 640,
+          "nominal": 512,
+          "stress": 128,
+          "explicit": "First288nominal:24cardinalorientations x12singleface/directionturns, withroughpalmoffset andphysicalDR. Remaining224nominal:1–3turns,continuousyaw,tilt. Stress4–5turns. Rejection only ofsymbolicallyalready-solvedscrambles,neverofhandoutcomes.",
+          "seed_ranges": [
+           [
+            100000,
+            100511
+           ],
+           [
+            200000,
+            200127
+           ]
+          ],
+          "hashes": {
+           "initial_states.npz": "90603bf3d31f…",
+           "parameters.json": "a814f662db6b…"
+          }
+         },
+         "strict_source_hashes": {
+          "research/code/backend.cpp": "52d0ce7f7e21…",
+          "research/code/verify_strict.py": "587b18bdc187…",
+          "research/code/freeze_suite.py": "c72353076c5a…"
+         },
+         "gpu_validation": {
+          "smoke": {
+           "wall_s": 4.949917793273926,
+           "overflow": [
+            0
+           ],
+           "qpos_finite": true
+          },
+          "mass_parity": {
+           "cases": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+           ],
+           "passed": true,
+           "limitations": "Mass matrix/geometry consistency test only; does not establish full dynamic transfer. MuJoCo Warp ignores dof_M0 andBVH fields, and nonbatchable dof_length is unused because sleeping is disabled."
+          },
+          "frontend": {
+           "fixture": "Random untrained network;fixedboundedrandom actions for interface validation only",
+           "states_compared": 1984,
+           "max_feature_abs_difference": 1.3182871043682098e-06,
+           "max_goal_feature_abs_difference": 0.0,
+           "all_outputs_finite": true,
+           "extra_fields_rejected": true,
+           "absolute_targets_shapes": {
+            "finger_position_targets": null,
+            "finger_velocity_targets": null,
+            "wrist_position_target": null,
+            "wrist_quaternion_target_wxyz": null,
+            "wrist_linear_feedforward": null,
+            "wrist_angular_feedforward": null
+           },
+           "passed": true
+          }
+         },
+         "limits_of_new_validation": "Massmatrixagreement is not fulltrajectoryequivalence. Initial DR smoke254/256supported1s underfixedreceivingpose,2drops;notalearnedskill.",
+         "new_source_hashes": {
+          "research/code/gpu_env_dr.py": "e6b25597c7e5…",
+          "research/code/warp_forces_dr.py": "5a5f88a577b8…",
+          "research/code/warp_checks.py": "2d877deaea11…",
+          "research/code/backend.cpp": "6ea7c2706157…",
+          "research/code/deployed_policy.py": "992a84830158…",
+          "research/code/train_gpu_separate.py": "898a34d7f213…",
+          "research/code/policy_net.py": "c263dc7a601f…",
+          "research/sim/cube_graph_v4.npz": "4e8dd958e139…"
+         }
+        },
+        "files": {
+         "scene_1": {
+          "sha": "e6b25597c7e5",
+          "bytes": 18191,
+          "content_type": "text/plain"
+         },
+         "scene_2": {
+          "sha": "5a5f88a577b8",
+          "bytes": 4672,
+          "content_type": "text/plain"
+         },
+         "scene_3": {
+          "sha": "2d877deaea11",
+          "bytes": 5116,
+          "content_type": "text/plain"
+         },
+         "scene_4": {
+          "sha": "6ea7c2706157",
+          "bytes": 38803,
+          "content_type": "text/plain"
+         },
+         "scene_5": {
+          "sha": "992a84830158",
+          "bytes": 7221,
+          "content_type": "text/plain"
+         },
+         "scene_6": {
+          "sha": "0f307a2c6202",
+          "bytes": 633,
+          "content_type": "application/json"
+         },
+         "scene_7": {
+          "sha": "46a10d6f9359",
+          "bytes": 2791,
+          "content_type": "application/json"
+         },
+         "scene_8": {
+          "sha": "61970bf1e6cd",
+          "bytes": 102451,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0025",
+        "seq": 25,
+        "kind": "note",
+        "version": 14,
+        "recorded_utc": "2026-11-09T12:31:35Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Rewarddiagnosis:oldterminationonsuccess10competeswith~1.5/(1-.995)=300discountedsurvivalreward. This isanobjectivebug,notapolicyfailureexcuse. Stopunevaluatediteration5startup(no saved/evaluatedcheckpoint),preservelogs,andredirectGPU0toPPOwithcontinuedsolvedholdingreward,stronggoalprogress/quarterbonusandalignment. Physicsandcriteriaunchanged. Positivegoalrewarddisabledonfailedactions;stricter3mmtrainingintegritycutoff."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0026",
+        "seq": 26,
+        "kind": "sim",
+        "version": 5,
+        "recorded_utc": "2026-11-09T12:31:36Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 3,
+         "simulator": {
+          "name": "MuJoCo / MuJoCo Warp",
+          "version": "MuJoCo3.17.0 /MuJoCo Warp3.17.0 /Warp1.19.0",
+          "physics_dt_s": 0.0005,
+          "integrator": "implicitfast",
+          "solver": "Newton20",
+          "tolerance": 1e-08,
+          "contact": "elliptic friction cone, solref .005/damping ratio, solimp .95 .99 .001; default e=0",
+          "native_backend": "CPU C++/OpenMP retained for evaluation; GPU Warp float32 for training, same physical model/controllers/passive forces"
+         },
+         "scene": {
+          "files_sha256": {
+           "sim/scene.xml": "7db399a5469e…",
+           "sim/scene.mjb": "1dc7b769114b…",
+           "sim/model_meta.json": "00e52d4a47ee…",
+           "sim/initial_pose.json": "b626e955624c…",
+           "code/build_sim.py": "f95a374593d5…",
+           "code/backend.cpp": "4f9ec158c965…",
+           "code/policy_net.py": "3a4c86a02cde…",
+           "code/train_ppo.py": "0c95cf9e3841…"
+          },
+          "robot": "Authoritative left URDF, all inertias/joints/armatures and fixed pads/covers, mass0.7088kg",
+          "floor": "z=0, gravity(0,0,-9.81)",
+          "cube": "Eight material corner bodies, nominal51mm/55g prior, core3g with inertia4e-7kgm²; each6.5g corner has diagonal own-COM inertia m*(25mm)^2/6. Box collision approximates rounded Blender meshes within submillimeter scale. Parts and frame conventions from reconstruction3."
+         },
+         "mechanism": {
+          "type": "Passive nearest legal single-face-turn manifold coupled corner ball joints",
+          "coupling_Nm_rad": 1.0,
+          "joint_viscous_damping_Nms_rad": 5e-05,
+          "face_coulomb_resistance_Nm": 0.0007,
+          "detent_energy_J": 0.00025,
+          "max_[redacted]_Nm": 0.001,
+          "object_joint_armature_kgm2": 1e-07,
+          "implementation": "At each physics step choose deformation-consistent face; couple corner orientation errors by restoring torques and periodic detents. Bearing damping/friction solved implicitly. At45deg change periodic reference well by90deg without changing qpos. All actual corner poses remain physics states. No goal-dependent forces or object actuator in policy step.",
+          "limitations": "Idealized compliant mechanism; no measured GAN CAD/fracture model. Test torque probes are apparatus only, separate from policy step."
+         },
+         "hardware": {
+          "wrist": "Free l_mount, specified Cartesian impedance gains2000/60 and20/.4, hand-only weight/COM compensation, 30N/2Nm norm saturation. Generalized wrench about root origin. No feedforward velocities.",
+          "fingers": "Specified1kHz PD and effort saturation; strict actual position/speed checks, no state clamping. All20 URDF limits and armatures preserved.",
+          "policy_hz": 50,
+          "interface_hz": 500,
+          "controller_hz": 1000,
+          "network_action": "26 tanh outputs:20 joint target increments(.06rad), wrist position increments(.002m), world rotation-vector increments(.04rad). Targets held for10 successive500Hz calls, PD at1kHz. Maximum network target speeds below wrist hardware maxima.",
+          "encoders": "independent Gaussian sigma.002rad/.05rad_s on observations",
+          "collision_filter": "Only integral proximal/abduction housing-to-palm pairs and directly attached link pairs excluded due vendor convex-hull/soft-cover overlap; distal-to-palm, inter-finger and every hand/cube collision retained."
+         },
+         "reference": {
+          "record": "r0008",
+          "version": 3,
+          "use": "Wrist gravity-relative tilt, compact cube/wrist relation, thumb/opposing-finger contact roles. No reference replay or IK in policy execution.",
+          "retarget_baseline": {
+           "method": "Offline fingertip IK to the recorded left MANO hand, robot-aligned wrist basis, yaw-only world alignment. No policy execution uses IK or replay.",
+           "frames": [
+            79,
+            341
+           ],
+           "wall_s": 7.234601259231567,
+           "median_fingertip_error_m": 0.00244317878505773,
+           "max_fingertip_error_m": 0.01058121338400978,
+           "max_hand_object_penetration_m": 0.02249644442338548,
+           "limitations": "Kinematic baseline, not a feasible dynamic policy. Robot finger morphology and human contacts differ; hidden layer state was not reconstructed. PPO will use wrist/contact style rather than replay these targets."
+          },
+          "retarget_verdict": "Offline IK is NOT dynamically feasible: max22.5mm penetration, despite median2.44mm tip error. This failure motivates contact-aware PPO; no IK trajectories are commanded by the policy."
+         },
+         "initial_conditions": {
+          "hand": {
+           "wrist_pos_quat_wxyz": [
+            0.0,
+            0.0,
+            0.28,
+            0.7071067811865476,
+            -0.7071067811865475,
+            0.0,
+            0.0
+           ],
+           "q0": [
+            -0.15,
+            -0.65,
+            0.3,
+            0.2,
+            0.25,
+            -0.1,
+            0.5,
+            0.25,
+            0.25,
+            0.0,
+            0.5,
+            0.25,
+            0.3,
+            0.08,
+            0.55,
+            0.3,
+            0.4,
+            0.16,
+            0.6,
+            0.3
+           ],
+           "cube_pos_quat_wxyz": [
+            0.0,
+            -0.095,
+            0.3288989829593863,
+            1.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           "surface_height_m": 0.29244892018202995,
+           "ray_geom": 57,
+           "description": "Initial receiving bowl, palm-up. Cube centered near palm/finger bases. To be tested for variation before accepting.",
+           "fingers": {
+            "l_thumb_tip_sensor_frame_site": null,
+            "l_index_finger_tip_sensor_frame_site": null,
+            "l_middle_finger_tip_sensor_frame_site": null,
+            "l_ring_finger_tip_sensor_frame_site": null,
+            "l_pinky_tip_sensor_frame_site": null
+           }
+          },
+          "placement": "Roughly centered palm starts, six face-up choices plus yaw/tilt and offsets. Raise cube only during initial-state construction to avoid geometric interpenetration; then release to physics, no filtering of failed episodes.",
+          "scrambles": "Curriculum: solved receive/hold, partial turns, then1/2/3 legal full turns, stress4-5. Material corner identities retained.",
+          "domain_randomization": [
+           {
+            "quantity": "cube size",
+            "distribution": "uniform",
+            "range_m": null
+           },
+           {
+            "quantity": "cube mass",
+            "distribution": "uniform",
+            "range_kg": null
+           },
+           {
+            "quantity": "sliding friction",
+            "distribution": "uniform",
+            "range": null
+           },
+           {
+            "quantity": "desired linear restitution prior",
+            "distribution": "uniform",
+            "range": null,
+            "implementation": "Converted to contact damping ratio using linear oscillator formula; actual nonlinear rebound not separately calibrated."
+           },
+           {
+            "quantity": "face resistance",
+            "distribution": "uniform",
+            "range_Nm": null
+           },
+           {
+            "quantity": "palm offset",
+            "distribution": "uniform independently",
+            "range_m": null
+           },
+           {
+            "quantity": "tilt",
+            "range_deg": null
+           },
+           {
+            "quantity": "yaw",
+            "range_rad": null
+           }
+          ]
+         },
+         "episode": {
+          "training_horizon_s": "5s hold curriculum initially; later longer stages explicitly recorded",
+          "verification_horizon_s": 30,
+          "termination": "Training:drop/floor,hardware,numeric/bufferoverflow,3mmpenetrationorforbiddenstrain,orhorizon;NOterminationonsolved. CPUstrictverificationunchanged,endsuponstableG1orcriterionfailure/horizon."
+         },
+         "decision_layer": {
+          "type": "Finite symbolic cube-state BFS lookup, depth7, canonicalized by material corner0",
+          "states": 44971,
+          "bad_reverse_moves": 0,
+          "observations": "Only corner orientations plus constant canonical frame identities; no physics rollout or trajectory search.",
+          "output": "High-level next face/quarter direction and desired corner orientations; every robot motion target comes from PPO network.",
+          "gpu_port": "Same exported44971state finite table, vectorized exact canonicalization; fixed12 symbolic move fallback outside table. No physics search."
+         },
+         "validation": {
+          "hand_mass_kg": 0.7088000000000002,
+          "nominal_zero_action_hold_s": 3.0,
+          "nominal_hardware_velocity_ratio_max": 0.04803912714123726,
+          "nominal_hand_cube_penetration_m": 0.00041937135392799973,
+          "nominal_illegal_deformation_m": 0.00043359113624319434,
+          "nominal_wrist_displacement_m": 0.00038801479968242347,
+          "randomized_receiving": {
+           "episodes": 16,
+           "duration_s": 0.58,
+           "drops": 1,
+           "hardware_failures": 0
+          },
+          "mechanism_probes": {
+           "conditions": "No hand contact; cube in free fall above floor; known differential torque0.003Nm for.14s, test apparatus only. Task retention failure code1 expected in this isolated test.",
+           "faces": 6,
+           "quarter_reference_changes": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+           ],
+           "max_forbidden_rotation_rad": 0.000914792380460329,
+           "max_forbidden_displacement_m": 1.8470685832267308e-05,
+           "limitations": "Coherent layer motion verified; final pulse stop is about85deg, not an accurately solved policy turn. PPO still must align within3deg."
+          }
+         },
+         "baseline": {
+          "type": "Constant receiving pose, not learned",
+          "result": "Retains nominal cube but lacks thumb opposition and sideways wrist style; no solve claim. Does not pass criteria v1.",
+          "gpu_hold": "Nominal1024 copies1s: contact fraction1, no overflow, no drop/hardware failure. No thumb opposition or skill success.",
+          "partial_turn_zero_action": {
+           "episodes": 128,
+           "initial_partial_turn_radians": [
+            -0.35,
+            0.35
+           ],
+           "duration_s": 4,
+           "stable_solved_without_actions": 19,
+           "not_a_learned_policy": true,
+           "conclusion": "Partialturncurriculumisnotreliableskillevidence;requirefullturnsandcomposedfrozenevaluation."
+          }
+         },
+         "limitations": [
+          "Physical parameters and mechanism inferred, not measured.",
+          "Collision approximations and housing exclusions require transfer caution.",
+          "Retargeted IK replay has severe penetration and is not executable.",
+          "No policy has yet been evaluated or verified.",
+          "Only own simulation claims; no target rounds.",
+          "GPU port validated only on nominal hold at this point, not full turn transfer. GPU training nominal scope disclosed per iteration."
+         ],
+         "previous_sim_version": 4,
+         "gpu_training_scope": "Nominalphysical/poseDR nowavailable;stress ranges remainheldoutCPUverification. GPUstage andrewardweights recordedperiteration.",
+         "gpu_implementation": {
+          "warp_version": "1.19.0",
+          "control": "40 physics steps per50Hz network action,1kHz PD,500Hz command holds",
+          "diagnostics": "Every physics step: speed and joint position, penetration, legal manifold strain, floor/drop/nonfinite/overflow, contact and opposing contact; no diagnostics enter actor.",
+          "contact_threshold_m": 0.0002,
+          "hardware_failure_velocity_ratio": 1.000001,
+          "precision_limitation": "Float32 GPU solver is not bitwise equivalent to float64 CPU; all positive claims still require CPU fixed-suite verification.",
+          "parity": {
+           "cpu_metrics": [
+            0.0,
+            0.0,
+            50.0,
+            13.714585304260254,
+            0.04803912714123726,
+            0.0,
+            0.00041937135392799973,
+            0.019919266924262047,
+            0.00043359113624319434,
+            0.0,
+            1.0,
+            0.0,
+            0.12744319438934326,
+            0.00038801479968242347,
+            0.0,
+            0.0,
+            0.15420806407928467,
+            90.1541976928711,
+            0.10855879634618759,
+            0.0
+           ],
+           "gpu_metrics": [
+            0.0,
+            0.0,
+            50.0,
+            15.601229667663574,
+            0.04803921654820442,
+            0.0,
+            0.00041945267003029585,
+            0.02004077285528183,
+            0.0004364889464341104,
+            0.0,
+            1.0,
+            0.0,
+            0.12677128612995148,
+            0.0003862281155306846,
+            0.0,
+            0.0,
+            0.15450505912303925,
+            90.15438079833984,
+            0.10872188955545425,
+            0.0
+           ],
+           "qpos_max_abs": 0.002113087996541422,
+           "qvel_max_abs": 0.008677360710601002,
+           "wrist_position_difference_m": 5.216749247662781e-07,
+           "cube_position_difference_m": 0.00022862410063721828,
+           "gpu_overflow": [
+            0
+           ]
+          },
+          "benchmark": {
+           "worlds": 512,
+           "wall_s": 3.5036652088165283,
+           "env_control_steps": 25600,
+           "fps": 7306.634188557986,
+           "physics_steps_per_control": 40,
+           "setup_s": 259.8415253162384,
+           "max_illegal_rad": 0.02004331350326538,
+           "max_strain_m": 0.0004365475906524807,
+           "qpos_finite": true,
+           "wrist_pos": [
+            -1.963378903901969e-10,
+            8.330494072339434e-10,
+            0.27973076701164246
+           ],
+           "cube_pos": [
+            0.001467833062633872,
+            -0.09995677322149277,
+            0.32247427105903625
+           ]
+          },
+          "termination_difference": "GPU flags violations at every0.5ms tick but completesremainingticksin20mscapturedgraph before resettingatcontrolboundary;CPU freezesonfirstfailure. Training reward state aftera failed action can thereforediffer;allpositiveclaimsrequirestrictCPUverification.",
+          "randomization": "1024fixeduniform(size,mass)samples,uniformbankindexperreset;continuousindependentfriction/resistance/restitution/pose. No parametersenteractor."
+         },
+         "gpu_source_hashes": {
+          "research/code/gpu_env.py": "49494948013f…",
+          "research/code/warp_forces.py": "18013b1e37a2…",
+          "research/code/warp_checks.py": "3c597aa5c64e…",
+          "research/code/torch_geometry.py": "1bc27015f9a8…",
+          "research/code/train_gpu_ppo.py": "b3232ec59022…",
+          "research/code/policy_net.py": "a935798f3617…",
+          "research/sim/cube_graph.npz": "a26230893da8…"
+         },
+         "changes_from_previous": [
+          "Physicalscene,controllers,andperworldDRunchangedfrom4;newtrainingreward/terminationadapter.",
+          "Trainingnolongerterminatesonsolvedstate.Sustainingsolvedalignmentreceivesongoingreward,so successdoesnotremovethefutureholdingreward.",
+          "Goalprogressweight12to100,quartergoalbonus3to100;newgoalalignment2*clamp(1-mean8goalerror/(pi/4),0,1)andnearsolvedalignmentexp(-solvederror/.20).Currentstable+styletrainingsuccessgets2perstepinsteadterminal10.",
+          "Penetrationcost-100*max(0,lifetimemaxpen-.001),straincost-3*max(0,maxstrain/.002-1). Trainingfailureat3mmpenetrationorforbiddenstrain,hardwareunchanged;verificationcriteriaremainstricter.",
+          "Onanyfailedaction,positivegoalprogress/turn/alignment/stablesuccessrewardisremoved.",
+          "Iterationrecordsdefinegloballyscaledreward(.1),separatecriticPPO,MSEvalue,no valueclipping,perminibatchKLstop. Thesearenotobjectforcesoradditionalcontrollers."
+         ],
+         "strict_verifier": "research/code/verify_strict.py",
+         "fixed_suite": {
+          "criteria_version": 1,
+          "episodes": 640,
+          "nominal": 512,
+          "stress": 128,
+          "explicit": "First288nominal:24cardinalorientations x12singleface/directionturns, withroughpalmoffset andphysicalDR. Remaining224nominal:1–3turns,continuousyaw,tilt. Stress4–5turns. Rejection only ofsymbolicallyalready-solvedscrambles,neverofhandoutcomes.",
+          "seed_ranges": [
+           [
+            100000,
+            100511
+           ],
+           [
+            200000,
+            200127
+           ]
+          ],
+          "hashes": {
+           "initial_states.npz": "90603bf3d31f…",
+           "parameters.json": "a814f662db6b…"
+          }
+         },
+         "strict_source_hashes": {
+          "research/code/backend.cpp": "52d0ce7f7e21…",
+          "research/code/verify_strict.py": "587b18bdc187…",
+          "research/code/freeze_suite.py": "c72353076c5a…"
+         },
+         "gpu_validation": {
+          "smoke": {
+           "wall_s": 4.949917793273926,
+           "overflow": [
+            0
+           ],
+           "qpos_finite": true
+          },
+          "mass_parity": {
+           "cases": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+           ],
+           "passed": true,
+           "limitations": "Mass matrix/geometry consistency test only; does not establish full dynamic transfer. MuJoCo Warp ignores dof_M0 andBVH fields, and nonbatchable dof_length is unused because sleeping is disabled."
+          },
+          "frontend": {
+           "fixture": "Random untrained network;fixedboundedrandom actions for interface validation only",
+           "states_compared": 1984,
+           "max_feature_abs_difference": 1.3182871043682098e-06,
+           "max_goal_feature_abs_difference": 0.0,
+           "all_outputs_finite": true,
+           "extra_fields_rejected": true,
+           "absolute_targets_shapes": {
+            "finger_position_targets": null,
+            "finger_velocity_targets": null,
+            "wrist_position_target": null,
+            "wrist_quaternion_target_wxyz": null,
+            "wrist_linear_feedforward": null,
+            "wrist_angular_feedforward": null
+           },
+           "passed": true
+          }
+         },
+         "limits_of_new_validation": "Massmatrixagreement is not fulltrajectoryequivalence. Initial DR smoke254/256supported1s underfixedreceivingpose,2drops;notalearnedskill.",
+         "new_source_hashes": {
+          "research/code/gpu_env_dr.py": "e6b25597c7e5…",
+          "research/code/warp_forces_dr.py": "5a5f88a577b8…",
+          "research/code/warp_checks.py": "2d877deaea11…",
+          "research/code/backend.cpp": "6ea7c2706157…",
+          "research/code/deployed_policy.py": "992a84830158…",
+          "research/code/train_gpu_separate.py": "898a34d7f213…",
+          "research/code/policy_net.py": "c263dc7a601f…",
+          "research/sim/cube_graph_v4.npz": "4e8dd958e139…"
+         },
+         "reward_incentive_analysis": "Oldholdingreward~1.5/step withgamma.995 gives~300discountedfutureunits,exceedingterminalsuccess10.Thiscouldteachdelay. Correctadapterretainsfutureholdrewardsandmakesfullturnprogress/solvedalignmentvaluable.",
+         "unevaluated_aborted_attempt": "Iteration5startupDRPPO ran briefly,theninterruptedbeforeanysavedorevaluatedcheckpointduetorewardanalysis.Curves/logspreserved; no skillclaimorcheckpointcomparison.",
+         "adapter_source_hashes": {
+          "research/code/gpu_skill_env.py": "db0e065747ac…",
+          "research/code/train_gpu_skill.py": "0fca7e91ab4a…",
+          "research/code/policy_net.py": "c263dc7a601f…",
+          "research/code/deployed_policy.py": "992a84830158…"
+         },
+         "adapter_smoke": {
+          "terms": 14,
+          "reward_sum_max_difference": 0.0,
+          "finite": true,
+          "success_does_not_terminate": true,
+          "term_means": [
+           0.1410776674747467,
+           0.06376006454229355,
+           0.0,
+           0.0,
+           -0.4740828573703766,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           -1.7024852638769516e-08,
+           0.000564216636121273,
+           0.00038202351424843073
+          ]
+         }
+        },
+        "files": {
+         "scene_1": {
+          "sha": "db0e065747ac",
+          "bytes": 1362,
+          "content_type": "text/plain"
+         },
+         "scene_2": {
+          "sha": "0fca7e91ab4a",
+          "bytes": 9569,
+          "content_type": "text/plain"
+         },
+         "scene_3": {
+          "sha": "bba13e96790d",
+          "bytes": 360,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-09T09:55:05Z",
@@ -351897,7 +353808,7 @@
    "plug": {
     "runs": {
      "8": {
-      "exported_utc": "2026-11-09T12:20:01Z",
+      "exported_utc": "2026-11-09T12:30:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -352155,7 +354066,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-09T12:22:32Z",
+  "staged_utc": "2026-11-09T12:32:33Z",
   "tasks": {
    "cube": {
     "files": {
@@ -352239,7 +354150,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-09T12:22:32Z",
+  "staged_utc": "2026-11-09T12:32:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
