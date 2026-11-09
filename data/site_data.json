@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-09T02:32:35Z",
- "exported_utc": "2026-11-09T02:32:29Z",
+ "generated_utc": "2026-11-09T02:42:35Z",
+ "exported_utc": "2026-11-09T02:42:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-09T02:25:54",
+    "time": "2026-11-09T02:35:08",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -142672,6 +142672,204 @@
          "video_top_failure": {
           "sha": "1409406a13e1",
           "bytes": 194815,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0024",
+        "seq": 24,
+        "kind": "iter",
+        "version": 2,
+        "recorded_utc": "2026-11-09T02:34:57Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO clipped",
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "epochs": 4,
+          "minibatches": 8,
+          "learning_rate": 0.0003,
+          "entropy_coefficient": 0.001,
+          "value_coefficient": 0.5,
+          "max_gradient_norm": 1,
+          "rollout_steps": 128,
+          "environments": 512,
+          "seed": 2027,
+          "checkpoint_update": 40,
+          "transitions": 2621440
+         },
+         "architecture": "Separate256-tanh-256-tanh actor/critic; Gaussian26-dimensional residual, initial std0.223, actor126-dimensional deployable state. InitialGaussianstd0.1003; exponential residual filter alpha0.15 at50Hz.",
+         "observation_space": "No contacts/rewards/parameters. Noisy q/qd, wrist pose/velocity, selected object pose/velocity, allowed reference-memory phase and targets, object_kind, previous residual.",
+         "action_space": "20 joint residuals scaled0.18rad,3 wrist translation residuals scaled15mm,3 world rotation residuals scaled0.12rad. Residual50Hz held across10 contract steps with exact wrist target limiting; baseline prior and joint target ramp3rad/s. Smoothed residual is previous*0.85+0.15*clipped Gaussian action.",
+         "reward_terms": [
+          {
+           "name": "position",
+           "formula": "2*exp(-80*||object_position-reference_position||^2), multiplied by1 in phases>=close,0.2 earlier",
+           "weight": 1
+          },
+          {
+           "name": "orientation",
+           "formula": "exp(-2*||log(q_object*q_reference^-1)||^2), same phase multiplier",
+           "weight": 1
+          },
+          {
+           "name": "lift",
+           "formula": "0.5 when object centre exceeds initial centre by20mm during lift/carry",
+           "weight": 1
+          },
+          {
+           "name": "complete",
+           "formula": "3*exp(-80*position_goal_error^2)*exp(-3*orientation_goal_error^2) during place/release/retreat",
+           "weight": 1
+          },
+          {
+           "name": "action",
+           "formula": "-0.005*mean(clipped_residual^2)",
+           "weight": 1
+          },
+          {
+           "name": "smooth",
+           "formula": "-0.01*mean((residual-previous_residual)^2)",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-10 on any sampled speed or position violation at50Hz; native verification checks every1kHz tick",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "object xy",
+           "distribution": "uniform",
+           "range": {
+            "x": null,
+            "y": null
+           }
+          },
+          {
+           "quantity": "object orientation",
+           "distribution": "uniform yaw; equal two side faces",
+           "range": "yaw[-pi,pi], lying on bodyX orY face"
+          }
+         ],
+         "curriculum": "Single fixed level;3 objects kinds0,1,0. No physics DR.",
+         "compute": {
+          "checkpoint_training_wall_s": 221.0,
+          "gpu_hours": 0.06138888888888889,
+          "hardware": "one NVIDIA L40S"
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "seeds": [
+           45000,
+           45001,
+           45002,
+           45003,
+           45004,
+           45005,
+           45006,
+           45007,
+           45008,
+           45009,
+           45010,
+           45011,
+           45012,
+           45013,
+           45014,
+           45015,
+           45016,
+           45017,
+           45018,
+           45019,
+           45020,
+           45021,
+           45022,
+           45023,
+           45024,
+           45025,
+           45026,
+           45027,
+           45028,
+           45029,
+           45030,
+           45031
+          ],
+          "episodes": 32,
+          "successes": 15,
+          "success_rate": 0.46875,
+          "per_final_criterion_counts": {
+           "left": 15,
+           "upright": 15,
+           "base": 32,
+           "table": 32,
+           "hand_free": 32,
+           "linear_still": 32,
+           "angular_still": 32
+          },
+          "hardware_violations": 0,
+          "base_alone_successes_same_seeds": 15,
+          "stochastic_training": "Checkpoint-nearby simplified success~80%; hardware flags~1% of episodes under exploration; deterministic verification separate."
+         },
+         "reflection": "Smoothing reduced exploration hardware incidents sharply. Deterministic heldout15/32 equals baseline15/32; same cases fail reach. Small continuous residual cannot fix an unreachable prior. Continue training, expand grasp/reference coverage and physics DR; no delivery.",
+         "package_sha256": "9daebcbfb885…"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "8e5c9957a65b",
+          "bytes": 12928,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "8401148ac4ab",
+          "bytes": 180209,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "5cb14ce1a0e3",
+          "bytes": 220068,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "c9332db03fd4",
+          "bytes": 193310,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0025",
+        "seq": 25,
+        "kind": "verify",
+        "version": 2,
+        "recorded_utc": "2026-11-09T02:35:08Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0024",
+         "criteria_version": 1,
+         "passed": false,
+         "package_sha256": "9daebcbfb885…",
+         "episodes": 32,
+         "successful_episodes": 15,
+         "evidence": "17 of32 tested episodes fail actual pickup and final left/upright criteria. Full128/128 claim is ruled out. Same failures as15/32 baseline. Did not deliver.",
+         "limitations": "First32 nominal full-table seeds. Physics/touch/edge groups untested in this verdict. This is our own failed self-verification."
+        },
+        "files": {
+         "file_1": {
+          "sha": "7ec4649441f7",
+          "bytes": 90900,
+          "content_type": "application/json"
+         },
+         "video_top_failure": {
+          "sha": "c9332db03fd4",
+          "bytes": 193310,
           "content_type": "video/mp4"
          }
         },
@@ -294396,7 +294594,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-09T02:32:32Z",
+  "staged_utc": "2026-11-09T02:42:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -294480,7 +294678,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-09T02:32:32Z",
+  "staged_utc": "2026-11-09T02:42:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
