@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-09T16:02:36Z",
- "exported_utc": "2026-11-09T16:02:29Z",
+ "generated_utc": "2026-11-09T16:12:37Z",
+ "exported_utc": "2026-11-09T16:12:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-09T15:58:56",
+    "time": "2026-11-09T16:11:42",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-09T15:52:19",
+    "time": "2026-11-09T16:09:53",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -179744,6 +179744,1841 @@
          "text": "Elapsed6h16m. BC21still loses grasps despite lower fitting loss. Preserve the good PPO14white/PPO15black approach/grasp motion as frozen learned skills in23: they supply q until phase2progress.45 and root through phase3; the new trainable network supplies finger commands thereafter and root from phase4. This finite phase/kind composition is allowed by LEARNING1: every numerical command comes from one of the PPO-trained networks,with no analytical reference/controller at execution. During PPO23 inactive new-head means are masked,so those unused motion components receive no mean gradient. Evaluate the composed initializer separately and retain its actual baseline result. No criterion or physical model change."
         },
         "files": {}
+       },
+       {
+        "id": "r0073",
+        "seq": 73,
+        "kind": "note",
+        "version": 35,
+        "recorded_utc": "2026-11-09T16:09:50Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Elapsed6h29m. Test26 with40additional pure kinematic features: fingertip-normal Jacobians and sums of link-height Jacobians,computed from noisy encoders,wrist orientation and fixed public robot geometry. No mass,friction,inertia,damping,measured torque or contact is supplied to this actor. The earlier fixed-hand-mass gravity-feature calculation was analysis only and is not adopted. Linear neural grip/opening heads are fitted from teacher trajectories,then trained with PPO; they output joint-target actions,not a prescribed force controller. PPO14/15learned bases preserve approach,while a new PPO neural residual can adjust root pose after phase3. Report the composed initializer and fitted-head errors separately before relying on any result."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0074",
+        "seq": 74,
+        "kind": "iter",
+        "version": 20,
+        "recorded_utc": "2026-11-09T16:11:41Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "policy_observations": "deployable",
+         "reward_terms": [
+          {
+           "name": "reference_pose",
+           "formula": ".8exp(-(position_error/.05)^2)+.3exp(-(rotation_error/.6)^2)",
+           "weight": 0.02
+          },
+          {
+           "name": "reference_fingers",
+           "formula": "exp(-mean((q-q_reference)^2)/.06)",
+           "weight": 0.003
+          },
+          {
+           "name": "opposition",
+           "formula": "(.3thumb_case+.2other_case+1both_case)*I[[redacted]..6]",
+           "weight": 0.02
+          },
+          {
+           "name": "lift",
+           "formula": "clip(height_gain/.08,0,1)*I[phase3..5]",
+           "weight": 0.03
+          },
+          {
+           "name": "upright",
+           "formula": "signed blade_axis_dot_up*I[phase>=3 and hand_contact]",
+           "weight": 0.1
+          },
+          {
+           "name": "turn_progress",
+           "formula": "delta(blade_axis_dot_up)*I[phase>=3 and hand_contact]",
+           "weight": 0.2
+          },
+          {
+           "name": "left_goal",
+           "formula": "exp(-(object_XY_goal_distance/.07)^2)*I[phase>=5]",
+           "weight": 0.1
+          },
+          {
+           "name": "placement",
+           "formula": "I[left,tilt<=15deg,table_contact,released,linear_velocity<.02,angular_velocity<.15]",
+           "weight": 0.3
+          },
+          {
+           "name": "penetration",
+           "formula": "-max(depth-.003,0)/.01",
+           "weight": 0.8
+          },
+          {
+           "name": "motion",
+           "formula": "-mean(a^2)-mean((a-previous_a)^2)",
+           "weight": 0.0004
+          },
+          {
+           "name": "object_motion",
+           "formula": "-norm(object_angular_velocity)",
+           "weight": 0.0002
+          },
+          {
+           "name": "hardware",
+           "formula": "-I[hardware_speed_or_position_violation]",
+           "weight": 10.0
+          },
+          {
+           "name": "speed_margin",
+           "formula": "-max(max(abs(qd)/URDF_speed)-.5,0)^2",
+           "weight": 0.04
+          },
+          {
+           "name": "carry_distance",
+           "formula": "-object_XY_goal_distance*I[phase>=5]",
+           "weight": 0.08
+          },
+          {
+           "name": "case_proximity",
+           "formula": "(exp(-max(oriented_case_box_distance_from_FK_thumb_pad-.008,0)/.01)+max_other(exp(-max(box_distance-.008,0)/.01)))*I[[redacted]..6]",
+           "weight": 0.014
+          },
+          {
+           "name": "premature_turn",
+           "formula": "-I[ordinary episode,held,upright<=20deg,[redacted]..4,before5continuous20ms samples of lowest geometry>15mm AND center-rise>15mm]",
+           "weight": 2.0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Independent Gaussian",
+           "q_sigma": 0.002,
+           "qd_sigma": 0.05
+          },
+          {
+           "name": "physical variants",
+           "distribution": "Uniform choice of16 independent seeded uniform-range physical draws per kind,fixed per world",
+           "parameters": "research/sim/meshbank_variants.json",
+           "mass_scale": [
+            0.7,
+            1.3
+           ],
+           "white_axis_scale": [
+            0.9,
+            1.1
+           ],
+           "black_dimensions_mm": [
+            null,
+            null,
+            null
+           ],
+           "COM_mm": [
+            -3,
+            3
+           ],
+           "hand_table_mu": [
+            0.3,
+            1.0
+           ],
+           "restitution": [
+            0,
+            0.15
+           ],
+           "torsional_radius_m": [
+            0.001,
+            0.006
+           ]
+          }
+         ],
+         "algorithm": {
+          "name": "PPO clipped/GAE",
+          "actor_learning_rate": 3e-07,
+          "critic_learning_rate": 0.0003,
+          "n_steps": 32,
+          "batch_size": 8192,
+          "epochs": 4,
+          "gamma": 0.999,
+          "gae_lambda": 0.97,
+          "clip": 0.2,
+          "target_kl": 0.03,
+          "entropy": 0.0001,
+          "BC_auxiliary_weight": 0.003,
+          "actor_grad_clip": 0.5,
+          "critic_grad_clip": 5.0,
+          "initial_log_std": {
+           "fingers": -3.0,
+           "position": -7.5,
+           "rotation": -6.8
+          },
+          "head_learning_rate": 0.0003,
+          "root_head_effective_learning_rate": 3e-07,
+          "BC_action_weights": {
+           "fingers": 0.1,
+           "wrist": 10
+          },
+          "post_step_backtracking": "Each proposed actor update is repeatedly halved until actual batch KL<=.042,or restored after12tries."
+         },
+         "architecture": "Actor512,512,256Tanh,concatenate original150features into trainable26x406output head. Finger means Tanh,root means linear. Critic256,256,128Tanh. All actor/critic parameters trainable.",
+         "observation_space": "150 deployable features from noisy encoders,wrist/object states,own target histories and FK. Formerly masked8slots now contain phase-gated fingertip separation vs4nominal family gaps,tip midpoint,thumb/selected-other tracking errors,and products of gap error with tracking error. This uses no contacts,torques,forces or physical parameters. CPU/Torch parity tested1960actual observations:ordinary features<9.7e-7,scaled aperture features<.00196. Run18 scales gap and both gap/error products by1/100; these8features are bounded to moderate magnitudes.",
+         "action_space": "First20outputs command noisy measured currentq+.05clip(a),clipped joint limits. Root6absolute neural targets and own-previous-target.01m/.05rad filters retained. No velocity clipping or object state edits.",
+         "curriculum": "Fixed deployment wrist start for ordinary table episodes,random XY/yaw/two side families and left goal. Reverse probability.25 with466 variant-matched controller-generated states;9of32kind/variant pairs lack valid states and fall back to ordinary starts. No state changes during execution.",
+         "initialization": "135hardware-clean physically successful privileged pressure/orientation-feedback training rollouts across65of150training seeds,plus synthetic approach examples;120BCepochs,thenPPO. This teacher selection is not a deployable performance rate. The subsequent full30ssingle-object style audit passes only23of135teacherrollouts.",
+         "compute": {
+          "wall_seconds": 528.7,
+          "gpu_hours": 0.14686111111111114,
+          "gpu": "OneL40S,cuda:0",
+          "environments": 4096
+         },
+         "training_steps": 2002944,
+         "evaluation": {
+          "episodes": [
+           {
+            "seed": 7100,
+            "kind": 0,
+            "return_": -0.37333100195117375,
+            "steps": 210,
+            "success": false,
+            "max_lift": 0.01837986579771554,
+            "standing_steps": 0,
+            "held_steps": 12,
+            "tilt_degrees": 90.0002252863135,
+            "left_position": -0.10340473365092753,
+            "hardware": true,
+            "speed_ratio": 1.0257580100980679
+           },
+           {
+            "seed": 7101,
+            "kind": 1,
+            "return_": 1.8676003513709587,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.016755545095544007,
+            "standing_steps": 0,
+            "held_steps": 1,
+            "tilt_degrees": 0.0015693771672520354,
+            "left_position": -0.06014140231633618,
+            "hardware": false,
+            "speed_ratio": 0.5907444049110205
+           },
+           {
+            "seed": 7102,
+            "kind": 0,
+            "return_": 11.017512240994321,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11482301769022014,
+            "standing_steps": 0,
+            "held_steps": 42,
+            "tilt_degrees": 0.0026455887161078062,
+            "left_position": -0.08973292835167672,
+            "hardware": false,
+            "speed_ratio": 0.5723760535572819
+           },
+           {
+            "seed": 7103,
+            "kind": 1,
+            "return_": 0.7947971310306098,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.004444742394233831,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.00026792147287,
+            "left_position": -0.05549546099476682,
+            "hardware": false,
+            "speed_ratio": 0.6510109969218496
+           },
+           {
+            "seed": 7104,
+            "kind": 0,
+            "return_": -4.489134981101716,
+            "steps": 215,
+            "success": false,
+            "max_lift": 0.00798067275405129,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99987777043323,
+            "left_position": -0.03971590499385795,
+            "hardware": true,
+            "speed_ratio": 1.358636872427279
+           },
+           {
+            "seed": 7105,
+            "kind": 1,
+            "return_": -4.173995683185132,
+            "steps": 360,
+            "success": false,
+            "max_lift": 0.03502585552786257,
+            "standing_steps": 0,
+            "held_steps": 10,
+            "tilt_degrees": 0.0009621449440121115,
+            "left_position": -0.07952272177051646,
+            "hardware": true,
+            "speed_ratio": 1.217530517268363
+           },
+           {
+            "seed": 7106,
+            "kind": 0,
+            "return_": 5.877551230088378,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.030371269480853808,
+            "standing_steps": 0,
+            "held_steps": 14,
+            "tilt_degrees": 90.00221376152243,
+            "left_position": -0.2223289867813246,
+            "hardware": false,
+            "speed_ratio": 0.4540038459602911
+           },
+           {
+            "seed": 7107,
+            "kind": 1,
+            "return_": 7.748058606268936,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.09472747202679246,
+            "standing_steps": 0,
+            "held_steps": 23,
+            "tilt_degrees": 89.99981482026286,
+            "left_position": 0.04947033031180914,
+            "hardware": false,
+            "speed_ratio": 0.4712826388370655
+           },
+           {
+            "seed": 7108,
+            "kind": 0,
+            "return_": 1.1401643236740637,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.006777140266613671,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999506402735,
+            "left_position": -0.14068897891791435,
+            "hardware": false,
+            "speed_ratio": 0.764373894993937
+           },
+           {
+            "seed": 7109,
+            "kind": 1,
+            "return_": 9.64366450223122,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.09816591935954651,
+            "standing_steps": 0,
+            "held_steps": 25,
+            "tilt_degrees": 0.00022633376722672397,
+            "left_position": -0.03970616130247072,
+            "hardware": false,
+            "speed_ratio": 0.5216607260236309
+           },
+           {
+            "seed": 7110,
+            "kind": 0,
+            "return_": 3.719619942996984,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.027615731705285796,
+            "standing_steps": 0,
+            "held_steps": 11,
+            "tilt_degrees": 90.00021271043826,
+            "left_position": -0.15292673540207014,
+            "hardware": false,
+            "speed_ratio": 0.43462840494652266
+           },
+           {
+            "seed": 7111,
+            "kind": 1,
+            "return_": 2.018148675097588,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.01480945400573093,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.00027657781922,
+            "left_position": -0.0559268506766695,
+            "hardware": false,
+            "speed_ratio": 0.5377190460898761
+           },
+           {
+            "seed": 7112,
+            "kind": 0,
+            "return_": 1.4446617457110043,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.009529757832132224,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99942444434888,
+            "left_position": 0.030481807481911545,
+            "hardware": false,
+            "speed_ratio": 0.7671394963917957
+           },
+           {
+            "seed": 7113,
+            "kind": 1,
+            "return_": 25.165594899098238,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1377733522903631,
+            "standing_steps": 0,
+            "held_steps": 102,
+            "tilt_degrees": 89.99874440536917,
+            "left_position": 0.11011706747095089,
+            "hardware": false,
+            "speed_ratio": 0.5202519815541187
+           },
+           {
+            "seed": 7114,
+            "kind": 0,
+            "return_": 7.0374948575667,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.06244363835033802,
+            "standing_steps": 0,
+            "held_steps": 25,
+            "tilt_degrees": 90.00025775185334,
+            "left_position": -0.036534884385467155,
+            "hardware": false,
+            "speed_ratio": 0.8836879794051301
+           },
+           {
+            "seed": 7115,
+            "kind": 1,
+            "return_": 1.7266903925546155,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.009152049996792895,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99998917073573,
+            "left_position": -0.0692392106969423,
+            "hardware": false,
+            "speed_ratio": 0.49066898735571457
+           },
+           {
+            "seed": 7116,
+            "kind": 0,
+            "return_": 3.4482564497681496,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.010142675855152859,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.0001282010595,
+            "left_position": 0.003695268877808496,
+            "hardware": false,
+            "speed_ratio": 0.43867980299735565
+           },
+           {
+            "seed": 7117,
+            "kind": 1,
+            "return_": 12.364893616401595,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12540508708740244,
+            "standing_steps": 0,
+            "held_steps": 49,
+            "tilt_degrees": 90.00038492944051,
+            "left_position": -0.02079909950037149,
+            "hardware": false,
+            "speed_ratio": 0.4310078443155327
+           },
+           {
+            "seed": 7118,
+            "kind": 0,
+            "return_": 4.080222066349868,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.017579330526192965,
+            "standing_steps": 0,
+            "held_steps": 1,
+            "tilt_degrees": 89.99930243400165,
+            "left_position": -0.059485303338110626,
+            "hardware": false,
+            "speed_ratio": 0.5543550707565236
+           },
+           {
+            "seed": 7119,
+            "kind": 1,
+            "return_": 7.205715330710469,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10346753682188797,
+            "standing_steps": 0,
+            "held_steps": 25,
+            "tilt_degrees": 90.0003213377934,
+            "left_position": 0.05071262279038167,
+            "hardware": false,
+            "speed_ratio": 0.7649791948992921
+           },
+           {
+            "seed": 7120,
+            "kind": 0,
+            "return_": 1.3608192994222281,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.00192336346905796,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99995584769417,
+            "left_position": 0.03489259456795036,
+            "hardware": false,
+            "speed_ratio": 0.5998712478364064
+           },
+           {
+            "seed": 7121,
+            "kind": 1,
+            "return_": 39.96934415022546,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1549053332626087,
+            "standing_steps": 0,
+            "held_steps": 151,
+            "tilt_degrees": 89.99921651636765,
+            "left_position": 0.29240535681321217,
+            "hardware": false,
+            "speed_ratio": 0.4948810562872928
+           },
+           {
+            "seed": 7122,
+            "kind": 0,
+            "return_": 1.9741345987417664,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.007421809520481933,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.00182870737751,
+            "left_position": -0.032876410612903355,
+            "hardware": false,
+            "speed_ratio": 0.468620292065702
+           },
+           {
+            "seed": 7123,
+            "kind": 1,
+            "return_": -1.8509647930660327,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.028718483998472488,
+            "standing_steps": 0,
+            "held_steps": 5,
+            "tilt_degrees": 90.00007228073271,
+            "left_position": -0.1381650117714045,
+            "hardware": false,
+            "speed_ratio": 0.4819381098788258
+           }
+          ],
+          "success_rate": 0.0,
+          "hardware_violations": 3,
+          "scope": "Single-object9.8s curriculum diagnostic; not full30s/2or3object recorded criteria",
+          "mean_peak_lift": 0.04743079604647226
+         },
+         "baseline_evaluation": {
+          "episodes": [
+           {
+            "seed": 7100,
+            "kind": 0,
+            "return_": 2.158207603056462,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.012566753578155324,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.00022528884904,
+            "left_position": -0.13141150553218045,
+            "hardware": false,
+            "speed_ratio": 0.8792091083552779
+           },
+           {
+            "seed": 7101,
+            "kind": 1,
+            "return_": 1.8543554287566137,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.008667235649442174,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99976448927865,
+            "left_position": -0.10445766332396864,
+            "hardware": false,
+            "speed_ratio": 0.4832297421968289
+           },
+           {
+            "seed": 7102,
+            "kind": 0,
+            "return_": 5.110944907839155,
+            "steps": 301,
+            "success": false,
+            "max_lift": 0.11765864971388022,
+            "standing_steps": 0,
+            "held_steps": 47,
+            "tilt_degrees": 90.00102252735113,
+            "left_position": 0.04269705665887698,
+            "hardware": true,
+            "speed_ratio": 1.059996104611266
+           },
+           {
+            "seed": 7103,
+            "kind": 1,
+            "return_": 0.808142011386364,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.004364954342473236,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.00026792244927,
+            "left_position": -0.04606419129503097,
+            "hardware": false,
+            "speed_ratio": 0.6840461202813104
+           },
+           {
+            "seed": 7104,
+            "kind": 0,
+            "return_": -4.57940856830511,
+            "steps": 223,
+            "success": false,
+            "max_lift": 0.0058249181971913155,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99987777036718,
+            "left_position": -0.04525309501015424,
+            "hardware": true,
+            "speed_ratio": 1.2777205699942158
+           },
+           {
+            "seed": 7105,
+            "kind": 1,
+            "return_": 2.1983468208990855,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.03427278534139981,
+            "standing_steps": 0,
+            "held_steps": 8,
+            "tilt_degrees": 90.00004406730959,
+            "left_position": -0.09782544501674383,
+            "hardware": false,
+            "speed_ratio": 0.7018414650033464
+           },
+           {
+            "seed": 7106,
+            "kind": 0,
+            "return_": 9.557679150696169,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.08385311725348896,
+            "standing_steps": 0,
+            "held_steps": 30,
+            "tilt_degrees": 90.00221376165551,
+            "left_position": -0.11090892629293747,
+            "hardware": false,
+            "speed_ratio": 0.5385635349849837
+           },
+           {
+            "seed": 7107,
+            "kind": 1,
+            "return_": 4.254118553032836,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.03221030821877229,
+            "standing_steps": 0,
+            "held_steps": 6,
+            "tilt_degrees": 89.99981482060915,
+            "left_position": 0.0267144755943449,
+            "hardware": false,
+            "speed_ratio": 0.49139594209253407
+           },
+           {
+            "seed": 7108,
+            "kind": 0,
+            "return_": -3.856764774699881,
+            "steps": 160,
+            "success": false,
+            "max_lift": 0.00839350213958607,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.98408188161513,
+            "left_position": -0.07405817351134512,
+            "hardware": true,
+            "speed_ratio": 1.245524371014336
+           },
+           {
+            "seed": 7109,
+            "kind": 1,
+            "return_": 3.3760679094285555,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.013686479171608331,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.00000820685254,
+            "left_position": -0.02384676562061997,
+            "hardware": false,
+            "speed_ratio": 0.42858873990088614
+           },
+           {
+            "seed": 7110,
+            "kind": 0,
+            "return_": 4.037206194724936,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.013510409078298976,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.00021271088576,
+            "left_position": -0.14190745687977857,
+            "hardware": false,
+            "speed_ratio": 0.4346494610421105
+           },
+           {
+            "seed": 7111,
+            "kind": 1,
+            "return_": 1.252866045116355,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.005091281526209307,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.00027657172946,
+            "left_position": -0.07819682623629334,
+            "hardware": false,
+            "speed_ratio": 0.5157785559056896
+           },
+           {
+            "seed": 7112,
+            "kind": 0,
+            "return_": 1.1759968769439832,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.0033559096010378382,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99942444368268,
+            "left_position": 0.024170667646892158,
+            "hardware": false,
+            "speed_ratio": 0.7830251722772964
+           },
+           {
+            "seed": 7113,
+            "kind": 1,
+            "return_": 16.381582992738725,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.14254145558282955,
+            "standing_steps": 0,
+            "held_steps": 72,
+            "tilt_degrees": 89.99874440792283,
+            "left_position": -0.09265877360855569,
+            "hardware": false,
+            "speed_ratio": 0.5163886956930446
+           },
+           {
+            "seed": 7114,
+            "kind": 0,
+            "return_": 6.500759568031146,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.0713369985616761,
+            "standing_steps": 0,
+            "held_steps": 23,
+            "tilt_degrees": 90.0002577522034,
+            "left_position": -0.0828641494511263,
+            "hardware": false,
+            "speed_ratio": 0.8278447503921784
+           },
+           {
+            "seed": 7115,
+            "kind": 1,
+            "return_": -0.4006213312068252,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.01129512581590369,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99998917242533,
+            "left_position": -0.09846336179271359,
+            "hardware": false,
+            "speed_ratio": 0.443186712548924
+           },
+           {
+            "seed": 7116,
+            "kind": 0,
+            "return_": 1.805673510455775,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.0047399397994658116,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.00012820076314,
+            "left_position": 0.03475082293025495,
+            "hardware": false,
+            "speed_ratio": 0.621925007193895
+           },
+           {
+            "seed": 7117,
+            "kind": 1,
+            "return_": 11.976530478676425,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12379010281745216,
+            "standing_steps": 0,
+            "held_steps": 44,
+            "tilt_degrees": 90.0003849366613,
+            "left_position": -0.015144366468332815,
+            "hardware": false,
+            "speed_ratio": 0.4820251484156167
+           },
+           {
+            "seed": 7118,
+            "kind": 0,
+            "return_": 4.540893263052945,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.022123824977337603,
+            "standing_steps": 0,
+            "held_steps": 1,
+            "tilt_degrees": 89.9993024351618,
+            "left_position": -0.0418966094829979,
+            "hardware": false,
+            "speed_ratio": 0.9309723135079381
+           },
+           {
+            "seed": 7119,
+            "kind": 1,
+            "return_": 6.299069745047928,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.05511780838793699,
+            "standing_steps": 0,
+            "held_steps": 15,
+            "tilt_degrees": 90.00032134295698,
+            "left_position": 0.04906384370365986,
+            "hardware": false,
+            "speed_ratio": 0.805681770552341
+           },
+           {
+            "seed": 7120,
+            "kind": 0,
+            "return_": 1.7156228037641323,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.00595986539393123,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99995584756473,
+            "left_position": 0.037626468714948715,
+            "hardware": false,
+            "speed_ratio": 0.6763320274116925
+           },
+           {
+            "seed": 7121,
+            "kind": 1,
+            "return_": 24.358383323409395,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13617193755969764,
+            "standing_steps": 0,
+            "held_steps": 112,
+            "tilt_degrees": 89.99921653371001,
+            "left_position": 0.15166522919123573,
+            "hardware": false,
+            "speed_ratio": 0.8756800277561136
+           },
+           {
+            "seed": 7122,
+            "kind": 0,
+            "return_": 2.800435058124774,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.007927389777956591,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 0.005137039535269731,
+            "left_position": -0.04428455268675966,
+            "hardware": false,
+            "speed_ratio": 0.42808424561134945
+           },
+           {
+            "seed": 7123,
+            "kind": 1,
+            "return_": -1.4956582874838378,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.0058919727658133265,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.0000722828494,
+            "left_position": -0.11006711211003103,
+            "hardware": false,
+            "speed_ratio": 0.47859995996554633
+           }
+          ],
+          "success_rate": 0.0,
+          "hardware_violations": 3,
+          "scope": "Single-object9.8s curriculum diagnostic; not full30s/2or3object recorded criteria",
+          "mean_peak_lift": 0.03876469688548103
+         },
+         "criteria_comparison": {
+          "criteria_version": 2,
+          "passed": false,
+          "reason": "Only24single-object9.8sdiagnostics,far below full60fresh30smultiobject criteria."
+         },
+         "discrete_layer": "Select highest/nearest unfinished plug,assign left slots x[-.06,.06] or[-.12,0,.12],y.23;advance finite phase clock and retry remaining plugs. Every numerical motion target comes from the PPO actor.",
+         "reflection": "0/24continuousDR placements,3hardware violations;BCbaseline0/24with3hardware violations. Saturated finger heads fail to reproduce pressure/release labels. No task success. New21zeroes finger heads and26tests pure geometric Jacobian features with separately fitted linear neural heads.",
+         "curves_note": "EveryGPUvectorcollectorstepisrecordedwithmeanrewardterms,episodeage,success/hardwareproxies,andcompletedepisodemetrics. Curriculumoutcomesarenotdeploymentcriteria.",
+         "artifacts": {
+          "checkpoint": "research/training/iter_019/checkpoint_2002944.zip",
+          "trainer": "research/gpu/train_teacher19.py",
+          "environment": "research/gpu/vec_env_aperture_scaled.py",
+          "encoder": "research/gpu/aperture_scaled_torch.py",
+          "numpy_decoder": "research/policy/aperture_scaled.py",
+          "reference": "research/sim/gravity_templates_v15.json",
+          "bank": "research/gpu/reverse_bank_gravity.npz",
+          "evaluation": "research/training/iter_016/cp4m_random_eval/evaluation.json",
+          "optimizer": "research/gpu/ppo_backtrack.py",
+          "actor": "research/gpu/cat_policy.py",
+          "parity": "research/gpu/aperture_parity.json"
+         },
+         "weight_update_collection_steps": 1966080,
+         "checkpoint_collection_note": "Snapshot collected4005888 transitions; PPO updates through3932160. Training continues independently.",
+         "scripted_baseline_evaluation_note": "Separate central nominal30s single-object audits of all4corrected gravity-reference families pass each per-object criterion. This geometric analysis controller is not a learned policy and has not passed full randomized multiobject verification."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "fa14b5e05a76",
+          "bytes": 106725,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "d55bba4f165f",
+          "bytes": 55566,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "fa7787eb0c67",
+          "bytes": 70542,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "43d14094e3f9",
+          "bytes": 52344,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0075",
+        "seq": 75,
+        "kind": "iter",
+        "version": 21,
+        "recorded_utc": "2026-11-09T16:11:42Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "policy_observations": "deployable",
+         "reward_terms": [
+          {
+           "name": "reference_pose",
+           "formula": ".8exp(-(position_error/.05)^2)+.3exp(-(rotation_error/.6)^2)",
+           "weight": 0.02
+          },
+          {
+           "name": "reference_fingers",
+           "formula": "exp(-mean((q-q_reference)^2)/.06)",
+           "weight": 0.003
+          },
+          {
+           "name": "opposition",
+           "formula": "(.3thumb_case+.2other_case+1both_case)*I[[redacted]..6]",
+           "weight": 0.02
+          },
+          {
+           "name": "lift",
+           "formula": "clip(height_gain/.08,0,1)*I[phase3..5]",
+           "weight": 0.03
+          },
+          {
+           "name": "upright",
+           "formula": "signed blade_axis_dot_up*I[phase>=3 and hand_contact]",
+           "weight": 0.1
+          },
+          {
+           "name": "turn_progress",
+           "formula": "delta(blade_axis_dot_up)*I[phase>=3 and hand_contact]",
+           "weight": 0.2
+          },
+          {
+           "name": "left_goal",
+           "formula": "exp(-(object_XY_goal_distance/.07)^2)*I[phase>=5]",
+           "weight": 0.1
+          },
+          {
+           "name": "placement",
+           "formula": "I[left,tilt<=15deg,table_contact,released,linear_velocity<.02,angular_velocity<.15]",
+           "weight": 0.3
+          },
+          {
+           "name": "penetration",
+           "formula": "-max(depth-.003,0)/.01",
+           "weight": 0.8
+          },
+          {
+           "name": "motion",
+           "formula": "-mean(a^2)-mean((a-previous_a)^2)",
+           "weight": 0.0004
+          },
+          {
+           "name": "object_motion",
+           "formula": "-norm(object_angular_velocity)",
+           "weight": 0.0002
+          },
+          {
+           "name": "hardware",
+           "formula": "-I[hardware_speed_or_position_violation]",
+           "weight": 10.0
+          },
+          {
+           "name": "speed_margin",
+           "formula": "-max(max(abs(qd)/URDF_speed)-.5,0)^2",
+           "weight": 0.04
+          },
+          {
+           "name": "carry_distance",
+           "formula": "-object_XY_goal_distance*I[phase>=5]",
+           "weight": 0.08
+          },
+          {
+           "name": "case_proximity",
+           "formula": "(exp(-max(oriented_case_box_distance_from_FK_thumb_pad-.008,0)/.01)+max_other(exp(-max(box_distance-.008,0)/.01)))*I[[redacted]..6]",
+           "weight": 0.014
+          },
+          {
+           "name": "premature_turn",
+           "formula": "-I[ordinary episode,held,upright<=20deg,[redacted]..4,before5continuous20ms samples of lowest geometry>15mm AND center-rise>15mm]",
+           "weight": 2.0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Independent Gaussian",
+           "q_sigma": 0.002,
+           "qd_sigma": 0.05
+          },
+          {
+           "name": "physical variants",
+           "distribution": "Uniform choice of16 independent seeded uniform-range physical draws per kind,fixed per world",
+           "parameters": "research/sim/meshbank_variants.json",
+           "mass_scale": [
+            0.7,
+            1.3
+           ],
+           "white_axis_scale": [
+            0.9,
+            1.1
+           ],
+           "black_dimensions_mm": [
+            null,
+            null,
+            null
+           ],
+           "COM_mm": [
+            -3,
+            3
+           ],
+           "hand_table_mu": [
+            0.3,
+            1.0
+           ],
+           "restitution": [
+            0,
+            0.15
+           ],
+           "torsional_radius_m": [
+            0.001,
+            0.006
+           ]
+          }
+         ],
+         "algorithm": {
+          "name": "PPO clipped/GAE",
+          "actor_learning_rate": 3e-07,
+          "critic_learning_rate": 0.0003,
+          "n_steps": 32,
+          "batch_size": 8192,
+          "epochs": 4,
+          "gamma": 0.999,
+          "gae_lambda": 0.97,
+          "clip": 0.2,
+          "target_kl": 0.03,
+          "entropy": 0.0001,
+          "BC_auxiliary_weight": 0.003,
+          "actor_grad_clip": 0.5,
+          "critic_grad_clip": 5.0,
+          "initial_log_std": {
+           "fingers": -3.0,
+           "position": -7.5,
+           "rotation": -6.8
+          },
+          "head_learning_rate": 0.0003,
+          "root_head_effective_learning_rate": 3e-07,
+          "BC_action_weights": {
+           "fingers": 0.1,
+           "wrist": 10
+          },
+          "post_step_backtracking": "Each proposed actor update is repeatedly halved until actual batch KL<=.042,or restored after12tries."
+         },
+         "architecture": "Actor512,512,256Tanh,concatenate original150features into trainable26x406output head. Finger means Tanh,root means linear. Critic256,256,128Tanh. All actor/critic parameters trainable.",
+         "observation_space": "150 deployable features from noisy encoders,wrist/object states,own target histories and FK. Formerly masked8slots now contain phase-gated fingertip separation vs4nominal family gaps,tip midpoint,thumb/selected-other tracking errors,and products of gap error with tracking error. This uses no contacts,torques,forces or physical parameters. CPU/Torch parity tested1960actual observations:ordinary features<9.7e-7,scaled aperture features<.00196. Run18 scales gap and both gap/error products by1/100; these8features are bounded to moderate magnitudes.",
+         "action_space": "First20outputs command noisy measured currentq+.05clip(a),clipped joint limits. Root6absolute neural targets and own-previous-target.01m/.05rad filters retained. No velocity clipping or object state edits.",
+         "curriculum": "Fixed deployment wrist start for ordinary table episodes,random XY/yaw/two side families and left goal. Reverse probability.50 with466 variant-matched controller-generated states;9of32kind/variant pairs lack valid states and fall back to ordinary starts. No state changes during execution.",
+         "initialization": "Same algebraically equivalent scaled PPO17cp2M initializer as18; no new BC. Only optimizer backtracking differs from18.",
+         "compute": {
+          "wall_seconds": 348.13,
+          "gpu_hours": 0.09670277777777778,
+          "gpu": "OneL40S,cuda:2",
+          "environments": 4096
+         },
+         "training_steps": 2002944,
+         "evaluation": {
+          "episodes": [
+           {
+            "seed": 7100,
+            "kind": 0,
+            "return_": 10.246699589765912,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.02915684383947828,
+            "standing_steps": 0,
+            "held_steps": 3,
+            "tilt_degrees": 90.00022528577733,
+            "left_position": -0.06459284871624718,
+            "hardware": false,
+            "speed_ratio": 0.4434813328885652
+           },
+           {
+            "seed": 7101,
+            "kind": 1,
+            "return_": 7.294635127463417,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.03626957007528834,
+            "standing_steps": 0,
+            "held_steps": 6,
+            "tilt_degrees": 89.99976449141792,
+            "left_position": -0.0755014400156355,
+            "hardware": false,
+            "speed_ratio": 0.45339257956491014
+           },
+           {
+            "seed": 7102,
+            "kind": 0,
+            "return_": 49.528553109999926,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11588861350748143,
+            "standing_steps": 0,
+            "held_steps": 185,
+            "tilt_degrees": 90.00102255870283,
+            "left_position": 0.2623270440658487,
+            "hardware": false,
+            "speed_ratio": 0.43292481208026706
+           },
+           {
+            "seed": 7103,
+            "kind": 1,
+            "return_": 45.43739282436601,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11983008726757705,
+            "standing_steps": 0,
+            "held_steps": 196,
+            "tilt_degrees": 90.00026791896836,
+            "left_position": 0.2680099435317118,
+            "hardware": false,
+            "speed_ratio": 0.43090658985607816
+           },
+           {
+            "seed": 7104,
+            "kind": 0,
+            "return_": 9.651527915086616,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.007363643652107886,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99987777044188,
+            "left_position": -0.08050577839708799,
+            "hardware": false,
+            "speed_ratio": 0.4192520118501845
+           },
+           {
+            "seed": 7105,
+            "kind": 1,
+            "return_": 25.16858469100672,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11784025423452046,
+            "standing_steps": 0,
+            "held_steps": 145,
+            "tilt_degrees": 90.00004406719846,
+            "left_position": 0.44515372523147595,
+            "hardware": false,
+            "speed_ratio": 0.43485442112952744
+           },
+           {
+            "seed": 7106,
+            "kind": 0,
+            "return_": 8.443254236079182,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.05271808770227314,
+            "standing_steps": 0,
+            "held_steps": 11,
+            "tilt_degrees": 90.00221376151818,
+            "left_position": -0.15493088323531828,
+            "hardware": false,
+            "speed_ratio": 0.44077781015129586
+           },
+           {
+            "seed": 7107,
+            "kind": 1,
+            "return_": 51.199882431602965,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11581708107711812,
+            "standing_steps": 0,
+            "held_steps": 197,
+            "tilt_degrees": 89.99981481823907,
+            "left_position": 0.2904649717377777,
+            "hardware": false,
+            "speed_ratio": 0.4268001449804574
+           },
+           {
+            "seed": 7108,
+            "kind": 0,
+            "return_": 10.135432528871341,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.008967829024735535,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999506402861,
+            "left_position": -0.07487483653325414,
+            "hardware": false,
+            "speed_ratio": 0.40810992133544854
+           },
+           {
+            "seed": 7109,
+            "kind": 1,
+            "return_": 10.601486482608799,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.016919134495446124,
+            "standing_steps": 0,
+            "held_steps": 2,
+            "tilt_degrees": 90.00000820442474,
+            "left_position": -0.024299406361373916,
+            "hardware": false,
+            "speed_ratio": 0.42666518806737097
+           },
+           {
+            "seed": 7110,
+            "kind": 0,
+            "return_": 6.515626727687629,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.006010346600244295,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 0.0005091934943395205,
+            "left_position": -0.10389026501329442,
+            "hardware": false,
+            "speed_ratio": 0.43208396475251376
+           },
+           {
+            "seed": 7111,
+            "kind": 1,
+            "return_": 8.104484299478898,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.007478124287808165,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.00027657211385,
+            "left_position": -0.07545110548669086,
+            "hardware": false,
+            "speed_ratio": 0.42986769877879005
+           },
+           {
+            "seed": 7112,
+            "kind": 0,
+            "return_": 11.502966852680325,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.006462134997393121,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99942444373187,
+            "left_position": 0.01072238508485269,
+            "hardware": false,
+            "speed_ratio": 0.48465912326033256
+           },
+           {
+            "seed": 7113,
+            "kind": 1,
+            "return_": 53.513748216282686,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1079515132367654,
+            "standing_steps": 0,
+            "held_steps": 158,
+            "tilt_degrees": 89.99874436939469,
+            "left_position": 0.21302280023518755,
+            "hardware": false,
+            "speed_ratio": 0.44075038716075926
+           },
+           {
+            "seed": 7114,
+            "kind": 0,
+            "return_": 19.448896220908676,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10703302658693124,
+            "standing_steps": 0,
+            "held_steps": 53,
+            "tilt_degrees": 90.00025775699861,
+            "left_position": -0.007319481940299237,
+            "hardware": false,
+            "speed_ratio": 0.4946401529068672
+           },
+           {
+            "seed": 7115,
+            "kind": 1,
+            "return_": 9.102503337377746,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.012589712036534492,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99998916685061,
+            "left_position": -0.054645793818918396,
+            "hardware": false,
+            "speed_ratio": 0.44317695176026906
+           },
+           {
+            "seed": 7116,
+            "kind": 0,
+            "return_": 6.229045419001524,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.0052841682202998015,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 0.0002623781298256087,
+            "left_position": -0.05610472823338768,
+            "hardware": false,
+            "speed_ratio": 0.4381600947887229
+           },
+           {
+            "seed": 7117,
+            "kind": 1,
+            "return_": 27.531232988530856,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10352143141252873,
+            "standing_steps": 0,
+            "held_steps": 97,
+            "tilt_degrees": 90.00038493468314,
+            "left_position": 0.04195629999730456,
+            "hardware": false,
+            "speed_ratio": 0.4311774235079143
+           },
+           {
+            "seed": 7118,
+            "kind": 0,
+            "return_": 9.5002426406957,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.012558883144105103,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 0.003950125107099471,
+            "left_position": 0.016922383782490447,
+            "hardware": false,
+            "speed_ratio": 0.5040640517558773
+           },
+           {
+            "seed": 7119,
+            "kind": 1,
+            "return_": 30.303707018798676,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1183700722878864,
+            "standing_steps": 0,
+            "held_steps": 189,
+            "tilt_degrees": 90.00032134516998,
+            "left_position": 0.34139738808607883,
+            "hardware": false,
+            "speed_ratio": 0.4624287640442401
+           },
+           {
+            "seed": 7120,
+            "kind": 0,
+            "return_": 27.35353296909652,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.110010850791893,
+            "standing_steps": 0,
+            "held_steps": 98,
+            "tilt_degrees": 0.00016491097125700475,
+            "left_position": 0.03979229943828566,
+            "hardware": false,
+            "speed_ratio": 0.48294035153582787
+           },
+           {
+            "seed": 7121,
+            "kind": 1,
+            "return_": 70.39352193495537,
+            "steps": 490,
+            "success": true,
+            "max_lift": 0.11796676523409177,
+            "standing_steps": 102,
+            "held_steps": 187,
+            "tilt_degrees": 0.0008358308822224252,
+            "left_position": 0.3143583660792002,
+            "hardware": false,
+            "speed_ratio": 0.4938492856678151
+           },
+           {
+            "seed": 7122,
+            "kind": 0,
+            "return_": 13.115467158469642,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.06955109369624185,
+            "standing_steps": 0,
+            "held_steps": 16,
+            "tilt_degrees": 90.00182870700982,
+            "left_position": 0.020546077005787783,
+            "hardware": false,
+            "speed_ratio": 0.4266140668292976
+           },
+           {
+            "seed": 7123,
+            "kind": 1,
+            "return_": 23.26933055639917,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11753944185950128,
+            "standing_steps": 0,
+            "held_steps": 111,
+            "tilt_degrees": 90.00007228166155,
+            "left_position": 0.12301208905066957,
+            "hardware": false,
+            "speed_ratio": 0.42493299518127453
+           }
+          ],
+          "success_rate": 0.041666666666666664,
+          "hardware_violations": 0,
+          "scope": "Single-object9.8s curriculum diagnostic; not full30s/2or3object recorded criteria",
+          "mean_peak_lift": 0.06346244621951046
+         },
+         "baseline_evaluation": {
+          "episodes": [
+           {
+            "seed": 7100,
+            "kind": 0,
+            "return_": 9.933120802248016,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.022347668626865977,
+            "standing_steps": 0,
+            "held_steps": 2,
+            "tilt_degrees": 90.00022528567332,
+            "left_position": -0.06824858527175572,
+            "hardware": false,
+            "speed_ratio": 0.4570686326130296
+           },
+           {
+            "seed": 7101,
+            "kind": 1,
+            "return_": 6.781650434217455,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.030201913956143953,
+            "standing_steps": 0,
+            "held_steps": 4,
+            "tilt_degrees": 89.99976449242887,
+            "left_position": -0.0911614623305327,
+            "hardware": false,
+            "speed_ratio": 0.4534941434375628
+           },
+           {
+            "seed": 7102,
+            "kind": 0,
+            "return_": 49.423677336057864,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11563886318145229,
+            "standing_steps": 0,
+            "held_steps": 183,
+            "tilt_degrees": 90.00102252802726,
+            "left_position": 0.24528558544985968,
+            "hardware": false,
+            "speed_ratio": 0.43295968669918655
+           },
+           {
+            "seed": 7103,
+            "kind": 1,
+            "return_": 45.39723344412834,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1197985361658242,
+            "standing_steps": 0,
+            "held_steps": 196,
+            "tilt_degrees": 90.00026791917996,
+            "left_position": 0.2680652770942164,
+            "hardware": false,
+            "speed_ratio": 0.43091194787376036
+           },
+           {
+            "seed": 7104,
+            "kind": 0,
+            "return_": 9.78980784720199,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.007318894190345688,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99987777048331,
+            "left_position": -0.08024296827567592,
+            "hardware": false,
+            "speed_ratio": 0.4192771367942985
+           },
+           {
+            "seed": 7105,
+            "kind": 1,
+            "return_": 25.225589927654838,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11791317407135979,
+            "standing_steps": 0,
+            "held_steps": 141,
+            "tilt_degrees": 90.00004406343542,
+            "left_position": 0.4202625345307014,
+            "hardware": false,
+            "speed_ratio": 0.434862815022072
+           },
+           {
+            "seed": 7106,
+            "kind": 0,
+            "return_": 10.52372145407902,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1023278470944632,
+            "standing_steps": 0,
+            "held_steps": 27,
+            "tilt_degrees": 90.00221376160376,
+            "left_position": -0.17750520441498463,
+            "hardware": false,
+            "speed_ratio": 0.42123519822514577
+           },
+           {
+            "seed": 7107,
+            "kind": 1,
+            "return_": 50.11971414609133,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11574215661863459,
+            "standing_steps": 0,
+            "held_steps": 192,
+            "tilt_degrees": 89.99981481872474,
+            "left_position": 0.2922440326313529,
+            "hardware": false,
+            "speed_ratio": 0.42680012252806815
+           },
+           {
+            "seed": 7108,
+            "kind": 0,
+            "return_": 10.150932516688227,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.008968682151667256,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999506402877,
+            "left_position": -0.07500903938019127,
+            "hardware": false,
+            "speed_ratio": 0.40812133900010095
+           },
+           {
+            "seed": 7109,
+            "kind": 1,
+            "return_": 10.482149311138498,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.016912295534830278,
+            "standing_steps": 0,
+            "held_steps": 1,
+            "tilt_degrees": 90.0000538962328,
+            "left_position": -0.02493333080530784,
+            "hardware": false,
+            "speed_ratio": 0.42666036842979216
+           },
+           {
+            "seed": 7110,
+            "kind": 0,
+            "return_": 6.196643862222098,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.005928698230243137,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 0.0005091934943395205,
+            "left_position": -0.11043262858309398,
+            "hardware": false,
+            "speed_ratio": 0.43208281028027856
+           },
+           {
+            "seed": 7111,
+            "kind": 1,
+            "return_": 8.063783456169109,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.007507122917459853,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.000276572588,
+            "left_position": -0.075613475230142,
+            "hardware": false,
+            "speed_ratio": 0.42986504044784246
+           },
+           {
+            "seed": 7112,
+            "kind": 0,
+            "return_": 11.373506246797339,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.006349723210047096,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99942444375236,
+            "left_position": 0.010567655291372588,
+            "hardware": false,
+            "speed_ratio": 0.48478410995232163
+           },
+           {
+            "seed": 7113,
+            "kind": 1,
+            "return_": 61.98957328023044,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10772671150915338,
+            "standing_steps": 0,
+            "held_steps": 151,
+            "tilt_degrees": 89.99874440565092,
+            "left_position": 0.25025692811174305,
+            "hardware": false,
+            "speed_ratio": 0.44079894203448017
+           },
+           {
+            "seed": 7114,
+            "kind": 0,
+            "return_": 18.446842737282818,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10752852876872795,
+            "standing_steps": 0,
+            "held_steps": 64,
+            "tilt_degrees": 0.0018770574284436136,
+            "left_position": -0.04190176145234529,
+            "hardware": false,
+            "speed_ratio": 0.4947556727171516
+           },
+           {
+            "seed": 7115,
+            "kind": 1,
+            "return_": 9.206997866733182,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.012565051945198738,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99998916612415,
+            "left_position": -0.05511921126134181,
+            "hardware": false,
+            "speed_ratio": 0.44317611304249405
+           },
+           {
+            "seed": 7116,
+            "kind": 0,
+            "return_": 6.100537687074572,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.005241174660950386,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 0.0002623781298256087,
+            "left_position": -0.05613014820470329,
+            "hardware": false,
+            "speed_ratio": 0.43815783854482837
+           },
+           {
+            "seed": 7117,
+            "kind": 1,
+            "return_": 30.264060208246896,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10357295335317118,
+            "standing_steps": 0,
+            "held_steps": 103,
+            "tilt_degrees": 90.00038493711746,
+            "left_position": 0.07800628747237805,
+            "hardware": false,
+            "speed_ratio": 0.43118299674608657
+           },
+           {
+            "seed": 7118,
+            "kind": 0,
+            "return_": 9.502554289889606,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.0123678482038365,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 0.00395012483029958,
+            "left_position": 0.01664373819992846,
+            "hardware": false,
+            "speed_ratio": 0.5041792627528777
+           },
+           {
+            "seed": 7119,
+            "kind": 1,
+            "return_": 30.23754605830662,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11848733236386694,
+            "standing_steps": 0,
+            "held_steps": 189,
+            "tilt_degrees": 90.0003213436028,
+            "left_position": 0.34148976087524935,
+            "hardware": false,
+            "speed_ratio": 0.4624327438996579
+           },
+           {
+            "seed": 7120,
+            "kind": 0,
+            "return_": 101.63301131370254,
+            "steps": 490,
+            "success": true,
+            "max_lift": 0.11094216811483536,
+            "standing_steps": 120,
+            "held_steps": 112,
+            "tilt_degrees": 0.00016491097125700475,
+            "left_position": 0.17680311784198663,
+            "hardware": false,
+            "speed_ratio": 0.48295891630908616
+           },
+           {
+            "seed": 7121,
+            "kind": 1,
+            "return_": 70.578444390062,
+            "steps": 490,
+            "success": true,
+            "max_lift": 0.11798488497783927,
+            "standing_steps": 101,
+            "held_steps": 188,
+            "tilt_degrees": 0.0008358308822224252,
+            "left_position": 0.3141851985844728,
+            "hardware": false,
+            "speed_ratio": 0.4938456466481863
+           },
+           {
+            "seed": 7122,
+            "kind": 0,
+            "return_": 13.157683042741272,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.07142202154930757,
+            "standing_steps": 0,
+            "held_steps": 16,
+            "tilt_degrees": 90.0018287082231,
+            "left_position": 0.021808413066568024,
+            "hardware": false,
+            "speed_ratio": 0.4266144355075244
+           },
+           {
+            "seed": 7123,
+            "kind": 1,
+            "return_": 26.027130185451018,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11742998878573575,
+            "standing_steps": 0,
+            "held_steps": 111,
+            "tilt_degrees": 90.00007228124306,
+            "left_position": 0.15158809997003575,
+            "hardware": false,
+            "speed_ratio": 0.4249411811649674
+           }
+          ],
+          "success_rate": 0.08333333333333333,
+          "hardware_violations": 0,
+          "scope": "Single-object9.8s curriculum diagnostic; not full30s/2or3object recorded criteria",
+          "mean_peak_lift": 0.06509267667424835
+         },
+         "criteria_comparison": {
+          "criteria_version": 2,
+          "passed": false,
+          "reason": "Only24single-object9.8sdiagnostics,far below full60fresh30smultiobject criteria."
+         },
+         "discrete_layer": "Select highest/nearest unfinished plug,assign left slots x[-.06,.06] or[-.12,0,.12],y.23;advance finite phase clock and retry remaining plugs. Every numerical motion target comes from the PPO actor.",
+         "reflection": "1/24continuousDR single-object placements,0hardware violations. Backtracking controls KL but does not resolve the physical grasp/reorientation gap. No fulltask or robustness success.",
+         "curves_note": "EveryGPUvectorcollectorstepisrecordedwithmeanrewardterms,episodeage,success/hardwareproxies,andcompletedepisodemetrics. Curriculumoutcomesarenotdeploymentcriteria.",
+         "artifacts": {
+          "checkpoint": "research/training/iter_020/checkpoint_2002944.zip",
+          "trainer": "research/gpu/train_aperture_backtrack.py",
+          "environment": "research/gpu/vec_env_aperture_scaled.py",
+          "encoder": "research/gpu/aperture_scaled_torch.py",
+          "numpy_decoder": "research/policy/aperture_scaled.py",
+          "reference": "research/sim/gravity_templates_v15.json",
+          "bank": "research/gpu/reverse_bank_gravity.npz",
+          "evaluation": "research/training/iter_016/cp4m_random_eval/evaluation.json",
+          "optimizer": "research/gpu/ppo_backtrack.py",
+          "actor": "research/gpu/cat_policy.py",
+          "parity": "research/gpu/aperture_parity.json"
+         },
+         "weight_update_collection_steps": 1966080,
+         "checkpoint_collection_note": "Snapshot collected4005888 transitions; PPO updates through3932160. Training continues independently.",
+         "scripted_baseline_evaluation_note": "Separate central nominal30s single-object audits of all4corrected gravity-reference families pass each per-object criterion. This geometric analysis controller is not a learned policy and has not passed full randomized multiobject verification."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "097eac877d52",
+          "bytes": 97508,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "65a7512d9fe4",
+          "bytes": 122174,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "5fc9e0a5f504",
+          "bytes": 112627,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "e12bc3719046",
+          "bytes": 97570,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-09T09:57:49Z",
@@ -384128,6 +385963,2717 @@
          "text": "Fixed640case verdict 0/640 allcriteria;percriterioncounts {‘G1': 0, 'G2': 339, 'G3': 171, 'G4': 638, 'S1': 24, 'S2': 640, 'S3': 55, 'S4_source_audit': 640}. Continue diagnosis of hardware/integrity,opposition andfullturn discovery; curriculumsuccess is not taskverification."
         },
         "files": {}
+       },
+       {
+        "id": "r0083",
+        "seq": 83,
+        "kind": "sim",
+        "version": 17,
+        "recorded_utc": "2026-11-09T16:03:44Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 3,
+         "simulator": {
+          "name": "MuJoCo / MuJoCo Warp",
+          "version": "MuJoCo3.17.0 /MuJoCo Warp3.17.0 /Warp1.19.0",
+          "physics_dt_s": 0.0005,
+          "integrator": "implicitfast",
+          "solver": "Newton20",
+          "tolerance": 1e-08,
+          "contact": "elliptic friction cone, solref .005/damping ratio, solimp .95 .99 .001; default e=0",
+          "native_backend": "CPU C++/OpenMP retained for evaluation; GPU Warp float32 for training, same physical model/controllers/passive forces"
+         },
+         "scene": {
+          "files_sha256": {
+           "sim/scene.xml": "7db399a5469e…",
+           "sim/scene.mjb": "1dc7b769114b…",
+           "sim/model_meta.json": "00e52d4a47ee…",
+           "sim/initial_pose.json": "b626e955624c…",
+           "code/build_sim.py": "f95a374593d5…",
+           "code/backend.cpp": "4f9ec158c965…",
+           "code/policy_net.py": "3a4c86a02cde…",
+           "code/train_ppo.py": "0c95cf9e3841…"
+          },
+          "robot": "Authoritative left URDF, all inertias/joints/armatures and fixed pads/covers, mass0.7088kg",
+          "floor": "z=0, gravity(0,0,-9.81)",
+          "cube": "Trainingprototype size.05148246518038597m,mass.04974335759118717kg,friction.8985134013412676,face Coulomb.0008336089071106996Nm,contact dampingratio.5320974681533055;fixed physical sample from ownPPO10verificationseed100261,not measured hardware. 3gcore,8equalcorners,geometry/inertiasderivedasoriginal. RuntimeGPUmodelconstructorupdatesallderivedconstants;rawXMLisunchangedprior."
+         },
+         "mechanism": {
+          "type": "Passive nearest legal single-face-turn manifold coupled corner ball joints",
+          "coupling_Nm_rad": 1.0,
+          "joint_viscous_damping_Nms_rad": 5e-05,
+          "face_coulomb_resistance_Nm": 0.0007,
+          "detent_energy_J": 0.00025,
+          "max_[redacted]_Nm": 0.001,
+          "object_joint_armature_kgm2": 1e-07,
+          "implementation": "At each physics step choose deformation-consistent face; couple corner orientation errors by restoring torques and periodic detents. Bearing damping/friction solved implicitly. At45deg change periodic reference well by90deg without changing qpos. All actual corner poses remain physics states. No goal-dependent forces or object actuator in policy step.",
+          "limitations": "Idealized compliant mechanism; no measured GAN CAD/fracture model. Test torque probes are apparatus only, separate from policy step."
+         },
+         "hardware": {
+          "wrist": "Free l_mount, specified Cartesian impedance gains2000/60 and20/.4, hand-only weight/COM compensation, 30N/2Nm norm saturation. Generalized wrench about root origin. No feedforward velocities.",
+          "fingers": "Specified1kHz PD and effort saturation; strict actual position/speed checks, no state clamping. All20 URDF limits and armatures preserved.",
+          "policy_hz": 10,
+          "interface_hz": 500,
+          "controller_hz": 1000,
+          "network_action": "26learnedvelocityparametersheld100ms;500Hzposition-targetintegratorwith1.5rad/sfinger,.1m/speraxiswristtranslation,2rad/speraxisworldangularvelocity;1kHzPD,zerofeedforward. Wristtargetradius.1m. New gate variant only: actual velocity parameters=tanh(PPOlatent)*s, s=.05+.95*clip((max8allowedpart-goalquaternionerror-.052)/(pi/6-.052),0,1). Gate selects no direction; zero actor output yields zero commanded velocity.",
+          "encoders": "independent Gaussian sigma.002rad/.05rad_s on observations",
+          "collision_filter": "Only integral proximal/abduction housing-to-palm pairs and directly attached link pairs excluded due vendor convex-hull/soft-cover overlap; distal-to-palm, inter-finger and every hand/cube collision retained."
+         },
+         "reference": {
+          "record": "r0008",
+          "version": 3,
+          "use": "Wrist gravity-relative tilt, compact cube/wrist relation, thumb/opposing-finger contact roles. No reference replay or IK in policy execution.",
+          "retarget_baseline": {
+           "method": "Offline fingertip IK to the recorded left MANO hand, robot-aligned wrist basis, yaw-only world alignment. No policy execution uses IK or replay.",
+           "frames": [
+            79,
+            341
+           ],
+           "wall_s": 7.234601259231567,
+           "median_fingertip_error_m": 0.00244317878505773,
+           "max_fingertip_error_m": 0.01058121338400978,
+           "max_hand_object_penetration_m": 0.02249644442338548,
+           "limitations": "Kinematic baseline, not a feasible dynamic policy. Robot finger morphology and human contacts differ; hidden layer state was not reconstructed. PPO will use wrist/contact style rather than replay these targets."
+          },
+          "retarget_verdict": "Offline IK is NOT dynamically feasible: max22.5mm penetration, despite median2.44mm tip error. This failure motivates contact-aware PPO; no IK trajectories are commanded by the policy."
+         },
+         "initial_conditions": {
+          "hand": {
+           "wrist_pos_quat_wxyz": [
+            0.0,
+            0.0,
+            0.28,
+            0.7071067811865476,
+            -0.7071067811865475,
+            0.0,
+            0.0
+           ],
+           "q0": [
+            -0.15,
+            -0.65,
+            0.3,
+            0.2,
+            0.25,
+            -0.1,
+            0.5,
+            0.25,
+            0.25,
+            0.0,
+            0.5,
+            0.25,
+            0.3,
+            0.08,
+            0.55,
+            0.3,
+            0.4,
+            0.16,
+            0.6,
+            0.3
+           ],
+           "cube_pos_quat_wxyz": [
+            0.0,
+            -0.095,
+            0.3288989829593863,
+            1.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           "surface_height_m": 0.29244892018202995,
+           "ray_geom": 57,
+           "description": "Initial receiving bowl, palm-up. Cube centered near palm/finger bases. To be tested for variation before accepting.",
+           "fingers": {
+            "l_thumb_tip_sensor_frame_site": null,
+            "l_index_finger_tip_sensor_frame_site": null,
+            "l_middle_finger_tip_sensor_frame_site": null,
+            "l_ring_finger_tip_sensor_frame_site": null,
+            "l_pinky_tip_sensor_frame_site": null
+           }
+          },
+          "placement": "Deploymentinitialhandposeandfull640suite unchanged. Training:mixtureoforiginalstartwithonelegalquarterand72referencegraspstatesfromownPPO10,t1.5-3.01s or20-25.8s. Onlycurriculumresetmaysetreferencephysicsstate/previouscommands;allsubsequentmotionPPO.",
+          "scrambles": "Curriculum: solved receive/hold, partial turns, then1/2/3 legal full turns, stress4-5. Material corner identities retained.",
+          "domain_randomization": [
+           {
+            "quantity": "physicalparameters",
+            "distribution": "fixedprototypepoint",
+            "values": null
+           },
+           {
+            "quantity": "resetreferenceprobability",
+            "distribution": "Bernoulli,linear.75to.25overrequestedtrainingsteps"
+           },
+           {
+            "quantity": "referenceframe",
+            "distribution": "uniform72curatedownPPOstates"
+           },
+           {
+            "quantity": "originalstartlegalquarter",
+            "distribution": "uniform6facesand+/-directions"
+           }
+          ]
+         },
+         "episode": {
+          "training_horizon_s": 30,
+          "verification_horizon_s": 30,
+          "termination": "Trainingmarginlinearlyannealed3mmto2mm;failure/horizon30s,no success termination. Reference probability .75to.25 at PPOupdates,appliesonlylaterresets. Criteria2/nativeoriginalfull640unchanged."
+         },
+         "decision_layer": {
+          "type": "Finite symbolic cube-state BFS lookup, depth7, canonicalized by material corner0",
+          "states": 44971,
+          "bad_reverse_moves": 0,
+          "observations": "Only corner orientations plus constant canonical frame identities; no physics rollout or trajectory search.",
+          "output": "High-level next face/quarter direction and desired corner orientations; every robot motion target comes from PPO network.",
+          "gpu_port": "Same exported44971state finite table, vectorized exact canonicalization; fixed12 symbolic move fallback outside table. No physics search."
+         },
+         "validation": {
+          "hand_mass_kg": 0.7088000000000002,
+          "nominal_zero_action_hold_s": 3.0,
+          "nominal_hardware_velocity_ratio_max": 0.04803912714123726,
+          "nominal_hand_cube_penetration_m": 0.00041937135392799973,
+          "nominal_illegal_deformation_m": 0.00043359113624319434,
+          "nominal_wrist_displacement_m": 0.00038801479968242347,
+          "randomized_receiving": {
+           "episodes": 16,
+           "duration_s": 0.58,
+           "drops": 1,
+           "hardware_failures": 0
+          },
+          "mechanism_probes": {
+           "conditions": "No hand contact; cube in free fall above floor; known differential torque0.003Nm for.14s, test apparatus only. Task retention failure code1 expected in this isolated test.",
+           "faces": 6,
+           "quarter_reference_changes": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+           ],
+           "max_forbidden_rotation_rad": 0.000914792380460329,
+           "max_forbidden_displacement_m": 1.8470685832267308e-05,
+           "limitations": "Coherent layer motion verified; final pulse stop is about85deg, not an accurately solved policy turn. PPO still must align within3deg."
+          }
+         },
+         "baseline": {
+          "type": "Constant receiving pose, not learned",
+          "result": "Retains nominal cube but lacks thumb opposition and sideways wrist style; no solve claim. Does not pass criteria v1.",
+          "gpu_hold": "Nominal1024 copies1s: contact fraction1, no overflow, no drop/hardware failure. No thumb opposition or skill success.",
+          "partial_turn_zero_action": {
+           "episodes": 128,
+           "initial_partial_turn_radians": [
+            -0.35,
+            0.35
+           ],
+           "duration_s": 4,
+           "stable_solved_without_actions": 19,
+           "not_a_learned_policy": true,
+           "conclusion": "Partialturncurriculumisnotreliableskillevidence;requirefullturnsandcomposedfrozenevaluation."
+          }
+         },
+         "limitations": [
+          "Physical parameters and mechanism inferred, not measured.",
+          "Collision approximations and housing exclusions require transfer caution.",
+          "Retargeted IK replay has severe penetration and is not executable.",
+          "No policy has yet been evaluated or verified.",
+          "Only own simulation claims; no target rounds.",
+          "GPU port validated only on nominal hold at this point, not full turn transfer. GPU training nominal scope disclosed per iteration."
+         ],
+         "previous_sim_version": 10,
+         "gpu_training_scope": "Nominalphysical/poseDR nowavailable;stress ranges remainheldoutCPUverification. GPUstage andrewardweights recordedperiteration.",
+         "gpu_implementation": {
+          "warp_version": "1.19.0",
+          "control": "40 physics steps per50Hz network action,1kHz PD,500Hz command holds",
+          "diagnostics": "Every physics step: speed and joint position, penetration, legal manifold strain, floor/drop/nonfinite/overflow, contact and opposing contact; no diagnostics enter actor.",
+          "contact_threshold_m": 0.0002,
+          "hardware_failure_velocity_ratio": 1.000001,
+          "precision_limitation": "Float32 GPU solver is not bitwise equivalent to float64 CPU; all positive claims still require CPU fixed-suite verification.",
+          "parity": {
+           "cpu_metrics": [
+            0.0,
+            0.0,
+            50.0,
+            13.714585304260254,
+            0.04803912714123726,
+            0.0,
+            0.00041937135392799973,
+            0.019919266924262047,
+            0.00043359113624319434,
+            0.0,
+            1.0,
+            0.0,
+            0.12744319438934326,
+            0.00038801479968242347,
+            0.0,
+            0.0,
+            0.15420806407928467,
+            90.1541976928711,
+            0.10855879634618759,
+            0.0
+           ],
+           "gpu_metrics": [
+            0.0,
+            0.0,
+            50.0,
+            15.601229667663574,
+            0.04803921654820442,
+            0.0,
+            0.00041945267003029585,
+            0.02004077285528183,
+            0.0004364889464341104,
+            0.0,
+            1.0,
+            0.0,
+            0.12677128612995148,
+            0.0003862281155306846,
+            0.0,
+            0.0,
+            0.15450505912303925,
+            90.15438079833984,
+            0.10872188955545425,
+            0.0
+           ],
+           "qpos_max_abs": 0.002113087996541422,
+           "qvel_max_abs": 0.008677360710601002,
+           "wrist_position_difference_m": 5.216749247662781e-07,
+           "cube_position_difference_m": 0.00022862410063721828,
+           "gpu_overflow": [
+            0
+           ]
+          },
+          "benchmark": {
+           "worlds": 512,
+           "wall_s": 3.5036652088165283,
+           "env_control_steps": 25600,
+           "fps": 7306.634188557986,
+           "physics_steps_per_control": 40,
+           "setup_s": 259.8415253162384,
+           "max_illegal_rad": 0.02004331350326538,
+           "max_strain_m": 0.0004365475906524807,
+           "qpos_finite": true,
+           "wrist_pos": [
+            -1.963378903901969e-10,
+            8.330494072339434e-10,
+            0.27973076701164246
+           ],
+           "cube_pos": [
+            0.001467833062633872,
+            -0.09995677322149277,
+            0.32247427105903625
+           ]
+          },
+          "termination_difference": "GPU flags violations at every0.5ms tick but completesremainingticksin20mscapturedgraph before resettingatcontrolboundary;CPU freezesonfirstfailure. Training reward state aftera failed action can thereforediffer;allpositiveclaimsrequirestrictCPUverification.",
+          "randomization": "1024fixeduniform(size,mass)samples,uniformbankindexperreset;continuousindependentfriction/resistance/restitution/pose. No parametersenteractor."
+         },
+         "gpu_source_hashes": {
+          "research/code/gpu_env.py": "49494948013f…",
+          "research/code/warp_forces.py": "18013b1e37a2…",
+          "research/code/warp_checks.py": "3c597aa5c64e…",
+          "research/code/torch_geometry.py": "1bc27015f9a8…",
+          "research/code/train_gpu_ppo.py": "b3232ec59022…",
+          "research/code/policy_net.py": "a935798f3617…",
+          "research/sim/cube_graph.npz": "a26230893da8…"
+         },
+         "changes_from_previous": [
+          "No physicalforce/controllerchangefrom8/9;245actorfeaturesappend6hand-framegoalfeaturescomputedfromtheexisting239allowedfeatures:goalaxisandmeanrotation-errorvector. No newworldmeasurements.",
+          "Actor/criticfirst-layerweightsarezeropaddedfrom239to245,soaddedfeaturesinitiallydonotchangethemean;allweightscontinuePPOtraining.",
+          "Episode-startmixture50%exactnominalphysicalposeandparameters,50%originalphysical/placementDR. Exactnominalmodelconstantssnapshotrestoredatreset,never duringexecution.",
+          "Explorationisfull-rankGaussianwithcovarianceL L^T+diag(exp(logstd)^2):fixedfinger-curlcorrelations,andPPO-learneddiagonalinnovation. State-dependentgoalproximityscale.05+.95*clip((maxerror-.052)/(pi/6-.052),0,1)multipliesstandarddeviation. Loglikelihood/entropyusefullMultivariateNormal.",
+          "All26meanmotionoutputsarePPO. Covarianceisanexplorationprior,notafingermotioncontroller;deterministicmeanisdeliveredandverified."
+         ],
+         "strict_verifier": "research/code/verify_portable.py",
+         "fixed_suite": {
+          "criteria_version": 1,
+          "episodes": 640,
+          "nominal": 512,
+          "stress": 128,
+          "explicit": "First288nominal:24cardinalorientations x12singleface/directionturns, withroughpalmoffset andphysicalDR. Remaining224nominal:1–3turns,continuousyaw,tilt. Stress4–5turns. Rejection only ofsymbolicallyalready-solvedscrambles,neverofhandoutcomes.",
+          "seed_ranges": [
+           [
+            100000,
+            100511
+           ],
+           [
+            200000,
+            200127
+           ]
+          ],
+          "hashes": {
+           "initial_states.npz": "90603bf3d31f…",
+           "parameters.json": "a814f662db6b…"
+          }
+         },
+         "strict_source_hashes": {
+          "research/code/backend.cpp": "52d0ce7f7e21…",
+          "research/code/verify_strict.py": "587b18bdc187…",
+          "research/code/freeze_suite.py": "c72353076c5a…"
+         },
+         "gpu_validation": {
+          "smoke": {
+           "wall_s": 4.949917793273926,
+           "overflow": [
+            0
+           ],
+           "qpos_finite": true
+          },
+          "mass_parity": {
+           "cases": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+           ],
+           "passed": true,
+           "limitations": "Mass matrix/geometry consistency test only; does not establish full dynamic transfer. MuJoCo Warp ignores dof_M0 andBVH fields, and nonbatchable dof_length is unused because sleeping is disabled."
+          },
+          "frontend": {
+           "fixture": "Random untrained network;fixedboundedrandom actions for interface validation only",
+           "states_compared": 1984,
+           "max_feature_abs_difference": 1.3182871043682098e-06,
+           "max_goal_feature_abs_difference": 0.0,
+           "all_outputs_finite": true,
+           "extra_fields_rejected": true,
+           "absolute_targets_shapes": {
+            "finger_position_targets": null,
+            "finger_velocity_targets": null,
+            "wrist_position_target": null,
+            "wrist_quaternion_target_wxyz": null,
+            "wrist_linear_feedforward": null,
+            "wrist_angular_feedforward": null
+           },
+           "passed": true
+          }
+         },
+         "limits_of_new_validation": "Massmatrixagreement is not fulltrajectoryequivalence. Initial DR smoke254/256supported1s underfixedreceivingpose,2drops;notalearnedskill.",
+         "new_source_hashes": {
+          "research/code/gpu_reference_env.py": "b344c6001971…",
+          "research/code/train_gpu_reference.py": "0db8e08f6f6b…",
+          "research/code/prepare_reference_curriculum.py": "89f3b9a4e066…",
+          "research/analysis/reference_curriculum20/states.npz": "d014e2130622…",
+          "research/analysis/reference_curriculum20/provenance.json": "d8c9a5ce503b…"
+         },
+         "reward_incentive_analysis": "Oldholdingreward~1.5/step withgamma.995 gives~300discountedfutureunits,exceedingterminalsuccess10.Thiscouldteachdelay. Correctadapterretainsfutureholdrewardsandmakesfullturnprogress/solvedalignmentvaluable.",
+         "unevaluated_aborted_attempt": "Iteration5startupDRPPO ran briefly,theninterruptedbeforeanysavedorevaluatedcheckpointduetorewardanalysis.Curves/logspreserved; no skillclaimorcheckpointcomparison.",
+         "adapter_source_hashes": {
+          "research/code/backend.cpp": "bf040e78c59d…",
+          "research/code/deployed_policy.py": "baa0e5dda73e…",
+          "research/code/verify_portable.py": "7db46fee54ec…",
+          "research/code/policy_net.py": "c263dc7a601f…",
+          "research/code/torch_geometry.py": "1bc27015f9a8…",
+          "research/sim/cube_graph_v4.npz": "4e8dd958e139…"
+         },
+         "adapter_smoke": {
+          "terms": 14,
+          "reward_sum_max_difference": 0.0,
+          "finite": true,
+          "success_does_not_terminate": true,
+          "term_means": [
+           0.1410776674747467,
+           0.06376006454229355,
+           0.0,
+           0.0,
+           -0.4740828573703766,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           -1.7024852638769516e-08,
+           0.000564216636121273,
+           0.00038202351424843073
+          ]
+         },
+         "portable_validation": {
+          "features": {
+           "fixture": "Random untrained network;fixedboundedrandom actions for interface validation only",
+           "states_compared": 1984,
+           "max_feature_abs_difference": 7.017515599727631e-07,
+           "max_goal_feature_abs_difference": 0.0,
+           "all_outputs_finite": true,
+           "extra_fields_rejected": true,
+           "absolute_targets_shapes": {
+            "finger_position_targets": null,
+            "finger_velocity_targets": null,
+            "wrist_position_target": null,
+            "wrist_quaternion_target_wxyz": null,
+            "wrist_linear_feedforward": null,
+            "wrist_angular_feedforward": null
+           },
+           "passed": true
+          },
+          "absolute_adapter": {
+           "cases": 16,
+           "duration_s": 2,
+           "method": "Untrained fixture;identicalboundedrandomdelta commands vsconvertedabsolutetargets",
+           "max_finger_difference_rad": 2.8934763206672764e-05,
+           "max_wrist_position_difference_m": 1.5753621318316685e-07,
+           "max_cube_position_difference_m": 7.183275897691067e-05,
+           "passed": true
+          }
+         },
+         "partial_curriculum_baseline": {
+          "description": "Zeroactionpartial55to90degreecurriculumbaseline25percentfullquarter,notlearned",
+          "episodes": 256,
+          "stable_solved_count": 0
+         },
+         "opposite_planner_test": {
+          "opposite_move_equivalence_cases": 44970,
+          "bad_equivalences": 0,
+          "partial_face_cases": 36,
+          "max_selected_goal_distance_to_identity_rad": 0.0,
+          "passed": true
+         },
+         "partial_source_hashes": {
+          "research/code/gpu_partial_env.py": "af10ce25840f…",
+          "research/code/deployed_policy.py": "15ade69a2a25…",
+          "research/code/train_gpu_partial.py": "dcc9b2ccf4c2…"
+         },
+         "velocity_validation": {
+          "zero_action": {
+           "description": "Zeroaction1secondvelocitydecoderparity,notlearned",
+           "wall_s": 3.5164589881896973,
+           "metrics": [
+            0.0,
+            0.0,
+            50.0,
+            22.686765670776367,
+            0.04803922027349472,
+            0.0,
+            0.0004194731009192765,
+            0.020038016140460968,
+            0.00043643382377922535,
+            0.0,
+            1.0,
+            0.0,
+            0.1268956959247589,
+            0.00038617485552094877,
+            0.0,
+            0.0,
+            0.15450505912303925,
+            90.1543960571289,
+            0.10872619599103928,
+            0.0
+           ],
+           "overflow": [
+            0
+           ]
+          },
+          "parity": {
+           "max_qpos_component_difference": 9.940192103385925e-05,
+           "cube_position_difference_m": 7.718483723553122e-06,
+           "wrist_position_difference_m": 3.951226706124304e-09,
+           "same_one_second_physics": true,
+           "overflow": [
+            0
+           ]
+          },
+          "random_commands": {
+           "method": "Boundedrandomvelocitycommands,analysisnotlearned",
+           "control_hz": 10,
+           "command_hz": 500,
+           "PD_hz": 1000,
+           "worlds": 256,
+           "steps": 32,
+           "wall_s": 21.45777654647827,
+           "terminals": 35,
+           "hardware_failure_count": 1,
+           "max_velocity_ratio": 1.0064700841903687,
+           "overflow": [
+            0
+           ]
+          }
+         },
+         "velocity_validation_limit": "Zerocommandparitydoesnotestablishmovingtrajectoryequivalence. Randomcommandsproduced1strictspeedviolation,whichwasflaggedandterminated;noactualstateclamping. AllreportedpoliciesstillrequirestrictCPUverification.",
+         "velocity_source_hashes": {
+          "research/code/gpu_velocity_env.py": "12c4c6eaa739…",
+          "research/code/velocity_decoder.py": "76ded5d364fe…",
+          "research/code/gpu_env_dr.py": "5b65fe84c52d…",
+          "research/code/gpu_skill_env.py": "59f354884e7c…",
+          "research/code/train_gpu_velocity.py": "61a648ed17b9…"
+         },
+         "goalset_validation": {
+          "equivalent_progress": {
+           "before": 0.7853981852531433,
+           "old_committed_goal_after_equivalent_progress": 0.8726646900177002,
+           "new_goal_set_after": 0.6981316804885864,
+           "positive_progress": 0.08726650476455688,
+           "passed": true
+          },
+          "smoke": {
+           "description": "Goalsetzeroactionsmoke,notlearned",
+           "finite": true,
+           "reward_sum_difference": 0.0,
+           "worlds": 128,
+           "alternative_goals_finite": true,
+           "positive_task_claim": false
+          }
+         },
+         "reward_diagnosis": "A+zquarter-startcanbesolvedbyupper-zturnbackoroppositelower-zturnforward. After10degvalidoppositelayerprogress,oldcommittedmeanerrorrose.7854to.8727rad;goalsetdistancefalls to.6981rad. Oldrewardcouldpenalizevalidprogress. Bothcanonicalchildrenequal,verifiedseparately.",
+         "goalset_source_hashes": {
+          "research/code/gpu_goalset_env.py": "fe484ab2dff6…",
+          "research/code/train_gpu_goalset.py": "6ab4792ad36e…",
+          "research/code/deployed_policy.py": "d4f88fa57aaf…"
+         },
+         "feature_validation": {
+          "frame_cases": 256,
+          "max_frame_feature_error": 1.7275073538325358e-07,
+          "min_covariance_eigenvalue": 0.002499997615814209,
+          "log_probability_gradients_finite": true,
+          "passed": true
+         },
+         "mixture_validation": {
+          "shape": [
+           128,
+           245
+          ],
+          "finite": true,
+          "nominal_count": 66,
+          "randomized_count": 62,
+          "positive_task_claim": false
+         },
+         "exploration_prior": "Fingerflex,MCP/PIP/DIPnoiseiscorrelatedwithinadigit;index/middlelargerforflickdiscovery,thumb/ring/pinkyquieterforsupport. Thisisamodeling/learninghypothesisinformedbydemocontactroles,notareconstructionofthehiddenexacthumansequence.",
+         "feature_source_hashes": {
+          "research/code/gpu_feature_env.py": "46ed8b263856…",
+          "research/code/goal_features.py": "53da7d47cd94…",
+          "research/code/train_gpu_correlated.py": "5f22e935199e…",
+          "research/code/deployed_policy.py": "7394d0d77d98…"
+         },
+         "motion_gate_test": {
+          "legacy_ungated_action_difference": 0,
+          "gate_actor_action_difference": 0.0,
+          "fixture_motion_scales": [
+           0.05000000074505806,
+           0.05000000074505806,
+           0.05000000074505806,
+           0.14669236540794373,
+           0.3481347858905792,
+           0.5495772361755371,
+           1.0,
+           1.0
+          ],
+          "zero_network_output_velocity": 0.0,
+          "passed": true
+         },
+         "lateral_smoke": {
+          "worlds": 64,
+          "duration_s": 0.5,
+          "lateral_axis_max_error": 1.1920928955078125e-07,
+          "motion_scale_range": [
+           1.0,
+           1.0
+          ],
+          "finite": true,
+          "reward_sum_error": 0.0,
+          "overflow": [
+           0
+          ],
+          "terms": 15,
+          "description": "Lateral turn curriculum,original physical mechanism,zero action baseline not learned task success"
+         },
+         "new_reward": {
+          "tracking_error_cost": "-.01*mean20(((target-actualq)/.02rad)^2)",
+          "subthreshold_strain_cost": "-3*max(0,(lifetimeforbiddenstrain-.001m)/.001m)",
+          "style_weight": 4.0,
+          "safety_margin_curriculum_m": [
+           0.003,
+           0.002
+          ],
+          "allterms": "Corrected14termsplus2costs,globalrewardscale.1"
+         },
+         "lat_experiment_reason": "PPO10 full640r0067 had1stableG1 but0allcriteria. Seed100261,goalaxisworld-X,was reproducedexactly at original512actorbatch;first2s alreadyturns~57degbutfinalalignslow,solved25.7445soutsideold20straininghorizon. WristS1fails. Newvarianttargetsquarterdiscovery,softlanding,andwriststyle in original physics; all deployment claims still need fullsuite.",
+         "reference_state_curriculum": {
+          "description": "Training reset states only;never replayed as deployment actions",
+          "source": "PPO10 r0067seed100261 successfulG1butfailedS1,exact512batchreproduction",
+          "transformation": "Rigidly rotate whole hand/cube/previous wrist target so cube root is cardinal and wrist falls within published S1 median ranges;translate wrist to original initial location. Finger angles and relative corner state unchanged. Initial velocities zeroed. These are curriculum resets,not active state edits.",
+          "count": 72,
+          "source_time_ranges": [
+           [
+            1.5,
+            3.01
+           ],
+           [
+            20,
+            25.8
+           ]
+          ],
+          "training_state_filter": "Select reference frames admitting gravity-relative S1 median ranges;no filtering of verification cases.",
+          "pose_candidate_rejected": "A fixed new receiving pose was separately tested and rejected:31/64drops in1s;deployment startingpose unchanged."
+         },
+         "reference_smoke": {
+          "worlds": 64,
+          "duration_s": 1,
+          "finite": true,
+          "reward_sum_error": 0.0,
+          "overflow": [
+           0
+          ],
+          "terms": 16,
+          "training_success_easy_curriculum_count": 0,
+          "prototype_cube_mass": 0.04974335759118717,
+          "description": "ZeroactionRSIcurriculumtest;nearsolvedstartsandinitialwriststylearetrainingonly,notdeploymentverification"
+         },
+         "deployment_reference_exclusion": "Finalwrapperloadsno reference states or prototypeparameters andnever resets any physical state. PPOactortrainedhereisdeployedfromoriginalpalmupstart,allmotionsfromnetwork. F64actorinferencewithfloat32commandquantizationasvalidatedfixture;trainingremainsfloat32PPO."
+        },
+        "files": {
+         "scene_1": {
+          "sha": "b344c6001971",
+          "bytes": 2846,
+          "content_type": "text/plain"
+         },
+         "scene_2": {
+          "sha": "0db8e08f6f6b",
+          "bytes": 12551,
+          "content_type": "text/plain"
+         },
+         "scene_3": {
+          "sha": "89f3b9a4e066",
+          "bytes": 2533,
+          "content_type": "text/plain"
+         },
+         "scene_4": {
+          "sha": "d014e2130622",
+          "bytes": 43418,
+          "content_type": "application/octet-stream"
+         },
+         "scene_5": {
+          "sha": "d8c9a5ce503b",
+          "bytes": 893,
+          "content_type": "application/json"
+         },
+         "scene_6": {
+          "sha": "a8b92a6fb49b",
+          "bytes": 380,
+          "content_type": "application/json"
+         },
+         "scene_7": {
+          "sha": "cd3b6bef18af",
+          "bytes": 343,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0084",
+        "seq": 84,
+        "kind": "note",
+        "version": 36,
+        "recorded_utc": "2026-11-09T16:03:58Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Elapsed6h20m,harddeadline17:43:30Z. No completefullsuitePASS. Kept originaldeploymentstartandcriteria2:alternativefixedstyle-validreceivingposewasrejectedafter31/64zero-commanddropsin1s. FinalnewPPO20usesownPPO10successful-turntraceonlyfortrainingresetstates,notruntimecommands:72rigidlyrotatedgraspswithsamefinger/partstate,zero initialvelocities,originalfullstarts mixedin. Prototypephysicsisoneexplicitownsimulationparameterpoint;verificationstilltheoriginalfrozen640broadcases. Safetytrainingmarginanneals3mmto2mm afterstrict1.8mmbranchesmostlyterminatedbeforeturncompletion. No referencefilesatdeployment,noBC/CEMcontroller,and allsubsequentmotionPPO. Leave finalhourforcompleteevaluation,records,andrunnablefailed-or-passedcandidatepackage."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0085",
+        "seq": 85,
+        "kind": "iter",
+        "version": 13,
+        "recorded_utc": "2026-11-09T16:09:21Z",
+        "exception": false,
+        "body": {
+         "sim_version": 11,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "algorithm": "PPO",
+          "seed": 12,
+          "stage": 2,
+          "domain_randomization": true,
+          "envs": 2048,
+          "threads": 16,
+          "network": "Separate actor/critic MLP245-256-256-256,tanh;Gaussian26tanh,delta targets",
+          "learning_rate": 5e-05,
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "value_coef": 0.5,
+          "entropy_coef": 0.0001,
+          "epochs": 4,
+          "minibatch": 2048,
+          "max_grad_norm": 0.5,
+          "target_kl": 0.03,
+          "control_hz": 10,
+          "controller_hz": 1000,
+          "interface_hz": 500,
+          "policy_observations": "deployable",
+          "observation_dim": 245,
+          "action_dim": 26,
+          "hashes": {
+           "sim/scene.xml": "7db399a5469e…",
+           "sim/scene.mjb": "1dc7b769114b…",
+           "code/gpu_feature_env.py": "46ed8b263856…",
+           "code/goal_features.py": "53da7d47cd94…",
+           "code/gpu_goalset_env.py": "fe484ab2dff6…",
+           "code/gpu_velocity_env.py": "12c4c6eaa739…",
+           "code/velocity_decoder.py": "76ded5d364fe…",
+           "code/gpu_partial_env.py": "af10ce25840f…",
+           "code/gpu_skill_env.py": "59f354884e7c…",
+           "code/gpu_env_dr.py": "5b65fe84c52d…",
+           "code/warp_forces_dr.py": "5a5f88a577b8…",
+           "code/warp_checks.py": "2d877deaea11…",
+           "code/torch_geometry.py": "1bc27015f9a8…",
+           "code/train_gpu_correlated.py": "5f22e935199e…",
+           "code/policy_net.py": "c263dc7a601f…"
+          },
+          "load": "research/iterations/iter12/parent.pt",
+          "steps_requested": 3500000,
+          "source_reference_version": 3,
+          "simulation_version": 11,
+          "feature_version": 2,
+          "domain_probability": 0.5,
+          "state_dependent_exploration": ".05+.95*clip((max_goal_error-.052)/(pi/6-.052),0,1)",
+          "action_decoder": "velocity500",
+          "decision_layer_version": 3,
+          "partial_turn_min_deg": 90.0,
+          "partial_full_quarter_fraction": 0.25,
+          "horizon_steps": 1000,
+          "target_kl_stop": "perminibatch>.03",
+          "reward_scale": 0.1,
+          "initial_std": 0.05,
+          "separate_critic": true,
+          "value_clipping": false,
+          "grasp_weight": 1.0,
+          "style_weight": 1.2,
+          "physics": "MuJoCo Warp float32 CUDA",
+          "exploration_covariance_factor": [
+           [
+            0.07000000029802322,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.07999999821186066,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.10000000149011612,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.10000000149011612,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.3149999976158142,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.20000000298023224,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.44999998807907104,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.44999998807907104,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.3149999976158142,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.20000000298023224,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.44999998807907104,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.44999998807907104,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.12600000202655792,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.05000000074505806,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.18000000715255737,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.18000000715255737,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.08399999886751175,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.05000000074505806,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.11999999731779099,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.11999999731779099,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.019999999552965164,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.019999999552965164,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.019999999552965164,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.10000000149011612,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.10000000149011612,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.10000000149011612
+           ]
+          ],
+          "exploration_covariance": "L L^T+diag(exp(logstd)^2),all multiplied by allowed-state scale^2"
+         },
+         "checkpoint_sha256": "f2c13745f4d8…",
+         "checkpoint": "final.pt",
+         "parent_checkpoint_sha256": "9c2d2f71c4d2…",
+         "reward_terms": [
+          {
+           "name": "hold",
+           "formula": "exp(-((cube_wrist_distance-.12)/.05)^2)",
+           "weight": 0.015,
+           "global_scale": 0.1
+          },
+          {
+           "name": "fingertip_reach",
+           "formula": "mean5 exp(-((tip_cube_distance-.035)/.035)^2)",
+           "weight": 0.03,
+           "global_scale": 0.1
+          },
+          {
+           "name": "opposed_grasp",
+           "formula": "thumb/longfinger oppositecontactangle>=60deg",
+           "weight": 0.1,
+           "global_scale": 0.1
+          },
+          {
+           "name": "wrist_style",
+           "formula": "[1-.8*((palm_normal_z-.259)^2+(finger_axis_z-.5)^2)] after.3s",
+           "weight": 0.12,
+           "global_scale": 0.1
+          },
+          {
+           "name": "goal_progress",
+           "formula": "Previousminuscurrentminimummean8cornererroroftwoequivalentobjectgoals;positivepartmaskedonfailure",
+           "weight": 10.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "action_cost",
+           "formula": "mean26(a^2)",
+           "weight": -0.0015,
+           "global_scale": 0.1
+          },
+          {
+           "name": "speed_cost",
+           "formula": "max(0,maxjointvelocityratio-.7)",
+           "weight": -0.015,
+           "global_scale": 0.1
+          },
+          {
+           "name": "penetration_cost",
+           "formula": "max(0,lifetimemaxpenetration-.001)",
+           "weight": -10.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "turn_bonus",
+           "formula": "max8goalerror<.052rad for.1s at50Hz;maskedonfailedactions;alsoonealignedsolvedswitchbonusper episode",
+           "weight": 10.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "training_success_bonus",
+           "formula": "solvedstable.5s,style>.95,step>50,stage>0;perstep,notterminal;maskedonfailedactions",
+           "weight": 0.2,
+           "global_scale": 0.1
+          },
+          {
+           "name": "failure_cost",
+           "formula": "drop/hardware/integrity/numeric",
+           "weight": -2.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "compactness_integrity_cost",
+           "formula": "-.03*(wristdisplacement/.1)^2-3*max(0,maxstrain/.002-1)",
+           "weight": 0.1,
+           "global_scale": 0.1
+          },
+          {
+           "name": "goal_alignment",
+           "formula": "clamp(1-mean8goalerror/(pi/4),0,1);maskedonfailedactions",
+           "weight": 0.2,
+           "global_scale": 0.1
+          },
+          {
+           "name": "solved_alignment",
+           "formula": "exp(-max8cornererrorunderGnearestcorner0/.20);maskedonfailedactions",
+           "weight": 0.1,
+           "global_scale": 0.1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "encoderposition",
+           "distribution": "Gaussianindependent",
+           "sigma_rad": 0.002
+          },
+          {
+           "quantity": "encodervelocity",
+           "distribution": "Gaussianindependent",
+           "sigma_rad_s": 0.05
+          },
+          {
+           "quantity": "quarterturnface",
+           "distribution": "uniformdiscrete",
+           "values": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+           ]
+          },
+          {
+           "quantity": "quarterturndirection",
+           "distribution": "uniformdiscrete",
+           "values": [
+            -1,
+            1
+           ]
+          },
+          {
+           "quantity": "size,mass",
+           "distribution": "uniformchoicefrom1024independentuniformsamples,bankseed8999800",
+           "size_m": [
+            0.049,
+            0.053
+           ],
+           "mass_kg": [
+            0.045,
+            0.07
+           ]
+          },
+          {
+           "quantity": "friction",
+           "distribution": "uniform",
+           "range": [
+            0.4,
+            1.2
+           ]
+          },
+          {
+           "quantity": "faceresistance",
+           "distribution": "uniform",
+           "range_Nm": [
+            0.0002,
+            0.006
+           ]
+          },
+          {
+           "quantity": "restitutionprior",
+           "distribution": "uniform",
+           "range": [
+            0,
+            0.15
+           ]
+          },
+          {
+           "quantity": "palmXYoffset",
+           "distribution": "independentuniform",
+           "range_m": [
+            -0.015,
+            0.015
+           ]
+          },
+          {
+           "quantity": "faceup",
+           "distribution": "uniform24cardinalrotations"
+          },
+          {
+           "quantity": "yaw",
+           "distribution": "uniform",
+           "range_rad": [
+            -3.141592654,
+            3.141592654
+           ]
+          },
+          {
+           "quantity": "tiltXY",
+           "distribution": "independentuniformrotationvector",
+           "range_deg": [
+            -15,
+            15
+           ]
+          },
+          {
+           "quantity": "releasegap",
+           "distribution": "uniform",
+           "range_m": [
+            0,
+            0.002
+           ]
+          },
+          {
+           "quantity": "nominal_vs_randomized_mixture",
+           "distribution": "Bernoulli per reset",
+           "randomized_probability": 0.5,
+           "nominal_probability": 0.5
+          }
+         ],
+         "curriculum": {
+          "stage": 2,
+          "horizon_steps": 1000,
+          "initial_scrambles": "1fullquarterturns",
+          "switching": "nonewithinrun",
+          "termination": "failed/horizon;stablesuccesscontinuestoberewarded"
+         },
+         "observation_space": "245featuresfrom14allowedstatefields:noisy20q/20qd,previous20targets,wristpose/velocity/previoustarget,cuberootpose/velocity,8relativepartposes/velocities,finitecube-goalaxis/direction/8targetquaternions,holdflag,time. Extra6ifpresentarehand-framegoalaxis/errorfromthesameposes.No contacts/forces/torques/parameters/images/rewards.",
+         "action_space": "PPO26tanhvelocityparametersheld100ms;500Hzdecoderintegratesjointtargets1.5*a rad/s,wrist.1*a m/s,worldrotation2*a rad/speraxis;wristtargetradius.1m;authoritative1kHzPD,zerofeedforward. AllmotionvaluesfromPPO.",
+         "decision_layer": "Finite44971statecubegraph,depth7,canonicalmaterialcorner0;goalquarteronly,no physical/trajectory search;allmotionPPO.Equivalentoppositelayerselectionbyphysicalcornererror.Bothcandidateobjectgoalsretainedandreselectedeachstep;alignedsolvedstatebecomesholdgoal.",
+         "compute": {
+          "training_steps": 3538944,
+          "reported_training_loop_wall_s": 3874.082034111023,
+          "total_process_wall_s": null,
+          "gpu_hours": 1.076133898364173,
+          "hardware": "oneL40S CUDA simulationandPPO,4CPUtorchthreads"
+         },
+         "evaluation": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "f2c13745f4d8…",
+          "criteria_version": 2,
+          "simulation_version": 10,
+          "episodes": 640,
+          "full_640_suite": true,
+          "passed": false,
+          "success_count": 0,
+          "success_rate": 0.0,
+          "per_criterion_count": {
+           "G1": 0,
+           "G2": 515,
+           "G3": 331,
+           "G4": 639,
+           "S1": 342,
+           "S2": 640,
+           "S3": 365,
+           "S4_source_audit": 640
+          },
+          "wall_s": 1729.5548865795135,
+          "source_hashes": {
+           "<path>": "571190039d7e…"
+          },
+          "nominal_physics_diagnostic": false,
+          "limits": [
+           "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+           "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+           "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+           "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+           "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+          ]
+         },
+         "reflection": "Fixed640case verdict 0/640 allcriteria;percriterioncounts {‘G1': 0, 'G2': 515, 'G3': 331, 'G4': 639, 'S1': 342, 'S2': 640, 'S3': 365, 'S4_source_audit': 640}. Continue diagnosis of hardware/integrity,opposition andfullturn discovery; curriculumsuccess is not taskverification.",
+         "evidence": "Fullper-episodecriteria/initialparameters/losslessauditaggregatesattachedtothefollowingverificationrecord;representative3viewsattachedhere.",
+         "fixed_nominal_single_turn_diagnostic": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "f2c13745f4d8…",
+          "criteria_version": 2,
+          "simulation_version": 10,
+          "episodes": 24,
+          "full_640_suite": false,
+          "passed": false,
+          "success_count": 0,
+          "success_rate": 0.0,
+          "per_criterion_count": {
+           "G1": 0,
+           "G2": 24,
+           "G3": 23,
+           "G4": 24,
+           "S1": 23,
+           "S2": 24,
+           "S3": 24,
+           "S4_source_audit": 24
+          },
+          "wall_s": 109.70975065231323,
+          "source_hashes": {
+           "<path>": "571190039d7e…"
+          },
+          "nominal_physics_diagnostic": true,
+          "limits": [
+           "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+           "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+           "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+           "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+           "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+          ]
+         },
+         "render_source_sha256": "24a2a0cea184…",
+         "render_visual_geometry": "Corner meshes/stickers scaled to actual evaluated size in new renders; physics trajectories and metrics unchanged."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "be766840f45f",
+          "bytes": 579444,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "45863cab37f2",
+          "bytes": 706330,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "d1f12f4f4d17",
+          "bytes": 675224,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "d65222d2dff0",
+          "bytes": 942665,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0086",
+        "seq": 86,
+        "kind": "verify",
+        "version": 15,
+        "recorded_utc": "2026-11-09T16:09:26Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0085",
+         "criteria_version": 2,
+         "passed": false,
+         "checkpoint_sha256": "f2c13745f4d8…",
+         "simulation_version": 10,
+         "episodes": 640,
+         "conditions": "Frozen512nominalseeds100000..100511 plus128stress200000..200127. First288nominal24x12cardinalorientations/singleturns;restcontinuouspose/physicalvariation;stress4/5turns. Standalonewrappercommands,deterministicmeanPPOactor,specifiedencoder noise.",
+         "result": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "f2c13745f4d8…",
+          "criteria_version": 2,
+          "simulation_version": 10,
+          "episodes": 640,
+          "full_640_suite": true,
+          "passed": false,
+          "success_count": 0,
+          "success_rate": 0.0,
+          "per_criterion_count": {
+           "G1": 0,
+           "G2": 515,
+           "G3": 331,
+           "G4": 639,
+           "S1": 342,
+           "S2": 640,
+           "S3": 365,
+           "S4_source_audit": 640
+          },
+          "wall_s": 1729.5548865795135,
+          "source_hashes": {
+           "<path>": "571190039d7e…"
+          },
+          "nominal_physics_diagnostic": false,
+          "limits": [
+           "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+           "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+           "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+           "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+           "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+          ]
+         },
+         "evidence": "Fullmetrics/parameters/frozenseedmanifestattached. Representative3viewepisodesattachedwithactualsuccess/failurelabels;bothnominalandstressmoviesalsopreservedlocally.",
+         "limitations": [
+          "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+          "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+          "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+          "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+          "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "82ea899aee07",
+          "bytes": 1493997,
+          "content_type": "application/json"
+         },
+         "file_10": {
+          "sha": "0d7628fa06fc",
+          "bytes": 1535751,
+          "content_type": "application/octet-stream"
+         },
+         "file_11": {
+          "sha": "e928c1e08c63",
+          "bytes": 2423437,
+          "content_type": "application/octet-stream"
+         },
+         "file_12": {
+          "sha": "341c78e0e12b",
+          "bytes": 1072107,
+          "content_type": "application/octet-stream"
+         },
+         "file_13": {
+          "sha": "a814f662db6b",
+          "bytes": 260733,
+          "content_type": "application/json"
+         },
+         "file_14": {
+          "sha": "d399a3da5484",
+          "bytes": 657,
+          "content_type": "application/json"
+         },
+         "file_15": {
+          "sha": "d3d3e0bbdb44",
+          "bytes": 57794,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "83cb91bc86e3",
+          "bytes": 3436,
+          "content_type": "application/json"
+         },
+         "file_3": {
+          "sha": "89530f0696d1",
+          "bytes": 3420877,
+          "content_type": "application/octet-stream"
+         },
+         "file_4": {
+          "sha": "a816564052a4",
+          "bytes": 2136066,
+          "content_type": "application/octet-stream"
+         },
+         "file_5": {
+          "sha": "0aa7ebe27e79",
+          "bytes": 1701347,
+          "content_type": "application/octet-stream"
+         },
+         "file_6": {
+          "sha": "db8efcfca624",
+          "bytes": 1717385,
+          "content_type": "application/octet-stream"
+         },
+         "file_7": {
+          "sha": "21b7342fb98f",
+          "bytes": 1582655,
+          "content_type": "application/octet-stream"
+         },
+         "file_8": {
+          "sha": "7884c88ec24e",
+          "bytes": 1437674,
+          "content_type": "application/octet-stream"
+         },
+         "file_9": {
+          "sha": "6eef78169827",
+          "bytes": 1501226,
+          "content_type": "application/octet-stream"
+         },
+         "video_left_failure": {
+          "sha": "ea18172e2c1a",
+          "bytes": 706894,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "6d850212734a",
+          "bytes": 675729,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "de71f5c23cd1",
+          "bytes": 941800,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0087",
+        "seq": 87,
+        "kind": "note",
+        "version": 37,
+        "recorded_utc": "2026-11-09T16:09:27Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Fixed640case verdict 0/640 allcriteria;percriterioncounts {‘G1': 0, 'G2': 515, 'G3': 331, 'G4': 639, 'S1': 342, 'S2': 640, 'S3': 365, 'S4_source_audit': 640}. Continue diagnosis of hardware/integrity,opposition andfullturn discovery; curriculumsuccess is not taskverification."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0088",
+        "seq": 88,
+        "kind": "iter",
+        "version": 14,
+        "recorded_utc": "2026-11-09T16:09:48Z",
+        "exception": false,
+        "body": {
+         "sim_version": 14,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "algorithm": "PPO",
+          "seed": 16,
+          "stage": 2,
+          "domain_randomization": false,
+          "envs": 2048,
+          "threads": 16,
+          "network": "Separate actor/critic MLP245-256-256-256,tanh;Gaussian26tanh,delta targets",
+          "learning_rate": 2.5e-05,
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "value_coef": 0.5,
+          "entropy_coef": 0.0001,
+          "epochs": 4,
+          "minibatch": 2048,
+          "max_grad_norm": 0.5,
+          "target_kl": 0.03,
+          "control_hz": 10,
+          "controller_hz": 1000,
+          "interface_hz": 500,
+          "policy_observations": "deployable",
+          "observation_dim": 245,
+          "action_dim": 26,
+          "hashes": {
+           "sim/scene.xml": "7db399a5469e…",
+           "sim/scene.mjb": "1dc7b769114b…",
+           "code/gpu_adaptive_env.py": "06faa721be53…",
+           "code/gpu_tangent_env.py": "68411415c201…",
+           "code/gpu_feature_env.py": "46ed8b263856…",
+           "code/goal_features.py": "53da7d47cd94…",
+           "code/gpu_goalset_env.py": "fe484ab2dff6…",
+           "code/gpu_velocity_env.py": "12c4c6eaa739…",
+           "code/velocity_decoder.py": "76ded5d364fe…",
+           "code/gpu_partial_env.py": "af10ce25840f…",
+           "code/gpu_skill_env.py": "59f354884e7c…",
+           "code/gpu_env_dr.py": "5b65fe84c52d…",
+           "code/warp_forces_dr.py": "5a5f88a577b8…",
+           "code/warp_checks.py": "2d877deaea11…",
+           "code/torch_geometry.py": "1bc27015f9a8…",
+           "code/train_gpu_adaptive.py": "385dce846e14…",
+           "code/policy_net.py": "c263dc7a601f…"
+          },
+          "load": "research/iterations/iter16/parent.pt",
+          "steps_requested": 2500000,
+          "source_reference_version": 3,
+          "simulation_version": 14,
+          "adaptive_radius_deg": [
+           2.0,
+           5.0,
+           10.0,
+           20.0,
+           35.0,
+           55.0,
+           75.0,
+           90.0
+          ],
+          "adaptive_threshold": 0.6,
+          "adaptive_window": 500,
+          "adaptive_full90_fraction_above55": 0.25,
+          "training_pen_strain_margin_m": 0.00175,
+          "tracking_error_cost_scale_rad": 0.02,
+          "tracking_error_cost_weight": 0.1,
+          "tangent_guidance_weight": 2.0,
+          "feature_version": 2,
+          "domain_probability": 0.5,
+          "state_dependent_exploration": ".05+.95*clip((max_goal_error-.052)/(pi/6-.052),0,1)",
+          "action_decoder": "velocity500",
+          "decision_layer_version": 3,
+          "partial_turn_min_deg": 90.0,
+          "partial_full_quarter_fraction": 0.25,
+          "horizon_steps": 1000,
+          "target_kl_stop": "perminibatch>.03",
+          "reward_scale": 0.1,
+          "initial_std": 0.05,
+          "separate_critic": true,
+          "value_clipping": false,
+          "grasp_weight": 1.0,
+          "style_weight": 1.2,
+          "physics": "MuJoCo Warp float32 CUDA",
+          "exploration_covariance_factor": [
+           [
+            0.07000000029802322,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.07999999821186066,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.10000000149011612,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.10000000149011612,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.3149999976158142,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.20000000298023224,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.44999998807907104,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.44999998807907104,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.3149999976158142,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.20000000298023224,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.44999998807907104,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.44999998807907104,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.12600000202655792,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.05000000074505806,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.18000000715255737,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.18000000715255737,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.08399999886751175,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.05000000074505806,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.11999999731779099,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.11999999731779099,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.019999999552965164,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.019999999552965164,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.019999999552965164,
+            0.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.10000000149011612,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.10000000149011612,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.10000000149011612
+           ]
+          ],
+          "exploration_covariance": "L L^T+diag(exp(logstd)^2),all multiplied by allowed-state scale^2"
+         },
+         "checkpoint_sha256": "6e3140e0bf22…",
+         "checkpoint": "final.pt",
+         "parent_checkpoint_sha256": "0a6a6e0db9e4…",
+         "reward_terms": [
+          {
+           "name": "hold",
+           "formula": "exp(-((cube_wrist_distance-.12)/.05)^2)",
+           "weight": 0.015,
+           "global_scale": 0.1
+          },
+          {
+           "name": "fingertip_reach",
+           "formula": "mean5 exp(-((tip_cube_distance-.035)/.035)^2)",
+           "weight": 0.03,
+           "global_scale": 0.1
+          },
+          {
+           "name": "opposed_grasp",
+           "formula": "thumb/longfinger oppositecontactangle>=60deg",
+           "weight": 0.1,
+           "global_scale": 0.1
+          },
+          {
+           "name": "wrist_style",
+           "formula": "[1-.8*((palm_normal_z-.259)^2+(finger_axis_z-.5)^2)] after.3s",
+           "weight": 0.12,
+           "global_scale": 0.1
+          },
+          {
+           "name": "goal_progress",
+           "formula": "Previousminuscurrentminimummean8cornererroroftwoequivalentobjectgoals;positivepartmaskedonfailure",
+           "weight": 10.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "action_cost",
+           "formula": "mean26(a^2)",
+           "weight": -0.0015,
+           "global_scale": 0.1
+          },
+          {
+           "name": "speed_cost",
+           "formula": "max(0,maxjointvelocityratio-.7)",
+           "weight": -0.015,
+           "global_scale": 0.1
+          },
+          {
+           "name": "penetration_cost",
+           "formula": "max(0,lifetimemaxpenetration-.001)",
+           "weight": -10.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "turn_bonus",
+           "formula": "max8goalerror<.052rad for.1s at50Hz;maskedonfailedactions;alsoonealignedsolvedswitchbonusper episode",
+           "weight": 10.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "training_success_bonus",
+           "formula": "solvedstable.5s,style>.95,step>50,stage>0;perstep,notterminal;maskedonfailedactions",
+           "weight": 0.2,
+           "global_scale": 0.1
+          },
+          {
+           "name": "failure_cost",
+           "formula": "drop/hardware/integrity/numeric",
+           "weight": -2.0,
+           "global_scale": 0.1
+          },
+          {
+           "name": "compactness_integrity_cost",
+           "formula": "-.03*(wristdisplacement/.1)^2-3*max(0,maxstrain/.002-1)",
+           "weight": 0.1,
+           "global_scale": 0.1
+          },
+          {
+           "name": "goal_alignment",
+           "formula": "clamp(1-mean8goalerror/(pi/4),0,1);maskedonfailedactions",
+           "weight": 0.2,
+           "global_scale": 0.1
+          },
+          {
+           "name": "solved_alignment",
+           "formula": "exp(-max8cornererrorunderGnearestcorner0/.20);maskedonfailedactions",
+           "weight": 0.1,
+           "global_scale": 0.1
+          },
+          {
+           "name": "tracking_error_cost",
+           "formula": "mean20(((command_target-actual_joint_angle)/.02rad)^2)",
+           "weight": -0.010000000000000002,
+           "global_scale": 0.1
+          },
+          {
+           "name": "tangent_guidance",
+           "formula": "mean5 clip(dot(relative_tip_velocity,normalized(goal_rotation_vector cross relative_tip_position))/.1m_s,-1,1)*exp(-(max(nearest_corner_center_distance-.016m,0)/.012m)^2)*[nearest_corner_goal_angle>.052rad];positiveguidancemaskedonfailure",
+           "weight": 0.2,
+           "global_scale": 0.1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "encoderposition",
+           "distribution": "Gaussianindependent",
+           "sigma_rad": 0.002
+          },
+          {
+           "quantity": "encodervelocity",
+           "distribution": "Gaussianindependent",
+           "sigma_rad_s": 0.05
+          },
+          {
+           "quantity": "quarterturnface",
+           "distribution": "uniformdiscrete",
+           "values": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+           ]
+          },
+          {
+           "quantity": "quarterturndirection",
+           "distribution": "uniformdiscrete",
+           "values": [
+            -1,
+            1
+           ]
+          },
+          {
+           "quantity": "partialfaceangle",
+           "distribution": "uniform symmetric radius;>=55deg adds25%full+/-90deg",
+           "radius_curriculum_deg": [
+            2.0,
+            5.0,
+            10.0,
+            20.0,
+            35.0,
+            55.0,
+            75.0,
+            90.0
+           ]
+          }
+         ],
+         "curriculum": {
+          "stage": 2,
+          "horizon_steps": 1000,
+          "initial_scrambles": "A single legal partial face angle uniformly distributed in [-radius,+radius]; radius starts2deg (already inside G1 pose tolerance), then5,10,20,35,55,75,90deg. At radius>=55deg,25%full+/-90deg and75%uniform. These easy training starts are not counted as task verification.",
+          "switching": "At PPOupdate multiple3,after>=500endedepisodes,advance one radius if last500 terminal training_success>=.6;clear curriculum success window. Only subsequent reset states change, never active episode physical states.",
+          "termination": "failure/horizon,with recorded conservative instantaneous penetration/strain margin;solved states remain rewarded.",
+          "training_integrity_margin_m": 0.00175,
+          "radius_log": "curves.csv:curriculum_radius_deg"
+         },
+         "observation_space": "245featuresfrom14allowedstatefields:noisy20q/20qd,previous20targets,wristpose/velocity/previoustarget,cuberootpose/velocity,8relativepartposes/velocities,finitecube-goalaxis/direction/8targetquaternions,holdflag,time. Extra6ifpresentarehand-framegoalaxis/errorfromthesameposes.No contacts/forces/torques/parameters/images/rewards.",
+         "action_space": "PPO26tanhvelocityparametersheld100ms;500Hzdecoderintegratesjointtargets1.5*a rad/s,wrist.1*a m/s,worldrotation2*a rad/speraxis;wristtargetradius.1m;authoritative1kHzPD,zerofeedforward. AllmotionvaluesfromPPO.",
+         "decision_layer": "Finite44971statecubegraph,depth7,canonicalmaterialcorner0;goalquarteronly,no physical/trajectory search;allmotionPPO.Equivalentoppositelayerselectionbyphysicalcornererror.Bothcandidateobjectgoalsretainedandreselectedeachstep;alignedsolvedstatebecomesholdgoal.",
+         "compute": {
+          "training_steps": 2555904,
+          "reported_training_loop_wall_s": 1929.8039588928223,
+          "total_process_wall_s": null,
+          "gpu_hours": 0.5360566552480062,
+          "hardware": "oneL40S CUDA simulationandPPO,4CPUtorchthreads"
+         },
+         "evaluation": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "6e3140e0bf22…",
+          "criteria_version": 2,
+          "simulation_version": 10,
+          "episodes": 640,
+          "full_640_suite": true,
+          "passed": false,
+          "success_count": 0,
+          "success_rate": 0.0,
+          "per_criterion_count": {
+           "G1": 0,
+           "G2": 405,
+           "G3": 226,
+           "G4": 628,
+           "S1": 101,
+           "S2": 640,
+           "S3": 104,
+           "S4_source_audit": 640
+          },
+          "wall_s": 824.4675803184509,
+          "source_hashes": {
+           "<path>": "571190039d7e…"
+          },
+          "nominal_physics_diagnostic": false,
+          "limits": [
+           "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+           "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+           "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+           "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+           "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+          ]
+         },
+         "reflection": "Fixed640case verdict 0/640 allcriteria;percriterioncounts {‘G1': 0, 'G2': 405, 'G3': 226, 'G4': 628, 'S1': 101, 'S2': 640, 'S3': 104, 'S4_source_audit': 640}. Continue diagnosis of hardware/integrity,opposition andfullturn discovery; curriculumsuccess is not taskverification.",
+         "evidence": "Fullper-episodecriteria/initialparameters/losslessauditaggregatesattachedtothefollowingverificationrecord;representative3viewsattachedhere.",
+         "fixed_nominal_single_turn_diagnostic": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "6e3140e0bf22…",
+          "criteria_version": 2,
+          "simulation_version": 10,
+          "episodes": 24,
+          "full_640_suite": false,
+          "passed": false,
+          "success_count": 0,
+          "success_rate": 0.0,
+          "per_criterion_count": {
+           "G1": 0,
+           "G2": 20,
+           "G3": 4,
+           "G4": 24,
+           "S1": 10,
+           "S2": 24,
+           "S3": 10,
+           "S4_source_audit": 24
+          },
+          "wall_s": 86.10424852371216,
+          "source_hashes": {
+           "<path>": "571190039d7e…"
+          },
+          "nominal_physics_diagnostic": true,
+          "limits": [
+           "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+           "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+           "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+           "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+           "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+          ]
+         },
+         "render_source_sha256": "24a2a0cea184…",
+         "render_visual_geometry": "Corner meshes/stickers scaled to actual evaluated size in new renders; physics trajectories and metrics unchanged."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "94f967a44bb1",
+          "bytes": 443270,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "b14024e0a2aa",
+          "bytes": 908235,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "b6c881f20892",
+          "bytes": 752574,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "c07ff37dceb2",
+          "bytes": 1134376,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0089",
+        "seq": 89,
+        "kind": "verify",
+        "version": 16,
+        "recorded_utc": "2026-11-09T16:09:52Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0088",
+         "criteria_version": 2,
+         "passed": false,
+         "checkpoint_sha256": "6e3140e0bf22…",
+         "simulation_version": 10,
+         "episodes": 640,
+         "conditions": "Frozen512nominalseeds100000..100511 plus128stress200000..200127. First288nominal24x12cardinalorientations/singleturns;restcontinuouspose/physicalvariation;stress4/5turns. Standalonewrappercommands,deterministicmeanPPOactor,specifiedencoder noise.",
+         "result": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "6e3140e0bf22…",
+          "criteria_version": 2,
+          "simulation_version": 10,
+          "episodes": 640,
+          "full_640_suite": true,
+          "passed": false,
+          "success_count": 0,
+          "success_rate": 0.0,
+          "per_criterion_count": {
+           "G1": 0,
+           "G2": 405,
+           "G3": 226,
+           "G4": 628,
+           "S1": 101,
+           "S2": 640,
+           "S3": 104,
+           "S4_source_audit": 640
+          },
+          "wall_s": 824.4675803184509,
+          "source_hashes": {
+           "<path>": "571190039d7e…"
+          },
+          "nominal_physics_diagnostic": false,
+          "limits": [
+           "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+           "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+           "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+           "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+           "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+          ]
+         },
+         "evidence": "Fullmetrics/parameters/frozenseedmanifestattached. Representative3viewepisodesattachedwithactualsuccess/failurelabels;bothnominalandstressmoviesalsopreservedlocally.",
+         "limitations": [
+          "Ownsimulationclaimonly,notrealtransferoruniversalguarantee.",
+          "Idealizedpassivecube,convexhandcollisions,inferredobjectparameters.",
+          "G1firstphysics-tickcompletion;G4exacthardwarebounds;style/contactsampledat50Hz.",
+          "S3postsettleintervalandcontinuousother-digitsupportreleaseauditfaithfullyimplementwrittencriteria;earlierfailedverdictsarenotrelabeled.",
+          "PeriodicwellcrossingstriggeraconservativeS3releaserequirement,eventualpartialreversalscanaddrequirements."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "182c092e177f",
+          "bytes": 1502141,
+          "content_type": "application/json"
+         },
+         "file_10": {
+          "sha": "9d1fb787b96a",
+          "bytes": 867920,
+          "content_type": "application/octet-stream"
+         },
+         "file_11": {
+          "sha": "7ee3e0479144",
+          "bytes": 577822,
+          "content_type": "application/octet-stream"
+         },
+         "file_12": {
+          "sha": "8e5d1d020263",
+          "bytes": 578625,
+          "content_type": "application/octet-stream"
+         },
+         "file_13": {
+          "sha": "a814f662db6b",
+          "bytes": 260733,
+          "content_type": "application/json"
+         },
+         "file_14": {
+          "sha": "d399a3da5484",
+          "bytes": 657,
+          "content_type": "application/json"
+         },
+         "file_15": {
+          "sha": "96bcfb230493",
+          "bytes": 58305,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "8dc44f779a98",
+          "bytes": 3430,
+          "content_type": "application/json"
+         },
+         "file_3": {
+          "sha": "4115f9c64376",
+          "bytes": 2455826,
+          "content_type": "application/octet-stream"
+         },
+         "file_4": {
+          "sha": "5f5c5b4e8d2a",
+          "bytes": 1184957,
+          "content_type": "application/octet-stream"
+         },
+         "file_5": {
+          "sha": "c255c2458f90",
+          "bytes": 1057679,
+          "content_type": "application/octet-stream"
+         },
+         "file_6": {
+          "sha": "355329c046d2",
+          "bytes": 1048868,
+          "content_type": "application/octet-stream"
+         },
+         "file_7": {
+          "sha": "a5ffc40fe2ae",
+          "bytes": 958976,
+          "content_type": "application/octet-stream"
+         },
+         "file_8": {
+          "sha": "4ef6e0449b6d",
+          "bytes": 963322,
+          "content_type": "application/octet-stream"
+         },
+         "file_9": {
+          "sha": "5dad68a60fde",
+          "bytes": 874927,
+          "content_type": "application/octet-stream"
+         },
+         "video_left_failure": {
+          "sha": "f6aa3b027c4b",
+          "bytes": 910124,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "e9bc60c9fbc5",
+          "bytes": 751436,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "53119cba3da9",
+          "bytes": 1134436,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0090",
+        "seq": 90,
+        "kind": "note",
+        "version": 38,
+        "recorded_utc": "2026-11-09T16:09:53Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Fixed640case verdict 0/640 allcriteria;percriterioncounts {‘G1': 0, 'G2': 405, 'G3': 226, 'G4': 628, 'S1': 101, 'S2': 640, 'S3': 104, 'S4_source_audit': 640}. Continue diagnosis of hardware/integrity,opposition andfullturn discovery; curriculumsuccess is not taskverification."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-09T09:55:05Z",
@@ -384143,7 +388689,7 @@
    "plug": {
     "runs": {
      "8": {
-      "exported_utc": "2026-11-09T16:00:01Z",
+      "exported_utc": "2026-11-09T16:10:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -384401,7 +388947,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-09T16:02:32Z",
+  "staged_utc": "2026-11-09T16:12:33Z",
   "tasks": {
    "cube": {
     "files": {
@@ -384485,7 +389031,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-09T16:02:32Z",
+  "staged_utc": "2026-11-09T16:12:33Z",
   "tasks": {
    "tennis": {
     "status": "available",
