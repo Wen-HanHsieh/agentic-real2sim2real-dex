@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-09T03:42:36Z",
- "exported_utc": "2026-11-09T03:42:29Z",
+ "generated_utc": "2026-11-09T03:52:35Z",
+ "exported_utc": "2026-11-09T03:52:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-09T03:40:33",
+    "time": "2026-11-09T03:49:18",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -143802,6 +143802,1432 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0034",
+        "seq": 34,
+        "kind": "iter",
+        "version": 4,
+        "recorded_utc": "2026-11-09T03:43:07Z",
+        "exception": false,
+        "body": {
+         "sim_version": 3,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "n": 512,
+          "updates": 200,
+          "rollout": 128,
+          "stage": "random",
+          "randomize": true,
+          "resume": "research/train/ppo_v2_filtered/checkpoint_0120.pt",
+          "name": "PPO clipped",
+          "seed": 2028,
+          "device": "cuda:1",
+          "filter": 0.15,
+          "logstd": -2.3,
+          "template": "thumb",
+          "lr": 0.00015,
+          "anneal": true,
+          "obs_dim": 126,
+          "architecture": "MLP 256 tanh 256 tanh Gaussian actor; separate equal critic",
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "epochs": 4,
+          "minibatches": 8,
+          "evaluated_update": 200,
+          "new_transitions": 13107200
+         },
+         "architecture": "Separate256-tanh-256-tanh Gaussian actor/critic; 126 deployable inputs,26 residual outputs.",
+         "observation_space": "No contacts/rewards/parameters. Noisy q/qd, wrist pose/velocity, selected object pose/velocity, allowed reference-memory phase and targets, object_kind, previous residual.",
+         "action_space": "Joint/translation/rotation residual scales [0.18, 0.015, 0.12]; alpha0.15 filter; desired-wrist-local=`False`; unused ring/little masked=`False`. 50Hz residual,500Hz commands,1kHz hardware audit.",
+         "reward_terms": [
+          {
+           "name": "position",
+           "formula": "2*exp(-80*||object_position-reference_position||^2), multiplied by1 in phases>=close,0.2 earlier",
+           "weight": 1
+          },
+          {
+           "name": "orientation",
+           "formula": "exp(-2*||log(q_object*q_reference^-1)||^2), same phase multiplier",
+           "weight": 1
+          },
+          {
+           "name": "lift",
+           "formula": "0.5 when object centre exceeds initial centre by20mm during lift/carry",
+           "weight": 1
+          },
+          {
+           "name": "complete",
+           "formula": "3*exp(-80*position_goal_error^2)*exp(-3*orientation_goal_error^2) during place/release/retreat",
+           "weight": 1
+          },
+          {
+           "name": "action",
+           "formula": "-0.005*mean(clipped_residual^2)",
+           "weight": 1
+          },
+          {
+           "name": "smooth",
+           "formula": "-0.01*mean((residual-previous_residual)^2)",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-10 times persistent hardware failure flag, updated every1kHz tick.",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "kind",
+           "distribution": "independent equal white/black per plug"
+          },
+          {
+           "quantity": "housing dimensions",
+           "distribution": "independent uniform axis scale",
+           "range": [
+            0.85,
+            1.15
+           ]
+          },
+          {
+           "quantity": "blades",
+           "distribution": "uniform scale",
+           "range": [
+            0.9,
+            1.1
+           ]
+          },
+          {
+           "quantity": "mass",
+           "distribution": "uniform family-prior scale",
+           "range": [
+            0.6,
+            1.4
+           ]
+          },
+          {
+           "quantity": "COM",
+           "distribution": "independent uniform per axis,m",
+           "range": [
+            -0.004,
+            0.004
+           ]
+          },
+          {
+           "quantity": "inertia",
+           "distribution": "uniform scale",
+           "range": [
+            0.7,
+            1.3
+           ]
+          },
+          {
+           "quantity": "object/table sliding friction",
+           "distribution": "uniform",
+           "range": [
+            0.25,
+            1
+           ]
+          },
+          {
+           "quantity": "rubber sliding friction",
+           "distribution": "uniform",
+           "range": [
+            0.6,
+            1.4
+           ]
+          },
+          {
+           "quantity": "contact time",
+           "distribution": "uniform,s",
+           "range": [
+            0.003,
+            0.012
+           ]
+          },
+          {
+           "quantity": "object pose",
+           "distribution": "uniform yaw/equal side faces; xy reachable training region",
+           "range": {
+            "x": null,
+            "y": null
+           }
+          }
+         ],
+         "curriculum": "Stage random; full30s training episodes unless configuration states otherwise. Warm start research/train/ppo_v2_filtered/checkpoint_0120.pt; no supervised learning.",
+         "compute": {
+          "training_wall_s": 1209.4926693439484,
+          "gpu_hours": 0.33597018592887457,
+          "hardware": "one L40S"
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "episodes": 128,
+          "successes": 26,
+          "success_rate": 0.203125,
+          "groups": {
+           "nominal": {
+            "episodes": 32,
+            "successes": 15
+           },
+           "physics": {
+            "episodes": 32,
+            "successes": 9
+           },
+           "touch": {
+            "episodes": 32,
+            "successes": 0
+           },
+           "edge": {
+            "episodes": 32,
+            "successes": 2
+           }
+          },
+          "per_final_criterion_counts": {
+           "left": 30,
+           "upright": 26,
+           "base": 128,
+           "table": 128,
+           "hand_free": 128,
+           "linear_still": 128,
+           "angular_still": 128
+          },
+          "all_picked_up": 30,
+          "hardware_violations": 0,
+          "maximum_speed_ratio": 0.7496602847585312,
+          "maximum_penetration_m": 0.003434666665886395,
+          "generator_valid": 128,
+          "rejected_starts": 4,
+          "passed": false,
+          "base_alone": {
+           "episodes": 128,
+           "successes": 23,
+           "hardware_violations": 15,
+           "method": "Exact same reference/command wrapper with all actor weights/biases zero. No learned correction."
+          }
+         },
+         "reflection": "26/128 strict successes versus23/128 exact zero-residual baseline. No hardware failures versus15 baseline, but broad reach and stale neighbour references dominate. Failed verification; not delivered. Next use live references and learned inward drawing.",
+         "package_sha256": "b79dce88f29e…"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "0b3322cf199b",
+          "bytes": 68911,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "d2399dbbb4f7",
+          "bytes": 185721,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "d06628fa9815",
+          "bytes": 224202,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "5f3383183f21",
+          "bytes": 196777,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0035",
+        "seq": 35,
+        "kind": "verify",
+        "version": 4,
+        "recorded_utc": "2026-11-09T03:43:08Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0034",
+         "criteria_version": 1,
+         "passed": false,
+         "episodes": 128,
+         "successful_episodes": 26,
+         "evidence": "26/128 tested episodes satisfy the recorded object/task/hardware criteria; the requirement is128/128, so this is a failed self-verification. Per-trial geometry, lift, hardware and independent stability evidence is attached. No delivery.",
+         "limitations": "Finite own simulation with uncertain geometry/contact physics; no official evaluation claim.",
+         "package_sha256": "b79dce88f29e…"
+        },
+        "files": {
+         "file_1": {
+          "sha": "f4365c984855",
+          "bytes": 1511555,
+          "content_type": "application/json"
+         },
+         "video_top_failure": {
+          "sha": "5f3383183f21",
+          "bytes": 196777,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0036",
+        "seq": 36,
+        "kind": "iter",
+        "version": 5,
+        "recorded_utc": "2026-11-09T03:43:09Z",
+        "exception": false,
+        "body": {
+         "sim_version": 3,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "n": 512,
+          "updates": 200,
+          "rollout": 128,
+          "stage": "random",
+          "randomize": true,
+          "resume": null,
+          "name": "PPO clipped",
+          "seed": 2029,
+          "device": "cuda:2",
+          "filter": 0.15,
+          "logstd": -2.3,
+          "template": "tripod",
+          "lr": 0.0002,
+          "anneal": true,
+          "obs_dim": 126,
+          "architecture": "MLP 256 tanh 256 tanh Gaussian actor; separate equal critic",
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "epochs": 4,
+          "minibatches": 8,
+          "evaluated_update": 200,
+          "new_transitions": 13107200
+         },
+         "architecture": "Separate256-tanh-256-tanh Gaussian actor/critic; 126 deployable inputs,26 residual outputs.",
+         "observation_space": "No contacts/rewards/parameters. Noisy q/qd, wrist pose/velocity, selected object pose/velocity, allowed reference-memory phase and targets, object_kind, previous residual.",
+         "action_space": "Joint/translation/rotation residual scales [0.18, 0.015, 0.12]; alpha0.15 filter; desired-wrist-local=`False`; unused ring/little masked=`False`. 50Hz residual,500Hz commands,1kHz hardware audit.",
+         "reward_terms": [
+          {
+           "name": "position",
+           "formula": "2*exp(-80*||object_position-reference_position||^2), multiplied by1 in phases>=close,0.2 earlier",
+           "weight": 1
+          },
+          {
+           "name": "orientation",
+           "formula": "exp(-2*||log(q_object*q_reference^-1)||^2), same phase multiplier",
+           "weight": 1
+          },
+          {
+           "name": "lift",
+           "formula": "0.5 when object centre exceeds initial centre by20mm during lift/carry",
+           "weight": 1
+          },
+          {
+           "name": "complete",
+           "formula": "3*exp(-80*position_goal_error^2)*exp(-3*orientation_goal_error^2) during place/release/retreat",
+           "weight": 1
+          },
+          {
+           "name": "action",
+           "formula": "-0.005*mean(clipped_residual^2)",
+           "weight": 1
+          },
+          {
+           "name": "smooth",
+           "formula": "-0.01*mean((residual-previous_residual)^2)",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-10 times persistent hardware failure flag, updated every1kHz tick.",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "kind",
+           "distribution": "independent equal white/black per plug"
+          },
+          {
+           "quantity": "housing dimensions",
+           "distribution": "independent uniform axis scale",
+           "range": [
+            0.85,
+            1.15
+           ]
+          },
+          {
+           "quantity": "blades",
+           "distribution": "uniform scale",
+           "range": [
+            0.9,
+            1.1
+           ]
+          },
+          {
+           "quantity": "mass",
+           "distribution": "uniform family-prior scale",
+           "range": [
+            0.6,
+            1.4
+           ]
+          },
+          {
+           "quantity": "COM",
+           "distribution": "independent uniform per axis,m",
+           "range": [
+            -0.004,
+            0.004
+           ]
+          },
+          {
+           "quantity": "inertia",
+           "distribution": "uniform scale",
+           "range": [
+            0.7,
+            1.3
+           ]
+          },
+          {
+           "quantity": "object/table sliding friction",
+           "distribution": "uniform",
+           "range": [
+            0.25,
+            1
+           ]
+          },
+          {
+           "quantity": "rubber sliding friction",
+           "distribution": "uniform",
+           "range": [
+            0.6,
+            1.4
+           ]
+          },
+          {
+           "quantity": "contact time",
+           "distribution": "uniform,s",
+           "range": [
+            0.003,
+            0.012
+           ]
+          },
+          {
+           "quantity": "object pose",
+           "distribution": "uniform yaw/equal side faces; xy reachable training region",
+           "range": {
+            "x": null,
+            "y": null
+           }
+          }
+         ],
+         "curriculum": "Stage random; full30s training episodes unless configuration states otherwise. Warm start `None`; no supervised learning.",
+         "compute": {
+          "training_wall_s": 1197.6325702667236,
+          "gpu_hours": 0.3326757139629788,
+          "hardware": "one L40S"
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "episodes": 128,
+          "successes": 7,
+          "success_rate": 0.0546875,
+          "groups": {
+           "nominal": {
+            "episodes": 32,
+            "successes": 4
+           },
+           "physics": {
+            "episodes": 32,
+            "successes": 3
+           },
+           "touch": {
+            "episodes": 32,
+            "successes": 0
+           },
+           "edge": {
+            "episodes": 32,
+            "successes": 0
+           }
+          },
+          "per_final_criterion_counts": {
+           "left": 9,
+           "upright": 7,
+           "base": 128,
+           "table": 128,
+           "hand_free": 128,
+           "linear_still": 128,
+           "angular_still": 128
+          },
+          "all_picked_up": 10,
+          "hardware_violations": 6,
+          "maximum_speed_ratio": 0.6868044211318731,
+          "maximum_penetration_m": 0.003570959813275993,
+          "generator_valid": 128,
+          "rejected_starts": 4,
+          "passed": false,
+          "base_alone": "Tripod nominal physical baseline previously tested:0/1 complete3-object trials;2/3 placed upright with condim4,1/3 with condim3. Full128 zero-residual tripod comparison not run; do not infer an improvement over that baseline."
+         },
+         "reflection": "7/128 strict successes. Tripod prior performs worse than the original pinch, especially narrow black cases. Larger corrections and relative hand/object context may help; additionally train without torsional contact friction. No success claim.",
+         "package_sha256": "8a3e3689631f…"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "f116443ab049",
+          "bytes": 69358,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "ca9a5f072b36",
+          "bytes": 183006,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "adf339ed2f5d",
+          "bytes": 230663,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "bbb10d2659d1",
+          "bytes": 203154,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0037",
+        "seq": 37,
+        "kind": "verify",
+        "version": 5,
+        "recorded_utc": "2026-11-09T03:43:09Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0036",
+         "criteria_version": 1,
+         "passed": false,
+         "episodes": 128,
+         "successful_episodes": 7,
+         "evidence": "7/128 tested episodes satisfy the recorded object/task/hardware criteria; the requirement is128/128, so this is a failed self-verification. Per-trial geometry, lift, hardware and independent stability evidence is attached. No delivery.",
+         "limitations": "Finite own simulation with uncertain geometry/contact physics; no official evaluation claim.",
+         "package_sha256": "8a3e3689631f…"
+        },
+        "files": {
+         "file_1": {
+          "sha": "963f4a7296f4",
+          "bytes": 1512102,
+          "content_type": "application/json"
+         },
+         "video_top_failure": {
+          "sha": "bbb10d2659d1",
+          "bytes": 203154,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0038",
+        "seq": 38,
+        "kind": "iter",
+        "version": 6,
+        "recorded_utc": "2026-11-09T03:43:10Z",
+        "exception": false,
+        "body": {
+         "sim_version": 3,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "n": 512,
+          "updates": 300,
+          "rollout": 128,
+          "stage": "random",
+          "randomize": true,
+          "resume": null,
+          "name": "PPO clipped",
+          "seed": 2031,
+          "device": "cuda:3",
+          "filter": 0.1,
+          "logstd": -2.3,
+          "template": "thumb",
+          "lr": 0.0002,
+          "anneal": true,
+          "env": "pick",
+          "local_frame": true,
+          "joint_scale": 0.4,
+          "pos_scale": 0.03,
+          "rot_scale": 0.3,
+          "mask_unused": true,
+          "obs_dim": 126,
+          "action_scales": [
+           0.4,
+           0.03,
+           0.3
+          ],
+          "architecture": "MLP 256 tanh 256 tanh Gaussian actor; separate equal critic",
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "epochs": 4,
+          "minibatches": 8,
+          "evaluated_update": 160,
+          "new_transitions": 10485760
+         },
+         "architecture": "Separate256-tanh-256-tanh Gaussian actor/critic; 126 deployable inputs,26 residual outputs.",
+         "observation_space": "No contacts/rewards/parameters. Noisy q/qd, wrist pose/velocity, selected object pose/velocity, allowed reference-memory phase and targets, object_kind, previous residual.",
+         "action_space": "Joint/translation/rotation residual scales [0.4, 0.03, 0.3]; alpha0.1 filter; desired-wrist-local=`True`; unused ring/little masked=`True`. 50Hz residual,500Hz commands,1kHz hardware audit.",
+         "reward_terms": [
+          {
+           "name": "position",
+           "formula": "2*exp(-80*||object_position-reference_position||^2), multiplied by1 in phases>=close,0.2 earlier",
+           "weight": 1
+          },
+          {
+           "name": "orientation",
+           "formula": "exp(-2*||log(q_object*q_reference^-1)||^2), same phase multiplier",
+           "weight": 1
+          },
+          {
+           "name": "lift",
+           "formula": "0.5 when object centre exceeds initial centre by20mm during lift/carry",
+           "weight": 1
+          },
+          {
+           "name": "complete",
+           "formula": "3*exp(-80*position_goal_error^2)*exp(-3*orientation_goal_error^2) during place/release/retreat",
+           "weight": 1
+          },
+          {
+           "name": "action",
+           "formula": "-0.005*mean(clipped_residual^2)",
+           "weight": 1
+          },
+          {
+           "name": "smooth",
+           "formula": "-0.01*mean((residual-previous_residual)^2)",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-10 times persistent hardware failure flag, updated every1kHz tick.",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "kind",
+           "distribution": "independent equal white/black per plug"
+          },
+          {
+           "quantity": "housing dimensions",
+           "distribution": "independent uniform axis scale",
+           "range": [
+            0.85,
+            1.15
+           ]
+          },
+          {
+           "quantity": "blades",
+           "distribution": "uniform scale",
+           "range": [
+            0.9,
+            1.1
+           ]
+          },
+          {
+           "quantity": "mass",
+           "distribution": "uniform family-prior scale",
+           "range": [
+            0.6,
+            1.4
+           ]
+          },
+          {
+           "quantity": "COM",
+           "distribution": "independent uniform per axis,m",
+           "range": [
+            -0.004,
+            0.004
+           ]
+          },
+          {
+           "quantity": "inertia",
+           "distribution": "uniform scale",
+           "range": [
+            0.7,
+            1.3
+           ]
+          },
+          {
+           "quantity": "object/table sliding friction",
+           "distribution": "uniform",
+           "range": [
+            0.25,
+            1
+           ]
+          },
+          {
+           "quantity": "rubber sliding friction",
+           "distribution": "uniform",
+           "range": [
+            0.6,
+            1.4
+           ]
+          },
+          {
+           "quantity": "contact time",
+           "distribution": "uniform,s",
+           "range": [
+            0.003,
+            0.012
+           ]
+          },
+          {
+           "quantity": "object pose",
+           "distribution": "uniform yaw/equal side faces; xy reachable training region",
+           "range": {
+            "x": null,
+            "y": null
+           }
+          }
+         ],
+         "curriculum": "Stage random; full30s training episodes unless configuration states otherwise. Warm start `None`; no supervised learning.",
+         "compute": {
+          "training_wall_s": 1055.9873144626617,
+          "gpu_hours": 0.2933298095729616,
+          "hardware": "one L40S"
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "episodes": 128,
+          "successes": 50,
+          "success_rate": 0.390625,
+          "groups": {
+           "nominal": {
+            "episodes": 32,
+            "successes": 17
+           },
+           "physics": {
+            "episodes": 32,
+            "successes": 15
+           },
+           "touch": {
+            "episodes": 32,
+            "successes": 16
+           },
+           "edge": {
+            "episodes": 32,
+            "successes": 2
+           }
+          },
+          "per_final_criterion_counts": {
+           "left": 51,
+           "upright": 52,
+           "base": 128,
+           "table": 128,
+           "hand_free": 128,
+           "linear_still": 128,
+           "angular_still": 128
+          },
+          "all_picked_up": 52,
+          "hardware_violations": 7,
+          "maximum_speed_ratio": 0.9358263133192745,
+          "maximum_penetration_m": 0.0029388896566926227,
+          "generator_valid": 128,
+          "rejected_starts": 4,
+          "passed": false,
+          "base_alone": {
+           "episodes": 128,
+           "successes": 46,
+           "hardware_violations": 17,
+           "method": "Exact same reference/command wrapper with all actor weights/biases zero. No learned correction."
+          }
+         },
+         "reflection": "Fresh per-pickup references, higher-object-first selection,4.5s cycles and retries yield50/128 versus46/128 exact zero-actor sequence. Physics15/32 versus12/32; touching16/32 versus16/32. Hardware7 versus17. All128 required, so failed. Add selected-object-relative geometry, neighbour context, mixed contact starts and safer target margins.",
+         "package_sha256": "b1a6e5b71074…"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "51d3146efc21",
+          "bytes": 54759,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "0ae8bb28f4c5",
+          "bytes": 319658,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "a70b0ed56610",
+          "bytes": 421702,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "dbe6e173405f",
+          "bytes": 328533,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0039",
+        "seq": 39,
+        "kind": "verify",
+        "version": 6,
+        "recorded_utc": "2026-11-09T03:43:11Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0038",
+         "criteria_version": 1,
+         "passed": false,
+         "episodes": 128,
+         "successful_episodes": 50,
+         "evidence": "50/128 tested episodes satisfy the recorded object/task/hardware criteria; the requirement is128/128, so this is a failed self-verification. Per-trial geometry, lift, hardware and independent stability evidence is attached. No delivery.",
+         "limitations": "Finite own simulation with uncertain geometry/contact physics; no official evaluation claim.",
+         "package_sha256": "b1a6e5b71074…"
+        },
+        "files": {
+         "file_1": {
+          "sha": "485a2e1e28cb",
+          "bytes": 1512173,
+          "content_type": "application/json"
+         },
+         "video_top_failure": {
+          "sha": "dbe6e173405f",
+          "bytes": 328533,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0040",
+        "seq": 40,
+        "kind": "iter",
+        "version": 7,
+        "recorded_utc": "2026-11-09T03:43:12Z",
+        "exception": false,
+        "body": {
+         "sim_version": 3,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "n": 512,
+          "updates": 200,
+          "rollout": 128,
+          "stage": "random",
+          "randomize": true,
+          "resume": "research/train/ppo_v2_filtered/checkpoint_0120.pt",
+          "name": "PPO clipped",
+          "seed": 2028,
+          "device": "cuda:1",
+          "filter": 0.15,
+          "logstd": -2.3,
+          "template": "thumb",
+          "lr": 0.00015,
+          "anneal": true,
+          "obs_dim": 126,
+          "architecture": "MLP 256 tanh 256 tanh Gaussian actor; separate equal critic",
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "epochs": 4,
+          "minibatches": 8,
+          "evaluated_update": 200,
+          "new_transitions": 13107200
+         },
+         "architecture": "Separate256-tanh-256-tanh Gaussian actor/critic; 126 deployable inputs,26 residual outputs.",
+         "observation_space": "No contacts/rewards/parameters. Noisy q/qd, wrist pose/velocity, selected object pose/velocity, allowed reference-memory phase and targets, object_kind, previous residual.",
+         "action_space": "Joint/translation/rotation residual scales [0.18, 0.015, 0.12]; alpha0.15 filter; desired-wrist-local=`False`; unused ring/little masked=`False`. 50Hz residual,500Hz commands,1kHz hardware audit.",
+         "reward_terms": [
+          {
+           "name": "position",
+           "formula": "2*exp(-80*||object_position-reference_position||^2), multiplied by1 in phases>=close,0.2 earlier",
+           "weight": 1
+          },
+          {
+           "name": "orientation",
+           "formula": "exp(-2*||log(q_object*q_reference^-1)||^2), same phase multiplier",
+           "weight": 1
+          },
+          {
+           "name": "lift",
+           "formula": "0.5 when object centre exceeds initial centre by20mm during lift/carry",
+           "weight": 1
+          },
+          {
+           "name": "complete",
+           "formula": "3*exp(-80*position_goal_error^2)*exp(-3*orientation_goal_error^2) during place/release/retreat",
+           "weight": 1
+          },
+          {
+           "name": "action",
+           "formula": "-0.005*mean(clipped_residual^2)",
+           "weight": 1
+          },
+          {
+           "name": "smooth",
+           "formula": "-0.01*mean((residual-previous_residual)^2)",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-10 times persistent hardware failure flag, updated every1kHz tick.",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "kind",
+           "distribution": "independent equal white/black per plug"
+          },
+          {
+           "quantity": "housing dimensions",
+           "distribution": "independent uniform axis scale",
+           "range": [
+            0.85,
+            1.15
+           ]
+          },
+          {
+           "quantity": "blades",
+           "distribution": "uniform scale",
+           "range": [
+            0.9,
+            1.1
+           ]
+          },
+          {
+           "quantity": "mass",
+           "distribution": "uniform family-prior scale",
+           "range": [
+            0.6,
+            1.4
+           ]
+          },
+          {
+           "quantity": "COM",
+           "distribution": "independent uniform per axis,m",
+           "range": [
+            -0.004,
+            0.004
+           ]
+          },
+          {
+           "quantity": "inertia",
+           "distribution": "uniform scale",
+           "range": [
+            0.7,
+            1.3
+           ]
+          },
+          {
+           "quantity": "object/table sliding friction",
+           "distribution": "uniform",
+           "range": [
+            0.25,
+            1
+           ]
+          },
+          {
+           "quantity": "rubber sliding friction",
+           "distribution": "uniform",
+           "range": [
+            0.6,
+            1.4
+           ]
+          },
+          {
+           "quantity": "contact time",
+           "distribution": "uniform,s",
+           "range": [
+            0.003,
+            0.012
+           ]
+          },
+          {
+           "quantity": "object pose",
+           "distribution": "uniform yaw/equal side faces; xy reachable training region",
+           "range": {
+            "x": null,
+            "y": null
+           }
+          }
+         ],
+         "curriculum": "Stage random; full30s training episodes unless configuration states otherwise. Warm start research/train/ppo_v2_filtered/checkpoint_0120.pt; no supervised learning.",
+         "compute": {
+          "training_wall_s": 1209.4926693439484,
+          "gpu_hours": 0.33597018592887457,
+          "hardware": "one L40S"
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "episodes": 32,
+          "successes": 0,
+          "success_rate": 0.0,
+          "groups": {
+           "nominal": {
+            "episodes": 0,
+            "successes": 0
+           },
+           "physics": {
+            "episodes": 0,
+            "successes": 0
+           },
+           "touch": {
+            "episodes": 32,
+            "successes": 0
+           },
+           "edge": {
+            "episodes": 0,
+            "successes": 0
+           }
+          },
+          "per_final_criterion_counts": {
+           "left": 13,
+           "upright": 0,
+           "base": 8,
+           "table": 8,
+           "hand_free": 8,
+           "linear_still": 31,
+           "angular_still": 8
+          },
+          "all_picked_up": 17,
+          "hardware_violations": 0,
+          "maximum_speed_ratio": 0.5247239899130519,
+          "maximum_penetration_m": 0.0046781269891622975,
+          "generator_valid": 32,
+          "rejected_starts": 4,
+          "passed": false,
+          "base_alone": "Tripod nominal physical baseline previously tested:0/1 complete3-object trials;2/3 placed upright with condim4,1/3 with condim3. Full128 zero-residual tripod comparison not run; do not infer an improvement over that baseline."
+         },
+         "reflection": "Evaluated same trained actor with live references and4.5s cycles:0/32 leaning successes, versus16/32 zero-actor live reference. This failed configuration is retained. Grasp-local actor performs better under changed timing; do not reuse the old world-axis residual in this sequence."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "0b3322cf199b",
+          "bytes": 68911,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "de9da4205b69",
+          "bytes": 384533,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "f913480babfa",
+          "bytes": 283785,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "73faf70a0af8",
+          "bytes": 349028,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0041",
+        "seq": 41,
+        "kind": "verify",
+        "version": 7,
+        "recorded_utc": "2026-11-09T03:43:12Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0040",
+         "criteria_version": 1,
+         "passed": false,
+         "episodes": 32,
+         "successful_episodes": 0,
+         "evidence": "0/32 tested episodes satisfy the recorded object/task/hardware criteria; the requirement is128/128, so this is a failed self-verification. Per-trial geometry, lift, hardware and independent stability evidence is attached. No delivery.",
+         "limitations": "Only32 leaning episodes were tested; their failures already rule out a pass. No full-task success claim."
+        },
+        "files": {
+         "file_1": {
+          "sha": "d11ef2f8a316",
+          "bytes": 370164,
+          "content_type": "application/json"
+         },
+         "video_top_failure": {
+          "sha": "73faf70a0af8",
+          "bytes": 349028,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0042",
+        "seq": 42,
+        "kind": "iter",
+        "version": 8,
+        "recorded_utc": "2026-11-09T03:43:39Z",
+        "exception": false,
+        "body": {
+         "sim_version": 4,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "n": 512,
+          "updates": 240,
+          "rollout": 128,
+          "stage": "drag",
+          "randomize": false,
+          "resume": null,
+          "name": "PPO clipped",
+          "seed": 2030,
+          "device": "cuda:0",
+          "filter": 0.15,
+          "logstd": -2.0,
+          "template": "thumb",
+          "lr": 0.0002,
+          "anneal": true,
+          "env": "drag",
+          "obs_dim": 126,
+          "action_scales": [
+           0.4,
+           0.03,
+           0.15
+          ],
+          "architecture": "MLP 256 tanh 256 tanh Gaussian actor; separate equal critic",
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "epochs": 4,
+          "minibatches": 8,
+          "checkpoint_update": 240,
+          "transitions": 15728640
+         },
+         "architecture": "Separate256-tanh-256-tanh Gaussian actor/critic,126 permitted-state inputs,26 residual outputs.",
+         "observation_space": "No contacts/rewards/parameters. Noisy q/qd, wrist pose/velocity, selected object pose/velocity, allowed reference-memory phase and targets, object_kind, previous residual.",
+         "action_space": "20 joint residuals0.4rad,3 translation0.03m,3 rotation0.15rad,alpha0.15 filter. 50Hz residual held across500Hz contract;1kHz physical hardware audit.",
+         "reward_terms": [
+          {
+           "name": "position",
+           "formula": "100*(previous object x-current object x)",
+           "weight": 1
+          },
+          {
+           "name": "orientation",
+           "formula": "zero in this curriculum",
+           "weight": 0
+          },
+          {
+           "name": "lift",
+           "formula": "zero in this curriculum",
+           "weight": 0
+          },
+          {
+           "name": "complete",
+           "formula": "2*exp(-80*(object x-goal x)^2) after1.3s, goal x=min(initial x-.20,.44)",
+           "weight": 1
+          },
+          {
+           "name": "action",
+           "formula": "-.005*mean(filtered residual^2)",
+           "weight": 1
+          },
+          {
+           "name": "smooth",
+           "formula": "-.01*mean((filtered residual-previous)^2)",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-10*persistent1kHz hardware failure flag -20*object fallen flag",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "selected plug x",
+           "distribution": "uniform",
+           "range": [
+            0.59,
+            0.67
+           ]
+          },
+          {
+           "quantity": "selected plug y",
+           "distribution": "uniform",
+           "range": [
+            -0.03,
+            0.03
+           ]
+          },
+          {
+           "quantity": "orientation",
+           "distribution": "uniform yaw/equal side faces",
+           "range": "[-pi,pi] on bodyX orY face"
+          }
+         ],
+         "curriculum": "3s auxiliary training windows. Selected plug kind0 on right; two already-placed distractors on left. Fixed nominal physics. Not a30s manipulation episode.",
+         "compute": {
+          "checkpoint_training_wall_s": 1282.0726325511932,
+          "gpu_hours": 0.3561312868197759,
+          "hardware": "one L40S"
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "episodes": 32,
+          "seeds": [
+           56000,
+           56001,
+           56002,
+           56003,
+           56004,
+           56005,
+           56006,
+           56007,
+           56008,
+           56009,
+           56010,
+           56011,
+           56012,
+           56013,
+           56014,
+           56015,
+           56016,
+           56017,
+           56018,
+           56019,
+           56020,
+           56021,
+           56022,
+           56023,
+           56024,
+           56025,
+           56026,
+           56027,
+           56028,
+           56029,
+           56030,
+           56031
+          ],
+          "primitive_successes": 27,
+          "primitive_success_rate": 0.84375,
+          "baseline_primitive_successes": 15,
+          "hardware_violations": 0,
+          "baseline_hardware_violations": 7,
+          "full_task_passed": false,
+          "full_task_note": "Only3s inward-draw behavior evaluated; no pickup/turn/placement completion. These numbers are auxiliary subskill results, not task success."
+         },
+         "reflection": "Native heldout inward-draw success27/32 versus15/32 baseline and23/32 earlier checkpoint. Remaining failures concentrate at the furthest reaches. This is still a3s partial skill. Train generalized directions and full physics/kind variation, then integrate with pickup/placement and verify the complete30s behavior.",
+         "package_sha256": "7c9614115879…",
+         "stage": "Auxiliary inward-draw PPO primitive; not a full-task policy"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "7163997467e9",
+          "bytes": 73088,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "5f837b85e153",
+          "bytes": 50693,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "b8403c719211",
+          "bytes": 59685,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "a52a1b5eab74",
+          "bytes": 56196,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0043",
+        "seq": 43,
+        "kind": "sim",
+        "version": 7,
+        "recorded_utc": "2026-11-09T03:46:11Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 2,
+         "simulator": {
+          "name": "MuJoCo 3.17.0 native CPU and MuJoCo Warp 3.17.0",
+          "timestep_s": 0.001,
+          "integrator": "implicitfast",
+          "solver": "Newton",
+          "iterations": 50,
+          "tolerance": 1e-06,
+          "cone": "elliptic",
+          "contact": "rigid convex meshes; object rounded housing approximated by a box plus two blade boxes; solref .005 1; rubber condim4 torsion length .003m"
+         },
+         "scene_files": {
+          "scene.xml": "34a4bc6f6d4a…",
+          "hand_floating.xml": "e42bae289ae5…",
+          "vendor_right.xml": "d8c6eba4dbcc…",
+          "build_sim.py": "18cac2044524…",
+          "native_env.py": "080ad8bbbaeb…",
+          "warp_core.py": "9370a22afb85…",
+          "reference_controller.py": "04b0933d1910…",
+          "grasp_templates.json": "82c6111ad753…",
+          "start_pose.json": "82abe6f7ddd2…",
+          "ppo_env.py": "7ed5c7d8a3ee…",
+          "tripod_grasp_templates.json": "a46c706011e7…",
+          "drag_reference.py": "f296d98baed1…",
+          "drag_env.py": "e837f69d9eb4…",
+          "train_ppo.py": "4e06bde03b61…",
+          "convert_drag_frame.py": "4903a0ab9ee1…",
+          "policy_runtime.py": "8f3b79bc5263…"
+         },
+         "robot": "Unmodified public right URDF masses/inertias/axes/limits/meshes plus exact 344 contact exclusions from vendor MJCF commit 5c4dfa1; full 0.7088kg root mass retained through a freejoint.",
+         "objects": "Reconstruction v2 white/black housings and fixed metal blades. Estimated dimensions, masses and inertia from reconstruction physics priors; no attachment or forces applied to objects.",
+         "reference": {
+          "version": 2,
+          "method": "Offline thumb-index contact IK templates; blades-end approach. Object-relative sequence approach, close, lift, rotate, carry, place, release. Reconstructed object motion determines sequence and approximate scale; not an exact human joint replay. PPO learns corrections.",
+          "kinematic_replay_max_penetration_m": 0.016979576623719524,
+          "replay_limitation": "The illustrative kinematic replay intersects geometry. It is not accepted as a valid physical execution; all success claims require dynamics rollout.",
+          "additional": "Tripod contact targets are noncollinear at index/middle longitudinal offsets±12mm. Original prior retained as a comparison."
+         },
+         "controllers": "Exact specified gains, torque/force saturations, 1kHz finger PD and wrist-1 impedance. Encoder noise .002 rad/.05 rad/s. Actions 500Hz; training residual updated50Hz with targets held20ticks. No actual joint state clamping. Hardware audited every native tick.",
+         "initial_conditions": {
+          "hand": "research/train/start_pose.json",
+          "objects": "Selected plug side-lying yaw uniform, edge/corner mixture over full right-side support; white/black random kinds and full geometric/physical DR. Auxiliary distractors already on left. .3s training settle, full target verification1.5s unchanged.",
+          "reason": "Start hand safely above table; gradually expand exploration without changing verification scope."
+         },
+         "episode": {
+          "duration_s": 3,
+          "control_hz": 500,
+          "training_residual_hz": 50,
+          "termination": "Curriculum3s only; full task still30s"
+         },
+         "validation": {
+          "hand_mass_kg": 0.7088000000000001,
+          "controller_circle_max_position_m": 0.0005012773978537006,
+          "controller_circle_max_angle_deg": 0.17959260624541187,
+          "metrics": {
+           "max_speed_ratio": 0.05089199910821263,
+           "max_torque_ratio": 0.10653926151290649,
+           "max_position_excess_rad": 0.0,
+           "max_penetration_m": 0.0,
+           "hardware_violation": false
+          },
+          "actuator_joint_order_correct": true,
+          "max_kp_error": 0.0,
+          "max_effort_error": 0.0,
+          "vendor_exclusion_count": 344,
+          "initial_scene_valid": true
+         },
+         "physical_baseline": {
+          "seed": 0,
+          "region": "nominal",
+          "final_position": [
+           [
+            -0.11934180296432031,
+            0.27107545275127365,
+            0.02096809047745428
+           ],
+           [
+            0.0024353574105932117,
+            0.28502708875724675,
+            0.022851094337454286
+           ],
+           [
+            0.14489065437792684,
+            0.2871417035255878,
+            0.0209680904774543
+           ]
+          ],
+          "final_orientation": [
+           [
+            0.8766750230606177,
+            2.731490327266096e-10,
+            -4.977582174170164e-10,
+            0.4810830530601382
+           ],
+           [
+            0.8148828731016915,
+            2.5100700288765673e-10,
+            3.528851617556404e-10,
+            -0.5796256577529426
+           ],
+           [
+            0.20635961276741369,
+            -3.306569861727894e-10,
+            -6.973517530924699e-11,
+            -0.9784762185247436
+           ]
+          ],
+          "metrics": {
+           "max_speed_ratio": 0.4628051940219519,
+           "max_torque_ratio": 1.0,
+           "max_position_excess_rad": 0.0,
+           "max_penetration_m": 0.00011790248354816266,
+           "hardware_violation": false
+          }
+         },
+         "limitations": [
+          "Object identity and mass not measured. Rubber torsional friction is an approximation; sensitivity and target feedback needed.",
+          "Native CPU full 1kHz audits are authoritative for self verification; GPU training reward checks alone are insufficient.",
+          "Illustrative kinematic replay has 17mm penetration. Nominal physical baseline deepest penetration .118mm.",
+          "Full geometry/randomization and edge reach remain to validate. This is simulation version1, not a success claim.",
+          "Correction to prior record: rubber geom torsional coefficient is3mm but object default5mm dominates the max friction mixing, so nominal rubber-object effective torsional coefficient is5mm. Condim3 challenge removes torsion entirely. This uncertainty is not a measured physical property."
+         ],
+         "changes_from_version_1": [
+          "GPU graph now applies exact2ms target translation/rotation rate limits inside each20ms residual interval.16-world30s zero-residual sanity check:16/16 simplified task successes,0hardware flags; this is not strict verification.",
+          "Native physics randomization now includes housing dimensions .85-1.15, blades .9-1.1, tablefriction .25-1, rubberfriction .6-1.4, masses .6-1.4, COM4mm, inertia .7-1.3, contact .003-.012. Initial placement explicitly checks1s rest and subsequent.5s3mm stability."
+         ],
+         "training_curriculum": "Train a PPO inward-draw primitive independently; combine only after validation and retrain/evaluate the complete30s policy. Not a standalone solution.",
+         "changes_from_version_2": [
+          "Full per-world training physics randomization implemented with batched derived masses, inverse weights and geometry bounds recomputed by MuJoCo Warp set_const. Eight-world diagnostic confirms each derived subtree mass equals its sampled mass.",
+          "GPU hardware audit now checks joint position, speed and applied effort after every1kHz tick, accumulating failures; native verification remains independent.",
+          "PPO can use original thumb-index or new three-contact thumb-index-middle offline prior. Tripod physical baseline nominal:2/3 final upright with torsion,1/3 with condim3; no hardware violation, max penetration1.79mm in condim3. Neither is a task solution.",
+          "Training may randomize every plug kind, mass.6-1.4, housing axis scale.85-1.15, blades.9-1.1, COM±4mm,inertia.7-1.3, table/objectfriction.25-1,rubber.6-1.4, contacttime.003-.012. Allowed observations do not reveal these parameters."
+         ],
+         "changes_from_version_3": [
+          "Auxiliary3s inward-draw curriculum for plugs beyond a comfortable thumb-index reach. One right-side plug at x[.59,.67],y[-.03,.03], random lying face/yaw. Two other plugs are already parked on the left as distractors. All are free dynamic objects. Training settles.3s; final full-task verification remains1.5s.",
+          "Reference uses an extended middle finger, a brief permitted wrist target/velocity pulse toward the workspace edge, then an inward stroke. Actual wrist can transiently move past the executed-target box under the specified force-limited impedance law; no wrist state clamp or object force. This is a proposed bridge for broad starts, absent from the demonstrated easy placement.",
+          "26D PPO residual is scaled.4rad joints,.03m wrist,.15rad orientation and filteredalpha.15. Actor126 permitted-state inputs; network50Hz, contract500Hz, physics/audit1kHz.",
+          "Eight-world zero-residual diagnostic:3/8 inward-draw subskill successes (object x<.54),2/8 hardware failures. This is not task success and cannot be delivered. Native offline probes sometimes move a far plug34mm safely, often fail or violate limits."
+         ],
+         "changes_from_version_4": [
+          "Generalized inward-draw reference selects the outward direction from the nearest point in the wrist target box and draws inward, rather than only+x. Reference/observation/action vectors use the desired wrist frame.",
+          "Training selected plug comes from right edge, lower edge, left edge or corners, with all kind mixtures and the full physical randomization of simulation3. Nonselected objects remain parked on the left. Initial collision support extents are conservatively clipped to the tabletop.",
+          "Reference hover height uses the permitted object pose and kind dimension prior, not simulator parameters. Paired GPU/NumPy feature audit across four edge directions and five phases: maximum difference<3e-6.",
+          "PPO initialization is a signed-permutation coordinate change of the previously trained+x inward-draw network. No new fitting or supervised training; subsequent learning is PPO only. The object angular-velocity input weights are zeroed because its old local frame has no single constant mapping."
+         ],
+         "changes_from_version_5": [
+          "Selected plug attitudes now mix side-lying,upright,blade-down and arbitrary SO(3) before a physical settle. Initial height accounts for both housings and full blade boxes; no deep blade penetration is intentionally spawned.",
+          "159 actor features include actual plug-to-wrist pose and neighbour poses/kinds/masks; training neighbour dropout25%. All inputs are allowed object/proprioceptive states.",
+          "PPO warm starts the already local-frame inward-draw policy, expands input layers with zero new weights and scales the critic for a0.1 reward multiplier. Deterministic actor is unchanged at initialization apart from the newly declared command margin.",
+          "Conservative command joint margin.03rad; actual hardware rules unchanged. Auxiliary3s windows, full task30s. Full kind/geometry/physics DR and edge/corner mixture retained."
+         ]
+        },
+        "files": {
+         "image": {
+          "sha": "0b629ebb76c6",
+          "bytes": 64852,
+          "content_type": "image/png"
+         },
+         "replay_video": {
+          "sha": "f0cfe9697793",
+          "bytes": 558361,
+          "content_type": "video/mp4"
+         },
+         "scene_1": {
+          "sha": "34a4bc6f6d4a",
+          "bytes": 78705,
+          "content_type": "application/xml"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0044",
+        "seq": 44,
+        "kind": "note",
+        "version": 19,
+        "recorded_utc": "2026-11-09T03:49:18Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Method before full two-skill evaluation: compose the PPO-trained inward-draw network and PPO-trained pickup/turn/place network. A finite-state selector uses only measured poses/velocities, known task constants and an analytic wrist-target reach check; it does no runtime simulation, optimization or sampling. It refreshes references after object motion, selects the highest unattempted plug and allows retries within30s. All active skill corrections come from PPO networks. The exact zero-actor live reference succeeds46/128, and zero-actor inward draw15/32, so the base is explicitly not a full solution. The combined zero-network baseline will be measured separately. No policy is delivered until its complete30s behavior satisfies the unchanged criteria."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-09T01:01:16Z",
@@ -299639,7 +301065,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-09T03:42:32Z",
+  "staged_utc": "2026-11-09T03:52:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -299723,7 +301149,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-09T03:42:32Z",
+  "staged_utc": "2026-11-09T03:52:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
