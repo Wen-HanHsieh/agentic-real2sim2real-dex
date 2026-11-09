@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-09T14:32:44Z",
- "exported_utc": "2026-11-09T14:32:30Z",
+ "generated_utc": "2026-11-09T14:42:52Z",
+ "exported_utc": "2026-11-09T14:42:30Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-09T14:22:55",
+    "time": "2026-11-09T14:39:53",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-09T14:30:14",
+    "time": "2026-11-09T14:32:54",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -171009,6 +171009,2495 @@
         "body": {
          "kind": "hypothesis",
          "text": "A new mechanical hypothesis: the center pinch places its contact line near the rotation axis, leaving finite pad torsion to transmit nearly the entire 90 degree turn. A pinch nearer the blade end could put the center of mass below the held contact line and let gravity assist the rotation. I will test body-local +Z grip biases of 14, 18 and 20 mm, with lower normal preloads, in unchanged physical simulation 4. Expected gravity moment is roughly m*g*18 mm; static torsional friction can still stop the turn early. This is an analysis baseline, with no gravity change or object force. Any resulting reference must show opposed case contacts, an airborne turn, hardware compliance and the recorded wrist style before it guides another PPO run."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0056",
+        "seq": 56,
+        "kind": "iter",
+        "version": 12,
+        "recorded_utc": "2026-11-09T14:36:13Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "policy_observations": "deployable",
+         "reward_terms": [
+          {
+           "name": "reference_pose",
+           "formula": ".8exp(-(position_error/.05)^2)+.3exp(-(rotation_error/.6)^2)",
+           "weight": 0.02
+          },
+          {
+           "name": "reference_fingers",
+           "formula": "exp(-mean((q-q_reference)^2)/.06)",
+           "weight": 0.003
+          },
+          {
+           "name": "opposition",
+           "formula": "(.3thumb_case+.2other_case+1both_case)*I[[redacted]..6]",
+           "weight": 0.02
+          },
+          {
+           "name": "lift",
+           "formula": "clip(height_gain/.08,0,1)*I[phase3..5]",
+           "weight": 0.03
+          },
+          {
+           "name": "upright",
+           "formula": "signed blade_axis_dot_up*I[phase>=3 and hand_contact]",
+           "weight": 0.1
+          },
+          {
+           "name": "turn_progress",
+           "formula": "delta(blade_axis_dot_up)*I[phase>=3 and hand_contact]",
+           "weight": 0.2
+          },
+          {
+           "name": "left_goal",
+           "formula": "exp(-(object_XY_goal_distance/.07)^2)*I[phase>=5]",
+           "weight": 0.1
+          },
+          {
+           "name": "placement",
+           "formula": "I[left,tilt<=15deg,table_contact,released,linear_velocity<.02,angular_velocity<.15]",
+           "weight": 0.3
+          },
+          {
+           "name": "penetration",
+           "formula": "-max(depth-.003,0)/.01",
+           "weight": 0.8
+          },
+          {
+           "name": "motion",
+           "formula": "-mean(a^2)-mean((a-previous_a)^2)",
+           "weight": 0.0004
+          },
+          {
+           "name": "object_motion",
+           "formula": "-norm(object_angular_velocity)",
+           "weight": 0.0002
+          },
+          {
+           "name": "hardware",
+           "formula": "-I[hardware_speed_or_position_violation]",
+           "weight": 10.0
+          },
+          {
+           "name": "speed_margin",
+           "formula": "-max(max(abs(qd)/URDF_speed)-.5,0)^2",
+           "weight": 0.04
+          },
+          {
+           "name": "carry_distance",
+           "formula": "-object_XY_goal_distance*I[phase>=5]",
+           "weight": 0.08
+          },
+          {
+           "name": "case_proximity",
+           "formula": "(exp(-max(oriented_case_box_distance_from_FK_thumb_pad-.008,0)/.01)+max_other(exp(-max(box_distance-.008,0)/.01)))*I[[redacted]..6]",
+           "weight": 0.014
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "finite physical variants",
+           "distribution": "Uniform discrete selection of16 seeded independent uniform-range draws per kind, fixed per GPU world",
+           "parameters": "research/sim/meshbank_variants.json",
+           "mass": [
+            0.7,
+            1.3
+           ],
+           "white_axis_scale": [
+            0.9,
+            1.1
+           ],
+           "black_dimensions_mm": [
+            null,
+            null,
+            null
+           ],
+           "COM_mm": [
+            -3,
+            3
+           ],
+           "hand_table_mu": [
+            0.3,
+            1.0
+           ],
+           "restitution": [
+            0,
+            0.15
+           ],
+           "torsional_radius_m": [
+            0.001,
+            0.006
+           ]
+          },
+          {
+           "name": "encoders",
+           "distribution": "Independent Gaussian each policy observation",
+           "q_sigma": 0.002,
+           "qd_sigma": 0.05
+          }
+         ],
+         "algorithm": {
+          "name": "PPO clipped/GAE",
+          "actor_learning_rate": 3e-06,
+          "critic_learning_rate": 0.0003,
+          "n_steps": 32,
+          "batch_size": 8192,
+          "epochs": 4,
+          "gamma": 0.999,
+          "gae_lambda": 0.97,
+          "clip": 0.2,
+          "target_kl": 0.03,
+          "entropy": 0.0001,
+          "BC_auxiliary_weight": 0.03,
+          "actor_grad_clip": 0.5,
+          "critic_grad_clip": 5.0,
+          "initial_log_std": -2.0
+         },
+         "architecture": "SeparateMLPactor/critic256,256,128Tanh;26Gaussian incrementactions; float32GPUphysics,deployable150encoder.",
+         "observation_space": "150deployable features: canonical146,state/target histories,phase progress,world wrist position; other-object slots/count masked for per-object skill.180degblade-axis symmetry is folded consistently from the cached initial pose; exact equivalence checked. No contacts/forces/physical parameters.",
+         "action_space": "50Hz26neural increments:20previous-command finger increments<=.025rad,3canonical translations<=.01mnorm,3canonical rotvec increments<=.03radnorm;holdcommands through500Hz interface and1kHzhardware controllers.",
+         "curriculum": "Physical variants are fixed per world:16 independent samples per kind from the recorded mass,size,COM,friction,restitution,torsion ranges. Ordinary starts keep fixed deployment START; kind,side-rest family,yaw,XY and left goal vary. Reverse starts use1579 states physically settled in their exact variant; each kind-variant has at least40. Reverse probability.65 for12,.50 for13; all state edits occur at reset.",
+         "initialization": "Continue PPO11 checkpoint at2000896 collected steps; same150-feature incremental actor. BC auxiliary data from BC11 retained.",
+         "compute": {
+          "wall_seconds": 406.2,
+          "gpu_hours": 0.11283333333333333,
+          "gpu": "One L40S,cuda:0",
+          "environments": 4096
+         },
+         "training_steps": 2002944,
+         "evaluation": {
+          "episodes": [
+           {
+            "seed": 7100,
+            "kind": 0,
+            "return_": 16.486178772483616,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11453714547957282,
+            "standing_steps": 0,
+            "held_steps": 144,
+            "tilt_degrees": 89.99999999995684,
+            "left_position": -0.4115778775020931,
+            "hardware": false,
+            "speed_ratio": 0.25808368837421747
+           },
+           {
+            "seed": 7101,
+            "kind": 1,
+            "return_": 36.36423090126099,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11556036102784009,
+            "standing_steps": 0,
+            "held_steps": 223,
+            "tilt_degrees": 0.0,
+            "left_position": 0.08781411247728284,
+            "hardware": false,
+            "speed_ratio": 0.28473565607028406
+           },
+           {
+            "seed": 7102,
+            "kind": 0,
+            "return_": 16.828967965844306,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11508724516546309,
+            "standing_steps": 0,
+            "held_steps": 146,
+            "tilt_degrees": 90.00000000176522,
+            "left_position": -0.26758677217050564,
+            "hardware": false,
+            "speed_ratio": 0.2556610727123629
+           },
+           {
+            "seed": 7103,
+            "kind": 1,
+            "return_": 20.945336382512576,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1165917199993442,
+            "standing_steps": 0,
+            "held_steps": 147,
+            "tilt_degrees": 90.00000000469272,
+            "left_position": -0.21628238868874303,
+            "hardware": false,
+            "speed_ratio": 0.32141783369993304
+           },
+           {
+            "seed": 7104,
+            "kind": 0,
+            "return_": 39.214517278368064,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1020808835377692,
+            "standing_steps": 0,
+            "held_steps": 214,
+            "tilt_degrees": 0.0,
+            "left_position": -0.14339218555698735,
+            "hardware": false,
+            "speed_ratio": 0.2482945205076692
+           },
+           {
+            "seed": 7105,
+            "kind": 1,
+            "return_": 40.80521986756829,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1144947880172825,
+            "standing_steps": 0,
+            "held_steps": 224,
+            "tilt_degrees": 0.0,
+            "left_position": 0.1596253652431262,
+            "hardware": false,
+            "speed_ratio": 0.29852947217199005
+           },
+           {
+            "seed": 7106,
+            "kind": 0,
+            "return_": -0.7776992873276505,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.00973336510350648,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999885212,
+            "left_position": -0.04414166344185633,
+            "hardware": false,
+            "speed_ratio": 0.3185559372977832
+           },
+           {
+            "seed": 7107,
+            "kind": 1,
+            "return_": 32.89565788419499,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11563092393804195,
+            "standing_steps": 0,
+            "held_steps": 228,
+            "tilt_degrees": 0.0,
+            "left_position": -0.2057587446411331,
+            "hardware": false,
+            "speed_ratio": 0.24055859527513582
+           },
+           {
+            "seed": 7108,
+            "kind": 0,
+            "return_": 17.38811832610917,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11470769957972655,
+            "standing_steps": 0,
+            "held_steps": 143,
+            "tilt_degrees": 90.00000000055145,
+            "left_position": -0.2707256339948471,
+            "hardware": false,
+            "speed_ratio": 0.2680380502398781
+           },
+           {
+            "seed": 7109,
+            "kind": 1,
+            "return_": 21.69127165209638,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11631036474560655,
+            "standing_steps": 0,
+            "held_steps": 148,
+            "tilt_degrees": 90.00000000277485,
+            "left_position": -0.23733614438419545,
+            "hardware": false,
+            "speed_ratio": 0.3227437454481234
+           },
+           {
+            "seed": 7110,
+            "kind": 0,
+            "return_": 36.92982415828803,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10206666233334057,
+            "standing_steps": 0,
+            "held_steps": 214,
+            "tilt_degrees": 0.0,
+            "left_position": -0.20352220740484714,
+            "hardware": false,
+            "speed_ratio": 0.2585231369532996
+           },
+           {
+            "seed": 7111,
+            "kind": 1,
+            "return_": 32.96661493669887,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11511912760503396,
+            "standing_steps": 0,
+            "held_steps": 282,
+            "tilt_degrees": 127.15288291257167,
+            "left_position": 0.4256678294771853,
+            "hardware": false,
+            "speed_ratio": 0.210531810611104
+           },
+           {
+            "seed": 7112,
+            "kind": 0,
+            "return_": -4.85600120389943,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.009762713900117015,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999996032,
+            "left_position": -0.29823053322340803,
+            "hardware": false,
+            "speed_ratio": 0.2609055736944239
+           },
+           {
+            "seed": 7113,
+            "kind": 1,
+            "return_": 30.17397096027896,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11561461346231905,
+            "standing_steps": 0,
+            "held_steps": 283,
+            "tilt_degrees": 126.6672444900357,
+            "left_position": 0.21380053303651783,
+            "hardware": false,
+            "speed_ratio": 0.21011979505098657
+           },
+           {
+            "seed": 7114,
+            "kind": 0,
+            "return_": 18.917331680093923,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11546817441441731,
+            "standing_steps": 0,
+            "held_steps": 144,
+            "tilt_degrees": 89.99999999837672,
+            "left_position": -0.2121365126537251,
+            "hardware": false,
+            "speed_ratio": 0.23961981115513664
+           },
+           {
+            "seed": 7115,
+            "kind": 1,
+            "return_": 34.46938306149569,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11562118095714163,
+            "standing_steps": 0,
+            "held_steps": 223,
+            "tilt_degrees": 0.0,
+            "left_position": -0.019851240150968442,
+            "hardware": false,
+            "speed_ratio": 0.2854213867005211
+           },
+           {
+            "seed": 7116,
+            "kind": 0,
+            "return_": 17.994595850482533,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11446629462354042,
+            "standing_steps": 0,
+            "held_steps": 147,
+            "tilt_degrees": 90.00000000372786,
+            "left_position": -0.1646575749698339,
+            "hardware": false,
+            "speed_ratio": 0.2796447834025176
+           },
+           {
+            "seed": 7117,
+            "kind": 1,
+            "return_": -2.6224078582992645,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.0008959504968637164,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.9999999965244,
+            "left_position": -0.11737800258823818,
+            "hardware": false,
+            "speed_ratio": 0.20906500877241344
+           },
+           {
+            "seed": 7118,
+            "kind": 0,
+            "return_": -1.8824377665362642,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.007169932836048991,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.00000000059373,
+            "left_position": -0.17193219834366252,
+            "hardware": false,
+            "speed_ratio": 0.2966045801134939
+           },
+           {
+            "seed": 7119,
+            "kind": 1,
+            "return_": 32.75982056641455,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11522251258521768,
+            "standing_steps": 0,
+            "held_steps": 228,
+            "tilt_degrees": 90.00000000411879,
+            "left_position": -0.14752404554945098,
+            "hardware": false,
+            "speed_ratio": 0.23530686426394165
+           },
+           {
+            "seed": 7120,
+            "kind": 0,
+            "return_": 27.978553978463907,
+            "steps": 359,
+            "success": false,
+            "max_lift": 0.10324585962497906,
+            "standing_steps": 0,
+            "held_steps": 189,
+            "tilt_degrees": 11.840640103382945,
+            "left_position": 0.07442597497236095,
+            "hardware": true,
+            "speed_ratio": 1.000850960208817
+           },
+           {
+            "seed": 7121,
+            "kind": 1,
+            "return_": -0.35692126333140844,
+            "steps": 490,
+            "success": false,
+            "max_lift": 9.08407123342888e-05,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.00000000688172,
+            "left_position": 0.008110570701322142,
+            "hardware": false,
+            "speed_ratio": 0.20892280714446668
+           },
+           {
+            "seed": 7122,
+            "kind": 0,
+            "return_": 26.565173105121413,
+            "steps": 351,
+            "success": false,
+            "max_lift": 0.10340791700976314,
+            "standing_steps": 0,
+            "held_steps": 182,
+            "tilt_degrees": 16.57164274425358,
+            "left_position": -0.03255079462824667,
+            "hardware": true,
+            "speed_ratio": 1.1345298994884325
+           },
+           {
+            "seed": 7123,
+            "kind": 1,
+            "return_": 72.910952228311,
+            "steps": 490,
+            "success": true,
+            "max_lift": 0.11486821147713716,
+            "standing_steps": 68,
+            "held_steps": 223,
+            "tilt_degrees": 0.0,
+            "left_position": 0.2665362793384083,
+            "hardware": false,
+            "speed_ratio": 0.29253015394155724
+           }
+          ],
+          "success_rate": 0.041666666666666664,
+          "hardware_violations": 2,
+          "scope": "Single-object9.8s curriculum diagnostic; not full30s/2or3object recorded criteria",
+          "mean_peak_lift": 0.09032310369301699
+         },
+         "baseline_evaluation": {
+          "episodes": [
+           {
+            "seed": 7100,
+            "kind": 0,
+            "return_": 15.365765203648715,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11298480700262957,
+            "standing_steps": 0,
+            "held_steps": 141,
+            "tilt_degrees": 89.99999999946056,
+            "left_position": -0.4540455748817041,
+            "hardware": false,
+            "speed_ratio": 0.26854134742982766
+           },
+           {
+            "seed": 7101,
+            "kind": 1,
+            "return_": 35.4253395380764,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11255817040311569,
+            "standing_steps": 0,
+            "held_steps": 222,
+            "tilt_degrees": 0.0,
+            "left_position": 0.03691636641543447,
+            "hardware": false,
+            "speed_ratio": 0.29478834237408175
+           },
+           {
+            "seed": 7102,
+            "kind": 0,
+            "return_": 15.094462660561318,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11373403613777425,
+            "standing_steps": 0,
+            "held_steps": 145,
+            "tilt_degrees": 90.0000000000555,
+            "left_position": -0.42514740885246155,
+            "hardware": false,
+            "speed_ratio": 0.24461078418346477
+           },
+           {
+            "seed": 7103,
+            "kind": 1,
+            "return_": 25.22185955592567,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1150469812011724,
+            "standing_steps": 0,
+            "held_steps": 179,
+            "tilt_degrees": 89.99999999427591,
+            "left_position": -0.24775289517204904,
+            "hardware": false,
+            "speed_ratio": 0.303778997598142
+           },
+           {
+            "seed": 7104,
+            "kind": 0,
+            "return_": 38.61970641387358,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1018926037625787,
+            "standing_steps": 0,
+            "held_steps": 212,
+            "tilt_degrees": 0.0,
+            "left_position": -0.1462838235782937,
+            "hardware": false,
+            "speed_ratio": 0.2798292428525326
+           },
+           {
+            "seed": 7105,
+            "kind": 1,
+            "return_": 38.68093989142903,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11249923384324786,
+            "standing_steps": 0,
+            "held_steps": 223,
+            "tilt_degrees": 0.0,
+            "left_position": 0.11353685646841098,
+            "hardware": false,
+            "speed_ratio": 0.3173416060857318
+           },
+           {
+            "seed": 7106,
+            "kind": 0,
+            "return_": -0.6961799054278582,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.009758657611431172,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999914023,
+            "left_position": -0.044082251023896575,
+            "hardware": false,
+            "speed_ratio": 0.2300821514014249
+           },
+           {
+            "seed": 7107,
+            "kind": 1,
+            "return_": 31.41382221210196,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11431438857035936,
+            "standing_steps": 0,
+            "held_steps": 228,
+            "tilt_degrees": 89.99999999124151,
+            "left_position": -0.29523954600662133,
+            "hardware": false,
+            "speed_ratio": 0.24063102725330648
+           },
+           {
+            "seed": 7108,
+            "kind": 0,
+            "return_": 15.912191653299288,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11336943954115174,
+            "standing_steps": 0,
+            "held_steps": 141,
+            "tilt_degrees": 90.00000000108496,
+            "left_position": -0.3591943972205933,
+            "hardware": false,
+            "speed_ratio": 0.2490974409481596
+           },
+           {
+            "seed": 7109,
+            "kind": 1,
+            "return_": 34.11457130585848,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11439212863607724,
+            "standing_steps": 0,
+            "held_steps": 220,
+            "tilt_degrees": 0.0,
+            "left_position": -0.15452685990200477,
+            "hardware": false,
+            "speed_ratio": 0.3027094222780014
+           },
+           {
+            "seed": 7110,
+            "kind": 0,
+            "return_": 36.883171864359475,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10143036457743139,
+            "standing_steps": 0,
+            "held_steps": 212,
+            "tilt_degrees": 0.0,
+            "left_position": -0.19140115145864006,
+            "hardware": false,
+            "speed_ratio": 0.2446578346712638
+           },
+           {
+            "seed": 7111,
+            "kind": 1,
+            "return_": 32.104693080156316,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11348796371449035,
+            "standing_steps": 0,
+            "held_steps": 282,
+            "tilt_degrees": 128.32247289664028,
+            "left_position": 0.42506545705647303,
+            "hardware": false,
+            "speed_ratio": 0.2101670286216306
+           },
+           {
+            "seed": 7112,
+            "kind": 0,
+            "return_": -4.078064421846305,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.009823049076983916,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999829724,
+            "left_position": -0.26518666519988954,
+            "hardware": false,
+            "speed_ratio": 0.2680539203515748
+           },
+           {
+            "seed": 7113,
+            "kind": 1,
+            "return_": 28.884389241248403,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11390352758634456,
+            "standing_steps": 0,
+            "held_steps": 283,
+            "tilt_degrees": 127.91093775601215,
+            "left_position": 0.1970386512627478,
+            "hardware": false,
+            "speed_ratio": 0.21773236187206207
+           },
+           {
+            "seed": 7114,
+            "kind": 0,
+            "return_": 16.41278907846144,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11382542953670757,
+            "standing_steps": 0,
+            "held_steps": 141,
+            "tilt_degrees": 89.99999999987035,
+            "left_position": -0.3455734330457396,
+            "hardware": false,
+            "speed_ratio": 0.23668868760270229
+           },
+           {
+            "seed": 7115,
+            "kind": 1,
+            "return_": 34.04762346246455,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11260807715226685,
+            "standing_steps": 0,
+            "held_steps": 222,
+            "tilt_degrees": 0.0,
+            "left_position": -0.06271757340003352,
+            "hardware": false,
+            "speed_ratio": 0.29079175865867535
+           },
+           {
+            "seed": 7116,
+            "kind": 0,
+            "return_": 17.42853185608243,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11305452968750947,
+            "standing_steps": 0,
+            "held_steps": 144,
+            "tilt_degrees": 90.00000000326288,
+            "left_position": -0.19552205503988937,
+            "hardware": false,
+            "speed_ratio": 0.2577129230854951
+           },
+           {
+            "seed": 7117,
+            "kind": 1,
+            "return_": -2.642734376698181,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.0008651410601870461,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999656099,
+            "left_position": -0.11725258049981913,
+            "hardware": false,
+            "speed_ratio": 0.20902715160364196
+           },
+           {
+            "seed": 7118,
+            "kind": 0,
+            "return_": -1.74870402154825,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.007594372773589788,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999944642,
+            "left_position": -0.17460853722869787,
+            "hardware": false,
+            "speed_ratio": 0.3099021558883889
+           },
+           {
+            "seed": 7119,
+            "kind": 1,
+            "return_": 30.767545439676034,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1137953671207558,
+            "standing_steps": 0,
+            "held_steps": 228,
+            "tilt_degrees": 89.99999999630593,
+            "left_position": -0.19960236206283571,
+            "hardware": false,
+            "speed_ratio": 0.2345846484474616
+           },
+           {
+            "seed": 7120,
+            "kind": 0,
+            "return_": 40.865111017703576,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10320843149041971,
+            "standing_steps": 0,
+            "held_steps": 200,
+            "tilt_degrees": 0.0,
+            "left_position": 0.04241464657613198,
+            "hardware": false,
+            "speed_ratio": 0.4634994160349584
+           },
+           {
+            "seed": 7121,
+            "kind": 1,
+            "return_": -0.2560099218305619,
+            "steps": 490,
+            "success": false,
+            "max_lift": 2.1725054593180887e-05,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.00000000441261,
+            "left_position": 0.0031014538894478015,
+            "hardware": false,
+            "speed_ratio": 0.20898180513065534
+           },
+           {
+            "seed": 7122,
+            "kind": 0,
+            "return_": 39.954139650139545,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.10273435495367726,
+            "standing_steps": 0,
+            "held_steps": 200,
+            "tilt_degrees": 0.0,
+            "left_position": -0.03530105616767402,
+            "hardware": false,
+            "speed_ratio": 0.5050348707762394
+           },
+           {
+            "seed": 7123,
+            "kind": 1,
+            "return_": 61.83672939197404,
+            "steps": 490,
+            "success": true,
+            "max_lift": 0.11283069240585511,
+            "standing_steps": 63,
+            "held_steps": 222,
+            "tilt_degrees": 0.0,
+            "left_position": 0.2117531207574042,
+            "hardware": false,
+            "speed_ratio": 0.31570459717056054
+           }
+          ],
+          "success_rate": 0.041666666666666664,
+          "hardware_violations": 0,
+          "scope": "Single-object9.8s curriculum diagnostic; not full30s/2or3object recorded criteria",
+          "mean_peak_lift": 0.0891555613708479
+         },
+         "criteria_comparison": {
+          "criteria_version": 2,
+          "passed": false,
+          "reason": "Nominal single-object9.8s diagnostic only; no60episode30smultiobject result,withhardware failures already disqualifying."
+         },
+         "discrete_layer": "Forcomposedruntime:per-objectfinitephaseclock/selection;allmotionnumericcommandsareNNoutputs. Turning-onlydiagnosticsdo not form acompletecomposed policy.",
+         "reflection": "1/24 nominal ordinary-start single-object success,2 hardware-violating episodes; no robustness or full-task success. Continue physical randomization while testing a physically simpler gravity-assisted reference in a later run.",
+         "curves_note": "EveryGPUvectorcollectorstepisrecordedwithmeanrewardterms,episodeage,success/hardwareproxies,andcompletedepisodemetrics. Curriculumoutcomesarenotdeploymentcriteria.",
+         "artifacts": {
+          "checkpoint": "research/training/iter_012/checkpoint_2002944.zip",
+          "trainer": "research/gpu/train_dr.py",
+          "environment": "research/gpu/vec_env_dr.py",
+          "backend": "research/gpu/backend_dr.py",
+          "encoder": "research/gpu/torch_runtime.py",
+          "reference": "research/sim/full_templates_v11_normal_twist.json",
+          "bank": "research/gpu/reverse_bank_dr.npz",
+          "randomizer": "research/gpu/randomize_model.py"
+         },
+         "scripted_baseline_evaluation": {
+          "episodes": [
+           {
+            "seed": 7100,
+            "kind": 0,
+            "return_": 15.718210455329588,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11879339040901403,
+            "standing_steps": 0,
+            "held_steps": 82,
+            "tilt_degrees": 89.99999999997453,
+            "left_position": -0.04304263780790246,
+            "hardware": false,
+            "speed_ratio": 0.37188380079569167
+           },
+           {
+            "seed": 7101,
+            "kind": 1,
+            "return_": 22.953590860585514,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12898662577348086,
+            "standing_steps": 0,
+            "held_steps": 117,
+            "tilt_degrees": 0.0,
+            "left_position": -0.03410761840923479,
+            "hardware": false,
+            "speed_ratio": 0.31909372022183896
+           },
+           {
+            "seed": 7102,
+            "kind": 0,
+            "return_": 14.67526409177671,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11880038000971374,
+            "standing_steps": 0,
+            "held_steps": 82,
+            "tilt_degrees": 89.99999999999156,
+            "left_position": -0.08365864534794488,
+            "hardware": false,
+            "speed_ratio": 0.3715658948441975
+           },
+           {
+            "seed": 7103,
+            "kind": 1,
+            "return_": 6.66478626493933,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.008081699640907294,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999563899,
+            "left_position": -0.019434558594500037,
+            "hardware": false,
+            "speed_ratio": 0.25505198380396
+           },
+           {
+            "seed": 7104,
+            "kind": 0,
+            "return_": 81.9149999189307,
+            "steps": 490,
+            "success": true,
+            "max_lift": 0.11350608345792737,
+            "standing_steps": 68,
+            "held_steps": 202,
+            "tilt_degrees": 0.0,
+            "left_position": 0.29330704298621146,
+            "hardware": false,
+            "speed_ratio": 0.8322429861246646
+           },
+           {
+            "seed": 7105,
+            "kind": 1,
+            "return_": 21.4488015014806,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1289521258909451,
+            "standing_steps": 0,
+            "held_steps": 117,
+            "tilt_degrees": 0.0,
+            "left_position": -0.10309936435551909,
+            "hardware": false,
+            "speed_ratio": 0.32254647001913267
+           },
+           {
+            "seed": 7106,
+            "kind": 0,
+            "return_": 4.250640168607654,
+            "steps": 490,
+            "success": false,
+            "max_lift": 4.2051315751624047e-05,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999997247,
+            "left_position": -0.05348091257742596,
+            "hardware": false,
+            "speed_ratio": 0.3730994924535574
+           },
+           {
+            "seed": 7107,
+            "kind": 1,
+            "return_": 19.58300717040446,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12499184744018263,
+            "standing_steps": 0,
+            "held_steps": 117,
+            "tilt_degrees": 89.99999999254338,
+            "left_position": -0.15625203982642977,
+            "hardware": false,
+            "speed_ratio": 0.29705306729193404
+           },
+           {
+            "seed": 7108,
+            "kind": 0,
+            "return_": 15.833971916642854,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11880277492582249,
+            "standing_steps": 0,
+            "held_steps": 81,
+            "tilt_degrees": 89.99999999997884,
+            "left_position": -0.01925155121065659,
+            "hardware": false,
+            "speed_ratio": 0.3720599312067935
+           },
+           {
+            "seed": 7109,
+            "kind": 1,
+            "return_": 22.75117586476884,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1289777031735766,
+            "standing_steps": 0,
+            "held_steps": 116,
+            "tilt_degrees": 89.99999999643582,
+            "left_position": -0.02638654348129257,
+            "hardware": false,
+            "speed_ratio": 0.3144795790998891
+           },
+           {
+            "seed": 7110,
+            "kind": 0,
+            "return_": 51.8757742908366,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11357486026037522,
+            "standing_steps": 0,
+            "held_steps": 201,
+            "tilt_degrees": 90.00000000000674,
+            "left_position": 0.3026436164086079,
+            "hardware": false,
+            "speed_ratio": 0.8231057003068948
+           },
+           {
+            "seed": 7111,
+            "kind": 1,
+            "return_": 22.52850172054706,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12506283327443107,
+            "standing_steps": 0,
+            "held_steps": 119,
+            "tilt_degrees": 89.99999999362115,
+            "left_position": -0.007477759095705808,
+            "hardware": false,
+            "speed_ratio": 0.4350294586577001
+           },
+           {
+            "seed": 7112,
+            "kind": 0,
+            "return_": 4.0782938669280355,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.002052380688069049,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999998155,
+            "left_position": -0.13041993871423882,
+            "hardware": false,
+            "speed_ratio": 0.37309944415795954
+           },
+           {
+            "seed": 7113,
+            "kind": 1,
+            "return_": 56.24622519382766,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12515864224757514,
+            "standing_steps": 0,
+            "held_steps": 206,
+            "tilt_degrees": 89.99999999532064,
+            "left_position": 0.28566753407183215,
+            "hardware": false,
+            "speed_ratio": 0.33418816000069484
+           },
+           {
+            "seed": 7114,
+            "kind": 0,
+            "return_": 14.9600394368183,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11879448444663701,
+            "standing_steps": 0,
+            "held_steps": 82,
+            "tilt_degrees": 89.99999999997641,
+            "left_position": -0.08719857168624368,
+            "hardware": false,
+            "speed_ratio": 0.3719596969632337
+           },
+           {
+            "seed": 7115,
+            "kind": 1,
+            "return_": 5.592363779348102,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.003026712846015217,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.00000000670791,
+            "left_position": -0.06916135626681301,
+            "hardware": false,
+            "speed_ratio": 0.2550519837983123
+           },
+           {
+            "seed": 7116,
+            "kind": 0,
+            "return_": 16.27028512205862,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11879318849690358,
+            "standing_steps": 0,
+            "held_steps": 82,
+            "tilt_degrees": 89.99999999997584,
+            "left_position": 0.010110972013268583,
+            "hardware": false,
+            "speed_ratio": 0.37205680070368413
+           },
+           {
+            "seed": 7117,
+            "kind": 1,
+            "return_": 3.1277230529548077,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.00232014207549271,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 90.0000000040708,
+            "left_position": -0.13196415260366995,
+            "hardware": false,
+            "speed_ratio": 0.5331584458176215
+           },
+           {
+            "seed": 7118,
+            "kind": 0,
+            "return_": 5.470224213754803,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.0019722434211469613,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999997036,
+            "left_position": -0.06688343068008272,
+            "hardware": false,
+            "speed_ratio": 0.37309947149489403
+           },
+           {
+            "seed": 7119,
+            "kind": 1,
+            "return_": 39.818918517840274,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1250836482308539,
+            "standing_steps": 0,
+            "held_steps": 182,
+            "tilt_degrees": 89.99999999406758,
+            "left_position": 0.18562980479319435,
+            "hardware": false,
+            "speed_ratio": 0.322789086281165
+           },
+           {
+            "seed": 7120,
+            "kind": 0,
+            "return_": 76.4858479710533,
+            "steps": 490,
+            "success": true,
+            "max_lift": 0.11358424125734062,
+            "standing_steps": 54,
+            "held_steps": 201,
+            "tilt_degrees": 0.0,
+            "left_position": 0.2963938300615159,
+            "hardware": false,
+            "speed_ratio": 0.9559516377591976
+           },
+           {
+            "seed": 7121,
+            "kind": 1,
+            "return_": 6.234706379111035,
+            "steps": 490,
+            "success": false,
+            "max_lift": 5.050664101262717e-05,
+            "standing_steps": 0,
+            "held_steps": 0,
+            "tilt_degrees": 89.99999999489616,
+            "left_position": 0.033935894815867174,
+            "hardware": false,
+            "speed_ratio": 0.3784805407234367
+           },
+           {
+            "seed": 7122,
+            "kind": 0,
+            "return_": 54.19400686083919,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11359044271182633,
+            "standing_steps": 0,
+            "held_steps": 203,
+            "tilt_degrees": 89.99999999994401,
+            "left_position": 0.2382322567418872,
+            "hardware": false,
+            "speed_ratio": 0.8802868773821529
+           },
+           {
+            "seed": 7123,
+            "kind": 1,
+            "return_": 23.558245987580097,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1289458136804687,
+            "standing_steps": 0,
+            "held_steps": 117,
+            "tilt_degrees": 0.0,
+            "left_position": 0.019778356766380834,
+            "hardware": false,
+            "speed_ratio": 0.3207339600995606
+           }
+          ],
+          "success_rate": 0.08333333333333333,
+          "hardware_violations": 0,
+          "scope": "Single-object9.8s curriculum diagnostic; not full30s/2or3object recorded criteria",
+          "mean_peak_lift": 0.08674770092981125
+         },
+         "weight_update_collection_steps": 1966080,
+         "checkpoint_collection_note": "Snapshot at2002944 collected transitions,with updates through1966080. Main training continues; later evaluated snapshots are separate records."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "2ac0e8040d21",
+          "bytes": 97410,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "14a0593e6868",
+          "bytes": 111851,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "3349e59012df",
+          "bytes": 145045,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "8c5ad88dc4ba",
+          "bytes": 106645,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0057",
+        "seq": 57,
+        "kind": "iter",
+        "version": 13,
+        "recorded_utc": "2026-11-09T14:36:13Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "policy_observations": "deployable",
+         "reward_terms": [
+          {
+           "name": "reference_pose",
+           "formula": ".8exp(-(position_error/.05)^2)+.3exp(-(rotation_error/.6)^2)",
+           "weight": 0.02
+          },
+          {
+           "name": "reference_fingers",
+           "formula": "exp(-mean((q-q_reference)^2)/.06)",
+           "weight": 0.003
+          },
+          {
+           "name": "opposition",
+           "formula": "(.3thumb_case+.2other_case+1both_case)*I[[redacted]..6]",
+           "weight": 0.02
+          },
+          {
+           "name": "lift",
+           "formula": "clip(height_gain/.08,0,1)*I[phase3..5]",
+           "weight": 0.03
+          },
+          {
+           "name": "upright",
+           "formula": "signed blade_axis_dot_up*I[phase>=3 and hand_contact]",
+           "weight": 0.1
+          },
+          {
+           "name": "turn_progress",
+           "formula": "delta(blade_axis_dot_up)*I[phase>=3 and hand_contact]",
+           "weight": 0.2
+          },
+          {
+           "name": "left_goal",
+           "formula": "exp(-(object_XY_goal_distance/.07)^2)*I[phase>=5]",
+           "weight": 0.1
+          },
+          {
+           "name": "placement",
+           "formula": "I[left,tilt<=15deg,table_contact,released,linear_velocity<.02,angular_velocity<.15]",
+           "weight": 0.3
+          },
+          {
+           "name": "penetration",
+           "formula": "-max(depth-.003,0)/.01",
+           "weight": 0.8
+          },
+          {
+           "name": "motion",
+           "formula": "-mean(a^2)-mean((a-previous_a)^2)",
+           "weight": 0.0004
+          },
+          {
+           "name": "object_motion",
+           "formula": "-norm(object_angular_velocity)",
+           "weight": 0.0002
+          },
+          {
+           "name": "hardware",
+           "formula": "-I[hardware_speed_or_position_violation]",
+           "weight": 10.0
+          },
+          {
+           "name": "speed_margin",
+           "formula": "-max(max(abs(qd)/URDF_speed)-.5,0)^2",
+           "weight": 0.04
+          },
+          {
+           "name": "carry_distance",
+           "formula": "-object_XY_goal_distance*I[phase>=5]",
+           "weight": 0.08
+          },
+          {
+           "name": "case_proximity",
+           "formula": "(exp(-max(oriented_case_box_distance_from_FK_thumb_pad-.008,0)/.01)+max_other(exp(-max(box_distance-.008,0)/.01)))*I[[redacted]..6]",
+           "weight": 0.014
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "finite physical variants",
+           "distribution": "Uniform discrete selection of16 seeded independent uniform-range draws per kind, fixed per GPU world",
+           "parameters": "research/sim/meshbank_variants.json",
+           "mass": [
+            0.7,
+            1.3
+           ],
+           "white_axis_scale": [
+            0.9,
+            1.1
+           ],
+           "black_dimensions_mm": [
+            null,
+            null,
+            null
+           ],
+           "COM_mm": [
+            -3,
+            3
+           ],
+           "hand_table_mu": [
+            0.3,
+            1.0
+           ],
+           "restitution": [
+            0,
+            0.15
+           ],
+           "torsional_radius_m": [
+            0.001,
+            0.006
+           ]
+          },
+          {
+           "name": "encoders",
+           "distribution": "Independent Gaussian each policy observation",
+           "q_sigma": 0.002,
+           "qd_sigma": 0.05
+          }
+         ],
+         "algorithm": {
+          "name": "PPO clipped/GAE",
+          "actor_learning_rate": 5e-07,
+          "critic_learning_rate": 0.0003,
+          "n_steps": 32,
+          "batch_size": 8192,
+          "epochs": 4,
+          "gamma": 0.999,
+          "gae_lambda": 0.97,
+          "clip": 0.2,
+          "target_kl": 0.03,
+          "entropy": 0.0001,
+          "BC_auxiliary_weight": 0.03,
+          "actor_grad_clip": 0.5,
+          "critic_grad_clip": 5.0,
+          "initial_log_std": {
+           "fingers": -4.0,
+           "position": -5.0,
+           "rotation": -4.5
+          }
+         },
+         "architecture": "SeparateMLPactor/critic256,256,128Tanh;26Gaussian incrementactions; float32GPUphysics,deployable150encoder.",
+         "observation_space": "Same deployable150 features as11,including live q/qd,object/wrist states,FK,phase and owned history; original relative goal features are retained in13.",
+         "action_space": "26 neural absolute targets:20 joint positions normalized by limits,3 position coordinates scaled.7m in the initial-object-yaw frame,3 rotation-vector components scaled pi relative flat canonical START. Position/orientation are transformed to world coordinates; owned previous commands filter changes to.025rad/.01m/.03rad each50Hz update. No reference,IK or base motion controller is present at runtime.",
+         "curriculum": "Physical variants are fixed per world:16 independent samples per kind from the recorded mass,size,COM,friction,restitution,torsion ranges. Ordinary starts keep fixed deployment START; kind,side-rest family,yaw,XY and left goal vary. Reverse starts use1579 states physically settled in their exact variant; each kind-variant has at least40. Reverse probability.65 for12,.50 for13; all state edits occur at reset.",
+         "initialization": "120000 synthetic observations from11 relabeled with absolute target q,p,rotation,then60 BC epochs. Three-layer256,256,128 actor. BC baseline separately evaluated.",
+         "compute": {
+          "wall_seconds": 247.22,
+          "gpu_hours": 0.06867222222222222,
+          "gpu": "One L40S,cuda:2",
+          "environments": 4096
+         },
+         "training_steps": 2002944,
+         "evaluation": {
+          "episodes": [
+           {
+            "seed": 7100,
+            "kind": 0,
+            "return_": 9.630666177475884,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1279170212851422,
+            "standing_steps": 0,
+            "held_steps": 86,
+            "tilt_degrees": 89.99999999996702,
+            "left_position": -0.0398783229445937,
+            "hardware": false,
+            "speed_ratio": 0.2602537743946231
+           },
+           {
+            "seed": 7101,
+            "kind": 1,
+            "return_": 13.847952936523647,
+            "steps": 403,
+            "success": false,
+            "max_lift": 0.1379090480237736,
+            "standing_steps": 0,
+            "held_steps": 121,
+            "tilt_degrees": 89.9889737134972,
+            "left_position": 0.17993182160412327,
+            "hardware": true,
+            "speed_ratio": 1.2534163953564008
+           },
+           {
+            "seed": 7102,
+            "kind": 0,
+            "return_": 11.879315595195036,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.126718909534699,
+            "standing_steps": 0,
+            "held_steps": 113,
+            "tilt_degrees": 89.99999999998536,
+            "left_position": 0.011603489417234951,
+            "hardware": false,
+            "speed_ratio": 0.2553860898520628
+           },
+           {
+            "seed": 7103,
+            "kind": 1,
+            "return_": 20.835850183763274,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13898921727236607,
+            "standing_steps": 0,
+            "held_steps": 121,
+            "tilt_degrees": 90.0000000081487,
+            "left_position": 0.06947202191051592,
+            "hardware": false,
+            "speed_ratio": 0.6301909698957484
+           },
+           {
+            "seed": 7104,
+            "kind": 0,
+            "return_": 83.60468598480605,
+            "steps": 490,
+            "success": true,
+            "max_lift": 0.1445967419903554,
+            "standing_steps": 63,
+            "held_steps": 212,
+            "tilt_degrees": 0.0,
+            "left_position": 0.2964111105401636,
+            "hardware": false,
+            "speed_ratio": 0.4157177191393499
+           },
+           {
+            "seed": 7105,
+            "kind": 1,
+            "return_": 32.19712815950289,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13733180738062606,
+            "standing_steps": 0,
+            "held_steps": 186,
+            "tilt_degrees": 89.99999999305518,
+            "left_position": 0.25194634176822783,
+            "hardware": false,
+            "speed_ratio": 0.3970529579876906
+           },
+           {
+            "seed": 7106,
+            "kind": 0,
+            "return_": 10.310051063845524,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12772526494488798,
+            "standing_steps": 0,
+            "held_steps": 113,
+            "tilt_degrees": 90.00000000124847,
+            "left_position": -0.010094920849279064,
+            "hardware": false,
+            "speed_ratio": 0.2775894291162865
+           },
+           {
+            "seed": 7107,
+            "kind": 1,
+            "return_": 30.452568449264632,
+            "steps": 384,
+            "success": false,
+            "max_lift": 0.13698801324328883,
+            "standing_steps": 0,
+            "held_steps": 221,
+            "tilt_degrees": 19.56692295603643,
+            "left_position": 0.20399771867192198,
+            "hardware": true,
+            "speed_ratio": 1.5121254585703567
+           },
+           {
+            "seed": 7108,
+            "kind": 0,
+            "return_": 9.15402603290265,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12953801702583248,
+            "standing_steps": 0,
+            "held_steps": 89,
+            "tilt_degrees": 90.00000000183485,
+            "left_position": -0.08010009984852044,
+            "hardware": false,
+            "speed_ratio": 0.3117272889362663
+           },
+           {
+            "seed": 7109,
+            "kind": 1,
+            "return_": 10.683118486357962,
+            "steps": 407,
+            "success": false,
+            "max_lift": 0.13934019283274748,
+            "standing_steps": 0,
+            "held_steps": 120,
+            "tilt_degrees": 89.99999999410855,
+            "left_position": -0.16914410708032734,
+            "hardware": true,
+            "speed_ratio": 1.120612436132469
+           },
+           {
+            "seed": 7110,
+            "kind": 0,
+            "return_": 70.95795271603774,
+            "steps": 490,
+            "success": true,
+            "max_lift": 0.14620169265002292,
+            "standing_steps": 70,
+            "held_steps": 216,
+            "tilt_degrees": 0.0,
+            "left_position": 0.297913982488613,
+            "hardware": false,
+            "speed_ratio": 0.36545114209204127
+           },
+           {
+            "seed": 7111,
+            "kind": 1,
+            "return_": 46.316149395430244,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13983797767011946,
+            "standing_steps": 0,
+            "held_steps": 222,
+            "tilt_degrees": 89.99999999347831,
+            "left_position": 0.3735637339573772,
+            "hardware": false,
+            "speed_ratio": 0.8297982659782294
+           },
+           {
+            "seed": 7112,
+            "kind": 0,
+            "return_": 8.523686012310632,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12651326044701894,
+            "standing_steps": 0,
+            "held_steps": 107,
+            "tilt_degrees": 90.00000000189121,
+            "left_position": -0.10830636785060874,
+            "hardware": false,
+            "speed_ratio": 0.2692250390425678
+           },
+           {
+            "seed": 7113,
+            "kind": 1,
+            "return_": 54.672280303482374,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.14272352393305632,
+            "standing_steps": 47,
+            "held_steps": 224,
+            "tilt_degrees": 0.0,
+            "left_position": 0.2995024226288076,
+            "hardware": false,
+            "speed_ratio": 0.42105412874797354
+           },
+           {
+            "seed": 7114,
+            "kind": 0,
+            "return_": 9.665391375593051,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13175630540236705,
+            "standing_steps": 0,
+            "held_steps": 90,
+            "tilt_degrees": 89.99999999996962,
+            "left_position": -0.11146179249894117,
+            "hardware": false,
+            "speed_ratio": 0.24946804364650146
+           },
+           {
+            "seed": 7115,
+            "kind": 1,
+            "return_": 23.347056674733064,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1366817239466943,
+            "standing_steps": 0,
+            "held_steps": 121,
+            "tilt_degrees": 90.00000000527726,
+            "left_position": 0.13496496000350927,
+            "hardware": false,
+            "speed_ratio": 0.492648392159004
+           },
+           {
+            "seed": 7116,
+            "kind": 0,
+            "return_": 12.437086217867169,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12978676343853182,
+            "standing_steps": 0,
+            "held_steps": 99,
+            "tilt_degrees": 89.99999999997831,
+            "left_position": 0.13744346320013145,
+            "hardware": false,
+            "speed_ratio": 0.31166172533557757
+           },
+           {
+            "seed": 7117,
+            "kind": 1,
+            "return_": 28.014417777547383,
+            "steps": 385,
+            "success": false,
+            "max_lift": 0.13417221287781653,
+            "standing_steps": 0,
+            "held_steps": 225,
+            "tilt_degrees": 34.088512192331855,
+            "left_position": 0.12115605242759056,
+            "hardware": true,
+            "speed_ratio": 1.1725505863738714
+           },
+           {
+            "seed": 7118,
+            "kind": 0,
+            "return_": 10.822715020844905,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13009869897818338,
+            "standing_steps": 0,
+            "held_steps": 112,
+            "tilt_degrees": 0.0,
+            "left_position": -0.03379821095322323,
+            "hardware": false,
+            "speed_ratio": 0.26232311071542713
+           },
+           {
+            "seed": 7119,
+            "kind": 1,
+            "return_": 52.725017738156815,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13671327868796895,
+            "standing_steps": 0,
+            "held_steps": 222,
+            "tilt_degrees": 89.99999999358623,
+            "left_position": 0.26372751190141014,
+            "hardware": false,
+            "speed_ratio": 0.8058017026707518
+           },
+           {
+            "seed": 7120,
+            "kind": 0,
+            "return_": 25.811256405407608,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.14084138652232261,
+            "standing_steps": 0,
+            "held_steps": 161,
+            "tilt_degrees": 89.99999999772055,
+            "left_position": -0.15527330843023465,
+            "hardware": false,
+            "speed_ratio": 0.5374557387454196
+           },
+           {
+            "seed": 7121,
+            "kind": 1,
+            "return_": 24.273352293739876,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13957864837023018,
+            "standing_steps": 0,
+            "held_steps": 134,
+            "tilt_degrees": 89.99999999159128,
+            "left_position": 0.13299228342592279,
+            "hardware": false,
+            "speed_ratio": 0.6286875408689669
+           },
+           {
+            "seed": 7122,
+            "kind": 0,
+            "return_": 39.87447523611419,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.14037331069462816,
+            "standing_steps": 0,
+            "held_steps": 203,
+            "tilt_degrees": 89.99999999996213,
+            "left_position": 0.16024936121785482,
+            "hardware": false,
+            "speed_ratio": 0.9540317506338232
+           },
+           {
+            "seed": 7123,
+            "kind": 1,
+            "return_": 19.724899890341735,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13919890455880457,
+            "standing_steps": 0,
+            "held_steps": 121,
+            "tilt_degrees": 90.00000000379123,
+            "left_position": -0.05184426044528959,
+            "hardware": false,
+            "speed_ratio": 0.7095663526040481
+           }
+          ],
+          "success_rate": 0.08333333333333333,
+          "hardware_violations": 4,
+          "scope": "Single-object9.8s curriculum diagnostic; not full30s/2or3object recorded criteria",
+          "mean_peak_lift": 0.13589716340464517
+         },
+         "baseline_evaluation": {
+          "episodes": [
+           {
+            "seed": 7100,
+            "kind": 0,
+            "return_": 10.515831152683145,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1270368206524002,
+            "standing_steps": 0,
+            "held_steps": 102,
+            "tilt_degrees": 89.99999999997628,
+            "left_position": 0.05177838779180068,
+            "hardware": false,
+            "speed_ratio": 0.27956143868296846
+           },
+           {
+            "seed": 7101,
+            "kind": 1,
+            "return_": 20.894111795199045,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13801854137222994,
+            "standing_steps": 0,
+            "held_steps": 121,
+            "tilt_degrees": 89.9999999968611,
+            "left_position": 0.07557205184014294,
+            "hardware": false,
+            "speed_ratio": 0.45873639434864233
+           },
+           {
+            "seed": 7102,
+            "kind": 0,
+            "return_": 10.73975000406882,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12406041830349021,
+            "standing_steps": 0,
+            "held_steps": 95,
+            "tilt_degrees": 89.99999999829058,
+            "left_position": 0.05207512138202733,
+            "hardware": false,
+            "speed_ratio": 0.25110100150476095
+           },
+           {
+            "seed": 7103,
+            "kind": 1,
+            "return_": 20.061981644713352,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13932958736123993,
+            "standing_steps": 0,
+            "held_steps": 121,
+            "tilt_degrees": 90.0000000060103,
+            "left_position": 0.012138630265803743,
+            "hardware": false,
+            "speed_ratio": 0.8736171361718346
+           },
+           {
+            "seed": 7104,
+            "kind": 0,
+            "return_": 60.424941357557806,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1456282454784944,
+            "standing_steps": 0,
+            "held_steps": 214,
+            "tilt_degrees": 89.9999999999454,
+            "left_position": 0.3214155455019597,
+            "hardware": false,
+            "speed_ratio": 0.482053514186749
+           },
+           {
+            "seed": 7105,
+            "kind": 1,
+            "return_": 29.978752181704294,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13633999041473435,
+            "standing_steps": 0,
+            "held_steps": 185,
+            "tilt_degrees": 90.00000000404513,
+            "left_position": 0.28019748514403553,
+            "hardware": false,
+            "speed_ratio": 0.4460712818695347
+           },
+           {
+            "seed": 7106,
+            "kind": 0,
+            "return_": 10.038990672356332,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12848797278044088,
+            "standing_steps": 0,
+            "held_steps": 116,
+            "tilt_degrees": 89.99999999998298,
+            "left_position": -0.0166751673846665,
+            "hardware": false,
+            "speed_ratio": 0.27737646586825815
+           },
+           {
+            "seed": 7107,
+            "kind": 1,
+            "return_": 35.17868802733636,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13860584453328803,
+            "standing_steps": 0,
+            "held_steps": 221,
+            "tilt_degrees": 90.00000000420478,
+            "left_position": 0.1749229785803255,
+            "hardware": false,
+            "speed_ratio": 0.4580621546065722
+           },
+           {
+            "seed": 7108,
+            "kind": 0,
+            "return_": 9.024802135036806,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12892887122818006,
+            "standing_steps": 0,
+            "held_steps": 85,
+            "tilt_degrees": 89.99999999801852,
+            "left_position": -0.06645276066224595,
+            "hardware": false,
+            "speed_ratio": 0.2588845992885831
+           },
+           {
+            "seed": 7109,
+            "kind": 1,
+            "return_": 10.399163502811003,
+            "steps": 414,
+            "success": false,
+            "max_lift": 0.13962026109250505,
+            "standing_steps": 0,
+            "held_steps": 121,
+            "tilt_degrees": 90.00000000351152,
+            "left_position": -0.14525672699660788,
+            "hardware": true,
+            "speed_ratio": 1.0238558698718232
+           },
+           {
+            "seed": 7110,
+            "kind": 0,
+            "return_": 64.7936539998099,
+            "steps": 490,
+            "success": true,
+            "max_lift": 0.14586602452430691,
+            "standing_steps": 62,
+            "held_steps": 216,
+            "tilt_degrees": 0.0,
+            "left_position": 0.3025472895515537,
+            "hardware": false,
+            "speed_ratio": 0.41835724319546125
+           },
+           {
+            "seed": 7111,
+            "kind": 1,
+            "return_": 41.95109430390614,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.14088215305070975,
+            "standing_steps": 0,
+            "held_steps": 222,
+            "tilt_degrees": 90.00000000349019,
+            "left_position": 0.3990046251948749,
+            "hardware": false,
+            "speed_ratio": 0.7856590227238581
+           },
+           {
+            "seed": 7112,
+            "kind": 0,
+            "return_": 9.060451894769152,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12496187837694787,
+            "standing_steps": 0,
+            "held_steps": 88,
+            "tilt_degrees": 89.99999999771833,
+            "left_position": -0.010588839872893356,
+            "hardware": false,
+            "speed_ratio": 0.30188397300746156
+           },
+           {
+            "seed": 7113,
+            "kind": 1,
+            "return_": 35.96740296458345,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1437417662436554,
+            "standing_steps": 0,
+            "held_steps": 227,
+            "tilt_degrees": 89.99999999672528,
+            "left_position": 0.4032756544497512,
+            "hardware": false,
+            "speed_ratio": 0.5007473908581958
+           },
+           {
+            "seed": 7114,
+            "kind": 0,
+            "return_": 9.245139489507213,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1306955763696103,
+            "standing_steps": 0,
+            "held_steps": 99,
+            "tilt_degrees": 90.00000000146976,
+            "left_position": -0.1131072818529988,
+            "hardware": false,
+            "speed_ratio": 0.24674428758135777
+           },
+           {
+            "seed": 7115,
+            "kind": 1,
+            "return_": 19.615945383329755,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13726452688747842,
+            "standing_steps": 0,
+            "held_steps": 120,
+            "tilt_degrees": 89.99999999712776,
+            "left_position": -0.0029290592380516764,
+            "hardware": false,
+            "speed_ratio": 0.8682600939149868
+           },
+           {
+            "seed": 7116,
+            "kind": 0,
+            "return_": 10.68886438941009,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1299696284773222,
+            "standing_steps": 0,
+            "held_steps": 86,
+            "tilt_degrees": 89.99999999997759,
+            "left_position": 0.036111518327199305,
+            "hardware": false,
+            "speed_ratio": 0.26736891332242535
+           },
+           {
+            "seed": 7117,
+            "kind": 1,
+            "return_": 46.98388752938649,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13814361725990776,
+            "standing_steps": 0,
+            "held_steps": 221,
+            "tilt_degrees": 89.99999999501159,
+            "left_position": 0.27852340655169344,
+            "hardware": false,
+            "speed_ratio": 0.6654448626835187
+           },
+           {
+            "seed": 7118,
+            "kind": 0,
+            "return_": 10.137756286004517,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13013816850985035,
+            "standing_steps": 0,
+            "held_steps": 108,
+            "tilt_degrees": 89.99999999774083,
+            "left_position": -0.050625359433430696,
+            "hardware": false,
+            "speed_ratio": 0.32588708324707694
+           },
+           {
+            "seed": 7119,
+            "kind": 1,
+            "return_": 36.36829960682913,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1388154070398417,
+            "standing_steps": 0,
+            "held_steps": 222,
+            "tilt_degrees": 89.99999999676157,
+            "left_position": 0.2734905627967912,
+            "hardware": false,
+            "speed_ratio": 0.7335321550413454
+           },
+           {
+            "seed": 7120,
+            "kind": 0,
+            "return_": 35.34068344818942,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.14358827348242917,
+            "standing_steps": 0,
+            "held_steps": 198,
+            "tilt_degrees": 89.99999999810429,
+            "left_position": 0.08548470040148026,
+            "hardware": false,
+            "speed_ratio": 0.6846219458612149
+           },
+           {
+            "seed": 7121,
+            "kind": 1,
+            "return_": 12.750365891781906,
+            "steps": 402,
+            "success": false,
+            "max_lift": 0.13936418037592163,
+            "standing_steps": 0,
+            "held_steps": 121,
+            "tilt_degrees": 90.00235624476244,
+            "left_position": 0.15758989269516638,
+            "hardware": true,
+            "speed_ratio": 1.123064245457732
+           },
+           {
+            "seed": 7122,
+            "kind": 0,
+            "return_": 25.445716167319603,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.14408790772476254,
+            "standing_steps": 0,
+            "held_steps": 170,
+            "tilt_degrees": 90.00000000220241,
+            "left_position": -0.3127419514740188,
+            "hardware": false,
+            "speed_ratio": 0.8248684730390046
+           },
+           {
+            "seed": 7123,
+            "kind": 1,
+            "return_": 19.039521098959973,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1384963444990528,
+            "standing_steps": 0,
+            "held_steps": 120,
+            "tilt_degrees": 90.00000000495113,
+            "left_position": 0.030073724554213862,
+            "hardware": false,
+            "speed_ratio": 0.5656038019229668
+           }
+          ],
+          "success_rate": 0.041666666666666664,
+          "hardware_violations": 2,
+          "scope": "Single-object9.8s curriculum diagnostic; not full30s/2or3object recorded criteria",
+          "mean_peak_lift": 0.13633633358494998
+         },
+         "criteria_comparison": {
+          "criteria_version": 2,
+          "passed": false,
+          "reason": "Nominal single-object9.8s diagnostic only; no60episode30smultiobject result,withhardware failures already disqualifying."
+         },
+         "discrete_layer": "Forcomposedruntime:per-objectfinitephaseclock/selection;allmotionnumericcommandsareNNoutputs. Turning-onlydiagnosticsdo not form acompletecomposed policy.",
+         "reflection": "2/24 nominal ordinary-start single-object success versus BC1/24,but4 hardware violations versus BC2. The geometric reference with this decoder scores0/24. Absolute representation improves nominal grasp/lift but has not solved the reorientation/carry failure. No task success. A new gravity-assisted reference scores22/24 scripted single-object successes with0hardware violations and will be clearly separated from learned results.",
+         "curves_note": "EveryGPUvectorcollectorstepisrecordedwithmeanrewardterms,episodeage,success/hardwareproxies,andcompletedepisodemetrics. Curriculumoutcomesarenotdeploymentcriteria.",
+         "artifacts": {
+          "checkpoint": "research/training/iter_013/checkpoint_2002944.zip",
+          "trainer": "research/gpu/train_abs.py",
+          "environment": "research/gpu/vec_env_abs.py",
+          "backend": "research/gpu/backend_dr.py",
+          "encoder": "research/gpu/torch_runtime.py",
+          "reference": "research/sim/full_templates_v11_normal_twist.json",
+          "bank": "research/gpu/reverse_bank_dr.npz",
+          "randomizer": "research/gpu/randomize_model.py",
+          "action_decoder": "research/gpu/absolute_torch.py",
+          "numpy_decoder": "research/policy/absolute.py"
+         },
+         "scripted_baseline_evaluation": {
+          "episodes": [
+           {
+            "seed": 7100,
+            "kind": 0,
+            "return_": 16.663718232705207,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1191457123016428,
+            "standing_steps": 0,
+            "held_steps": 82,
+            "tilt_degrees": 89.99999999997895,
+            "left_position": -0.042561633842387384,
+            "hardware": false,
+            "speed_ratio": 0.3640417617948753
+           },
+           {
+            "seed": 7101,
+            "kind": 1,
+            "return_": 24.196264944869302,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13004739321947315,
+            "standing_steps": 0,
+            "held_steps": 117,
+            "tilt_degrees": 90.00000000541363,
+            "left_position": -0.0023756543163175868,
+            "hardware": false,
+            "speed_ratio": 0.3335171626424127
+           },
+           {
+            "seed": 7102,
+            "kind": 0,
+            "return_": 15.921828922615264,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1190981789904445,
+            "standing_steps": 0,
+            "held_steps": 82,
+            "tilt_degrees": 89.9999999999666,
+            "left_position": -0.08071788910619553,
+            "hardware": false,
+            "speed_ratio": 0.3645976362707194
+           },
+           {
+            "seed": 7103,
+            "kind": 1,
+            "return_": 23.66426302228591,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13000392081675963,
+            "standing_steps": 0,
+            "held_steps": 117,
+            "tilt_degrees": 0.0,
+            "left_position": -0.0321626843812795,
+            "hardware": false,
+            "speed_ratio": 0.3357936471194305
+           },
+           {
+            "seed": 7104,
+            "kind": 0,
+            "return_": 55.72498061035075,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1135082456524939,
+            "standing_steps": 0,
+            "held_steps": 203,
+            "tilt_degrees": 89.99999999999143,
+            "left_position": 0.25115225254154133,
+            "hardware": false,
+            "speed_ratio": 0.8252985102599221
+           },
+           {
+            "seed": 7105,
+            "kind": 1,
+            "return_": 22.813359571016008,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13000387735892902,
+            "standing_steps": 0,
+            "held_steps": 116,
+            "tilt_degrees": 0.0,
+            "left_position": -0.09117492763527242,
+            "hardware": false,
+            "speed_ratio": 0.33491870060652623
+           },
+           {
+            "seed": 7106,
+            "kind": 0,
+            "return_": 15.387240196670815,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11911269350056526,
+            "standing_steps": 0,
+            "held_steps": 81,
+            "tilt_degrees": 89.99999999998506,
+            "left_position": -0.05148244719994541,
+            "hardware": false,
+            "speed_ratio": 0.36414000248398526
+           },
+           {
+            "seed": 7107,
+            "kind": 1,
+            "return_": 21.643629760121687,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1252032867971409,
+            "standing_steps": 0,
+            "held_steps": 116,
+            "tilt_degrees": 90.00000000852752,
+            "left_position": -0.12454202806676062,
+            "hardware": false,
+            "speed_ratio": 0.41481313492409383
+           },
+           {
+            "seed": 7108,
+            "kind": 0,
+            "return_": 16.765375602379777,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11911852316952369,
+            "standing_steps": 0,
+            "held_steps": 81,
+            "tilt_degrees": 89.99999999997655,
+            "left_position": -0.01764842101571662,
+            "hardware": false,
+            "speed_ratio": 0.36405081270938255
+           },
+           {
+            "seed": 7109,
+            "kind": 1,
+            "return_": 23.828678158679583,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13002813584481987,
+            "standing_steps": 0,
+            "held_steps": 117,
+            "tilt_degrees": 90.00000000468556,
+            "left_position": -0.0368245587966651,
+            "hardware": false,
+            "speed_ratio": 0.3324008514492368
+           },
+           {
+            "seed": 7110,
+            "kind": 0,
+            "return_": 54.47626252700225,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1135751713176171,
+            "standing_steps": 0,
+            "held_steps": 203,
+            "tilt_degrees": 89.99999999994662,
+            "left_position": 0.296839997661231,
+            "hardware": false,
+            "speed_ratio": 0.862266935330024
+           },
+           {
+            "seed": 7111,
+            "kind": 1,
+            "return_": 23.09683248765936,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12518902638836893,
+            "standing_steps": 0,
+            "held_steps": 117,
+            "tilt_degrees": 90.00000000763654,
+            "left_position": -0.009510154646633906,
+            "hardware": false,
+            "speed_ratio": 0.4781992760907823
+           },
+           {
+            "seed": 7112,
+            "kind": 0,
+            "return_": 14.242937394024493,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11914111052002123,
+            "standing_steps": 0,
+            "held_steps": 82,
+            "tilt_degrees": 89.99999999996945,
+            "left_position": -0.14838649100872442,
+            "hardware": false,
+            "speed_ratio": 0.36402178884301073
+           },
+           {
+            "seed": 7113,
+            "kind": 1,
+            "return_": 22.13936310613654,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12515980780315766,
+            "standing_steps": 0,
+            "held_steps": 117,
+            "tilt_degrees": 89.99999999460115,
+            "left_position": -0.07486038471389705,
+            "hardware": false,
+            "speed_ratio": 0.3998706392245348
+           },
+           {
+            "seed": 7114,
+            "kind": 0,
+            "return_": 15.920360951396734,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1191064759419945,
+            "standing_steps": 0,
+            "held_steps": 82,
+            "tilt_degrees": 89.99999999998016,
+            "left_position": -0.09383658535438241,
+            "hardware": false,
+            "speed_ratio": 0.36416263537991844
+           },
+           {
+            "seed": 7115,
+            "kind": 1,
+            "return_": 22.077295673447757,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.13003906461035933,
+            "standing_steps": 0,
+            "held_steps": 116,
+            "tilt_degrees": 89.99999999745995,
+            "left_position": -0.10655090193456968,
+            "hardware": false,
+            "speed_ratio": 0.33347823176515573
+           },
+           {
+            "seed": 7116,
+            "kind": 0,
+            "return_": 17.108298770267687,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11913847808765972,
+            "standing_steps": 0,
+            "held_steps": 82,
+            "tilt_degrees": 89.99999999998778,
+            "left_position": 0.006019640884552479,
+            "hardware": false,
+            "speed_ratio": 0.3636966659736289
+           },
+           {
+            "seed": 7117,
+            "kind": 1,
+            "return_": 21.046181743978,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12518993381617763,
+            "standing_steps": 0,
+            "held_steps": 117,
+            "tilt_degrees": 90.00000000445408,
+            "left_position": -0.1473749787397873,
+            "hardware": false,
+            "speed_ratio": 0.3832789979159783
+           },
+           {
+            "seed": 7118,
+            "kind": 0,
+            "return_": 15.540160360977367,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11912089944251472,
+            "standing_steps": 0,
+            "held_steps": 81,
+            "tilt_degrees": 89.9999999999712,
+            "left_position": -0.07916270718533426,
+            "hardware": false,
+            "speed_ratio": 0.364051859586214
+           },
+           {
+            "seed": 7119,
+            "kind": 1,
+            "return_": 21.672105815459837,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1251563404320305,
+            "standing_steps": 0,
+            "held_steps": 117,
+            "tilt_degrees": 89.99999999560815,
+            "left_position": -0.10595215204299546,
+            "hardware": false,
+            "speed_ratio": 0.40722841513732466
+           },
+           {
+            "seed": 7120,
+            "kind": 0,
+            "return_": 55.213084659270955,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11358423987701438,
+            "standing_steps": 0,
+            "held_steps": 201,
+            "tilt_degrees": 89.99999999993992,
+            "left_position": 0.28796331263542596,
+            "hardware": false,
+            "speed_ratio": 0.8715360246243878
+           },
+           {
+            "seed": 7121,
+            "kind": 1,
+            "return_": 23.06013509919228,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.1300452269002374,
+            "standing_steps": 0,
+            "held_steps": 117,
+            "tilt_degrees": 90.0000000058655,
+            "left_position": -0.04225919352454567,
+            "hardware": false,
+            "speed_ratio": 0.3339237834304373
+           },
+           {
+            "seed": 7122,
+            "kind": 0,
+            "return_": 54.957259575304754,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.11359043194416157,
+            "standing_steps": 0,
+            "held_steps": 202,
+            "tilt_degrees": 90.00000000000637,
+            "left_position": 0.24250024243898974,
+            "hardware": false,
+            "speed_ratio": 0.8613339096520405
+           },
+           {
+            "seed": 7123,
+            "kind": 1,
+            "return_": 24.353895796103153,
+            "steps": 490,
+            "success": false,
+            "max_lift": 0.12999663223090155,
+            "standing_steps": 0,
+            "held_steps": 116,
+            "tilt_degrees": 0.0,
+            "left_position": 0.029703052661757448,
+            "hardware": false,
+            "speed_ratio": 0.3336314377193762
+           }
+          ],
+          "success_rate": 0.0,
+          "hardware_violations": 0,
+          "scope": "Single-object9.8s curriculum diagnostic; not full30s/2or3object recorded criteria",
+          "mean_peak_lift": 0.12263761695683371
+         },
+         "weight_update_collection_steps": 1966080,
+         "checkpoint_collection_note": "Snapshot at2002944 collected transitions,with updates through1966080. Main training continues; later evaluated snapshots are separate records."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "df164bca7f72",
+          "bytes": 102690,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "92c1e5f1e051",
+          "bytes": 132240,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "69c75a0e5fa7",
+          "bytes": 137273,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "2c5a2c4c8c04",
+          "bytes": 112715,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0058",
+        "seq": 58,
+        "kind": "note",
+        "version": 27,
+        "recorded_utc": "2026-11-09T14:39:53Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "The gravity-assisted geometric teacher completes22/24 nominal ordinary-start single-object diagnostics with zero hardware violations; this is a scripted baseline, not a learned result. A proposed joint-current preload feedback teacher was tested separately and rejected:0/24 successes and7hardware violations. Its trajectory states are preserved separately and will not initialize the next PPO run. I am rebuilding the held-state bank from the successful constant-target gravity teacher. The next initializer uses direct canonical goal/initial-height features and a512,512,256 actor to improve target accuracy. Left-side slots move to y=.23m, safely beyond the recorded y>.16m criterion and inside wrist reach for more object yaws; no criterion changes."
         },
         "files": {}
        }
@@ -368392,6 +370881,657 @@
          "text": "Fixed640case verdict 0/640 allcriteria;percriterioncounts {‘G1': 0, 'G2': 194, 'G3': 114, 'G4': 621, 'S1': 13, 'S2': 609, 'S3': 79, 'S4_source_audit': 640}. Continue diagnosis of hardware/integrity,opposition andfullturn discovery; curriculumsuccess is not taskverification."
         },
         "files": {}
+       },
+       {
+        "id": "r0056",
+        "seq": 56,
+        "kind": "note",
+        "version": 26,
+        "recorded_utc": "2026-11-09T14:32:53Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Tryhand-framegoalaxis/rotation-errorfeatures(derivedonlyfromallowedposes),finger-correlatedGaussianexplorationand50/50nominal/DRresets. MeanpolicyremainsPPO,notaprimitivecontroller;fullGaussianlogdensitiesused. Framecheck256casesmax1.73e-7;covariancepositive andgradientsfinite. Goalturnsremainunverified;earlierfullquarterspecialistnominaldiagnostics0/24stablegoals. Continue learningratherthanclaimingpartialsuccess."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0057",
+        "seq": 57,
+        "kind": "sim",
+        "version": 11,
+        "recorded_utc": "2026-11-09T14:32:54Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 3,
+         "simulator": {
+          "name": "MuJoCo / MuJoCo Warp",
+          "version": "MuJoCo3.17.0 /MuJoCo Warp3.17.0 /Warp1.19.0",
+          "physics_dt_s": 0.0005,
+          "integrator": "implicitfast",
+          "solver": "Newton20",
+          "tolerance": 1e-08,
+          "contact": "elliptic friction cone, solref .005/damping ratio, solimp .95 .99 .001; default e=0",
+          "native_backend": "CPU C++/OpenMP retained for evaluation; GPU Warp float32 for training, same physical model/controllers/passive forces"
+         },
+         "scene": {
+          "files_sha256": {
+           "sim/scene.xml": "7db399a5469e…",
+           "sim/scene.mjb": "1dc7b769114b…",
+           "sim/model_meta.json": "00e52d4a47ee…",
+           "sim/initial_pose.json": "b626e955624c…",
+           "code/build_sim.py": "f95a374593d5…",
+           "code/backend.cpp": "4f9ec158c965…",
+           "code/policy_net.py": "3a4c86a02cde…",
+           "code/train_ppo.py": "0c95cf9e3841…"
+          },
+          "robot": "Authoritative left URDF, all inertias/joints/armatures and fixed pads/covers, mass0.7088kg",
+          "floor": "z=0, gravity(0,0,-9.81)",
+          "cube": "Eight material corner bodies, nominal51mm/55g prior, core3g with inertia4e-7kgm²; each6.5g corner has diagonal own-COM inertia m*(25mm)^2/6. Box collision approximates rounded Blender meshes within submillimeter scale. Parts and frame conventions from reconstruction3."
+         },
+         "mechanism": {
+          "type": "Passive nearest legal single-face-turn manifold coupled corner ball joints",
+          "coupling_Nm_rad": 1.0,
+          "joint_viscous_damping_Nms_rad": 5e-05,
+          "face_coulomb_resistance_Nm": 0.0007,
+          "detent_energy_J": 0.00025,
+          "max_[redacted]_Nm": 0.001,
+          "object_joint_armature_kgm2": 1e-07,
+          "implementation": "At each physics step choose deformation-consistent face; couple corner orientation errors by restoring torques and periodic detents. Bearing damping/friction solved implicitly. At45deg change periodic reference well by90deg without changing qpos. All actual corner poses remain physics states. No goal-dependent forces or object actuator in policy step.",
+          "limitations": "Idealized compliant mechanism; no measured GAN CAD/fracture model. Test torque probes are apparatus only, separate from policy step."
+         },
+         "hardware": {
+          "wrist": "Free l_mount, specified Cartesian impedance gains2000/60 and20/.4, hand-only weight/COM compensation, 30N/2Nm norm saturation. Generalized wrench about root origin. No feedforward velocities.",
+          "fingers": "Specified1kHz PD and effort saturation; strict actual position/speed checks, no state clamping. All20 URDF limits and armatures preserved.",
+          "policy_hz": 10,
+          "interface_hz": 500,
+          "controller_hz": 1000,
+          "network_action": "26learnedvelocityparametersheld100ms;500Hzposition-targetintegratorwith1.5rad/sfinger,.1m/speraxiswristtranslation,2rad/speraxisworldangularvelocity;1kHzPD,zerofeedforward. Wristtargetradius.1m.",
+          "encoders": "independent Gaussian sigma.002rad/.05rad_s on observations",
+          "collision_filter": "Only integral proximal/abduction housing-to-palm pairs and directly attached link pairs excluded due vendor convex-hull/soft-cover overlap; distal-to-palm, inter-finger and every hand/cube collision retained."
+         },
+         "reference": {
+          "record": "r0008",
+          "version": 3,
+          "use": "Wrist gravity-relative tilt, compact cube/wrist relation, thumb/opposing-finger contact roles. No reference replay or IK in policy execution.",
+          "retarget_baseline": {
+           "method": "Offline fingertip IK to the recorded left MANO hand, robot-aligned wrist basis, yaw-only world alignment. No policy execution uses IK or replay.",
+           "frames": [
+            79,
+            341
+           ],
+           "wall_s": 7.234601259231567,
+           "median_fingertip_error_m": 0.00244317878505773,
+           "max_fingertip_error_m": 0.01058121338400978,
+           "max_hand_object_penetration_m": 0.02249644442338548,
+           "limitations": "Kinematic baseline, not a feasible dynamic policy. Robot finger morphology and human contacts differ; hidden layer state was not reconstructed. PPO will use wrist/contact style rather than replay these targets."
+          },
+          "retarget_verdict": "Offline IK is NOT dynamically feasible: max22.5mm penetration, despite median2.44mm tip error. This failure motivates contact-aware PPO; no IK trajectories are commanded by the policy."
+         },
+         "initial_conditions": {
+          "hand": {
+           "wrist_pos_quat_wxyz": [
+            0.0,
+            0.0,
+            0.28,
+            0.7071067811865476,
+            -0.7071067811865475,
+            0.0,
+            0.0
+           ],
+           "q0": [
+            -0.15,
+            -0.65,
+            0.3,
+            0.2,
+            0.25,
+            -0.1,
+            0.5,
+            0.25,
+            0.25,
+            0.0,
+            0.5,
+            0.25,
+            0.3,
+            0.08,
+            0.55,
+            0.3,
+            0.4,
+            0.16,
+            0.6,
+            0.3
+           ],
+           "cube_pos_quat_wxyz": [
+            0.0,
+            -0.095,
+            0.3288989829593863,
+            1.0,
+            0.0,
+            0.0,
+            0.0
+           ],
+           "surface_height_m": 0.29244892018202995,
+           "ray_geom": 57,
+           "description": "Initial receiving bowl, palm-up. Cube centered near palm/finger bases. To be tested for variation before accepting.",
+           "fingers": {
+            "l_thumb_tip_sensor_frame_site": null,
+            "l_index_finger_tip_sensor_frame_site": null,
+            "l_middle_finger_tip_sensor_frame_site": null,
+            "l_ring_finger_tip_sensor_frame_site": null,
+            "l_pinky_tip_sensor_frame_site": null
+           }
+          },
+          "placement": "Roughly centered palm starts, six face-up choices plus yaw/tilt and offsets. Raise cube only during initial-state construction to avoid geometric interpenetration; then release to physics, no filtering of failed episodes.",
+          "scrambles": "Curriculum: solved receive/hold, partial turns, then1/2/3 legal full turns, stress4-5. Material corner identities retained.",
+          "domain_randomization": [
+           {
+            "quantity": "cube size",
+            "distribution": "uniform",
+            "range_m": null
+           },
+           {
+            "quantity": "cube mass",
+            "distribution": "uniform",
+            "range_kg": null
+           },
+           {
+            "quantity": "sliding friction",
+            "distribution": "uniform",
+            "range": null
+           },
+           {
+            "quantity": "desired linear restitution prior",
+            "distribution": "uniform",
+            "range": null,
+            "implementation": "Converted to contact damping ratio using linear oscillator formula; actual nonlinear rebound not separately calibrated."
+           },
+           {
+            "quantity": "face resistance",
+            "distribution": "uniform",
+            "range_Nm": null
+           },
+           {
+            "quantity": "palm offset",
+            "distribution": "uniform independently",
+            "range_m": null
+           },
+           {
+            "quantity": "tilt",
+            "range_deg": null
+           },
+           {
+            "quantity": "yaw",
+            "range_rad": null
+           }
+          ]
+         },
+         "episode": {
+          "training_horizon_s": "5s hold curriculum initially; later longer stages explicitly recorded",
+          "verification_horizon_s": 30,
+          "termination": "Training:drop/floor,hardware,numeric/bufferoverflow,3mmpenetrationorforbiddenstrain,orhorizon;NOterminationonsolved. CPUstrictverificationunchanged,endsuponstableG1orcriterionfailure/horizon."
+         },
+         "decision_layer": {
+          "type": "Finite symbolic cube-state BFS lookup, depth7, canonicalized by material corner0",
+          "states": 44971,
+          "bad_reverse_moves": 0,
+          "observations": "Only corner orientations plus constant canonical frame identities; no physics rollout or trajectory search.",
+          "output": "High-level next face/quarter direction and desired corner orientations; every robot motion target comes from PPO network.",
+          "gpu_port": "Same exported44971state finite table, vectorized exact canonicalization; fixed12 symbolic move fallback outside table. No physics search."
+         },
+         "validation": {
+          "hand_mass_kg": 0.7088000000000002,
+          "nominal_zero_action_hold_s": 3.0,
+          "nominal_hardware_velocity_ratio_max": 0.04803912714123726,
+          "nominal_hand_cube_penetration_m": 0.00041937135392799973,
+          "nominal_illegal_deformation_m": 0.00043359113624319434,
+          "nominal_wrist_displacement_m": 0.00038801479968242347,
+          "randomized_receiving": {
+           "episodes": 16,
+           "duration_s": 0.58,
+           "drops": 1,
+           "hardware_failures": 0
+          },
+          "mechanism_probes": {
+           "conditions": "No hand contact; cube in free fall above floor; known differential torque0.003Nm for.14s, test apparatus only. Task retention failure code1 expected in this isolated test.",
+           "faces": 6,
+           "quarter_reference_changes": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+           ],
+           "max_forbidden_rotation_rad": 0.000914792380460329,
+           "max_forbidden_displacement_m": 1.8470685832267308e-05,
+           "limitations": "Coherent layer motion verified; final pulse stop is about85deg, not an accurately solved policy turn. PPO still must align within3deg."
+          }
+         },
+         "baseline": {
+          "type": "Constant receiving pose, not learned",
+          "result": "Retains nominal cube but lacks thumb opposition and sideways wrist style; no solve claim. Does not pass criteria v1.",
+          "gpu_hold": "Nominal1024 copies1s: contact fraction1, no overflow, no drop/hardware failure. No thumb opposition or skill success.",
+          "partial_turn_zero_action": {
+           "episodes": 128,
+           "initial_partial_turn_radians": [
+            -0.35,
+            0.35
+           ],
+           "duration_s": 4,
+           "stable_solved_without_actions": 19,
+           "not_a_learned_policy": true,
+           "conclusion": "Partialturncurriculumisnotreliableskillevidence;requirefullturnsandcomposedfrozenevaluation."
+          }
+         },
+         "limitations": [
+          "Physical parameters and mechanism inferred, not measured.",
+          "Collision approximations and housing exclusions require transfer caution.",
+          "Retargeted IK replay has severe penetration and is not executable.",
+          "No policy has yet been evaluated or verified.",
+          "Only own simulation claims; no target rounds.",
+          "GPU port validated only on nominal hold at this point, not full turn transfer. GPU training nominal scope disclosed per iteration."
+         ],
+         "previous_sim_version": 10,
+         "gpu_training_scope": "Nominalphysical/poseDR nowavailable;stress ranges remainheldoutCPUverification. GPUstage andrewardweights recordedperiteration.",
+         "gpu_implementation": {
+          "warp_version": "1.19.0",
+          "control": "40 physics steps per50Hz network action,1kHz PD,500Hz command holds",
+          "diagnostics": "Every physics step: speed and joint position, penetration, legal manifold strain, floor/drop/nonfinite/overflow, contact and opposing contact; no diagnostics enter actor.",
+          "contact_threshold_m": 0.0002,
+          "hardware_failure_velocity_ratio": 1.000001,
+          "precision_limitation": "Float32 GPU solver is not bitwise equivalent to float64 CPU; all positive claims still require CPU fixed-suite verification.",
+          "parity": {
+           "cpu_metrics": [
+            0.0,
+            0.0,
+            50.0,
+            13.714585304260254,
+            0.04803912714123726,
+            0.0,
+            0.00041937135392799973,
+            0.019919266924262047,
+            0.00043359113624319434,
+            0.0,
+            1.0,
+            0.0,
+            0.12744319438934326,
+            0.00038801479968242347,
+            0.0,
+            0.0,
+            0.15420806407928467,
+            90.1541976928711,
+            0.10855879634618759,
+            0.0
+           ],
+           "gpu_metrics": [
+            0.0,
+            0.0,
+            50.0,
+            15.601229667663574,
+            0.04803921654820442,
+            0.0,
+            0.00041945267003029585,
+            0.02004077285528183,
+            0.0004364889464341104,
+            0.0,
+            1.0,
+            0.0,
+            0.12677128612995148,
+            0.0003862281155306846,
+            0.0,
+            0.0,
+            0.15450505912303925,
+            90.15438079833984,
+            0.10872188955545425,
+            0.0
+           ],
+           "qpos_max_abs": 0.002113087996541422,
+           "qvel_max_abs": 0.008677360710601002,
+           "wrist_position_difference_m": 5.216749247662781e-07,
+           "cube_position_difference_m": 0.00022862410063721828,
+           "gpu_overflow": [
+            0
+           ]
+          },
+          "benchmark": {
+           "worlds": 512,
+           "wall_s": 3.5036652088165283,
+           "env_control_steps": 25600,
+           "fps": 7306.634188557986,
+           "physics_steps_per_control": 40,
+           "setup_s": 259.8415253162384,
+           "max_illegal_rad": 0.02004331350326538,
+           "max_strain_m": 0.0004365475906524807,
+           "qpos_finite": true,
+           "wrist_pos": [
+            -1.963378903901969e-10,
+            8.330494072339434e-10,
+            0.27973076701164246
+           ],
+           "cube_pos": [
+            0.001467833062633872,
+            -0.09995677322149277,
+            0.32247427105903625
+           ]
+          },
+          "termination_difference": "GPU flags violations at every0.5ms tick but completesremainingticksin20mscapturedgraph before resettingatcontrolboundary;CPU freezesonfirstfailure. Training reward state aftera failed action can thereforediffer;allpositiveclaimsrequirestrictCPUverification.",
+          "randomization": "1024fixeduniform(size,mass)samples,uniformbankindexperreset;continuousindependentfriction/resistance/restitution/pose. No parametersenteractor."
+         },
+         "gpu_source_hashes": {
+          "research/code/gpu_env.py": "49494948013f…",
+          "research/code/warp_forces.py": "18013b1e37a2…",
+          "research/code/warp_checks.py": "3c597aa5c64e…",
+          "research/code/torch_geometry.py": "1bc27015f9a8…",
+          "research/code/train_gpu_ppo.py": "b3232ec59022…",
+          "research/code/policy_net.py": "a935798f3617…",
+          "research/sim/cube_graph.npz": "a26230893da8…"
+         },
+         "changes_from_previous": [
+          "No physicalforce/controllerchangefrom8/9;245actorfeaturesappend6hand-framegoalfeaturescomputedfromtheexisting239allowedfeatures:goalaxisandmeanrotation-errorvector. No newworldmeasurements.",
+          "Actor/criticfirst-layerweightsarezeropaddedfrom239to245,soaddedfeaturesinitiallydonotchangethemean;allweightscontinuePPOtraining.",
+          "Episode-startmixture50%exactnominalphysicalposeandparameters,50%originalphysical/placementDR. Exactnominalmodelconstantssnapshotrestoredatreset,never duringexecution.",
+          "Explorationisfull-rankGaussianwithcovarianceL L^T+diag(exp(logstd)^2):fixedfinger-curlcorrelations,andPPO-learneddiagonalinnovation. State-dependentgoalproximityscale.05+.95*clip((maxerror-.052)/(pi/6-.052),0,1)multipliesstandarddeviation. Loglikelihood/entropyusefullMultivariateNormal.",
+          "All26meanmotionoutputsarePPO. Covarianceisanexplorationprior,notafingermotioncontroller;deterministicmeanisdeliveredandverified."
+         ],
+         "strict_verifier": "research/code/verify_portable.py",
+         "fixed_suite": {
+          "criteria_version": 1,
+          "episodes": 640,
+          "nominal": 512,
+          "stress": 128,
+          "explicit": "First288nominal:24cardinalorientations x12singleface/directionturns, withroughpalmoffset andphysicalDR. Remaining224nominal:1–3turns,continuousyaw,tilt. Stress4–5turns. Rejection only ofsymbolicallyalready-solvedscrambles,neverofhandoutcomes.",
+          "seed_ranges": [
+           [
+            100000,
+            100511
+           ],
+           [
+            200000,
+            200127
+           ]
+          ],
+          "hashes": {
+           "initial_states.npz": "90603bf3d31f…",
+           "parameters.json": "a814f662db6b…"
+          }
+         },
+         "strict_source_hashes": {
+          "research/code/backend.cpp": "52d0ce7f7e21…",
+          "research/code/verify_strict.py": "587b18bdc187…",
+          "research/code/freeze_suite.py": "c72353076c5a…"
+         },
+         "gpu_validation": {
+          "smoke": {
+           "wall_s": 4.949917793273926,
+           "overflow": [
+            0
+           ],
+           "qpos_finite": true
+          },
+          "mass_parity": {
+           "cases": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+           ],
+           "passed": true,
+           "limitations": "Mass matrix/geometry consistency test only; does not establish full dynamic transfer. MuJoCo Warp ignores dof_M0 andBVH fields, and nonbatchable dof_length is unused because sleeping is disabled."
+          },
+          "frontend": {
+           "fixture": "Random untrained network;fixedboundedrandom actions for interface validation only",
+           "states_compared": 1984,
+           "max_feature_abs_difference": 1.3182871043682098e-06,
+           "max_goal_feature_abs_difference": 0.0,
+           "all_outputs_finite": true,
+           "extra_fields_rejected": true,
+           "absolute_targets_shapes": {
+            "finger_position_targets": null,
+            "finger_velocity_targets": null,
+            "wrist_position_target": null,
+            "wrist_quaternion_target_wxyz": null,
+            "wrist_linear_feedforward": null,
+            "wrist_angular_feedforward": null
+           },
+           "passed": true
+          }
+         },
+         "limits_of_new_validation": "Massmatrixagreement is not fulltrajectoryequivalence. Initial DR smoke254/256supported1s underfixedreceivingpose,2drops;notalearnedskill.",
+         "new_source_hashes": {
+          "research/code/gpu_env_dr.py": "e6b25597c7e5…",
+          "research/code/warp_forces_dr.py": "5a5f88a577b8…",
+          "research/code/warp_checks.py": "2d877deaea11…",
+          "research/code/backend.cpp": "6ea7c2706157…",
+          "research/code/deployed_policy.py": "992a84830158…",
+          "research/code/train_gpu_separate.py": "898a34d7f213…",
+          "research/code/policy_net.py": "c263dc7a601f…",
+          "research/sim/cube_graph_v4.npz": "4e8dd958e139…"
+         },
+         "reward_incentive_analysis": "Oldholdingreward~1.5/step withgamma.995 gives~300discountedfutureunits,exceedingterminalsuccess10.Thiscouldteachdelay. Correctadapterretainsfutureholdrewardsandmakesfullturnprogress/solvedalignmentvaluable.",
+         "unevaluated_aborted_attempt": "Iteration5startupDRPPO ran briefly,theninterruptedbeforeanysavedorevaluatedcheckpointduetorewardanalysis.Curves/logspreserved; no skillclaimorcheckpointcomparison.",
+         "adapter_source_hashes": {
+          "research/code/backend.cpp": "bf040e78c59d…",
+          "research/code/deployed_policy.py": "baa0e5dda73e…",
+          "research/code/verify_portable.py": "7db46fee54ec…",
+          "research/code/policy_net.py": "c263dc7a601f…",
+          "research/code/torch_geometry.py": "1bc27015f9a8…",
+          "research/sim/cube_graph_v4.npz": "4e8dd958e139…"
+         },
+         "adapter_smoke": {
+          "terms": 14,
+          "reward_sum_max_difference": 0.0,
+          "finite": true,
+          "success_does_not_terminate": true,
+          "term_means": [
+           0.1410776674747467,
+           0.06376006454229355,
+           0.0,
+           0.0,
+           -0.4740828573703766,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           0.0,
+           -1.7024852638769516e-08,
+           0.000564216636121273,
+           0.00038202351424843073
+          ]
+         },
+         "portable_validation": {
+          "features": {
+           "fixture": "Random untrained network;fixedboundedrandom actions for interface validation only",
+           "states_compared": 1984,
+           "max_feature_abs_difference": 7.017515599727631e-07,
+           "max_goal_feature_abs_difference": 0.0,
+           "all_outputs_finite": true,
+           "extra_fields_rejected": true,
+           "absolute_targets_shapes": {
+            "finger_position_targets": null,
+            "finger_velocity_targets": null,
+            "wrist_position_target": null,
+            "wrist_quaternion_target_wxyz": null,
+            "wrist_linear_feedforward": null,
+            "wrist_angular_feedforward": null
+           },
+           "passed": true
+          },
+          "absolute_adapter": {
+           "cases": 16,
+           "duration_s": 2,
+           "method": "Untrained fixture;identicalboundedrandomdelta commands vsconvertedabsolutetargets",
+           "max_finger_difference_rad": 2.8934763206672764e-05,
+           "max_wrist_position_difference_m": 1.5753621318316685e-07,
+           "max_cube_position_difference_m": 7.183275897691067e-05,
+           "passed": true
+          }
+         },
+         "partial_curriculum_baseline": {
+          "description": "Zeroactionpartial55to90degreecurriculumbaseline25percentfullquarter,notlearned",
+          "episodes": 256,
+          "stable_solved_count": 0
+         },
+         "opposite_planner_test": {
+          "opposite_move_equivalence_cases": 44970,
+          "bad_equivalences": 0,
+          "partial_face_cases": 36,
+          "max_selected_goal_distance_to_identity_rad": 0.0,
+          "passed": true
+         },
+         "partial_source_hashes": {
+          "research/code/gpu_partial_env.py": "af10ce25840f…",
+          "research/code/deployed_policy.py": "15ade69a2a25…",
+          "research/code/train_gpu_partial.py": "dcc9b2ccf4c2…"
+         },
+         "velocity_validation": {
+          "zero_action": {
+           "description": "Zeroaction1secondvelocitydecoderparity,notlearned",
+           "wall_s": 3.5164589881896973,
+           "metrics": [
+            0.0,
+            0.0,
+            50.0,
+            22.686765670776367,
+            0.04803922027349472,
+            0.0,
+            0.0004194731009192765,
+            0.020038016140460968,
+            0.00043643382377922535,
+            0.0,
+            1.0,
+            0.0,
+            0.1268956959247589,
+            0.00038617485552094877,
+            0.0,
+            0.0,
+            0.15450505912303925,
+            90.1543960571289,
+            0.10872619599103928,
+            0.0
+           ],
+           "overflow": [
+            0
+           ]
+          },
+          "parity": {
+           "max_qpos_component_difference": 9.940192103385925e-05,
+           "cube_position_difference_m": 7.718483723553122e-06,
+           "wrist_position_difference_m": 3.951226706124304e-09,
+           "same_one_second_physics": true,
+           "overflow": [
+            0
+           ]
+          },
+          "random_commands": {
+           "method": "Boundedrandomvelocitycommands,analysisnotlearned",
+           "control_hz": 10,
+           "command_hz": 500,
+           "PD_hz": 1000,
+           "worlds": 256,
+           "steps": 32,
+           "wall_s": 21.45777654647827,
+           "terminals": 35,
+           "hardware_failure_count": 1,
+           "max_velocity_ratio": 1.0064700841903687,
+           "overflow": [
+            0
+           ]
+          }
+         },
+         "velocity_validation_limit": "Zerocommandparitydoesnotestablishmovingtrajectoryequivalence. Randomcommandsproduced1strictspeedviolation,whichwasflaggedandterminated;noactualstateclamping. AllreportedpoliciesstillrequirestrictCPUverification.",
+         "velocity_source_hashes": {
+          "research/code/gpu_velocity_env.py": "12c4c6eaa739…",
+          "research/code/velocity_decoder.py": "76ded5d364fe…",
+          "research/code/gpu_env_dr.py": "5b65fe84c52d…",
+          "research/code/gpu_skill_env.py": "59f354884e7c…",
+          "research/code/train_gpu_velocity.py": "61a648ed17b9…"
+         },
+         "goalset_validation": {
+          "equivalent_progress": {
+           "before": 0.7853981852531433,
+           "old_committed_goal_after_equivalent_progress": 0.8726646900177002,
+           "new_goal_set_after": 0.6981316804885864,
+           "positive_progress": 0.08726650476455688,
+           "passed": true
+          },
+          "smoke": {
+           "description": "Goalsetzeroactionsmoke,notlearned",
+           "finite": true,
+           "reward_sum_difference": 0.0,
+           "worlds": 128,
+           "alternative_goals_finite": true,
+           "positive_task_claim": false
+          }
+         },
+         "reward_diagnosis": "A+zquarter-startcanbesolvedbyupper-zturnbackoroppositelower-zturnforward. After10degvalidoppositelayerprogress,oldcommittedmeanerrorrose.7854to.8727rad;goalsetdistancefalls to.6981rad. Oldrewardcouldpenalizevalidprogress. Bothcanonicalchildrenequal,verifiedseparately.",
+         "goalset_source_hashes": {
+          "research/code/gpu_goalset_env.py": "fe484ab2dff6…",
+          "research/code/train_gpu_goalset.py": "6ab4792ad36e…",
+          "research/code/deployed_policy.py": "d4f88fa57aaf…"
+         },
+         "feature_validation": {
+          "frame_cases": 256,
+          "max_frame_feature_error": 1.7275073538325358e-07,
+          "min_covariance_eigenvalue": 0.002499997615814209,
+          "log_probability_gradients_finite": true,
+          "passed": true
+         },
+         "mixture_validation": {
+          "shape": [
+           128,
+           245
+          ],
+          "finite": true,
+          "nominal_count": 66,
+          "randomized_count": 62,
+          "positive_task_claim": false
+         },
+         "exploration_prior": "Fingerflex,MCP/PIP/DIPnoiseiscorrelatedwithinadigit;index/middlelargerforflickdiscovery,thumb/ring/pinkyquieterforsupport. Thisisamodeling/learninghypothesisinformedbydemocontactroles,notareconstructionofthehiddenexacthumansequence.",
+         "feature_source_hashes": {
+          "research/code/gpu_feature_env.py": "46ed8b263856…",
+          "research/code/goal_features.py": "53da7d47cd94…",
+          "research/code/train_gpu_correlated.py": "5f22e935199e…",
+          "research/code/deployed_policy.py": "7394d0d77d98…"
+         }
+        },
+        "files": {
+         "scene_1": {
+          "sha": "46ed8b263856",
+          "bytes": 1228,
+          "content_type": "text/plain"
+         },
+         "scene_2": {
+          "sha": "53da7d47cd94",
+          "bytes": 516,
+          "content_type": "text/plain"
+         },
+         "scene_3": {
+          "sha": "5f22e935199e",
+          "bytes": 11535,
+          "content_type": "text/plain"
+         },
+         "scene_4": {
+          "sha": "7394d0d77d98",
+          "bytes": 11812,
+          "content_type": "text/plain"
+         },
+         "scene_5": {
+          "sha": "646f1457d819",
+          "bytes": 192,
+          "content_type": "application/json"
+         },
+         "scene_6": {
+          "sha": "7b5f24404b0c",
+          "bytes": 136,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-09T09:55:05Z",
@@ -368407,7 +371547,7 @@
    "plug": {
     "runs": {
      "8": {
-      "exported_utc": "2026-11-09T14:30:01Z",
+      "exported_utc": "2026-11-09T14:40:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -368665,7 +371805,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-09T14:32:36Z",
+  "staged_utc": "2026-11-09T14:42:34Z",
   "tasks": {
    "cube": {
     "files": {
@@ -368749,7 +371889,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-09T14:32:36Z",
+  "staged_utc": "2026-11-09T14:42:34Z",
   "tasks": {
    "tennis": {
     "status": "available",
