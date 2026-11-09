@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-09T11:12:37Z",
- "exported_utc": "2026-11-09T11:12:29Z",
+ "generated_utc": "2026-11-09T11:22:38Z",
+ "exported_utc": "2026-11-09T11:22:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-09T11:11:17",
+    "time": "2026-11-09T11:20:04",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-09T10:53:38",
+    "time": "2026-11-09T11:16:31",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -157633,6 +157633,447 @@
          "text": "Learning plan: PPO-only reinforcement learning, beginning with a grasp/lift subskill before turn/carry/place composition. Offline IK/scripted grasp baselines and supervised initialization are analysis/initialization only; their performance is reported separately. The deployable actor sees146features derived only from allowed proprioception, object states/kinds, its own histories and cached initial observation, plus a finite discrete phase. It returns26network outputs decoded as bounded finger/wrist increments; every motion command comes from the network. No runtime IK, trajectory replay, optimization or scripted motion residual will be in the final policy. Finite phase/object selection is allowed by LEARNING.md. PPO initialization may use synthetic teacher actions, but final weights undergo PPO and must pass all preregistered goal/style/hardware criteria before any delivery. Initial4s/one-object curriculum does not claim full30s/two-or-three-object task success."
         },
         "files": {}
+       },
+       {
+        "id": "r0021",
+        "seq": 21,
+        "kind": "note",
+        "version": 10,
+        "recorded_utc": "2026-11-09T11:17:13Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "First grasp PPO diagnostics: very large policy KL changes (occasionally >100) are destroying the supervised initialization, and current-joint-relative increments limit sustained contact preload to0.05rad. I will compare the BC initializer, analytic offline teacher and PPO checkpoint separately, add PPO target-KL early stopping and smaller learning rate, and change finger increments to integrate from previous commanded targets so a held closure can maintain force. Turning baselines all drop, so relative blade rotation after a drop is explicitly not in-hand reorientation evidence. No task success is claimed."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0022",
+        "seq": 22,
+        "kind": "iter",
+        "version": 1,
+        "recorded_utc": "2026-11-09T11:20:04Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "reward_terms": [
+          {
+           "name": "pose",
+           "formula": "exp(-(wrist_position_error/.035)^2)+.5exp(-(wrist_angle_error/.4)^2)",
+           "weight": 1
+          },
+          {
+           "name": "fingers",
+           "formula": "exp(-mean((q-q_teacher)^2)/.04)",
+           "weight": 0.3
+          },
+          {
+           "name": "contacts",
+           "formula": "(.4thumb+.2other+1both)*I[phase>=2]",
+           "weight": 1
+          },
+          {
+           "name": "lift",
+           "formula": "clip((height-initial_height)/.07,0,1)",
+           "weight": 3
+          },
+          {
+           "name": "lift_progress",
+           "formula": "height-current_previous_height",
+           "weight": 20
+          },
+          {
+           "name": "penetration",
+           "formula": "-max(depth-.003,0)/.01",
+           "weight": 40
+          },
+          {
+           "name": "motion",
+           "formula": "-mean(a^2)-mean((a-previous_a)^2)",
+           "weight": 0.01
+          },
+          {
+           "name": "slide",
+           "formula": "-max(XY_drift-.04,0)",
+           "weight": 2
+          },
+          {
+           "name": "hardware",
+           "formula": "-I[hardware_speed_or_position_violation]",
+           "weight": 50
+          }
+         ],
+         "domain_randomization": [],
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO",
+          "learning_rate": 0.0002,
+          "n_steps": 256,
+          "batch_size": 2048,
+          "epochs": 6,
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "entropy_coefficient": 0.001,
+          "vf_coefficient": 0.5,
+          "max_grad_norm": 0.5,
+          "target_kl": null,
+          "seed": 0
+         },
+         "architecture": "Separate actor and critic MLP256,256,128 Tanh;26Gaussian actions; log_std_init=-2.5",
+         "observation_space": "146 features derived only from noisy q/qd, exact wrist/object poses/velocities/kinds, histories, cached initial object state, constant goal and finite phase. No contacts/parameters/forces.",
+         "action_space": "20current-q-relative increments<=.05rad,3current-wrist-relative translations<=.01m norm,3rotvec increments<=.05rad norm;50Hz network, commands held at500Hz with1kHz hardware controllers.",
+         "curriculum": "One object,4s approach/descend/close/lift windows; randomkind,restingface,yaw andxy. Objects settle.2s in curriculum. This is not final30s deployment.",
+         "initialization": "50000 synthetic offline IK-teacher samples,50supervised epochs; BC baseline saved and evaluated separately; no runtime IK in learned policy.",
+         "compute": {
+          "wall_seconds": 402.0640182495117,
+          "gpu_hours": 0.11168444951375325,
+          "gpu": "One L40S",
+          "environments": 24,
+          "physics": "MuJoCo CPU"
+         },
+         "training_steps": 500016,
+         "evaluation": {
+          "episodes": [
+           {
+            "seed": 7000,
+            "kind": 0,
+            "return_": 22.49529469375202,
+            "steps": 200,
+            "max_lift": 1.1583636827516841e-11,
+            "hold_steps": 0,
+            "opposed_seen": false,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.4279515856305821
+           },
+           {
+            "seed": 7001,
+            "kind": 1,
+            "return_": 50.526197842589966,
+            "steps": 200,
+            "max_lift": 1.157964002462819e-11,
+            "hold_steps": 0,
+            "opposed_seen": false,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.4299283862461226
+           },
+           {
+            "seed": 7002,
+            "kind": 0,
+            "return_": 34.82337885751969,
+            "steps": 200,
+            "max_lift": 0.00048612487170352284,
+            "hold_steps": 0,
+            "opposed_seen": false,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.43362312946751486
+           },
+           {
+            "seed": 7003,
+            "kind": 1,
+            "return_": 44.860657942541756,
+            "steps": 200,
+            "max_lift": 1.1578968686642988e-11,
+            "hold_steps": 0,
+            "opposed_seen": false,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.4222301067321805
+           },
+           {
+            "seed": 7004,
+            "kind": 0,
+            "return_": 17.77169058810277,
+            "steps": 200,
+            "max_lift": 1.160118182075287e-11,
+            "hold_steps": 0,
+            "opposed_seen": false,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.4287319662732479
+           },
+           {
+            "seed": 7005,
+            "kind": 1,
+            "return_": 99.04610165532247,
+            "steps": 200,
+            "max_lift": 1.1585066239661046e-11,
+            "hold_steps": 0,
+            "opposed_seen": false,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.4222403386024131
+           },
+           {
+            "seed": 7006,
+            "kind": 0,
+            "return_": 38.083720217040465,
+            "steps": 200,
+            "max_lift": 0.00030189465103547426,
+            "hold_steps": 0,
+            "opposed_seen": false,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.4333664616175477
+           },
+           {
+            "seed": 7007,
+            "kind": 1,
+            "return_": 71.27318486818473,
+            "steps": 200,
+            "max_lift": 1.1579473491174497e-11,
+            "hold_steps": 0,
+            "opposed_seen": false,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.4389651974640744
+           },
+           {
+            "seed": 7008,
+            "kind": 0,
+            "return_": 85.57914905044333,
+            "steps": 200,
+            "max_lift": 1.159972465303305e-11,
+            "hold_steps": 0,
+            "opposed_seen": false,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.42980375208256383
+           },
+           {
+            "seed": 7009,
+            "kind": 1,
+            "return_": 74.81559289743977,
+            "steps": 200,
+            "max_lift": 1.1579546349560488e-11,
+            "hold_steps": 0,
+            "opposed_seen": false,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.42777275769677
+           },
+           {
+            "seed": 7010,
+            "kind": 0,
+            "return_": 73.79373092463192,
+            "steps": 200,
+            "max_lift": 0.002259626509376743,
+            "hold_steps": 0,
+            "opposed_seen": false,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.42026012604665475
+           },
+           {
+            "seed": 7011,
+            "kind": 1,
+            "return_": 93.58102973617339,
+            "steps": 200,
+            "max_lift": 1.1578949604684752e-11,
+            "hold_steps": 0,
+            "opposed_seen": false,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.4307304486212888
+           }
+          ],
+          "success_rate": 0.0,
+          "hardware_violations": 0,
+          "mean_peak_lift": 0.0002539705113651606,
+          "claim": "4s one-object grasp subskill only; not full task verification"
+         },
+         "baseline_evaluation": {
+          "episodes": [
+           {
+            "seed": 7000,
+            "kind": 0,
+            "return_": 145.42944856576605,
+            "steps": 200,
+            "max_lift": 0.0006410860180096085,
+            "hold_steps": 0,
+            "opposed_seen": false,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.42527510548874004
+           },
+           {
+            "seed": 7001,
+            "kind": 1,
+            "return_": 308.5105512474631,
+            "steps": 200,
+            "max_lift": 8.895214740521455e-05,
+            "hold_steps": 0,
+            "opposed_seen": true,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.43016870734565105
+           },
+           {
+            "seed": 7002,
+            "kind": 0,
+            "return_": 469.21297834414077,
+            "steps": 200,
+            "max_lift": 0.07076576093794588,
+            "hold_steps": 55,
+            "opposed_seen": true,
+            "success": true,
+            "hardware": false,
+            "speed_ratio": 0.422262771046377
+           },
+           {
+            "seed": 7003,
+            "kind": 1,
+            "return_": 342.11935515708575,
+            "steps": 200,
+            "max_lift": 0.05197171239475688,
+            "hold_steps": 0,
+            "opposed_seen": true,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.4179918640617424
+           },
+           {
+            "seed": 7004,
+            "kind": 0,
+            "return_": 164.30957328324624,
+            "steps": 200,
+            "max_lift": 1.1601008348405273e-11,
+            "hold_steps": 0,
+            "opposed_seen": false,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.41865121653737997
+           },
+           {
+            "seed": 7005,
+            "kind": 1,
+            "return_": 336.8695316139571,
+            "steps": 200,
+            "max_lift": 0.05726007301938547,
+            "hold_steps": 0,
+            "opposed_seen": true,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.42379949794472355
+           },
+           {
+            "seed": 7006,
+            "kind": 0,
+            "return_": 229.19662468450187,
+            "steps": 200,
+            "max_lift": 0.010637469064069328,
+            "hold_steps": 0,
+            "opposed_seen": true,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.4215264146233877
+           },
+           {
+            "seed": 7007,
+            "kind": 1,
+            "return_": 321.4735643141598,
+            "steps": 200,
+            "max_lift": 0.00030147618760460564,
+            "hold_steps": 0,
+            "opposed_seen": true,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.4494638834572994
+           },
+           {
+            "seed": 7008,
+            "kind": 0,
+            "return_": 244.50126381275203,
+            "steps": 200,
+            "max_lift": 0.0010314503413155866,
+            "hold_steps": 0,
+            "opposed_seen": false,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.4283919982727549
+           },
+           {
+            "seed": 7009,
+            "kind": 1,
+            "return_": 292.6834879824937,
+            "steps": 200,
+            "max_lift": 0.002724876839298552,
+            "hold_steps": 0,
+            "opposed_seen": true,
+            "success": false,
+            "hardware": false,
+            "speed_ratio": 0.4322834581757011
+           },
+           {
+            "seed": 7010,
+            "kind": 0,
+            "return_": 509.67410617111295,
+            "steps": 200,
+            "max_lift": 0.06122436113298324,
+            "hold_steps": 52,
+            "opposed_seen": true,
+            "success": true,
+            "hardware": false,
+            "speed_ratio": 0.4115488091746066
+           },
+           {
+            "seed": 7011,
+            "kind": 1,
+            "return_": 484.2030628305191,
+            "steps": 200,
+            "max_lift": 0.06475962018334559,
+            "hold_steps": 54,
+            "opposed_seen": true,
+            "success": true,
+            "hardware": false,
+            "speed_ratio": 0.4204705555299039
+           }
+          ],
+          "success_rate": 0.25,
+          "hardware_violations": 0,
+          "mean_peak_lift": 0.026783903189810082,
+          "claim": "4s one-object grasp subskill only; not full task verification"
+         },
+         "criteria_comparison": {
+          "criteria_version": 1,
+          "full_task_success_rate": 0,
+          "reason": "No leftward transfer, upright placement, release,2/3object episodes or full style audit implemented in this subskill. Grasp subskill success0/12; BC initialization2/12. Thus this iteration cannot meet recorded criteria."
+         },
+         "reflection": "PPO destroys BC initialization with KL occasionally>100. The current-q-relative decoder limits sustained preload. Next run uses target-KL stopping,20x lower learning rate, integrated previous-target finger increments and more precision-focused BC initialization. Contact persistence and turning remain unsolved.",
+         "artifacts": {
+          "source": "research/training/train_ppo.py",
+          "env": "research/training/learn_env.py",
+          "checkpoint": "research/training/iter_001/policy.zip",
+          "evaluation": "research/training/iter_001/ppo_eval/evaluation.json"
+         },
+         "curves_note": "hardware column is the -50weighted hardware reward term, because it overwrote the initially named violation-rate column; evaluation records give actual violation counts. lift column is weighted lift reward in curves; evaluation gives metric meters. Correction in iteration2 uses hardware_rate."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "35fc14fa9503",
+          "bytes": 3838589,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "2a4d6eec40ce",
+          "bytes": 69436,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "8826a7a1e14c",
+          "bytes": 90176,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "1b65221427de",
+          "bytes": 62366,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-09T09:57:49Z",
@@ -347223,6 +347664,19 @@
           "content_type": "text/markdown"
          }
         }
+       },
+       {
+        "id": "r0011",
+        "seq": 11,
+        "kind": "note",
+        "version": 7,
+        "recorded_utc": "2026-11-09T11:16:31Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Simulation mechanism design: eight material corner bodies rotate about the cube center using ball joints; a passive restoring potential couples their rotations to the nearest legal single-face-turn manifold, with periodic magnetic detents and implicit bearing damping/friction. A face is selected from observed deformation, never the goal; qpos is not projected or overwritten during execution. The reference well changes by a quarter-turn at a periodic-energy boundary without moving the parts. Integrity checks reject illegal deformation. This is an idealized compliant mechanism, not a measured GAN internal model; validate passivity, coherent turns and robustness before relying on it. A symbolic finite cube-state lookup selects high-level next turns only from observed corner orientations; all robot motion remains PPO network output. Initial receiving-pose checks now hold the cube for3s without drops or hardware violations; palm-up static baseline has no opposed grasp and does not solve the task."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-09T09:55:05Z",
@@ -347238,7 +347692,7 @@
    "plug": {
     "runs": {
      "8": {
-      "exported_utc": "2026-11-09T11:10:01Z",
+      "exported_utc": "2026-11-09T11:20:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -347496,7 +347950,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-09T11:12:32Z",
+  "staged_utc": "2026-11-09T11:22:33Z",
   "tasks": {
    "cube": {
     "files": {
@@ -347580,7 +348034,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-09T11:12:32Z",
+  "staged_utc": "2026-11-09T11:22:33Z",
   "tasks": {
    "tennis": {
     "status": "available",
