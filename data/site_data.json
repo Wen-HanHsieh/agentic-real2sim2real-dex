@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-09T03:02:35Z",
- "exported_utc": "2026-11-09T03:02:29Z",
+ "generated_utc": "2026-11-09T03:12:35Z",
+ "exported_utc": "2026-11-09T03:12:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-09T02:57:55",
+    "time": "2026-11-09T03:09:07",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-09T02:59:07",
+    "time": "2026-11-09T03:08:44",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -143218,6 +143218,202 @@
          "text": "Evaluation-generator correction: the first full baseline sweep had three invalid touching placements (seeds45069,45077,45089), all the same kind pattern and fixed layout, because the generator ignored protruding blades and overlapped them with a neighbour. Those are generator failures, not valid policy trials. Replace fixed side-by-side X spacing with seed-specific collectively rotated flat-plus-leaning geometry, validate1.5s settle and measured object contacts before policy control, retain rejected starts, and rerun the affected32-episode group. Criteria thresholds and full-table coverage are unchanged. Preliminary uncorrected baseline groups: nominal15/32, physics6/32, touching26/32 including the three invalid placements, edge0/32. `None` is a passing policy."
         },
         "files": {}
+       },
+       {
+        "id": "r0029",
+        "seq": 29,
+        "kind": "note",
+        "version": 18,
+        "recorded_utc": "2026-11-09T03:03:17Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Why the residual plateau may persist: observation compression removed absolute wrist/object yaw, yet orientation corrections were applied in world axes. Equivalent local grasp errors at different yaws therefore demanded different unobserved world-axis corrections. New policy variant expresses wrist/object position errors and velocities in the desired wrist frame and applies translation/rotation residuals in that frame. Increase joint/pose correction ranges to.4rad/.03m/.3rad, retain target-rate filtering and all physical hardware audits, and mask unused ring/little-finger residuals. Physical simulation remains version3; this is an observation/action parameterization change. Compare against the original policy rather than assuming improvement."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0030",
+        "seq": 30,
+        "kind": "iter",
+        "version": 3,
+        "recorded_utc": "2026-11-09T03:09:07Z",
+        "exception": false,
+        "body": {
+         "sim_version": 4,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "n": 512,
+          "updates": 240,
+          "rollout": 128,
+          "stage": "drag",
+          "randomize": false,
+          "resume": null,
+          "name": "PPO clipped",
+          "seed": 2030,
+          "device": "cuda:0",
+          "filter": 0.15,
+          "logstd": -2.0,
+          "template": "thumb",
+          "lr": 0.0002,
+          "anneal": true,
+          "env": "drag",
+          "obs_dim": 126,
+          "action_scales": [
+           0.4,
+           0.03,
+           0.15
+          ],
+          "architecture": "MLP 256 tanh 256 tanh Gaussian actor; separate equal critic",
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "epochs": 4,
+          "minibatches": 8,
+          "checkpoint_update": 100,
+          "transitions": 6553600
+         },
+         "architecture": "Separate256-tanh-256-tanh Gaussian actor/critic,126 permitted-state inputs,26 residual outputs.",
+         "observation_space": "No contacts/rewards/parameters. Noisy q/qd, wrist pose/velocity, selected object pose/velocity, allowed reference-memory phase and targets, object_kind, previous residual.",
+         "action_space": "20 joint residuals0.4rad,3 translation0.03m,3 rotation0.15rad,alpha0.15 filter. 50Hz residual held across500Hz contract;1kHz physical hardware audit.",
+         "reward_terms": [
+          {
+           "name": "position",
+           "formula": "100*(previous object x-current object x)",
+           "weight": 1
+          },
+          {
+           "name": "orientation",
+           "formula": "zero in this curriculum",
+           "weight": 0
+          },
+          {
+           "name": "lift",
+           "formula": "zero in this curriculum",
+           "weight": 0
+          },
+          {
+           "name": "complete",
+           "formula": "2*exp(-80*(object x-goal x)^2) after1.3s, goal x=min(initial x-.20,.44)",
+           "weight": 1
+          },
+          {
+           "name": "action",
+           "formula": "-.005*mean(filtered residual^2)",
+           "weight": 1
+          },
+          {
+           "name": "smooth",
+           "formula": "-.01*mean((filtered residual-previous)^2)",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-10*persistent1kHz hardware failure flag -20*object fallen flag",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "selected plug x",
+           "distribution": "uniform",
+           "range": [
+            0.59,
+            0.67
+           ]
+          },
+          {
+           "quantity": "selected plug y",
+           "distribution": "uniform",
+           "range": [
+            -0.03,
+            0.03
+           ]
+          },
+          {
+           "quantity": "orientation",
+           "distribution": "uniform yaw/equal side faces",
+           "range": "[-pi,pi] on bodyX orY face"
+          }
+         ],
+         "curriculum": "3s auxiliary training windows. Selected plug kind0 on right; two already-placed distractors on left. Fixed nominal physics. Not a30s manipulation episode.",
+         "compute": {
+          "checkpoint_training_wall_s": 505.9425377845764,
+          "gpu_hours": 0.14053959382904901,
+          "hardware": "one L40S"
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "episodes": 32,
+          "seeds": [
+           56000,
+           56001,
+           56002,
+           56003,
+           56004,
+           56005,
+           56006,
+           56007,
+           56008,
+           56009,
+           56010,
+           56011,
+           56012,
+           56013,
+           56014,
+           56015,
+           56016,
+           56017,
+           56018,
+           56019,
+           56020,
+           56021,
+           56022,
+           56023,
+           56024,
+           56025,
+           56026,
+           56027,
+           56028,
+           56029,
+           56030,
+           56031
+          ],
+          "primitive_successes": 23,
+          "primitive_success_rate": 0.71875,
+          "baseline_primitive_successes": 15,
+          "hardware_violations": 2,
+          "baseline_hardware_violations": 7,
+          "full_task_passed": false,
+          "full_task_note": "Only3s inward-draw behavior evaluated; no pickup/turn/placement completion. These numbers are auxiliary subskill results, not task success."
+         },
+         "reflection": "Native heldout inward-draw success improves15/32 to23/32; hardware failures decrease7 to2. Farther starts aroundx.65-.67 still often stay out of reach. Generalize direction and kind, improve safety and integrate only with a separately verified complete policy.",
+         "package_sha256": "7a35ff09c61e…",
+         "stage": "Auxiliary inward-draw PPO primitive; not a full-task policy"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "847e1a7b0f5e",
+          "bytes": 30531,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "6a24374d4226",
+          "bytes": 50106,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "e293031b14e2",
+          "bytes": 59028,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "6eaa192e4309",
+          "bytes": 55243,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-09T01:01:16Z",
@@ -295566,6 +295762,462 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0013",
+        "seq": 13,
+        "kind": "sim",
+        "version": 3,
+        "recorded_utc": "2026-11-09T03:05:28Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 3,
+         "description": "Simulation3: same physical training setting as recorded simulation2; repaired demonstration retarget and<=1ms kinematic geometry audit.",
+         "simulator": {
+          "name": "MuJoCo",
+          "version": "3.17.0",
+          "time_step_s": 0.001,
+          "integrator": "implicitfast",
+          "solver": "Newton,30iterations, elliptic cone",
+          "contact": "MuJoCo soft contacts, exact supplied hand mesh convex hulls and beveled cube caps; external friction nominal0.7cube/1hand, internal0.05; scene.xml is authoritative for solref/solimp"
+         },
+         "scene": {
+          "frame": "world zup, floor z0; wrist home z0.45m; no table/support during task",
+          "robot": "hardware/wuji_hand2_left URDF hierarchy/inertials/joints and supplied STL meshes, hwspec-1.3L",
+          "sha256": {
+           "scene.xml": "b1ccd29215cd…",
+           "native.cpp": "eb3b5b7df2fd…",
+           "libcube.so": "056d76c06593…",
+           "variants.json": "b25ae10d390d…",
+           "starting_pose.json": "c32df518f856…",
+           "meshes/cubie.obj": "8243ea24ad33…"
+          },
+          "hardware_meshes_sha256": {
+           "hardware/wuji_hand2_left/meshes/left/l_mount.STL": "db56d3547765…",
+           "hardware/wuji_hand2_left/meshes/left/l_wrist.STL": "cc3944120241…",
+           "hardware/wuji_hand2_left/meshes/left/l_thumb_proximal.STL": "5144d8ab958d…",
+           "hardware/wuji_hand2_left/meshes/left/l_thumb_proximal_abd.STL": "539f4df71007…",
+           "hardware/wuji_hand2_left/meshes/left/l_thumb_middle.STL": "3a84286a4de1…",
+           "hardware/wuji_hand2_left/meshes/left/l_thumb_distal.STL": "0d89c323bf16…",
+           "hardware/wuji_hand2_left/meshes/left/l_thumb_tip_sensor_frame.S…": "e0b34bb387e3…",
+           "hardware/wuji_hand2_left/meshes/left/l_thumb_middle_cover.STL": "c67031f2fd27…",
+           "hardware/wuji_hand2_left/meshes/left/l_thumb_palm_cover.STL": "7efd3711729a…",
+           "hardware/wuji_hand2_left/meshes/left/l_index_finger_proximal.STL": "89e49d06793e…",
+           "hardware/wuji_hand2_left/meshes/left/l_index_finger_proximal_ab…": "b83070b58db6…",
+           "hardware/wuji_hand2_left/meshes/left/l_index_finger_middle.STL": "5af2f99b93fb…",
+           "hardware/wuji_hand2_left/meshes/left/l_index_finger_distal.STL": "47630a76817e…",
+           "hardware/wuji_hand2_left/meshes/left/l_index_finger_tip_sensor_…": "4961c77d8508…",
+           "hardware/wuji_hand2_left/meshes/left/l_index_finger_middle_cove…": "94a4c8c39d43…",
+           "hardware/wuji_hand2_left/meshes/left/l_index_palm_cover.STL": "6498fc4cacf0…",
+           "hardware/wuji_hand2_left/meshes/left/l_middle_finger_proximal.S…": "8eea0513ad13…",
+           "hardware/wuji_hand2_left/meshes/left/l_middle_finger_proximal_a…": "7bf9d6eb4d72…",
+           "hardware/wuji_hand2_left/meshes/left/l_middle_finger_middle.STL": "b3bb4726751b…",
+           "hardware/wuji_hand2_left/meshes/left/l_middle_finger_distal.STL": "47630a76817e…",
+           "hardware/wuji_hand2_left/meshes/left/l_middle_finger_tip_sensor…": "4961c77d8508…",
+           "hardware/wuji_hand2_left/meshes/left/l_middle_finger_middle_cov…": "7ae178288647…",
+           "hardware/wuji_hand2_left/meshes/left/l_middle_palm_cover.STL": "f82e14ca0768…",
+           "hardware/wuji_hand2_left/meshes/left/l_ring_finger_proximal.STL": "b8962bc4ac95…",
+           "hardware/wuji_hand2_left/meshes/left/l_ring_finger_proximal_abd…": "6923b109243c…",
+           "hardware/wuji_hand2_left/meshes/left/l_ring_finger_middle.STL": "65969a58aba7…",
+           "hardware/wuji_hand2_left/meshes/left/l_ring_finger_distal.STL": "b149433ff04d…",
+           "hardware/wuji_hand2_left/meshes/left/l_ring_finger_tip_sensor_f…": "cf69841d299d…",
+           "hardware/wuji_hand2_left/meshes/left/l_ring_finger_middle_cover…": "df7b94f3285c…",
+           "hardware/wuji_hand2_left/meshes/left/l_ring_palm_cover.STL": "82e3ccbab119…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_proximal.STL": "41939a3da708…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_proximal_abd.STL": "25fc27d8ec8d…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_middle.STL": "63061786518f…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_distal.STL": "19f4f22a89dc…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_tip_sensor_frame.S…": "b85eff25ea1c…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_middle_cover.STL": "df86b4f6891a…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_proximal_abd_cover…": "af3b48932741…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_proximal_cover.STL": "aaf4db34c3d3…",
+           "hardware/wuji_hand2_left/meshes/left/l_adductor_pollicis_cover.…": "d8704561e24d…",
+           "hardware/wuji_hand2_left/meshes/left/l_thenar_cover.STL": "42e00b3e61ce…",
+           "hardware/wuji_hand2_left/meshes/left/l_midpalm_cover.STL": "cfd75ffa0579…",
+           "hardware/wuji_hand2_left/meshes/left/l_hypothenar_cover.STL": "a7e852f4cbcc…",
+           "hardware/wuji_hand2_left/meshes/left/l_palm_index_cover.STL": "934d8ea05844…",
+           "hardware/wuji_hand2_left/meshes/left/l_palm_middle_cover.STL": "561886c199a7…",
+           "hardware/wuji_hand2_left/meshes/left/l_palm_ring_cover.STL": "42afb027ff29…"
+          },
+          "self_collision_exclusions": "Same-digit housing chain and palm/proximal depth<=2 excluded to avoid convex CAD housing overlap; cross-digit and distal/palm collisions retained. This approximates detailed housing collision.",
+          "geometry_variants": [
+           {
+            "file": "scene_47.xml",
+            "edge_mm": 47,
+            "sha256": "7c1ca707b571…"
+           },
+           {
+            "file": "scene_48.xml",
+            "edge_mm": 48,
+            "sha256": "f5acdf33d0ca…"
+           },
+           {
+            "file": "scene_49.xml",
+            "edge_mm": 49,
+            "sha256": "4c5b437fcdb5…"
+           },
+           {
+            "file": "scene_50.xml",
+            "edge_mm": 50,
+            "sha256": "84950617744f…"
+           },
+           {
+            "file": "scene_51.xml",
+            "edge_mm": 51,
+            "sha256": "b1ccd29215cd…"
+           },
+           {
+            "file": "scene_52.xml",
+            "edge_mm": 52,
+            "sha256": "5ad1cd109df7…"
+           },
+           {
+            "file": "scene_53.xml",
+            "edge_mm": 53,
+            "sha256": "5f3ed827860a…"
+           },
+           {
+            "file": "scene_54.xml",
+            "edge_mm": 54,
+            "sha256": "330f235f04bb…"
+           },
+           {
+            "file": "scene_55.xml",
+            "edge_mm": 55,
+            "sha256": "b799b5963777…"
+           }
+          ],
+          "retarget_sha256": {
+           "replay_scene.xml": "e9588b66d271…",
+           "retargeted_reference.npz": "bc2c579be1de…",
+           "retarget_timing.npz": "c253f075309b…",
+           "replay_compare.mp4": "8cde55374472…"
+          }
+         },
+         "objects": {
+          "cube": {
+           "cube_frame": "Core center, axes tied to the fixed corner0 geometry; in nominal solved state+Xred,-Xorange,+Yblue,-Ygreen,+Zwhite,-Zyellow. Corner0at--- is mechanically anchored.",
+           "cube_mass_kg": 0.055,
+           "cube_edge_m": "discrete0.047..0.055in1mm increments",
+           "mechanism": "7spherical-center ball bearings plus compliant radial retention; external caps/cap collisions couple legal layer motion; one fixed corner. Passive detent torque added by controller, independent of colors. No cube actuator.",
+           "geometry_source": "Blender beveled25.3mm corner caps;51mm assembled edge from reconstruction/public prior. Internal rails approximated by constraints; fracture by explicit load proxy.",
+           "public_priors": [
+            "https://patents.google.com/patent/US4378117A/en",
+            "https://www.gancube.cn/en/GAN251-M/",
+            "https://github.com/openai/robogym"
+           ]
+          },
+          "mechanism_detail": "One fixed corner and7centered spherical joints with compliant radial retention,28explicit cap collision pairs, passive detent toward nearest24lattice orientation; no object actuator. Detent, friction, retention and fracture proxy are uncertain public-informed approximations. Whole cube colors/corner orientations are evaluated from physical state. Scrambles are legal discrete label permutations attached to physical corner bodies; no runtime scripted layer transitions."
+         },
+         "reference": {
+          "record": "r0007",
+          "use": "Reconstruction3 geometry/contact phases/anatomical trajectories. Repaired kinematic replay provides morphology and collision validation. PPO uses receiving posture and contact/turn objectives, not time-indexed replay control.",
+          "retarget": "Bounded incremental IK at1912source-interpolated samples;20finger variables step<=.04rad, wrist correction increments<=2.3mm/.02rad. Five fingertips and1mm geometric clearance objective. Post-fit variable time warp bounds target velocities at80percent hardware limits.",
+          "replay_audit": {
+           "source_segment": [
+            68,
+            341
+           ],
+           "source_duration_s": 9.100000000000001,
+           "minimum_robot_duration_s": 18.24426450063445,
+           "max_uniform_time_scale_for_limits": 3.259604952155961,
+           "variable_dt_min_max_s": [
+            0.009523809523805937,
+            0.015521928343599759
+           ],
+           "maximum_audit_spacing_s": 0.001,
+           "dense_samples": 19154,
+           "dense_max_penetration_m": 0.001881787735987124,
+           "dense_frames_over_2mm": 0,
+           "note": "Time warp follows80% finger/wrist target speed bounds. Kinematic interpolation audit, not dynamic execution validation."
+          },
+          "replay_used_as_control_target": false
+         },
+         "controllers": {
+          "finger": "Builtin per-joint position PD at1kHz with exact kp,kv,effort and position limits from hardware_spec_left.json; actuator armature .0002 or .0005kgm2 as metadata. No velocity clipping: each1ms sample exceeding rated speed invalidates episode. Encoder noise sigma q.002rad,qd.05rad/s.",
+          "wrist": "Wrist-1 impedance1kHz Kp2000N/m,Kd60Ns/m;20Nm/rad,.4Nms/rad; norm force30N,torque2Nm. Hand-only gravity compensation0.7088kg using current COM. Executed target speed limited2.5m/s and6rad/s at500Hz. Policy updates50Hz.",
+          "actions": "26network outputs:20finger delta targets .03rad;3world wrist position increments .002m;3world rotation-vector increments .02rad. Output clipping[-1,1], finite-value check. Wrist target workspace home±.15m, any orientation.",
+          "observations": "94deployable values: noisy finger q20,qd20; wrist pose7,velocity6; previous finger targets20,wrist targets7; one cube root relative pose7,worldvelocity6;time/60. No contacts,colors,forces,face angles,rewards,physics parameters or seeds."
+         },
+         "initial_conditions": {
+          "hand": {
+           "wrist_position_m": [
+            0,
+            0,
+            0.45
+           ],
+           "wrist_quat_wxyz": [
+            0.7071067811865476,
+            -0.7071067811865476,
+            0,
+            0
+           ],
+           "finger_q": [
+            0.7282878049896913,
+            -0.1448352533265523,
+            -0.06093574067284845,
+            0.4,
+            0.5,
+            -0.25,
+            0.8,
+            0.45,
+            0.55,
+            0.0,
+            0.85,
+            0.45,
+            0.5,
+            0.2,
+            0.9,
+            0.5,
+            0.65,
+            0.25,
+            0.9,
+            0.6
+           ],
+           "cube_position_m": [
+            0,
+            -0.095,
+            0.515
+           ],
+           "palm_center_local_m": [
+            0.003,
+            -0.018,
+            -0.0835
+           ],
+           "reason": "Open cupped placement pose, chosen offline from hardware geometry; no solve actions."
+          },
+          "object": "Centered above palm; binary search vertical support clearance against actual hand geometry, then add0-15mm height and10mm disk position,20mm stress. Random legal1-5quarter turns, initially unsolved; level0nominal,level1face-up randomyaw,level2uniformSO3,level3stress. Physical and scramble/noise seeds independent. Optional training-only override1060/1075/1090 places4uppercorner balls physically at60/75/90deg with solved sticker labels; no object driving during rollout.",
+          "why": "Deployment starts in open palm. Cup is a receiving posture, baseline cannot solve."
+         },
+         "episode": {
+          "horizon_s": 60,
+          "policy_hz": 50,
+          "target_hz": 500,
+          "physics_and_PD_hz": 1000,
+          "curriculum_horizons_s": [
+           8,
+           20,
+           60
+          ],
+          "termination": "Failure for loss of hand contact>10ms after.25ssettle,root>120mmfrompalm,floorcontact; hardware speed/position/effort violation;>2mmhandcube/internalpenetration or radialerror,>20Ncorner load,>.25Nmcorner torque,illegal aligned corner twist,nonfinite state/action. End at fixed horizon, never early hidden-color success. Solved needs6uniformfaces,3deg alignment, legal corners; final2s retained."
+         },
+         "validation": {
+          "exact_hardware": {
+           "mass_kg": 0.7088000000000001,
+           "mass_error_kg": 1.1102230246251565e-16,
+           "max_joint_parameter_error": 0.0
+          },
+          "paired_observability": {
+           "steps": 100,
+           "max_actor_observation_difference": 0.0,
+           "max_physical_state_difference": 0.0,
+           "max_hidden_color_progress_difference": 0.0033568143844604492,
+           "last": [
+            null,
+            null
+           ],
+           "result": "same observations and physical state, despite distinct labels"
+          },
+          "mechanism_fixture": {
+           "test": "External low-torque fixture, not a task policy: core held and four upper corners torqued aboutZ; lower three held against rotational drift. No object actuator exists in training.",
+           "duration_s": 2.5,
+           "per_corner_torque_cap_nm": 0.006,
+           "quarter_turn_final_error_rad": {
+            "1": 1.3973726649414839e-05,
+            "2": 1.236984220251082e-05,
+            "3": 1.6324624562548812e-05,
+            "4": 1.192222556204829e-05,
+            "5": 1.6472625638193495e-05,
+            "6": 1.4931318287847355e-05,
+            "7": 1.3466600966686786e-05
+           },
+           "max_internal_penetration_m": 6.43465488109017e-05,
+           "passed": true
+          },
+          "baseline_60s": {
+           "episodes": 32,
+           "retained_hardware_integrity": 26,
+           "solves": 0,
+           "detail": "baseline_full.json; fixed open cup, no policy actions.",
+           "scope": "Previous sim1 baseline, not a new60s geometry sweep. Sim2 has11case4s validation. Deployable policy evaluation follows."
+          },
+          "retarget_passed": true,
+          "retarget_limitation": "Held segment68-341 only, source human to robot morphology residual median3.71mm/p9521.52mm fingertip error. Kinematic interpolation audited at<=1ms spacing; no dynamic feasibility or solve claim. Wrist corrections up to60mm/0.35rad peraxis. Source internal layer states unresolved; replay cube assembled, so this retarget does not demonstrate a solved layer sequence. Pickup/release support excluded for in-palm deployment.",
+          "v2": {
+           "geometry_audit": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+           ],
+           "zero_action_4s_cases": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+           ],
+           "pair": {
+            "obs_diff": 0.0,
+            "state_diff": 0.0
+           },
+           "auxiliary_partial_noaction": [
+            null,
+            null,
+            null
+           ],
+           "loads_include_joint_reactions": true
+          },
+          "v2_summary": {
+           "zeroaction_4s_retained_integrity": 10,
+           "episodes": 11,
+           "max_COM_m": 0.0019451033358759875,
+           "paired_obs_diff": 0.0,
+           "auxiliary_4s_solves_withoutaction": 0
+          },
+          "retarget_full": {
+           "method": "Bounded incremental IK at1912source-interpolated samples;20finger variables step<=.04rad, wrist correction increments<=2.3mm/.02rad. Five fingertips and1mm geometric clearance objective. Post-fit variable time warp bounds target velocities at80percent hardware limits.",
+           "source_reconstruction_version": 3,
+           "time_scale": "variable;18.2443s robot for9.1s held source",
+           "source_segment": [
+            68,
+            341
+           ],
+           "frames": 1912,
+           "source_samples_per_frame": 7,
+           "valid_robot_retarget_frames": 1912,
+           "fingertip_rmse_median_m": 0.003713742531989259,
+           "fingertip_rmse_p95_m": 0.021521212244966392,
+           "max_robot_[redacted]_m": 0.0011825350565363452,
+           "wrist_lag_p95_rad": 0.0,
+           "wall_s": 27.548946380615234,
+           "source_to_deployment_rotation": [
+            null,
+            null,
+            null
+           ],
+           "source_to_deployment_translation_m": [
+            -0.0815707900136161,
+            0.21744705509080095,
+            0.8108962999538949
+           ],
+           "limitations": "Held segment68-341 only, source human to robot morphology residual median3.71mm/p9521.52mm fingertip error. Kinematic interpolation audited at<=1ms spacing; no dynamic feasibility or solve claim. Wrist corrections up to60mm/0.35rad peraxis. Source internal layer states unresolved; replay cube assembled, so this retarget does not demonstrate a solved layer sequence. Pickup/release support excluded for in-palm deployment.",
+           "continuous_interpolation_audit": {
+            "source_segment": null,
+            "source_duration_s": 9.100000000000001,
+            "minimum_robot_duration_s": 18.24426450063445,
+            "max_uniform_time_scale_for_limits": 3.259604952155961,
+            "variable_dt_min_max_s": null,
+            "maximum_audit_spacing_s": 0.001,
+            "dense_samples": 19154,
+            "dense_max_penetration_m": 0.001881787735987124,
+            "dense_frames_over_2mm": 0,
+            "note": "Time warp follows80% finger/wrist target speed bounds. Kinematic interpolation audit, not dynamic execution validation."
+           },
+           "continuous_replay_passed": true
+          }
+         },
+         "limitations": [
+          "No exact model of hidden plastic rail geometry or fracture; conservative load proxies cannot guarantee real damage avoidance.",
+          "Color-state interface lacks per-corner or face/color observations. U/U-inverse mechanically identical pairs have identical allowed observations; arbitrary scramble solving cannot be guaranteed in this admitted symmetric setting.",
+          "Full1200case criteria suite not yet run;32case baseline is diagnostic only.",
+          "Geometry coverage is a1mm discrete grid, not all continuous values. Ideal layer resistance range is parameter-derived; plastic rail friction/breakage remain approximations.",
+          "Repaired retarget passes sampled kinematic geometry only; exact source face-turn sequence is unobserved and dynamic replay is not established."
+         ],
+         "changes_from_sim1": [
+          "Nine geometry variants scale cube mesh, cap/tile/inertial positions, inertia and radial travel; hand geometry/controller unchanged. Environments0/1use51mm for paired tests; other indices cycle47..55mm. Variant fixed per env, hidden from actor.",
+          "COM sampled uniformly inside2mm sphere; random mass weighting yields actual totalCOMnorm<=2mm, confirmed by compiled models.",
+          "Bearing friction0.0002..0.0045Nm/axis, detentK0.0004..0.004Nm/rad; approximate ideal layer barrier4*(friction+K*pi/4)=0.00206..0.03057Nm before contact friction.",
+          "Criterion load proxy includes postconstraint joint reaction forces/torques in addition to cap contacts. Solved checks3deg corner orientation and2mm corner-center errors with global equivalence determined by anchored corner.",
+          "Added count of complete legal90/180deg layer transitions and an auxiliary fixed top-layer60/75/90deg start. These auxiliary starts are training curriculum only, never deployment evaluation."
+         ],
+         "domain_randomization": {
+          "edge": "Fixed per-env discrete47-55mm, first paired envs51mm",
+          "mass": "Uniform45-70g (40-80g stress)",
+          "COM": "Uniform2mm sphere using independent per-corner mass distribution",
+          "inertia": "Uniform0.6-1.4times mass/size-scaled geometric inertia",
+          "sliding_friction": "Uniform0.35-1.2 shared hand/cube to handle MuJoCo maxmix",
+          "bearing_friction_nm": "Uniform0.0002-0.0045",
+          "bearing_damping": "Uniform0.00001-0.00008Nms/rad",
+          "passive_detent_k": "Uniform0.0004-0.004Nm/rad",
+          "placement": "10mm disk+0-15mmheight,20mm/20mmstress",
+          "orientation": "24face orientations+arbitraryyaw, thenuniformSO3"
+         },
+         "changes_from_sim2": [
+          "Incremental IK constrains each1912sample update to<=.04rad perjoint and2.3mm/.02rad wrist corrections, preventing joint-branch jumps.",
+          "Variable offline time warp gives18.2443s robot duration for9.1s source held segment; each target velocity<=80percent rated finger/wrist limits.",
+          "19154interpolated poses sampled at<=1ms spacing: maximum hand/object/self penetration1.8818mm, zero above2mm. Still only kinematic evidence; no dynamic execution or recovered internal layer sequence."
+         ]
+        },
+        "files": {
+         "image": {
+          "sha": "acde8e60f482",
+          "bytes": 105761,
+          "content_type": "image/png"
+         },
+         "replay_video": {
+          "sha": "8cde55374472",
+          "bytes": 1516950,
+          "content_type": "video/mp4"
+         },
+         "scene_1": {
+          "sha": "b1ccd29215cd",
+          "bytes": 100508,
+          "content_type": "application/xml"
+         },
+         "scene_2": {
+          "sha": "b25ae10d390d",
+          "bytes": 1235,
+          "content_type": "application/json"
+         },
+         "scene_3": {
+          "sha": "e9588b66d271",
+          "bytes": 100531,
+          "content_type": "application/xml"
+         },
+         "scene_4": {
+          "sha": "e0233fe5d53e",
+          "bytes": 2222,
+          "content_type": "application/json"
+         },
+         "scene_5": {
+          "sha": "50080e77cc19",
+          "bytes": 555,
+          "content_type": "application/json"
+         },
+         "scene_6": {
+          "sha": "bc2c579be1de",
+          "bytes": 529881,
+          "content_type": "application/octet-stream"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0014",
+        "seq": 14,
+        "kind": "note",
+        "version": 7,
+        "recorded_utc": "2026-11-09T03:08:44Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "The repaired kinematic retarget now has zero over2mm collisions over19154samples at<=1ms spacing (max1.8818mm); it is recorded as simulation3 without changing simulation2 dynamics. Early deployment PPO has no solves and loses retention on long horizons. I hypothesize accumulated delta-target drift, rather than insufficient finger effort, is a major avoidable failure. A separate offline5pad IK grasp was tested as a baseline:8/8nominal episodes retain for8s within controller/integrity limits,0solves, although one ring-pad target is unreachable (41mm error). Next I will compare bounded absolute residual pose targets around a time-phased open-to-grasp reference. This is permitted reference/base-controller use: the base is explicitly incapable of solving, and the closed-loop residual network will be trained with PPO; no offline search or IK runs at execution."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-09T00:58:19Z",
@@ -295677,7 +296329,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-09T03:02:32Z",
+  "staged_utc": "2026-11-09T03:12:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -295761,7 +296413,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-09T03:02:32Z",
+  "staged_utc": "2026-11-09T03:12:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
