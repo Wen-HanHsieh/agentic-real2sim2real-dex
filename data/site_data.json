@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-09T06:32:36Z",
- "exported_utc": "2026-11-09T06:32:29Z",
+ "generated_utc": "2026-11-09T06:42:36Z",
+ "exported_utc": "2026-11-09T06:42:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-09T06:30:18",
+    "time": "2026-11-09T06:42:28",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-09T06:26:16",
+    "time": "2026-11-09T06:40:37",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -154384,6 +154384,735 @@
           "sha": "dace0aeb56e7",
           "bytes": 871,
           "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0090",
+        "seq": 90,
+        "kind": "iter",
+        "version": 20,
+        "recorded_utc": "2026-11-09T06:41:35Z",
+        "exception": false,
+        "body": {
+         "sim_version": 14,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "pick": {
+           "n": 512,
+           "updates": 360,
+           "rollout": 128,
+           "stage": "prepared",
+           "randomize": true,
+           "resume": "research/train/ppo_v14_governed_tripod/checkpoint_0040.pt",
+           "name": "ppo_v16_prepared_margin",
+           "seed": 2041,
+           "device": "cuda:2",
+           "filter": 0.1,
+           "logstd": -1.5,
+           "template": "tripod",
+           "lr": 0.0001,
+           "anneal": true,
+           "env": "pick",
+           "local_frame": true,
+           "joint_scale": 0.4,
+           "pos_scale": 0.03,
+           "rot_scale": 0.3,
+           "mask_unused": true,
+           "context": true,
+           "live_reference": true,
+           "duration": 5.5,
+           "joint_margin": 0.03,
+           "axis_reward": true,
+           "episode_length": 18.0,
+           "model_path": null,
+           "reward_scale": 0.1,
+           "synergy": true,
+           "grasp_reward": 0.0,
+           "governed": true,
+           "gentle_prep": false,
+           "speed_barrier": 2.0,
+           "obs_dim": 159,
+           "action_scales": [
+            0.4,
+            0.03,
+            0.3
+           ],
+           "architecture": "MLP 256 tanh 256 tanh Gaussian actor; separate equal critic",
+           "gamma": 0.99,
+           "gae_lambda": 0.95,
+           "clip": 0.2,
+           "epochs": 4,
+           "minibatches": 8,
+           "evaluated_update": 40,
+           "transitions": 2621440,
+           "wall_s": 410.0603005886078
+          },
+          "draw": {
+           "n": 512,
+           "updates": 480,
+           "rollout": 128,
+           "stage": "drag_broad",
+           "randomize": true,
+           "resume": "research/train/ppo_v7_drag_broad/final.pt",
+           "name": "ppo_v15_gentle_draw",
+           "seed": 2040,
+           "device": "cuda:0",
+           "filter": 0.15,
+           "logstd": -1.5,
+           "template": "thumb",
+           "lr": 0.00015,
+           "anneal": true,
+           "env": "drag",
+           "local_frame": true,
+           "joint_scale": 0.18,
+           "pos_scale": 0.015,
+           "rot_scale": 0.12,
+           "mask_unused": false,
+           "context": true,
+           "live_reference": false,
+           "duration": 7.5,
+           "joint_margin": 0.03,
+           "axis_reward": false,
+           "episode_length": 30.0,
+           "model_path": null,
+           "reward_scale": 0.1,
+           "synergy": false,
+           "grasp_reward": 0.0,
+           "governed": true,
+           "gentle_prep": true,
+           "obs_dim": 159,
+           "action_scales": [
+            0.4,
+            0.03,
+            0.15
+           ],
+           "architecture": "MLP 256 tanh 256 tanh Gaussian actor; separate equal critic",
+           "gamma": 0.99,
+           "gae_lambda": 0.95,
+           "clip": 0.2,
+           "epochs": 4,
+           "minibatches": 8,
+           "evaluated_update": 80,
+           "transitions": 5242880,
+           "wall_s": 893.3258605003357
+          },
+          "change": "No PPO parameter update: runtime portability transformation only; all four checkpoint tensors and arithmetic retained."
+         },
+         "architecture": "Four deterministic PPO residual MLP actors,256-tanh-256-tanh,159 permitted-state inputs and26 outputs each,one active per step. Each was trained with PPO with a separate equal critic. Encoders/object states and own reference/selector memory only.",
+         "observation_space": "Only noisy joint encoders, wrist pose/velocity, measured object poses/velocities/kinds, own previous commands, step and reference/selector memory. Context-enabled pick sees two neighbours with presence masks; no contact, reward, torque or physical parameters.",
+         "action_space": "PPO residual joint/translation/rotation actions around object-relative demonstration reference; exact scales/filter/local frame in each configuration.50Hz networks,500Hz command interface,1kHz physical audit. The native qd_target governor uses only noisy encoders and preserves published PD gains/effort limits; no actual state clamps.",
+         "reward_terms": [
+          {
+           "skill": "pick",
+           "name": "position",
+           "formula": "2*exp(-80*||object_position-reference_position||^2), multiplied by1 in phases>=close,0.2 earlier",
+           "weight": 1
+          },
+          {
+           "skill": "pick",
+           "name": "orientation",
+           "formula": "exp(-2*blade_axis_angle_to_reference^2), phase multiplier0.2 before close,1 later",
+           "weight": 1
+          },
+          {
+           "skill": "pick",
+           "name": "lift",
+           "formula": "0.5 when object centre exceeds initial centre by20mm during lift/carry",
+           "weight": 1
+          },
+          {
+           "skill": "pick",
+           "name": "complete",
+           "formula": "3*exp(-80*goal_position_error^2)*exp(-3*blade_axis_tilt^2) at place/release/retreat, plus0.5 corresponding stability term for each prior object",
+           "weight": 1
+          },
+          {
+           "skill": "pick",
+           "name": "action",
+           "formula": "-0.005*mean(clipped_residual^2)",
+           "weight": 1
+          },
+          {
+           "skill": "pick",
+           "name": "smooth",
+           "formula": "-0.01*mean((residual-previous_residual)^2)",
+           "weight": 1
+          },
+          {
+           "skill": "pick",
+           "name": "hardware",
+           "formula": "-10 times persistent hardware failure flag, updated every1kHz tick.",
+           "weight": 1
+          },
+          {
+           "skill": "draw",
+           "name": "position",
+           "formula": "100*dot(previous_xy-current_xy,inward_direction)",
+           "weight": 1
+          },
+          {
+           "skill": "draw",
+           "name": "complete",
+           "formula": "2*exp(-80*||object_xy-goal_xy||^2) after1.3s; goal initial_xy-.30*direction",
+           "weight": 1
+          },
+          {
+           "skill": "draw",
+           "name": "action",
+           "formula": "-.005*mean(filtered_action^2)",
+           "weight": 1
+          },
+          {
+           "skill": "draw",
+           "name": "smooth",
+           "formula": "-.01*mean((filtered_action-previous)^2)",
+           "weight": 1
+          },
+          {
+           "skill": "draw",
+           "name": "hardware",
+           "formula": "-10*persistent_1kHz_hardware_failure-20*object_outside_table_or_below_table",
+           "weight": 1
+          },
+          {
+           "skill": "pick",
+           "name": "barrier",
+           "formula": "-weight*min(relu(max_1kHz_joint_speed_ratio-.5)^2,4)",
+           "weight": 2.0
+          },
+          {
+           "skill": "draw_upright",
+           "name": "position",
+           "formula": "100*dot(previous_xy-current_xy,inward_direction)",
+           "weight": 1
+          },
+          {
+           "skill": "draw_upright",
+           "name": "complete",
+           "formula": "2*exp(-80*||object_xy-goal_xy||^2) after1.3s; goal initial_xy-.30*direction",
+           "weight": 1
+          },
+          {
+           "skill": "draw_upright",
+           "name": "action",
+           "formula": "-.005*mean(filtered_action^2)",
+           "weight": 1
+          },
+          {
+           "skill": "draw_upright",
+           "name": "smooth",
+           "formula": "-.01*mean((filtered_action-previous)^2)",
+           "weight": 1
+          },
+          {
+           "skill": "draw_upright",
+           "name": "hardware",
+           "formula": "-10*persistent_1kHz_hardware_failure-20*object_outside_table_or_below_table",
+           "weight": 1
+          },
+          {
+           "skill": "draw_edge",
+           "name": "position",
+           "formula": "100*dot(previous_xy-current_xy,inward_direction)",
+           "weight": 1
+          },
+          {
+           "skill": "draw_edge",
+           "name": "complete",
+           "formula": "2*exp(-80*||object_xy-goal_xy||^2) after1.3s; goal initial_xy-.30*direction",
+           "weight": 1
+          },
+          {
+           "skill": "draw_edge",
+           "name": "action",
+           "formula": "-.005*mean(filtered_action^2)",
+           "weight": 1
+          },
+          {
+           "skill": "draw_edge",
+           "name": "smooth",
+           "formula": "-.01*mean((filtered_action-previous)^2)",
+           "weight": 1
+          },
+          {
+           "skill": "draw_edge",
+           "name": "hardware",
+           "formula": "-10*persistent_1kHz_hardware_failure-20*object_outside_table_or_below_table",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "kind",
+           "distribution": "independent equal white/black per plug"
+          },
+          {
+           "quantity": "housing dimensions",
+           "distribution": "independent uniform axis scale",
+           "range": [
+            0.85,
+            1.15
+           ]
+          },
+          {
+           "quantity": "blades",
+           "distribution": "uniform scale",
+           "range": [
+            0.9,
+            1.1
+           ]
+          },
+          {
+           "quantity": "mass",
+           "distribution": "uniform family-prior scale",
+           "range": [
+            0.6,
+            1.4
+           ]
+          },
+          {
+           "quantity": "COM",
+           "distribution": "independent uniform per axis,m",
+           "range": [
+            -0.004,
+            0.004
+           ]
+          },
+          {
+           "quantity": "inertia",
+           "distribution": "uniform scale",
+           "range": [
+            0.7,
+            1.3
+           ]
+          },
+          {
+           "quantity": "object/table sliding friction",
+           "distribution": "uniform",
+           "range": [
+            0.25,
+            1
+           ]
+          },
+          {
+           "quantity": "rubber sliding friction",
+           "distribution": "uniform",
+           "range": [
+            0.6,
+            1.4
+           ]
+          },
+          {
+           "quantity": "contact time",
+           "distribution": "uniform,s",
+           "range": [
+            0.003,
+            0.012
+           ]
+          },
+          {
+           "quantity": "object pose",
+           "distribution": "uniform yaw/equal side faces; xy reachable training region",
+           "range": {
+            "x": null,
+            "y": null
+           }
+          }
+         ],
+         "curriculum": "Prepared pickup and four-edge side,all-attitude and edge-focused auxiliary PPO curricula. All physical DR as recorded. See component configurations and source simulation versions; deployment always original30s full-table/contact starts.",
+         "compute": {
+          "gpu_hours": 0.7803861619366541,
+          "hardware": "Two L40S training runs, native MuJoCo CPU evaluation; training time includes inherited checkpoints only through selected updates, earlier warm-start compute in earlier records.",
+          "new_training_gpu_hours": 0
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "ablations": [
+           {
+            "name": "static_inline_eval128",
+            "package": "research/delivery/mixture_moreprep_static_inline",
+            "episodes": 128,
+            "successes": 128,
+            "passed": true,
+            "groups": null,
+            "implementation_errors": 0,
+            "hardware_violations": 0,
+            "final_criteria": null,
+            "all_lifted": 128,
+            "max_speed_ratio": 0.971990751879385,
+            "max_position_excess_rad": 0.0,
+            "max_penetration_m": 0.0027475718236730524
+           },
+           {
+            "name": "static_high_neutral_eval128",
+            "package": "research/delivery/mixture_moreprep_static_inline",
+            "episodes": 128,
+            "successes": 126,
+            "passed": false,
+            "groups": null,
+            "implementation_errors": 0,
+            "hardware_violations": 0,
+            "final_criteria": null,
+            "all_lifted": 126,
+            "max_speed_ratio": 0.7585120299887952,
+            "max_position_excess_rad": 0.0,
+            "max_penetration_m": 0.0025564700031603356
+           }
+          ],
+          "required": "128/128 fixed complete30s episodes; diagnostic subsets cannot pass",
+          "passed": true,
+          "base_alone": {
+           "name": "zero_mixture_moreprep_governor_eval32",
+           "package": "research/policies/zero_mixture_moreprep_governor",
+           "episodes": 32,
+           "successes": 5,
+           "passed": false,
+           "groups": {
+            "nominal": null,
+            "physics": null,
+            "touch": null,
+            "edge": null
+           },
+           "implementation_errors": 0,
+           "hardware_violations": 3,
+           "final_criteria": {
+            "left": 6,
+            "upright": 5,
+            "base": 29,
+            "table": 29,
+            "hand_free": 32,
+            "linear_still": 32,
+            "angular_still": 32
+           },
+           "all_lifted": 7,
+           "max_speed_ratio": 3.2880758593685364,
+           "max_position_excess_rad": 0.06963133139374512,
+           "max_penetration_m": 0.006359363594366035,
+           "method": "Exact frozen policy/reference/selector/governor source with all four actor weights/biases zeroed. Runtime constants and all branch rules retained."
+          }
+         },
+         "reflection": "Static single-entry packaging with embedded JSON constants and no dynamic local imports passes128/128 using the original start pose. All15000 action dictionaries in each of128 episodes are dtype/shape/byte-identical to the previously verified four-expert package, confirming no intended control change. The same package with higher-neutral start pose passes126/128 and is not verified for delivery with that pose. Local Python3.12 contract validation passes,mean.365ms. Retry original verified start after opaque s01 preflight refusal; no target trial or official result yet.",
+         "package_sha256": "5ebdb863e7b6…",
+         "auxiliary_policy_stages": {
+          "draw_upright": {
+           "checkpoint_sha256": "70d9c4650f53…",
+           "steps": 3932160,
+           "update": 60,
+           "config": {
+            "n": 512,
+            "updates": 480,
+            "rollout": 128,
+            "stage": "drag_broad_curriculum",
+            "randomize": true,
+            "resume": "research/train/ppo_v15_gentle_draw/checkpoint_0060.pt",
+            "name": "ppo_v17_gentle_attitudes",
+            "seed": 2042,
+            "device": "cuda:1",
+            "filter": 0.15,
+            "logstd": -1.5,
+            "template": "thumb",
+            "lr": 0.0001,
+            "anneal": true,
+            "env": "drag",
+            "local_frame": true,
+            "joint_scale": 0.18,
+            "pos_scale": 0.015,
+            "rot_scale": 0.12,
+            "mask_unused": false,
+            "context": true,
+            "live_reference": false,
+            "duration": 7.5,
+            "joint_margin": 0.03,
+            "axis_reward": false,
+            "episode_length": 30.0,
+            "model_path": null,
+            "reward_scale": 0.1,
+            "synergy": false,
+            "grasp_reward": 0.0,
+            "governed": true,
+            "gentle_prep": true,
+            "speed_barrier": 2.0,
+            "obs_dim": 159,
+            "action_scales": null,
+            "architecture": "MLP 256 tanh 256 tanh Gaussian actor; separate equal critic",
+            "gamma": 0.99,
+            "gae_lambda": 0.95,
+            "clip": 0.2,
+            "epochs": 4,
+            "minibatches": 8
+           },
+           "runtime_overrides": {
+            "joint_margin": null,
+            "safe_transit": false,
+            "finger_clearance": false,
+            "gentle_prep": false,
+            "blade_clearance": true
+           }
+          },
+          "draw_edge": {
+           "checkpoint_sha256": "fd8a5beb6f98…",
+           "steps": 5242880,
+           "update": 80,
+           "config": {
+            "n": 512,
+            "updates": 480,
+            "rollout": 128,
+            "stage": "drag_broad_edgefocus",
+            "randomize": true,
+            "resume": "research/train/ppo_v15_gentle_draw/checkpoint_0100.pt",
+            "name": "ppo_v18_edge_focus",
+            "seed": 2043,
+            "device": "cuda:3",
+            "filter": 0.15,
+            "logstd": -1.5,
+            "template": "thumb",
+            "lr": 0.0001,
+            "anneal": true,
+            "env": "drag",
+            "local_frame": true,
+            "joint_scale": 0.18,
+            "pos_scale": 0.015,
+            "rot_scale": 0.12,
+            "mask_unused": false,
+            "context": true,
+            "live_reference": false,
+            "duration": 7.5,
+            "joint_margin": 0.03,
+            "axis_reward": false,
+            "episode_length": 30.0,
+            "model_path": null,
+            "reward_scale": 0.1,
+            "synergy": false,
+            "grasp_reward": 0.0,
+            "governed": true,
+            "gentle_prep": true,
+            "speed_barrier": 2.0,
+            "drag_scales": null,
+            "obs_dim": 159,
+            "action_scales": null,
+            "architecture": "MLP 256 tanh 256 tanh Gaussian actor; separate equal critic",
+            "gamma": 0.99,
+            "gae_lambda": 0.95,
+            "clip": 0.2,
+            "epochs": 4,
+            "minibatches": 8
+           },
+           "runtime_overrides": {
+            "joint_margin": null,
+            "safe_transit": false,
+            "finger_clearance": false,
+            "gentle_prep": false,
+            "blade_clearance": false
+           }
+          }
+         },
+         "training_simulation_versions": {
+          "pick": 11,
+          "draw": 10,
+          "draw_upright": 12,
+          "draw_edge": 14
+         },
+         "native_evaluation_sim_version": 22,
+         "runtime_composition": {
+          "pick_duration": 5.5,
+          "draw_duration": 2.5,
+          "max_preparations": 3,
+          "adaptive_timing": true,
+          "commit_preparation": true,
+          "touch_prepare": true,
+          "touch_away": false
+         },
+         "policy_selection": "Only measured poses, known wrist-target box and clock. abs(blade_axis_z)>.5 chooses end-attitude expert; otherwise centre distance beyond wrist-target XY box>.22m chooses edge expert; otherwise generic inward draw. Highest unattempted object, optional preparation commitment, finite timing/attempt rules. No future simulation, sampling or trajectory optimization.",
+         "runtime_reference_overrides": {
+          "pick": {
+           "joint_margin": null,
+           "safe_transit": false,
+           "finger_clearance": false,
+           "gentle_prep": false
+          },
+          "draw": {
+           "joint_margin": null,
+           "safe_transit": false,
+           "finger_clearance": false,
+           "gentle_prep": false
+          },
+          "draw_upright": {
+           "joint_margin": null,
+           "safe_transit": false,
+           "finger_clearance": false,
+           "gentle_prep": false,
+           "blade_clearance": true
+          },
+          "draw_edge": {
+           "joint_margin": null,
+           "safe_transit": false,
+           "finger_clearance": false,
+           "gentle_prep": false,
+           "blade_clearance": false
+          }
+         },
+         "runtime_portability": {
+          "source_manifest_sha256": "a267f863ffe3…",
+          "inline_configuration": true,
+          "method": "Static AST-renamed leaf definitions and namespaces, identical NumPy math/weights/constants. Dynamic importlib file loading removed; bytecode writes disabled. Optional configuration embedded as exact Python literals; no __file__ dependency. No policy action intentionally changed."
+         },
+         "equivalence": {
+          "episodes": 128,
+          "steps_per_episode": 15000,
+          "total_action_dictionaries": 1920000,
+          "dtype_shape_bytes_identical": true
+         },
+         "candidate_start": "research/train/start_pose.json",
+         "failed_backup_start": "research/train/start_pose_high_neutral.json:126/128; failed45101,45105"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "5889ecb1aa4b",
+          "bytes": 87476,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "4103425df9b2",
+          "bytes": 326738,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "2e0ad4b370ce",
+          "bytes": 357848,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "b200e3fef521",
+          "bytes": 325103,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0091",
+        "seq": 91,
+        "kind": "verify",
+        "version": 15,
+        "recorded_utc": "2026-11-09T06:42:13Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0090",
+         "criteria_version": 1,
+         "passed": true,
+         "package_sha256": "5ebdb863e7b6…",
+         "simulation_version": 22,
+         "training_component_versions": {
+          "pick": 11,
+          "draw": 10,
+          "draw_upright": 12,
+          "draw_edge": 14
+         },
+         "checkpoint": "Same four PPO checkpoint tensors as r0087; static single-entry implementation and embedded configuration, original start pose.",
+         "episodes": 128,
+         "seeds": [
+          45000,
+          45127
+         ],
+         "groups": {
+          "nominal": {
+           "n": 32,
+           "successes": 32
+          },
+          "physics": {
+           "n": 32,
+           "successes": 32
+          },
+          "touch": {
+           "n": 32,
+           "successes": 32
+          },
+          "edge": {
+           "n": 32,
+           "successes": 32
+          }
+         },
+         "successful_episodes": 128,
+         "per_criterion": {
+          "episodes": 128,
+          "objects": 320,
+          "all_pickups": 320,
+          "final_criteria": {
+           "left": 128,
+           "upright": 128,
+           "base": 128,
+           "table": 128,
+           "hand_free": 128,
+           "linear_still": 128,
+           "angular_still": 128
+          },
+          "maximum_simultaneous_airborne": 1,
+          "falls": 0,
+          "hardware_violations": 0,
+          "max_speed_ratio": 0.971990751879385,
+          "max_torque_ratio": 1.0,
+          "max_position_excess_rad": 0.0,
+          "max_penetration_m": 0.0027475718236730524,
+          "max_final_tilt_deg": 0.01941299811690714,
+          "max_final_linear_speed": 9.483717181796542e-09,
+          "max_final_angular_speed": 1.3446177890116722e-06,
+          "independent_stability_tests": 320,
+          "independent_stability_passes": 320,
+          "generator_valid": 128,
+          "start_pose_sha256": "82abe6f7ddd2…"
+         },
+         "evidence": "128/128 complete30s episodes pass all criteria. All1,920,000 action dictionaries are dtype/shape/byte-identical to the previously verified package on the same observed histories.320/320 sequential pickups and independent stability tests,0hardware violations,0falls. Higher-neutral backup fails126/128 and is not covered by this PASS.",
+         "base_alone": {
+          "episodes": 32,
+          "successes": 5,
+          "learned_same_episodes_successes": 32,
+          "method": "Exact frozen code/constants, all four actor tensors zeroed."
+         },
+         "deployment_contract": {
+          "valid": true,
+          "python": "3.12.3",
+          "steps": 1000,
+          "deterministic": true,
+          "mean_act_ms": 0.365,
+          "max_act_ms": 10.038,
+          "cpu_s": 0.6,
+          "soft_2ms_target_met": true
+         },
+         "start_pose_sha256": "82abe6f7ddd2…",
+         "limitations": "Own finite simulation with uncertain family geometry,rigid blades and approximate contacts; no official evaluation claim. Original submission was refused preflight with a generic message and no trials. This package changes runtime structure, not learned actions. No target trial evidence yet.",
+         "runtime_equivalence": {
+          "episodes": 128,
+          "steps": 1920000,
+          "bit_identical": true
+         }
+        },
+        "files": {
+         "file_1": {
+          "sha": "4c70e1d0bb0e",
+          "bytes": 1666409,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "ae113626fde9",
+          "bytes": 1185,
+          "content_type": "text/plain"
+         },
+         "video_left_success": {
+          "sha": "4103425df9b2",
+          "bytes": 326738,
+          "content_type": "video/mp4"
+         },
+         "video_right_success": {
+          "sha": "2e0ad4b370ce",
+          "bytes": 357848,
+          "content_type": "video/mp4"
+         },
+         "video_top_success": {
+          "sha": "b200e3fef521",
+          "bytes": 325103,
+          "content_type": "video/mp4"
          }
         },
         "out_of_order": false
@@ -324794,6 +325523,3531 @@
          "text": "Coordinated-action PPO16 training has begun occasional sustained48degree auxiliary completions (about2of128recentepisodes), while the matched1024world zero-action48degree baseline has0solves and all1024retentions. This is training evidence of a small active correction, not a verified quarter-turn or task solve. Preserve its current PPO checkpoint only as a warmstart, and test lower-noise fine-tuning with a tenfold lower actor learning rate to avoid the large initial KL seen in PPO17. Stop/evaluate PPO17: reducednoise passed passive46degrees but stalled at48degrees with1.0retention and zero recent goal completion. PPO18 keeps the fixed rank10 action basis and public observations; all task criteria remain unchanged."
         },
         "files": {}
+       },
+       {
+        "id": "r0056",
+        "seq": 56,
+        "kind": "sim",
+        "version": 10,
+        "recorded_utc": "2026-11-09T06:37:34Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 3,
+         "description": "Simulation10: same model9 cube/hand geometry,mechanics,receivingpose,randomization; expand policy wrist-command steps while preserving all hardware controller execution limits.",
+         "simulator": {
+          "training": "MuJoCoWarp3.17.0,Warp1.19.0; research/gpu/warp_env10.py with explicit500Hz translational executed-target limiter plus prior rotational limiter.",
+          "verification": "CPU MuJoCo3.17.0,float64; model10native_fast.cpp/libcube_fast.so selected bycontroller_library.txt.",
+          "time_step_s": 0.001,
+          "policy_hz": 50,
+          "PD_hz": 1000,
+          "target_repeat_hz": 500,
+          "buffer_capacity": "nconmax128/world,njmax512/world;overflow isepisodefailure"
+         },
+         "scene": {
+          "frame": "world zup, floor z0; wrist home z0.45m; no table/support during task",
+          "robot": "hardware/wuji_hand2_left URDF hierarchy/inertials/joints and supplied STL meshes, hwspec-1.3L",
+          "sha256": {
+           "research/sim_v10/scene.xml": "c5fdb09e62f3…",
+           "research/sim_v10/native_fast.cpp": "0f3b96774f6e…",
+           "research/sim_v10/libcube_fast.so": "fb93e05cd434…",
+           "research/sim_v10/controller_library.txt": "e56fd03c44f1…",
+           "research/sim_v10/starting_pose.json": "aa6b5a6700e8…",
+           "research/sim_v10/grasp_pose.json": "75d885adabb4…",
+           "research/sim_v10/command_bounds.json": "b222bdae60f6…",
+           "research/gpu/warp_env10.py": "bc4f70885cb0…",
+           "research/gpu/controller_smooth.py": "bee633cc8128…"
+          },
+          "hardware_meshes_sha256": {
+           "hardware/wuji_hand2_left/meshes/left/l_mount.STL": "db56d3547765…",
+           "hardware/wuji_hand2_left/meshes/left/l_wrist.STL": "cc3944120241…",
+           "hardware/wuji_hand2_left/meshes/left/l_thumb_proximal.STL": "5144d8ab958d…",
+           "hardware/wuji_hand2_left/meshes/left/l_thumb_proximal_abd.STL": "539f4df71007…",
+           "hardware/wuji_hand2_left/meshes/left/l_thumb_middle.STL": "3a84286a4de1…",
+           "hardware/wuji_hand2_left/meshes/left/l_thumb_distal.STL": "0d89c323bf16…",
+           "hardware/wuji_hand2_left/meshes/left/l_thumb_tip_sensor_frame.S…": "e0b34bb387e3…",
+           "hardware/wuji_hand2_left/meshes/left/l_thumb_middle_cover.STL": "c67031f2fd27…",
+           "hardware/wuji_hand2_left/meshes/left/l_thumb_palm_cover.STL": "7efd3711729a…",
+           "hardware/wuji_hand2_left/meshes/left/l_index_finger_proximal.STL": "89e49d06793e…",
+           "hardware/wuji_hand2_left/meshes/left/l_index_finger_proximal_ab…": "b83070b58db6…",
+           "hardware/wuji_hand2_left/meshes/left/l_index_finger_middle.STL": "5af2f99b93fb…",
+           "hardware/wuji_hand2_left/meshes/left/l_index_finger_distal.STL": "47630a76817e…",
+           "hardware/wuji_hand2_left/meshes/left/l_index_finger_tip_sensor_…": "4961c77d8508…",
+           "hardware/wuji_hand2_left/meshes/left/l_index_finger_middle_cove…": "94a4c8c39d43…",
+           "hardware/wuji_hand2_left/meshes/left/l_index_palm_cover.STL": "6498fc4cacf0…",
+           "hardware/wuji_hand2_left/meshes/left/l_middle_finger_proximal.S…": "8eea0513ad13…",
+           "hardware/wuji_hand2_left/meshes/left/l_middle_finger_proximal_a…": "7bf9d6eb4d72…",
+           "hardware/wuji_hand2_left/meshes/left/l_middle_finger_middle.STL": "b3bb4726751b…",
+           "hardware/wuji_hand2_left/meshes/left/l_middle_finger_distal.STL": "47630a76817e…",
+           "hardware/wuji_hand2_left/meshes/left/l_middle_finger_tip_sensor…": "4961c77d8508…",
+           "hardware/wuji_hand2_left/meshes/left/l_middle_finger_middle_cov…": "7ae178288647…",
+           "hardware/wuji_hand2_left/meshes/left/l_middle_palm_cover.STL": "f82e14ca0768…",
+           "hardware/wuji_hand2_left/meshes/left/l_ring_finger_proximal.STL": "b8962bc4ac95…",
+           "hardware/wuji_hand2_left/meshes/left/l_ring_finger_proximal_abd…": "6923b109243c…",
+           "hardware/wuji_hand2_left/meshes/left/l_ring_finger_middle.STL": "65969a58aba7…",
+           "hardware/wuji_hand2_left/meshes/left/l_ring_finger_distal.STL": "b149433ff04d…",
+           "hardware/wuji_hand2_left/meshes/left/l_ring_finger_tip_sensor_f…": "cf69841d299d…",
+           "hardware/wuji_hand2_left/meshes/left/l_ring_finger_middle_cover…": "df7b94f3285c…",
+           "hardware/wuji_hand2_left/meshes/left/l_ring_palm_cover.STL": "82e3ccbab119…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_proximal.STL": "41939a3da708…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_proximal_abd.STL": "25fc27d8ec8d…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_middle.STL": "63061786518f…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_distal.STL": "19f4f22a89dc…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_tip_sensor_frame.S…": "b85eff25ea1c…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_middle_cover.STL": "df86b4f6891a…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_proximal_abd_cover…": "af3b48932741…",
+           "hardware/wuji_hand2_left/meshes/left/l_pinky_proximal_cover.STL": "aaf4db34c3d3…",
+           "hardware/wuji_hand2_left/meshes/left/l_adductor_pollicis_cover.…": "d8704561e24d…",
+           "hardware/wuji_hand2_left/meshes/left/l_thenar_cover.STL": "42e00b3e61ce…",
+           "hardware/wuji_hand2_left/meshes/left/l_midpalm_cover.STL": "cfd75ffa0579…",
+           "hardware/wuji_hand2_left/meshes/left/l_hypothenar_cover.STL": "a7e852f4cbcc…",
+           "hardware/wuji_hand2_left/meshes/left/l_palm_index_cover.STL": "934d8ea05844…",
+           "hardware/wuji_hand2_left/meshes/left/l_palm_middle_cover.STL": "561886c199a7…",
+           "hardware/wuji_hand2_left/meshes/left/l_palm_ring_cover.STL": "42afb027ff29…"
+          },
+          "self_collision_exclusions": "Same-digit housing chain and palm/proximal depth<=2 excluded to avoid convex CAD housing overlap; cross-digit and distal/palm collisions retained. This approximates detailed housing collision.",
+          "geometry_variants": [
+           {
+            "file": "scene_47.xml",
+            "edge_mm": 47,
+            "sha256": "b8e41e3ecde8…"
+           },
+           {
+            "file": "scene_48.xml",
+            "edge_mm": 48,
+            "sha256": "5033867b4c0b…"
+           },
+           {
+            "file": "scene_49.xml",
+            "edge_mm": 49,
+            "sha256": "a31e75d6f42a…"
+           },
+           {
+            "file": "scene_50.xml",
+            "edge_mm": 50,
+            "sha256": "e0628be93931…"
+           },
+           {
+            "file": "scene_51.xml",
+            "edge_mm": 51,
+            "sha256": "c5fdb09e62f3…"
+           },
+           {
+            "file": "scene_52.xml",
+            "edge_mm": 52,
+            "sha256": "d67129fe3b2d…"
+           },
+           {
+            "file": "scene_53.xml",
+            "edge_mm": 53,
+            "sha256": "7935dbf0b212…"
+           },
+           {
+            "file": "scene_54.xml",
+            "edge_mm": 54,
+            "sha256": "4cfe8eba8481…"
+           },
+           {
+            "file": "scene_55.xml",
+            "edge_mm": 55,
+            "sha256": "71da53ed7aae…"
+           }
+          ],
+          "retarget_sha256": {
+           "replay_scene.xml": "e9588b66d271…",
+           "retargeted_reference.npz": "bc2c579be1de…",
+           "retarget_timing.npz": "c253f075309b…",
+           "replay_compare.mp4": "8cde55374472…"
+          },
+          "self_collision_changes": {
+           "enabled_proximal_distal_pairs": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+           ]
+          }
+         },
+         "objects": {
+          "cube": {
+           "cube_frame": "Core center, axes tied to the fixed corner0 geometry; in nominal solved state+Xred,-Xorange,+Yblue,-Ygreen,+Zwhite,-Zyellow. Corner0at--- is mechanically anchored.",
+           "cube_mass_kg": 0.055,
+           "cube_edge_m": "discrete0.047..0.055in1mm increments",
+           "mechanism": "7spherical-center ball bearings plus compliant radial retention; external caps/cap collisions couple legal layer motion; one fixed corner. Passive detent torque added by controller, independent of colors. No cube actuator.",
+           "geometry_source": "Blender beveled25.3mm corner caps;51mm assembled edge from reconstruction/public prior. Internal rails approximated by constraints; fracture by explicit load proxy.",
+           "public_priors": [
+            "https://patents.google.com/patent/US4378117A/en",
+            "https://www.gancube.cn/en/GAN251-M/",
+            "https://github.com/openai/robogym"
+           ]
+          },
+          "mechanism_detail": "One fixed corner and7centered spherical joints with compliant radial retention,28explicit cap collision pairs, passive detent toward nearest24lattice orientation; no object actuator. Detent, friction, retention and fracture proxy are uncertain public-informed approximations. Whole cube colors/corner orientations are evaluated from physical state. Scrambles are legal discrete label permutations attached to physical corner bodies; no runtime scripted layer transitions."
+         },
+         "reference": {
+          "record": "r0007",
+          "use": "Reconstruction3 geometry/contact phases/anatomical trajectories. Repaired kinematic replay provides morphology and collision validation. PPO uses receiving posture and contact/turn objectives, not time-indexed replay control.",
+          "retarget": "Bounded incremental IK at1912source-interpolated samples;20finger variables step<=.04rad, wrist correction increments<=2.3mm/.02rad. Five fingertips and1mm geometric clearance objective. Post-fit variable time warp bounds target velocities at80percent hardware limits.",
+          "replay_audit": {
+           "source_segment": [
+            68,
+            341
+           ],
+           "source_duration_s": 9.100000000000001,
+           "minimum_robot_duration_s": 18.24426450063445,
+           "max_uniform_time_scale_for_limits": 3.259604952155961,
+           "variable_dt_min_max_s": [
+            0.009523809523805937,
+            0.015521928343599759
+           ],
+           "maximum_audit_spacing_s": 0.001,
+           "dense_samples": 19154,
+           "dense_max_penetration_m": 0.001881787735987124,
+           "dense_frames_over_2mm": 0,
+           "note": "Time warp follows80% finger/wrist target speed bounds. Kinematic interpolation audit, not dynamic execution validation."
+          },
+          "replay_used_as_control_target": false,
+          "base_controller": "Constant upper-layer-access receiving pose; no closing/replay trajectory. Zero residual baseline tested separately.",
+          "retarget_audit": {
+           "source_segment": [
+            68,
+            341
+           ],
+           "source_duration_s": 9.100000000000001,
+           "minimum_robot_duration_s": 18.24426450063445,
+           "max_uniform_time_scale_for_limits": 3.259604952155961,
+           "variable_dt_min_max_s": [
+            0.009523809523805937,
+            0.015521928343599759
+           ],
+           "maximum_audit_spacing_s": 0.001,
+           "dense_samples": 19154,
+           "dense_max_penetration_m": 0.001881787735987124,
+           "dense_frames_over_2mm": 0,
+           "note": "Time warp follows80% finger/wrist target speed bounds. Kinematic interpolation audit, not dynamic execution validation."
+          }
+         },
+         "controllers": {
+          "finger": "Builtin per-joint position PD at1kHz with exact kp,kv,effort and position limits from hardware_spec_left.json; actuator armature .0002 or .0005kgm2 as metadata. No velocity clipping: each1ms sample exceeding rated speed invalidates episode. Encoder noise sigma q.002rad,qd.05rad/s.",
+          "wrist": "Wrist-1 impedance1kHz Kp2000N/m,Kd60Ns/m;20Nm/rad,.4Nms/rad; norm force30N,torque2Nm. Hand-only gravity compensation0.7088kg using current COM. Executed target speed limited2.5m/s and6rad/s at500Hz. Policy updates50Hz.",
+          "actions": "26physical residuals (optional fixedrank10networkactionbasis). Fingerreference+.7*action,commandstep<=.03rad. Wristdesiredhome+.10m*action,commandcomponentstep<=.010m per50Hzstep; exp(pi*rotvecaction)*homeR,commandangularstepnorm<=.08rad. Executed wristtargets remain norm-limited2.5m/s and6rad/s at500Hz; exact Wrist1 impedance/caps unchanged at1kHz.",
+          "observations": "94deployable values: noisy finger q20,qd20; wrist pose7,velocity6; previous finger targets20,wrist targets7; one cube root relative pose7,worldvelocity6;time/60. No contacts,colors,forces,face angles,rewards,physics parameters or seeds."
+         },
+         "initial_conditions": {
+          "hand": {
+           "wrist_position_m": [
+            0,
+            0,
+            0.45
+           ],
+           "wrist_quat_wxyz": [
+            0.7071067811865476,
+            -0.7071067811865476,
+            0,
+            0
+           ],
+           "finger_q": [
+            0.43135024660768856,
+            -0.14055187826250623,
+            0.8712094709726452,
+            0.20548144726701098,
+            1.0410740962365277,
+            0.06538684337005053,
+            0.6429507749776642,
+            0.40118127154373867,
+            1.1203824726025766,
+            0.23309000737109395,
+            0.5650080207008805,
+            0.2713245337766357,
+            0.3317997370675871,
+            0.29711775795221546,
+            1.1207609779818204,
+            0.7694213978470136,
+            0.5479944301511768,
+            0.4334337484541834,
+            0.9749836784860019,
+            1.0757372568597487
+           ],
+           "cube_position_m": [
+            0,
+            -0.095,
+            0.515
+           ],
+           "palm_center_local_m": [
+            0.003,
+            -0.018,
+            -0.0835
+           ],
+           "reason": "Open cupped placement pose, chosen offline from hardware geometry; no solve actions.",
+           "source": "Offline static receiving-posture CEM;384postures x9two-secondcases. Not a learned policy or solvecontroller.",
+           "method": "Offline kinematic reachability construction: index/middle pads approach upper layer, others retain receiving pose. No optimized actions or online IK."
+          },
+          "object": "Centered above palm; binary search vertical support clearance against actual hand geometry, then add0-15mm height and10mm disk position,20mm stress. Random legal1-5quarter turns, initially unsolved; level0nominal,level1face-up randomyaw,level2uniformSO3,level3stress. Physical and scramble/noise seeds independent. Optional training-only override1060/1075/1090 places4uppercorner balls physically at60/75/90deg with solved sticker labels; no object driving during rollout. Optional smallnegative partial starts useoverride2000+angle. These are never deploymentverification cases.",
+          "why": "Receiving posture with fingers approaching two upper side locations to address layer-access bottleneck. Baseline cannot solve aligned scrambled cube.",
+          "GPU": "Nominal CPU-generated reset banks atangles4,8,15,25,40,43,46,48,50,52,55,60,65,70,75,80,85,90degrees; encoder noise only. No color/anglebankindex enters actor."
+         },
+         "episode": {
+          "horizon_s": 60,
+          "policy_hz": 50,
+          "target_hz": 500,
+          "physics_and_PD_hz": 1000,
+          "curriculum_horizons_s": [
+           8,
+           20,
+           60
+          ],
+          "termination": "Failure for loss of hand contact>10ms after.25ssettle,root>120mmfrompalm,floorcontact; hardware speed/position/effort violation;>2mmhandcube/internalpenetration or radialerror,>20Ncorner load,>.25Nmcorner torque,illegal aligned corner twist,nonfinite state/action. End at fixed horizon, never early hidden-color success. Solved needs6uniformfaces,3deg alignment, legal corners; final2s retained."
+         },
+         "validation": {
+          "inertia_audit": [
+           {
+            "env": 0,
+            "edge_m": 0.051,
+            "mass_kg": 0.055,
+            "COM_offset_m": 8.673617379884035e-19,
+            "Icom_eigen_ratio": null
+           },
+           {
+            "env": 1,
+            "edge_m": 0.051,
+            "mass_kg": 0.055,
+            "COM_offset_m": 8.673617379884035e-19,
+            "Icom_eigen_ratio": null
+           },
+           {
+            "env": 2,
+            "edge_m": 0.047,
+            "mass_kg": 0.07480254677644341,
+            "COM_offset_m": 0.0013032807857888827,
+            "Icom_eigen_ratio": null
+           },
+           {
+            "env": 3,
+            "edge_m": 0.048,
+            "mass_kg": 0.06770944846552186,
+            "COM_offset_m": 0.0015009037629931485,
+            "Icom_eigen_ratio": null
+           },
+           {
+            "env": 4,
+            "edge_m": 0.049,
+            "mass_kg": 0.054151646650676344,
+            "COM_offset_m": 0.00102855166338352,
+            "Icom_eigen_ratio": null
+           },
+           {
+            "env": 5,
+            "edge_m": 0.05,
+            "mass_kg": 0.058361292207039124,
+            "COM_offset_m": 0.0018838587148630433,
+            "Icom_eigen_ratio": null
+           },
+           {
+            "env": 6,
+            "edge_m": 0.051,
+            "mass_kg": 0.06306486114265919,
+            "COM_offset_m": 0.0015028962967478935,
+            "Icom_eigen_ratio": null
+           },
+           {
+            "env": 7,
+            "edge_m": 0.052,
+            "mass_kg": 0.053880139443935965,
+            "COM_offset_m": 0.0019548692252949335,
+            "Icom_eigen_ratio": null
+           },
+           {
+            "env": 8,
+            "edge_m": 0.053,
+            "mass_kg": 0.050255669324932764,
+            "COM_offset_m": 0.0015188519383418971,
+            "Icom_eigen_ratio": null
+           },
+           {
+            "env": 9,
+            "edge_m": 0.054,
+            "mass_kg": 0.042853298541812426,
+            "COM_offset_m": 0.0007387700903089103,
+            "Icom_eigen_ratio": null
+           },
+           {
+            "env": 10,
+            "edge_m": 0.055,
+            "mass_kg": 0.06404971247128592,
+            "COM_offset_m": 0.0017448127335639094,
+            "Icom_eigen_ratio": null
+           }
+          ],
+          "reference_continuous": {
+           "source_segment": [
+            68,
+            341
+           ],
+           "source_duration_s": 9.100000000000001,
+           "minimum_robot_duration_s": 18.24426450063445,
+           "max_uniform_time_scale_for_limits": 3.259604952155961,
+           "variable_dt_min_max_s": [
+            0.009523809523805937,
+            0.015521928343599759
+           ],
+           "maximum_audit_spacing_s": 0.001,
+           "dense_samples": 19154,
+           "dense_max_penetration_m": 0.001881787735987124,
+           "dense_frames_over_2mm": 0,
+           "note": "Time warp follows80% finger/wrist target speed bounds. Kinematic interpolation audit, not dynamic execution validation."
+          },
+          "start_reachability": {
+           "analysis_only": true,
+           "cost": 0.2323854713114141,
+           "finger_q": [
+            0.43135024660768856,
+            -0.14055187826250623,
+            0.8712094709726452,
+            0.20548144726701098,
+            1.0410740962365277,
+            0.06538684337005053,
+            0.6429507749776642,
+            0.40118127154373867,
+            1.1203824726025766,
+            0.23309000737109395,
+            0.5650080207008805,
+            0.2713245337766357,
+            0.3317997370675871,
+            0.29711775795221546,
+            1.1207609779818204,
+            0.7694213978470136,
+            0.5479944301511768,
+            0.4334337484541834,
+            0.9749836784860019,
+            1.0757372568597487
+           ],
+           "tip_errors_m": [
+            0.014048160100052961,
+            0.0034636203312575745,
+            0.006248643338905339,
+            0.0011206470328146353,
+            0.0018452660644646592
+           ],
+           "max_penetration_m": 0.00029995526460120913,
+           "targets_cube_frame_m": [
+            null,
+            null,
+            null,
+            null,
+            null
+           ],
+           "tip_centers_cube_frame_m": [
+            null,
+            null,
+            null,
+            null,
+            null
+           ],
+           "interpretation": "Reachability only; not dynamically executed and no optimized actions enter PPO."
+          },
+          "new_start_8s_baseline": {
+           "episodes": 11,
+           "nominal": 2,
+           "random_size_grid": 9,
+           "valid8sretention": 9,
+           "solves": 0,
+           "failures": "Two randomized cases violated20N load proxy at0.129s and0.001s; both nominal cases valid8s. This does not pass fullcriteria.",
+           "wall_s": 24.14043641090393,
+           "evidence": "research/sim_v8/reach_pose_baseline.json"
+          },
+          "scope": "Physics/posture audits inherited from model8; additional angle states use identical native reset logic. New training/evaluations must report their own outcomes.",
+          "CPU_model8_aux_baseline": {
+           "scope": "Nominal zero-action baseline, not learned;8s auxiliary partialstarts",
+           "wall_s": 42.584150075912476,
+           "results": [
+            null,
+            null,
+            null,
+            null
+           ]
+          },
+          "GPU_model8_aux_baseline": {
+           "scope": "Nominal zero-action passive baseline, not learned",
+           "angles_deg": [
+            15,
+            15,
+            46,
+            46
+           ],
+           "info": [
+            null,
+            null,
+            null,
+            null
+           ],
+           "wall_s": 66.73382711410522
+          },
+          "goal_roundtrip_model8": {
+           "scope": "Goal-metric unit diagnostic only; inverse transforms supplied offline, not a policy or rollout solve",
+           "results": [
+            null,
+            null
+           ]
+          },
+          "new_CPU_controller_audit": {
+           "scope": "Controller action-interface audit, not policy success",
+           "zero_action_2s_state_difference": 0.0,
+           "command_position_component_step_m": [
+            0.01,
+            0.01,
+            0.010000000000000009
+           ],
+           "command_rotation_step_rad": 0.07999999999999567,
+           "physical_flags_after_probe": [
+            null,
+            null
+           ],
+           "hardware_execution": "Native target limiting remains2.5m/s norm and6rad/s at500Hz; exact Wrist1 force/torque caps unchanged."
+          },
+          "new_GPU_controller_audit": {
+           "scope": "GPU fast-interface probe, not a learned policy",
+           "zero_action_prefix_info": [
+            null,
+            null,
+            null,
+            null
+           ],
+           "position_component_step_m": [
+            0.009999999776482582,
+            0.009999999776482582,
+            0.009999990463256836
+           ],
+           "rotation_step_rad": 0.07999408743383292,
+           "execution_limit_m_per2ms": 0.005,
+           "execution_limit_rad_per2ms": 0.012
+          },
+          "zero_baseline_scope": "CPUzero-action2sstateparity exactly0 relative model9. Matched model8/9 static32case baseline0solves/15valid60sretentions applies to this identicalzero-inputcontroller; no new PPO or fastmotion success is implied."
+         },
+         "limitations": [
+          "No exact model of hidden plastic rail geometry or fracture; conservative load proxies cannot guarantee real damage avoidance.",
+          "Color-state interface lacks per-corner or face/color observations. U/U-inverse mechanically identical pairs have identical allowed observations; arbitrary scramble solving cannot be guaranteed in this admitted symmetric setting.",
+          "Full1200case criteria suite not yet run;32case baseline is diagnostic only.",
+          "Geometry coverage is a1mm discrete grid, not all continuous values. Ideal layer resistance range is parameter-derived; plastic rail friction/breakage remain approximations.",
+          "Repaired retarget passes sampled kinematic geometry only; exact source face-turn sequence is unobserved and dynamic replay is not established.",
+          "GPU andCPU contacts differ byseveralmillimetres despitecloselymatchingwristtracking; neitherbackend isgroundtruth. IndependentCPUverification isrequired.",
+          "Same-seed GPU worlds arenotbitwiseidentical dueparallelcontact/solverordering. This islabel-independent numericalvariation,notcolorinformation; theindistinguishablelabeltest isperformed inCPUbackend.",
+          "GPUcurriculumonly models canonicalcolorlabels; broadtaskcolorstate/scrambleverification is inCPUbackend.",
+          "GPUfailedworlds mayintegrate remainingtickswithin20mscontrolblock, whilefirst-failureflagsremainfrozen; no terminalstateisusedforcontinuedactorcontrol.",
+          "Passivebaselinerestores some15/25/40degreeauxiliarystarts;suchsuccessisnotPPOmanipulationcreditandnotquarter-turn task success. Starts46/50/90needactivehandmotion.",
+          "Layer-torqueproxy is net externalhandcontactmoment aboutcoreaxis forhalfcubemembership;realclipstress/fracture remainsunmodeled.",
+          "The smoothforce lawandparameter ranges areuncertainpriors;CPU/GPUcontacttrajectoriesdiffer andphysicsrandomizationisessential.",
+          "New pose has only11eight-second zero-action baseline tests sofar;9validretentions and0solves, including2initial-load failures. No60second baseline or learned-task pass is claimed.",
+          "Expanded wrist-command steps are a policy interface choice, not stronger hardware. Rapid actions may backdrive joints or violate contact-load limits; everytick remains audited. Cube geometry nominal51mm has50.8mm externalAABB in this beveledcap approximation."
+         ],
+         "domain_randomization": {
+          "GPUtraining": "Nominal51mm55g, smoothK.016,friction.0002,damping.0003,selectedreceivingpose. Mandatoryencodernoise. Auxiliarypartialturnangles15,25,40,46,50,60,90degrees;no physicsparameterobservation.",
+          "CPUverification": "47-55mmgeometrygrid,mass45-70g/stress40-80g,COM<=2mm,totalI0.6-1.4geometricestimate,hand/cube friction.35-1.2,peaklayerresistance.002-.030 via coupledfriction/detentparameters,bothdetentlaws,damping.00005-.0004,placementandorientationrangesascriteria1."
+         },
+         "changes_from_sim7": {
+          "start_pose": "Offline collision-constrained IK positions index/middle tip centers near upper side face within existing .7rad residual range. Six restarts,300function evaluations each atmost. No optimized action is executed by PPO.",
+          "reference": "constant equal to start, no movement sequence or online IK",
+          "physics": "bit-identical native controller library and XML geometry/materials/limits to model7; only start/reference20joints change"
+         },
+         "changes_from_sim8": {
+          "GPU_reset_angles_degrees": [
+           4,
+           8,
+           15,
+           25,
+           40,
+           43,
+           46,
+           48,
+           50,
+           52,
+           55,
+           60,
+           65,
+           70,
+           75,
+           80,
+           85,
+           90
+          ],
+          "reason": "Bridge passive-to-active boundary with2-5degree steps instead of a14degree jump. The generalized reset physics and support-placement procedure are unchanged; only precomputed auxiliary states are added.",
+          "unchanged": "Actor94-vector, controller/physics/forceaudits and CPUdeployment verifier."
+         },
+         "changes_from_sim9": {
+          "reason": "Previous commandsteps allowed only.1m/s peraxis and1rad/s average, farbelow permitted wrist target speeds; test more dynamic wrist assistance and catching.",
+          "command_bounds": {
+           "finger_step_rad": 0.03,
+           "wrist_position_step_m": 0.01,
+           "wrist_rotation_step_rad": 0.08
+          },
+          "GPU": "Added explicitposition executedtarget with.005mnorm stepsat2ms. Previous models had.002mcomponent commands(<.005mnorm),so their executedtranslation alreadyreachedcommandatfirsttargettick.",
+          "unchanged": "All motor limits, PD gains, hardware target speedcaps, load/penetration/retention/solved checks, observation94-vector, object/frame and physics priors."
+         }
+        },
+        "files": {
+         "image": {
+          "sha": "e44af663d661",
+          "bytes": 125970,
+          "content_type": "image/png"
+         },
+         "replay_video": {
+          "sha": "8cde55374472",
+          "bytes": 1516950,
+          "content_type": "video/mp4"
+         },
+         "scene_1": {
+          "sha": "c5fdb09e62f3",
+          "bytes": 97188,
+          "content_type": "application/xml"
+         },
+         "scene_10": {
+          "sha": "71da53ed7aae",
+          "bytes": 100286,
+          "content_type": "application/xml"
+         },
+         "scene_11": {
+          "sha": "aa6b5a6700e8",
+          "bytes": 1165,
+          "content_type": "application/json"
+         },
+         "scene_12": {
+          "sha": "75d885adabb4",
+          "bytes": 587,
+          "content_type": "application/json"
+         },
+         "scene_13": {
+          "sha": "0f3b96774f6e",
+          "bytes": 27894,
+          "content_type": "text/plain"
+         },
+         "scene_14": {
+          "sha": "bc4f70885cb0",
+          "bytes": 19904,
+          "content_type": "text/plain"
+         },
+         "scene_15": {
+          "sha": "bee633cc8128",
+          "bytes": 2074,
+          "content_type": "text/plain"
+         },
+         "scene_16": {
+          "sha": "b222bdae60f6",
+          "bytes": 97,
+          "content_type": "application/json"
+         },
+         "scene_17": {
+          "sha": "5d97f4c4cc5c",
+          "bytes": 667,
+          "content_type": "application/json"
+         },
+         "scene_18": {
+          "sha": "9a844a805ba7",
+          "bytes": 2145,
+          "content_type": "application/json"
+         },
+         "scene_19": {
+          "sha": "70d6c377f76e",
+          "bytes": 9074,
+          "content_type": "application/json"
+         },
+         "scene_2": {
+          "sha": "b8e41e3ecde8",
+          "bytes": 100303,
+          "content_type": "application/xml"
+         },
+         "scene_3": {
+          "sha": "5033867b4c0b",
+          "bytes": 100317,
+          "content_type": "application/xml"
+         },
+         "scene_4": {
+          "sha": "a31e75d6f42a",
+          "bytes": 100325,
+          "content_type": "application/xml"
+         },
+         "scene_5": {
+          "sha": "e0628be93931",
+          "bytes": 100310,
+          "content_type": "application/xml"
+         },
+         "scene_6": {
+          "sha": "c5fdb09e62f3",
+          "bytes": 97188,
+          "content_type": "application/xml"
+         },
+         "scene_7": {
+          "sha": "d67129fe3b2d",
+          "bytes": 100262,
+          "content_type": "application/xml"
+         },
+         "scene_8": {
+          "sha": "7935dbf0b212",
+          "bytes": 98986,
+          "content_type": "application/xml"
+         },
+         "scene_9": {
+          "sha": "4cfe8eba8481",
+          "bytes": 98918,
+          "content_type": "application/xml"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0057",
+        "seq": 57,
+        "kind": "iter",
+        "version": 13,
+        "recorded_utc": "2026-11-09T06:40:03Z",
+        "exception": false,
+        "body": {
+         "sim_version": 9,
+         "reward_terms": [
+          {
+           "name": "alive",
+           "formula": "1",
+           "weight": 0.2
+          },
+          {
+           "name": "containment",
+           "formula": "exp(-(distance_cube_to_palm/.07)^2)",
+           "weight": 1.5
+          },
+          {
+           "name": "contact",
+           "formula": "indicator current contact gap is zero",
+           "weight": 0.3
+          },
+          {
+           "name": "color_potential",
+           "formula": ".99*color_progress_next-color_progress_previous",
+           "weight": 100
+          },
+          {
+           "name": "solved",
+           "formula": "indicator all corner colors/alignment/position meet solve check times retained*hardware_ok*integrity_ok",
+           "weight": 10
+          },
+          {
+           "name": "action_cost",
+           "formula": "sum(clipped_action^2)",
+           "weight": -0.002
+          },
+          {
+           "name": "distance_cost",
+           "formula": "(distance_cube_to_palm/.10)^2",
+           "weight": -0.01
+          },
+          {
+           "name": "failure",
+           "formula": "indicator early failure (not normal fixed horizon)",
+           "weight": -8
+          },
+          {
+           "name": "speed_cost",
+           "formula": "max(0,max_speed_ratio-.6)",
+           "weight": -0.02
+          },
+          {
+           "name": "load_cost",
+           "formula": "max(0,maximum_corner_load_sofar-5N)",
+           "weight": -0.03
+          },
+          {
+           "name": "alignment_bonus",
+           "formula": "exp(-30.0*(1-color_progress))*retained*hardware_ok*integrity_ok",
+           "weight": 5.0
+          }
+         ],
+         "domain_randomization": [],
+         "policy_observations": "deployable",
+         "algorithm": {
+          "algorithm": "PPO-Clip",
+          "target_kl": 0.03,
+          "normalized_actions": true,
+          "exploration_multiplier_after_resume": 0.1,
+          "action_scale": [
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.03337327018380165,
+           0.0045165810734033585,
+           0.0045165810734033585,
+           0.0045165810734033585,
+           0.0045165810734033585,
+           0.0045165810734033585,
+           0.0045165810734033585
+          ],
+          "initial_physical_action_std": [
+           0.0011371001601219177,
+           0.0011693271808326244,
+           0.0011591649381443858,
+           0.0011088328901678324,
+           0.0011262870393693447,
+           0.0011238938895985484,
+           0.0011701991315931082,
+           0.0011251496616750956,
+           0.0011601264122873545,
+           0.0011300538899376988,
+           0.0011156726395711303,
+           0.0011059948010370135,
+           0.001188159454613924,
+           0.0011102552525699139,
+           0.0011209476506337523,
+           0.0011596466647461057,
+           0.0011145740281790495,
+           0.0011068932944908738,
+           0.0011369981802999973,
+           0.0011254576966166496,
+           0.00015304355474654585,
+           0.00015696317132096738,
+           0.0001532603200757876,
+           0.00015711590822320431,
+           0.00015538983279839158,
+           0.00015817982784938067
+          ],
+          "architecture": "Separate actor/critic MLP256-tanh-256-tanh;26independent Gaussian actions; actor and critic both deployable94-vector",
+          "observations": "No contacts,torques,colors,face angles,physical parameters,scramble IDs or seeds enter either network. Time is step/60s.",
+          "actions": "20absolute finger residuals±.7rad around recordedreference (2s smoothblend ifstart/graspdiffer,constantwhenidentical),rate<=.03rad/controlstep;3absolute wrist position residuals±.10m aroundhome,rate<=.002m/component/step;3world wrist rotvec targets pi*action composedwithhome,angularincrement norm<=.02rad/step. Hardware controllers unchanged; all final target velocities audited.",
+          "backend": "warp8",
+          "device": "cuda:2",
+          "environments": 1024,
+          "threads": 1,
+          "rollout_steps": 32,
+          "minibatch_size": 4096,
+          "epochs": 4,
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "entropy_weight": 0.002,
+          "actor_lr": 0.0003,
+          "critic_lr": 0.001,
+          "max_grad_norm": 0.5,
+          "reward_scale_for_learner": 0.5,
+          "alignment_weight": 5.0,
+          "alignment_sharpness": 30.0,
+          "alignment_formula": "exp(-30.0*(1-color_progress))*retained*hardware_ok*integrity_ok",
+          "seed": 42029,
+          "mode": "adaptive_neg",
+          "resume": "research/transfers/iter15_final.pt",
+          "initial_finger_log_std": -4.5,
+          "initial_wrist_log_std": -6.5,
+          "log_std_clamp": [
+           -7,
+           1
+          ],
+          "action_interface": "absolute_grasp",
+          "policy_observations": "deployable",
+          "sim_version": 9,
+          "scene": "<path>",
+          "reward_stage": 2,
+          "training_start_utc": "2026-11-09T06:17:24.914928+00:00",
+          "deadline": "2026-11-09T08:31:00+00:00",
+          "actor_lr_schedule": "3e-4*(1-.75*min(1,step/planned_steps))",
+          "aux_horizon_override": 8.0,
+          "planned_steps": 6029312,
+          "curriculum_details": "Negative partial-angle curriculum starting46degrees with angles[46, 48, 50, 52, 55, 60, 65, 70, 75, 80, 85, 90];advance when128current-stage episodes >=80percent solved+held+valid and>=65536steps sinceadvance. Nominalphysics8s untilangle60,thenrandomlevel1/20s,angle90randomlevel2/60s. Auxiliary training only. Explicit horizon override=8.0 seconds."
+         },
+         "curriculum": "Negative partial-angle curriculum starting46degrees with angles[46, 48, 50, 52, 55, 60, 65, 70, 75, 80, 85, 90];advance when128current-stage episodes >=80percent solved+held+valid and>=65536steps sinceadvance. Nominalphysics8s untilangle60,thenrandomlevel1/20s,angle90randomlevel2/60s. Auxiliary training only. Explicit horizon override=8.0 seconds. GPUforcesnominalphysicsatallstages.",
+         "training": {
+          "steps": 1736704,
+          "wall_s": 536.1119978427887,
+          "gpu_hours": 0.1489199995332294,
+          "finished_utc": "2026-11-09T06:26:23.948745+00:00",
+          "deadline_reached": false,
+          "stopped_early": true
+         },
+         "checkpoint": {
+          "file": "<path>",
+          "sha256": "487a6317df40…"
+         },
+         "compute": {
+          "wall_s": 536.1119978427887,
+          "gpu_hours_allocated": 0.1489199995332294,
+          "GPU": "NVIDIA L40S; MuJoCoWarp physics and PyTorch learner",
+          "cpu_threads": 1
+         },
+         "evaluation": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "487a6317df40…",
+          "criteria_version": 1,
+          "policy_observations": "deployable",
+          "inference_device": "cpu",
+          "episodes": 32,
+          "successes": 0,
+          "success_rate": 0.0,
+          "retained_to_horizon": 18.0,
+          "hardware_valid": 32,
+          "integrity_valid": 21,
+          "max_penetration_m": 0.0037778508849442005,
+          "max_load_n": 30.702293395996094,
+          "max_speed_ratio": 0.20644205808639526,
+          "layer_torque_measured": true,
+          "max_layer_torque_nm": 0.19998018443584442,
+          "paired_max_observation_difference": 0.0,
+          "paired_max_action_difference": 0.0,
+          "wall_s": 801.700847864151,
+          "suite_scope": "32frozen diagnostic counterexamples,not thefull1200-casepassing-suite. Anyfailure disprovesthispolicymeetingcriteria;thissubsetcannotauthorizeapass.",
+          "passed": false,
+          "metrics": [
+           {
+            "time_s": 60.0,
+            "color_progress": 0.8350375890731812,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0003896511043421924,
+            "max_corner_load_n": 6.830616474151611,
+            "max_corner_torque_nm": 0.044428568333387375,
+            "max_speed_ratio": 0.0983286127448082,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0005766199319623411,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.8333333134651184,
+            "contact_duration_s": 59.95000076293945,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00035375653533264995,
+            "unused21": 0.0342986024916172,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.0342986024916172,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.8306745290756226,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0003896511043421924,
+            "max_corner_load_n": 6.830616474151611,
+            "max_corner_torque_nm": 0.044428568333387375,
+            "max_speed_ratio": 0.0983286127448082,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0005766199319623411,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.8333333134651184,
+            "contact_duration_s": 59.95000076293945,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00035375653533264995,
+            "unused21": 0.0342986024916172,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.0342986024916172,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.8280338644981384,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.00040236281347461045,
+            "max_corner_load_n": 6.262118339538574,
+            "max_corner_torque_nm": 0.037723358720541,
+            "max_speed_ratio": 0.08017489314079285,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0005102410214021802,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.8333333134651184,
+            "contact_duration_s": 59.95800018310547,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00031082110945135355,
+            "unused21": 0.022382644936442375,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.022382644936442375,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.8416463136672974,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0005899591487832367,
+            "max_corner_load_n": 7.108449459075928,
+            "max_corner_torque_nm": 0.026684695854783058,
+            "max_speed_ratio": 0.10177163779735565,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0005382448434829712,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.8333333134651184,
+            "contact_duration_s": 59.959999084472656,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00046741359983570874,
+            "unused21": 0.021079400554299355,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.021079400554299355,
+            "success": false
+           },
+           {
+            "time_s": 0.13099999725818634,
+            "color_progress": 0.7084951400756836,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0008410030277445912,
+            "max_corner_load_n": 21.345211029052734,
+            "max_corner_torque_nm": 0.16108784079551697,
+            "max_speed_ratio": 0.08572564274072647,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.00043604447273537517,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7083333134651184,
+            "contact_duration_s": 0.03799999877810478,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0005603401805274189,
+            "unused21": 0.12918852269649506,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.12918852269649506,
+            "success": false
+           },
+           {
+            "time_s": 0.13600000739097595,
+            "color_progress": 0.7937373518943787,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0006142976926639676,
+            "max_corner_load_n": 21.266193389892578,
+            "max_corner_torque_nm": 0.12153370678424835,
+            "max_speed_ratio": 0.12074258178472519,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.000590988143812865,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7916666865348816,
+            "contact_duration_s": 0.023000000044703484,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.000541623099707067,
+            "unused21": 0.10020621120929718,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.10020621120929718,
+            "success": false
+           },
+           {
+            "time_s": 0.0010000000474974513,
+            "color_progress": 0.4999675750732422,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0037778508849442005,
+            "max_corner_load_n": 29.0300350189209,
+            "max_corner_torque_nm": 0.9015438556671143,
+            "max_speed_ratio": 0.03174024447798729,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0004397299198899418,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5,
+            "contact_duration_s": 0.0010000000474974513,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00029856868786737323,
+            "unused21": 0.04775906354188919,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.04775906354188919,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.7110786437988281,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0008199454750865698,
+            "max_corner_load_n": 14.008769035339355,
+            "max_corner_torque_nm": 0.10049199312925339,
+            "max_speed_ratio": 0.06791707128286362,
+            "max_contact_gap_s": 0.004999999888241291,
+            "max_radial_m": 0.0006769933388568461,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7083333134651184,
+            "contact_duration_s": 59.88199996948242,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.000817835156340152,
+            "unused21": 0.049550026655197144,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.049550026655197144,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.6895154714584351,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.000611976021900773,
+            "max_corner_load_n": 7.557352542877197,
+            "max_corner_torque_nm": 0.06842949241399765,
+            "max_speed_ratio": 0.08982659131288528,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0006241251830942929,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7083333134651184,
+            "contact_duration_s": 59.926998138427734,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0005865228013135493,
+            "unused21": 0.04981650412082672,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.04981650412082672,
+            "success": false
+           },
+           {
+            "time_s": 0.1120000034570694,
+            "color_progress": 0.583578884601593,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0008179080323316157,
+            "max_corner_load_n": 26.004858016967773,
+            "max_corner_torque_nm": 0.12556248903274536,
+            "max_speed_ratio": 0.03504465892910957,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0004048389382660389,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5833333134651184,
+            "contact_duration_s": 0.004000000189989805,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00045806384878233075,
+            "unused21": 0.09592124074697495,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.09592124074697495,
+            "success": false
+           },
+           {
+            "time_s": 0.11900000274181366,
+            "color_progress": 0.8307392597198486,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0005989832570776343,
+            "max_corner_load_n": 20.07831573486328,
+            "max_corner_torque_nm": 0.14037278294563293,
+            "max_speed_ratio": 0.09602831304073334,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0007168501033447683,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.8333333134651184,
+            "contact_duration_s": 0.014000000432133675,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00032211016514338553,
+            "unused21": 0.09823896735906601,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.09823896735906601,
+            "success": false
+           },
+           {
+            "time_s": 0.4269999861717224,
+            "color_progress": 0.7848419547080994,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 0.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0009732214384712279,
+            "max_corner_load_n": 19.59732437133789,
+            "max_corner_torque_nm": 0.14566712081432343,
+            "max_speed_ratio": 0.11935644596815109,
+            "max_contact_gap_s": 0.010999999940395355,
+            "max_radial_m": 0.0006711973692290485,
+            "done_reason": 1.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7916666865348816,
+            "contact_duration_s": 0.27399998903274536,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0005437433137558401,
+            "unused21": 0.08312815427780151,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.08312815427780151,
+            "success": false
+           },
+           {
+            "time_s": 0.11599999666213989,
+            "color_progress": 0.711763322353363,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0009739696397446096,
+            "max_corner_load_n": 26.252513885498047,
+            "max_corner_torque_nm": 0.19597700238227844,
+            "max_speed_ratio": 0.09065799415111542,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.00034326076274737716,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7083333134651184,
+            "contact_duration_s": 0.008999999612569809,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0005156963015906513,
+            "unused21": 0.15977579355239868,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.15977579355239868,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.5930882692337036,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0006080853054299951,
+            "max_corner_load_n": 7.313314914703369,
+            "max_corner_torque_nm": 0.06645921617746353,
+            "max_speed_ratio": 0.08881330490112305,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0005746099632233381,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5833333134651184,
+            "contact_duration_s": 59.965999603271484,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0003630610881373286,
+            "unused21": 0.05694899708032608,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.05694899708032608,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.6658984422683716,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0010746950283646584,
+            "max_corner_load_n": 19.543672561645508,
+            "max_corner_torque_nm": 0.22123827040195465,
+            "max_speed_ratio": 0.20644205808639526,
+            "max_contact_gap_s": 0.00800000037997961,
+            "max_radial_m": 0.0008548550540581346,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.6666666865348816,
+            "contact_duration_s": 59.874000549316406,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0006654923781752586,
+            "unused21": 0.1168515607714653,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.1168515607714653,
+            "success": false
+           },
+           {
+            "time_s": 11.847999572753906,
+            "color_progress": 0.5609504580497742,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 0.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0005909270839765668,
+            "max_corner_load_n": 11.842506408691406,
+            "max_corner_torque_nm": 0.07998854666948318,
+            "max_speed_ratio": 0.12302467226982117,
+            "max_contact_gap_s": 0.010999999940395355,
+            "max_radial_m": 0.0007380919414572418,
+            "done_reason": 1.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5833333134651184,
+            "contact_duration_s": 11.741999626159668,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00039263052167370915,
+            "unused21": 0.058155156672000885,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.058155156672000885,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.7049689888954163,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0005015144124627113,
+            "max_corner_load_n": 12.19077205657959,
+            "max_corner_torque_nm": 0.0899370089173317,
+            "max_speed_ratio": 0.08283501863479614,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.00057207205099985,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7083333134651184,
+            "contact_duration_s": 59.880001068115234,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0006621878128498793,
+            "unused21": 0.041008371859788895,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.041008371859788895,
+            "success": false
+           },
+           {
+            "time_s": 0.32199999690055847,
+            "color_progress": 0.8338433504104614,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 0.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0013386743376031518,
+            "max_corner_load_n": 15.472848892211914,
+            "max_corner_torque_nm": 0.13395550847053528,
+            "max_speed_ratio": 0.13922850787639618,
+            "max_contact_gap_s": 0.010999999940395355,
+            "max_radial_m": 0.0006303468253463507,
+            "done_reason": 1.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.8333333134651184,
+            "contact_duration_s": 0.14800000190734863,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.000557842431589961,
+            "unused21": 0.12192929536104202,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.12192929536104202,
+            "success": false
+           },
+           {
+            "time_s": 0.1289999932050705,
+            "color_progress": 0.5000177025794983,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0013190929312258959,
+            "max_corner_load_n": 29.116348266601562,
+            "max_corner_torque_nm": 0.2644082009792328,
+            "max_speed_ratio": 0.04691523686051369,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0004349392547737807,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5,
+            "contact_duration_s": 0.0430000014603138,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0003690962621476501,
+            "unused21": 0.19998018443584442,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.19998018443584442,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.5826391577720642,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0010623109992593527,
+            "max_corner_load_n": 14.59265422821045,
+            "max_corner_torque_nm": 0.10505571961402893,
+            "max_speed_ratio": 0.14537814259529114,
+            "max_contact_gap_s": 0.006000000052154064,
+            "max_radial_m": 0.0007330686203204095,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5833333134651184,
+            "contact_duration_s": 59.874000549316406,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0008028403972275555,
+            "unused21": 0.0754191055893898,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.0754191055893898,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.7111552357673645,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0013211410259827971,
+            "max_corner_load_n": 12.96889877319336,
+            "max_corner_torque_nm": 0.10405788570642471,
+            "max_speed_ratio": 0.1170317605137825,
+            "max_contact_gap_s": 0.00800000037997961,
+            "max_radial_m": 0.0006162161589600146,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7083333134651184,
+            "contact_duration_s": 59.85300064086914,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.000652615912258625,
+            "unused21": 0.08011303842067719,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.08011303842067719,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.7919005155563354,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0008180717704817653,
+            "max_corner_load_n": 15.630040168762207,
+            "max_corner_torque_nm": 0.1314888596534729,
+            "max_speed_ratio": 0.07085965573787689,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0007142348913475871,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7916666865348816,
+            "contact_duration_s": 59.89699935913086,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.000607975060120225,
+            "unused21": 0.11211837828159332,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.11211837828159332,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.6666218638420105,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0007797849830240011,
+            "max_corner_load_n": 18.341060638427734,
+            "max_corner_torque_nm": 0.0683102086186409,
+            "max_speed_ratio": 0.0846257358789444,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0006834721425548196,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.6666666865348816,
+            "contact_duration_s": 59.891998291015625,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0005560152931138873,
+            "unused21": 0.037515200674533844,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.037515200674533844,
+            "success": false
+           },
+           {
+            "time_s": 0.1289999932050705,
+            "color_progress": 0.8368129134178162,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.001123983645811677,
+            "max_corner_load_n": 23.256635665893555,
+            "max_corner_torque_nm": 0.1021173894405365,
+            "max_speed_ratio": 0.08685674518346786,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.000572832184843719,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.8333333134651184,
+            "contact_duration_s": 0.03099999949336052,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0007049842388369143,
+            "unused21": 0.08495236933231354,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.08495236933231354,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.6680611371994019,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0012550272513180971,
+            "max_corner_load_n": 19.71246337890625,
+            "max_corner_torque_nm": 0.12021049112081528,
+            "max_speed_ratio": 0.1075434461236,
+            "max_contact_gap_s": 0.0010000000474974513,
+            "max_radial_m": 0.0007290786015801132,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.6666666865348816,
+            "contact_duration_s": 59.8650016784668,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0009118257439695299,
+            "unused21": 0.09967917203903198,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.09967917203903198,
+            "success": false
+           },
+           {
+            "time_s": 0.12999999523162842,
+            "color_progress": 0.581509530544281,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0008178193238563836,
+            "max_corner_load_n": 26.16087532043457,
+            "max_corner_torque_nm": 0.08644285053014755,
+            "max_speed_ratio": 0.0780063048005104,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.00047097160131670535,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5833333134651184,
+            "contact_duration_s": 0.039000000804662704,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.000462730968138203,
+            "unused21": 0.08254972100257874,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.08254972100257874,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.5885480046272278,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0007970177102833986,
+            "max_corner_load_n": 19.420761108398438,
+            "max_corner_torque_nm": 0.07064227759838104,
+            "max_speed_ratio": 0.10930071026086807,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.000830063596367836,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5833333134651184,
+            "contact_duration_s": 59.88999938964844,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0005994708626531065,
+            "unused21": 0.05130407586693764,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.05130407586693764,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.49976569414138794,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0006315609789453447,
+            "max_corner_load_n": 10.049607276916504,
+            "max_corner_torque_nm": 0.10045313835144043,
+            "max_speed_ratio": 0.15728645026683807,
+            "max_contact_gap_s": 0.0010000000474974513,
+            "max_radial_m": 0.0006393608637154102,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5,
+            "contact_duration_s": 59.86899948120117,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0004511119914241135,
+            "unused21": 0.07021057605743408,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.07021057605743408,
+            "success": false
+           },
+           {
+            "time_s": 0.12300000339746475,
+            "color_progress": 0.7010641694068909,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0005937526002526283,
+            "max_corner_load_n": 21.38031768798828,
+            "max_corner_torque_nm": 0.22621984779834747,
+            "max_speed_ratio": 0.08886897563934326,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.000494426756631583,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7083333134651184,
+            "contact_duration_s": 0.02199999988079071,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00044183936552144587,
+            "unused21": 0.16973350942134857,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.16973350942134857,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.7928404808044434,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0014109917683526874,
+            "max_corner_load_n": 18.562244415283203,
+            "max_corner_torque_nm": 0.1419110745191574,
+            "max_speed_ratio": 0.1390797644853592,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0006144028156995773,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7916666865348816,
+            "contact_duration_s": 59.89099884033203,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0009474517428316176,
+            "unused21": 0.10354600846767426,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.10354600846767426,
+            "success": false
+           },
+           {
+            "time_s": 0.10400000214576721,
+            "color_progress": 0.6664227843284607,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0006884936010465026,
+            "max_corner_load_n": 30.702293395996094,
+            "max_corner_torque_nm": 0.1436164230108261,
+            "max_speed_ratio": 0.10464207828044891,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0006870856159366667,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.6666666865348816,
+            "contact_duration_s": 0.013000000268220901,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0004624426946975291,
+            "unused21": 0.09605135768651962,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.09605135768651962,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.43776175379753113,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0006702695973217487,
+            "max_corner_load_n": 5.321019649505615,
+            "max_corner_torque_nm": 0.04001811891794205,
+            "max_speed_ratio": 0.13574254512786865,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0006025709444656968,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.4375,
+            "contact_duration_s": 59.9379997253418,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00036235564039088786,
+            "unused21": 0.033923082053661346,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.033923082053661346,
+            "success": false
+           }
+          ]
+         },
+         "reference_base": "Constant upper-layer-access receiving posture constructed offline by collision-constrained IK; no optimized actions, online IK or moving reference. CPU zero-action baseline9/11validretentions at8s,0solves for aligned scrambles. GPU passive auxiliary baseline15degrees1/2 and46degrees2/2solved+held at8s; such partial-start success is not PPO credit.",
+         "reflection": "Warmstart from PPO15 with tenfold lower action noise and unchanged initial deterministic mean; finer partial-angle curriculum. This tests whether stochastic jitter blocks sustained hold and progression. Passive46degree restoration is not learned solving, while48degree matched1024world baseline has0solves. Actual full32diagnostic deployment outcomes attached; no full1200passing-suite claim.",
+         "curriculum_history": [
+          {
+           "step": 0,
+           "angle_deg": 46
+          },
+          {
+           "step": 409600,
+           "angle_deg": 48
+          }
+         ],
+         "planned_domain_randomization": [
+          {
+           "quantity": "cube edge",
+           "range_m": [
+            0.047,
+            0.055
+           ],
+           "distribution": "1mm grid fixed perenv;env0/1nominal,remaining roundrobin"
+          },
+          {
+           "quantity": "mass",
+           "range_kg": [
+            0.045,
+            0.07
+           ],
+           "stress_range_kg": [
+            0.04,
+            0.08
+           ],
+           "distribution": "uniform perreset"
+          },
+          {
+           "quantity": "inertia multiplier",
+           "range": [
+            0.6,
+            1.4
+           ],
+           "distribution": "uniform perreset; positive geometric tensors scaledwithmass"
+          },
+          {
+           "quantity": "COM",
+           "range_m": [
+            -0.002,
+            0.002
+           ],
+           "distribution": "uniform2mm sphere via corner mass weighting"
+          },
+          {
+           "quantity": "hand/cube friction",
+           "range": [
+            0.35,
+            1.2
+           ],
+           "distribution": "uniform shared value perreset, internalcap pairsfixed.05"
+          },
+          {
+           "quantity": "bearing friction perballaxis",
+           "range_nm": [
+            0.0002,
+            0.0045
+           ],
+           "distribution": "uniform perreset"
+          },
+          {
+           "quantity": "bearing damping",
+           "range_nms_rad": [
+            1e-05,
+            8e-05
+           ],
+           "distribution": "uniform perreset"
+          },
+          {
+           "quantity": "detent stiffness",
+           "range_nm_rad": [
+            0.0004,
+            0.004
+           ],
+           "distribution": "uniform perreset"
+          },
+          {
+           "quantity": "placement",
+           "range": "10mm disk+0-15mmheight;20mm disk+0-20mmheightstress",
+           "distribution": "uniform area/height, supportclearance found againstactualgeometry"
+          },
+          {
+           "quantity": "orientation",
+           "range": "24cube orientations timesuniformyaw, thenuniformSO3",
+           "distribution": "independent ofscramblelabels"
+          },
+          {
+           "quantity": "scramble",
+           "range": "legal1-5quarterturn positiveX/Y/Zgenerators, rejectingaccidentallysolved",
+           "distribution": "independent colorseed;auxiliaryoverride ifmodepartial_u"
+          }
+         ],
+         "curriculum_executed": "Auxiliary nominal-physics stages only; final reached angle 48 degrees. No broad physics/orientation stages reached.",
+         "training_scope": "Nominal51mm55g only onGPU,mandatory encoder noise;allcurriculumstages keep nominalphysics. CPUdeployment verifier suppliesbroadrandomization.",
+         "limitations": [
+          "Nominal GPU training only; passive auxiliary alignment must not be credited to PPO. Arbitrary color-state observability remains absent.",
+          "No target rounds. No real hardware or fracture validation."
+         ],
+         "auxiliary_evaluation": {
+          "scope": "CPU nominal51mm55g eight-second negativepartial-start auxiliary assay; not legal aligned deployment scrambles, not overall verification",
+          "by_angle": {
+           "48": {
+            "solved_and_held": 0,
+            "episodes": 4
+           },
+           "50": {
+            "solved_and_held": 0,
+            "episodes": 4
+           },
+           "60": {
+            "solved_and_held": 0,
+            "episodes": 4
+           },
+           "90": {
+            "solved_and_held": 0,
+            "episodes": 4
+           }
+          },
+          "checkpoint_sha256": "487a6317df40…",
+          "wall_s": 111.96525025367737,
+          "limitations": [
+           "Four encoder-noise seeds per angle only; all other physics nominal.",
+           "No arbitrary-scramble competence or deployment transfer claim."
+          ],
+          "interpretation": "Separatepartial-startdiagnostic only; fullmetrics/states attached to verification. Does not affect fulltask verdict."
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "f77452f392e7",
+          "bytes": 355761,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "92470d447114",
+          "bytes": 285503,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "c669d3ed1057",
+          "bytes": 292201,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "90b5a1a16a38",
+          "bytes": 367159,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0058",
+        "seq": 58,
+        "kind": "verify",
+        "version": 13,
+        "recorded_utc": "2026-11-09T06:40:04Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0057",
+         "criteria_version": 1,
+         "passed": false,
+         "checkpoint": "<path>",
+         "checkpoint_sha256": "487a6317df40…",
+         "episodes": 32,
+         "result": {
+          "solves": 0,
+          "valid60sretention": 18.0,
+          "full_goal_met": false
+         },
+         "per_criterion": {
+          "receive_retain_hardware_integrity_to60s": 18.0,
+          "solved_final2s": 0,
+          "no_integrity_violation_observed_before_termination": 21,
+          "no_hardware_violation_observed_before_termination": 32,
+          "max_hand_cube_penetration_m": 0.0037778508849442005,
+          "max_corner_contact_or_reaction_load_n": 30.702293395996094,
+          "max_layer_torque_nm": 0.19998018443584442,
+          "layer_torque_measured": true,
+          "max_finger_speed_ratio": 0.20644205808639526,
+          "paired_observation_difference": 0.0,
+          "paired_action_difference": 0.0
+         },
+         "policy_interface": "20absolute finger residuals±.7rad around recordedreference (2s smoothblend ifstart/graspdiffer,constantwhenidentical),rate<=.03rad/controlstep;3absolute wrist position residuals±.10m aroundhome,rate<=.002m/component/step;3world wrist rotvec targets pi*action composedwithhome,angularincrement norm<=.02rad/step. Hardware controllers unchanged; all final target velocities audited.",
+         "actor_observations": "No contacts,torques,colors,face angles,physical parameters,scramble IDs or seeds enter either network. Time is step/60s.",
+         "evidence": "Frozen32case metrics,10Hzphysicalstates and top/left/right videos attached. Hardware/integrity flags summarize observed prefix only; earlyterminated episodes do not pass the60s criteria. Successful episodes,ifany,are individual cases only, not overall verification.",
+         "limitations": [
+          "Diagnostic32case counterexample subset;full1200casepassing-suite wasnotcompleted.",
+          "Public-prior internalrails/detents and conservative damage proxies cannot establish real plastic strength or deployment transfer.",
+          "No color/per-corner state enters actor. Observation-identical opposite scrambles remain a task-interface limitation.",
+          "Auxiliary fixed-turn training curriculum does not imply arbitrary-scramble competence."
+         ],
+         "reflection": "Warmstart from PPO15 with tenfold lower action noise and unchanged initial deterministic mean; finer partial-angle curriculum. This tests whether stochastic jitter blocks sustained hold and progression. Passive46degree restoration is not learned solving, while48degree matched1024world baseline has0solves. Actual full32diagnostic deployment outcomes attached; no full1200passing-suite claim.",
+         "auxiliary_evaluation": {
+          "scope": "CPU nominal51mm55g eight-second negativepartial-start auxiliary assay; not legal aligned deployment scrambles, not overall verification",
+          "by_angle": {
+           "48": {
+            "solved_and_held": 0,
+            "episodes": 4
+           },
+           "50": {
+            "solved_and_held": 0,
+            "episodes": 4
+           },
+           "60": {
+            "solved_and_held": 0,
+            "episodes": 4
+           },
+           "90": {
+            "solved_and_held": 0,
+            "episodes": 4
+           }
+          },
+          "checkpoint_sha256": "487a6317df40…",
+          "wall_s": 111.96525025367737,
+          "limitations": [
+           "Four encoder-noise seeds per angle only; all other physics nominal.",
+           "No arbitrary-scramble competence or deployment transfer claim."
+          ]
+         }
+        },
+        "files": {
+         "file_1": {
+          "sha": "d1ed2b83664d",
+          "bytes": 38064,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "ac1a705232c4",
+          "bytes": 2808809,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "7c0d742a7bfe",
+          "bytes": 698940,
+          "content_type": "application/octet-stream"
+         },
+         "file_4": {
+          "sha": "b16adea5de85",
+          "bytes": 16925,
+          "content_type": "application/json"
+         },
+         "file_5": {
+          "sha": "08fe46712af4",
+          "bytes": 562237,
+          "content_type": "application/octet-stream"
+         },
+         "video_left_failure": {
+          "sha": "92470d447114",
+          "bytes": 285503,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "c669d3ed1057",
+          "bytes": 292201,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "90b5a1a16a38",
+          "bytes": 367159,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0059",
+        "seq": 59,
+        "kind": "iter",
+        "version": 14,
+        "recorded_utc": "2026-11-09T06:40:37Z",
+        "exception": false,
+        "body": {
+         "sim_version": 8,
+         "reward_terms": [
+          {
+           "name": "alive",
+           "formula": "1",
+           "weight": 0.2
+          },
+          {
+           "name": "containment",
+           "formula": "exp(-(distance_cube_to_palm/.07)^2)",
+           "weight": 1.5
+          },
+          {
+           "name": "contact",
+           "formula": "indicator current contact gap is zero",
+           "weight": 0.3
+          },
+          {
+           "name": "color_potential",
+           "formula": ".99*color_progress_next-color_progress_previous",
+           "weight": 100
+          },
+          {
+           "name": "solved",
+           "formula": "indicator all corner colors/alignment/position meet solve check times retained*hardware_ok*integrity_ok",
+           "weight": 10
+          },
+          {
+           "name": "action_cost",
+           "formula": "sum(clipped_action^2)",
+           "weight": -0.002
+          },
+          {
+           "name": "distance_cost",
+           "formula": "(distance_cube_to_palm/.10)^2",
+           "weight": -0.01
+          },
+          {
+           "name": "failure",
+           "formula": "indicator early failure (not normal fixed horizon)",
+           "weight": -8
+          },
+          {
+           "name": "speed_cost",
+           "formula": "max(0,max_speed_ratio-.6)",
+           "weight": -0.02
+          },
+          {
+           "name": "load_cost",
+           "formula": "max(0,maximum_corner_load_sofar-5N)",
+           "weight": -0.03
+          },
+          {
+           "name": "alignment_bonus",
+           "formula": "exp(-30.0*(1-color_progress))*retained*hardware_ok*integrity_ok",
+           "weight": 5.0
+          }
+         ],
+         "domain_randomization": [],
+         "policy_observations": "deployable",
+         "algorithm": {
+          "algorithm": "PPO-Clip",
+          "target_kl": 0.03,
+          "normalized_actions": true,
+          "action_scale": [
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.11080315709114075,
+           0.012277339585125446,
+           0.012277339585125446,
+           0.012277339585125446,
+           0.012277339585125446,
+           0.012277339585125446,
+           0.012277339585125446
+          ],
+          "initial_physical_action_std": [
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.036883167922496796,
+           0.004086771048605442,
+           0.004086771048605442,
+           0.004086771048605442,
+           0.004086771048605442,
+           0.004086771048605442,
+           0.004086771048605442
+          ],
+          "architecture": "Separate actor/critic MLP256-tanh-256-tanh;26independent Gaussian actions; actor and critic both deployable94-vector",
+          "observations": "No contacts,torques,colors,face angles,physical parameters,scramble IDs or seeds enter either network. Time is step/60s.",
+          "actions": "20absolute finger residuals±.7rad around recordedreference (2s smoothblend ifstart/graspdiffer,constantwhenidentical),rate<=.03rad/controlstep;3absolute wrist position residuals±.10m aroundhome,rate<=.002m/component/step;3world wrist rotvec targets pi*action composedwithhome,angularincrement norm<=.02rad/step. Hardware controllers unchanged; all final target velocities audited.",
+          "backend": "warp7",
+          "device": "cuda:1",
+          "environments": 1024,
+          "threads": 1,
+          "rollout_steps": 32,
+          "minibatch_size": 4096,
+          "epochs": 4,
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "entropy_weight": 0.002,
+          "actor_lr": 0.0003,
+          "critic_lr": 0.001,
+          "max_grad_norm": 0.5,
+          "reward_scale_for_learner": 0.5,
+          "alignment_weight": 5.0,
+          "alignment_sharpness": 30.0,
+          "alignment_formula": "exp(-30.0*(1-color_progress))*retained*hardware_ok*integrity_ok",
+          "seed": 42026,
+          "mode": "adaptive_neg",
+          "resume": null,
+          "initial_finger_log_std": -3.3,
+          "initial_wrist_log_std": -5.5,
+          "log_std_clamp": [
+           -7,
+           1
+          ],
+          "action_interface": "absolute_grasp",
+          "policy_observations": "deployable",
+          "sim_version": 8,
+          "scene": "<path>",
+          "reward_stage": 2,
+          "training_start_utc": "2026-11-09T05:56:27.157291+00:00",
+          "deadline": "2026-11-09T08:31:00+00:00",
+          "actor_lr_schedule": "3e-4*(1-.75*min(1,step/planned_steps))",
+          "aux_horizon_override": 8.0,
+          "planned_steps": 10027008,
+          "curriculum_details": "Negative partial-angle curriculum starting60degrees with angles[60, 75, 90];advance when128current-stage episodes >=80percent solved+held+valid and>=65536steps sinceadvance. Nominalphysics8s untilangle60,thenrandomlevel1/20s,angle90randomlevel2/60s. Auxiliary training only. Explicit horizon override=8.0 seconds."
+         },
+         "curriculum": "Negative partial-angle curriculum starting60degrees with angles[60, 75, 90];advance when128current-stage episodes >=80percent solved+held+valid and>=65536steps sinceadvance. Nominalphysics8s untilangle60,thenrandomlevel1/20s,angle90randomlevel2/60s. Auxiliary training only. Explicit horizon override=8.0 seconds. GPUforcesnominalphysicsatallstages.",
+         "training": {
+          "steps": 4292608,
+          "wall_s": 2257.825934410095,
+          "gpu_hours": 0.6271738709343804,
+          "finished_utc": "2026-11-09T06:34:11.913453+00:00",
+          "deadline_reached": false,
+          "stopped_early": true
+         },
+         "checkpoint": {
+          "file": "<path>",
+          "sha256": "ce43712177a5…"
+         },
+         "compute": {
+          "wall_s": 2257.825934410095,
+          "gpu_hours_allocated": 0.6271738709343804,
+          "GPU": "NVIDIA L40S; MuJoCoWarp physics and PyTorch learner",
+          "cpu_threads": 1
+         },
+         "evaluation": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "ce43712177a5…",
+          "criteria_version": 1,
+          "policy_observations": "deployable",
+          "inference_device": "cpu",
+          "episodes": 32,
+          "successes": 0,
+          "success_rate": 0.0,
+          "retained_to_horizon": 11.0,
+          "hardware_valid": 32,
+          "integrity_valid": 16,
+          "max_penetration_m": 0.0037761677522212267,
+          "max_load_n": 32.64475631713867,
+          "max_speed_ratio": 0.27849745750427246,
+          "layer_torque_measured": true,
+          "max_layer_torque_nm": 0.12009281665086746,
+          "paired_max_observation_difference": 0.0,
+          "paired_max_action_difference": 0.0,
+          "wall_s": 359.70064520835876,
+          "suite_scope": "32frozen diagnostic counterexamples,not thefull1200-casepassing-suite. Anyfailure disprovesthispolicymeetingcriteria;thissubsetcannotauthorizeapass.",
+          "passed": false,
+          "metrics": [
+           {
+            "time_s": 60.0,
+            "color_progress": 0.8376451730728149,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0006167064420878887,
+            "max_corner_load_n": 7.4677252769470215,
+            "max_corner_torque_nm": 0.046345483511686325,
+            "max_speed_ratio": 0.2261325865983963,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0005515404045581818,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.8333333134651184,
+            "contact_duration_s": 59.9109992980957,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00034968051477335393,
+            "unused21": 0.02794572338461876,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.02794572338461876,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.8287581205368042,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0006167064420878887,
+            "max_corner_load_n": 7.4677252769470215,
+            "max_corner_torque_nm": 0.046345483511686325,
+            "max_speed_ratio": 0.2261325865983963,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0005515404045581818,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.8333333134651184,
+            "contact_duration_s": 59.9109992980957,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00034968051477335393,
+            "unused21": 0.02794572338461876,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.02794572338461876,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.8334111571311951,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.000440815492765978,
+            "max_corner_load_n": 8.187612533569336,
+            "max_corner_torque_nm": 0.038921672850847244,
+            "max_speed_ratio": 0.27273741364479065,
+            "max_contact_gap_s": 0.004999999888241291,
+            "max_radial_m": 0.0005568262422457337,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.8333333134651184,
+            "contact_duration_s": 59.939998626708984,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00041216006502509117,
+            "unused21": 0.025386622175574303,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.025386622175574303,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.8385237455368042,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0004480156349018216,
+            "max_corner_load_n": 7.818825721740723,
+            "max_corner_torque_nm": 0.03218766301870346,
+            "max_speed_ratio": 0.2184017151594162,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0005789980641566217,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.8333333134651184,
+            "contact_duration_s": 59.95000076293945,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0003044744080398232,
+            "unused21": 0.023893510922789574,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.023893510922789574,
+            "success": false
+           },
+           {
+            "time_s": 0.13099999725818634,
+            "color_progress": 0.7085635662078857,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0007763054454699159,
+            "max_corner_load_n": 31.094039916992188,
+            "max_corner_torque_nm": 0.1285519152879715,
+            "max_speed_ratio": 0.23916850984096527,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0008966261520981789,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7083333134651184,
+            "contact_duration_s": 0.050999999046325684,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0003561394987627864,
+            "unused21": 0.08885876089334488,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.08885876089334488,
+            "success": false
+           },
+           {
+            "time_s": 0.125,
+            "color_progress": 0.7923935651779175,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0011780384229496121,
+            "max_corner_load_n": 24.26897621154785,
+            "max_corner_torque_nm": 0.15918514132499695,
+            "max_speed_ratio": 0.2197989523410797,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0008439775556325912,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7916666865348816,
+            "contact_duration_s": 0.003000000026077032,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0005645276396535337,
+            "unused21": 0.12009281665086746,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.12009281665086746,
+            "success": false
+           },
+           {
+            "time_s": 0.0010000000474974513,
+            "color_progress": 0.4999672472476959,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0037761677522212267,
+            "max_corner_load_n": 28.692155838012695,
+            "max_corner_torque_nm": 0.8910177946090698,
+            "max_speed_ratio": 0.04535938799381256,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0004365180793683976,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5,
+            "contact_duration_s": 0.0010000000474974513,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00029665525653399527,
+            "unused21": 0.04768906161189079,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.04768906161189079,
+            "success": false
+           },
+           {
+            "time_s": 0.8560000061988831,
+            "color_progress": 0.7085645794868469,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 0.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0008627277566120028,
+            "max_corner_load_n": 16.515583038330078,
+            "max_corner_torque_nm": 0.09984097629785538,
+            "max_speed_ratio": 0.2202545553445816,
+            "max_contact_gap_s": 0.010999999940395355,
+            "max_radial_m": 0.0008244703058153391,
+            "done_reason": 1.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7083333134651184,
+            "contact_duration_s": 0.6759999990463257,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0007229108596220613,
+            "unused21": 0.07875214517116547,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.07875214517116547,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.6818272471427917,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0005878060474060476,
+            "max_corner_load_n": 14.119309425354004,
+            "max_corner_torque_nm": 0.06551074236631393,
+            "max_speed_ratio": 0.21207240223884583,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0005938798421993852,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7083333134651184,
+            "contact_duration_s": 59.93199920654297,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0005051299231126904,
+            "unused21": 0.05948691815137863,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.05948691815137863,
+            "success": false
+           },
+           {
+            "time_s": 0.11500000208616257,
+            "color_progress": 0.583379864692688,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.001020534778945148,
+            "max_corner_load_n": 24.7576961517334,
+            "max_corner_torque_nm": 0.15266169607639313,
+            "max_speed_ratio": 0.16755080223083496,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0003782111743930727,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5833333134651184,
+            "contact_duration_s": 0.0020000000949949026,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0003947564400732517,
+            "unused21": 0.11341022700071335,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.11341022700071335,
+            "success": false
+           },
+           {
+            "time_s": 0.10100000351667404,
+            "color_progress": 0.833240270614624,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0008723499486222863,
+            "max_corner_load_n": 23.037744522094727,
+            "max_corner_torque_nm": 0.10779630392789841,
+            "max_speed_ratio": 0.2571292817592621,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0007012953865341842,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.8333333134651184,
+            "contact_duration_s": 0.003000000026077032,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00036028880276717246,
+            "unused21": 0.08607571572065353,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.08607571572065353,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.7702475190162659,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0007117448258213699,
+            "max_corner_load_n": 13.917346000671387,
+            "max_corner_torque_nm": 0.10433730483055115,
+            "max_speed_ratio": 0.2227942794561386,
+            "max_contact_gap_s": 0.0010000000474974513,
+            "max_radial_m": 0.0006079074810259044,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7916666865348816,
+            "contact_duration_s": 59.89099884033203,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0005223750486038625,
+            "unused21": 0.08862995356321335,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.08862995356321335,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.7063266038894653,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0011975285597145557,
+            "max_corner_load_n": 15.87567138671875,
+            "max_corner_torque_nm": 0.16239884495735168,
+            "max_speed_ratio": 0.24933558702468872,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0005896982038393617,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7083333134651184,
+            "contact_duration_s": 59.8380012512207,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.000812764628790319,
+            "unused21": 0.09778273850679398,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.09778273850679398,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.5985495448112488,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0003570752451196313,
+            "max_corner_load_n": 11.010675430297852,
+            "max_corner_torque_nm": 0.1027945727109909,
+            "max_speed_ratio": 0.2633790075778961,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0005427495343610644,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5833333134651184,
+            "contact_duration_s": 59.9739990234375,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00024526199558749795,
+            "unused21": 0.0985335186123848,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.0985335186123848,
+            "success": false
+           },
+           {
+            "time_s": 0.48500001430511475,
+            "color_progress": 0.6657668948173523,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 0.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0007463311776518822,
+            "max_corner_load_n": 18.050525665283203,
+            "max_corner_torque_nm": 0.06795504689216614,
+            "max_speed_ratio": 0.27849745750427246,
+            "max_contact_gap_s": 0.010999999940395355,
+            "max_radial_m": 0.0008985981694422662,
+            "done_reason": 1.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.6666666865348816,
+            "contact_duration_s": 0.28700000047683716,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.000613295822404325,
+            "unused21": 0.0528506375849247,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.0528506375849247,
+            "success": false
+           },
+           {
+            "time_s": 0.3880000114440918,
+            "color_progress": 0.5766313076019287,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 0.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0005250052199698985,
+            "max_corner_load_n": 11.570575714111328,
+            "max_corner_torque_nm": 0.06479628384113312,
+            "max_speed_ratio": 0.2678717076778412,
+            "max_contact_gap_s": 0.010999999940395355,
+            "max_radial_m": 0.000721362535841763,
+            "done_reason": 1.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5833333134651184,
+            "contact_duration_s": 0.26899999380111694,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0003795220982283354,
+            "unused21": 0.04691542312502861,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.04691542312502861,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.7050199508666992,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0010845880024135113,
+            "max_corner_load_n": 15.258904457092285,
+            "max_corner_torque_nm": 0.05952941253781319,
+            "max_speed_ratio": 0.25709500908851624,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0006735154893249273,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7083333134651184,
+            "contact_duration_s": 59.87300109863281,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0005982132279314101,
+            "unused21": 0.04778137430548668,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.04778137430548668,
+            "success": false
+           },
+           {
+            "time_s": 0.26499998569488525,
+            "color_progress": 0.8341745734214783,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 0.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0008937600068747997,
+            "max_corner_load_n": 15.896942138671875,
+            "max_corner_torque_nm": 0.12072931975126266,
+            "max_speed_ratio": 0.24932356178760529,
+            "max_contact_gap_s": 0.010999999940395355,
+            "max_radial_m": 0.0005990606732666492,
+            "done_reason": 1.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.8333333134651184,
+            "contact_duration_s": 0.0989999994635582,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0006441421573981643,
+            "unused21": 0.11793022602796555,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.11793022602796555,
+            "success": false
+           },
+           {
+            "time_s": 0.12800000607967377,
+            "color_progress": 0.500153660774231,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0010306903859600425,
+            "max_corner_load_n": 23.283761978149414,
+            "max_corner_torque_nm": 0.1322193741798401,
+            "max_speed_ratio": 0.2673274576663971,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.00045743308146484196,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5,
+            "contact_duration_s": 0.03999999910593033,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.000554730009753257,
+            "unused21": 0.09613162279129028,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.09613162279129028,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.5828478336334229,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0009413258521817625,
+            "max_corner_load_n": 14.43271255493164,
+            "max_corner_torque_nm": 0.17141881585121155,
+            "max_speed_ratio": 0.24569153785705566,
+            "max_contact_gap_s": 0.00800000037997961,
+            "max_radial_m": 0.0006435686955228448,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5833333134651184,
+            "contact_duration_s": 59.87900161743164,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0016477906610816717,
+            "unused21": 0.11732234060764313,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.11732234060764313,
+            "success": false
+           },
+           {
+            "time_s": 0.125,
+            "color_progress": 0.7106737494468689,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0012097432045266032,
+            "max_corner_load_n": 23.5449275970459,
+            "max_corner_torque_nm": 0.150307759642601,
+            "max_speed_ratio": 0.25418904423713684,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.00039955900865606964,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7083333134651184,
+            "contact_duration_s": 0.01899999938905239,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00044249233906157315,
+            "unused21": 0.1173652857542038,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.1173652857542038,
+            "success": false
+           },
+           {
+            "time_s": 0.10700000077486038,
+            "color_progress": 0.7948622107505798,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0007062875665724277,
+            "max_corner_load_n": 28.03938865661621,
+            "max_corner_torque_nm": 0.0570959746837616,
+            "max_speed_ratio": 0.26765549182891846,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0003934370761271566,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7916666865348816,
+            "contact_duration_s": 0.013000000268220901,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0002301839558640495,
+            "unused21": 0.042968668043613434,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.042968668043613434,
+            "success": false
+           },
+           {
+            "time_s": 0.10000000149011612,
+            "color_progress": 0.6666463017463684,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0003158755134791136,
+            "max_corner_load_n": 24.968435287475586,
+            "max_corner_torque_nm": 0.142397940158844,
+            "max_speed_ratio": 0.21758170425891876,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0007283585728146136,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.6666666865348816,
+            "contact_duration_s": 0.006000000052154064,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0003738628001883626,
+            "unused21": 0.06261855363845825,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.06261855363845825,
+            "success": false
+           },
+           {
+            "time_s": 0.12700000405311584,
+            "color_progress": 0.8400043845176697,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.00048419326776638627,
+            "max_corner_load_n": 23.68366813659668,
+            "max_corner_torque_nm": 0.04855837672948837,
+            "max_speed_ratio": 0.27746981382369995,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0008725111838430166,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.8333333134651184,
+            "contact_duration_s": 0.026000000536441803,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.000260485423495993,
+            "unused21": 0.03851498290896416,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.03851498290896416,
+            "success": false
+           },
+           {
+            "time_s": 0.12999999523162842,
+            "color_progress": 0.6665104031562805,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0006392649956978858,
+            "max_corner_load_n": 22.44890785217285,
+            "max_corner_torque_nm": 0.11329112946987152,
+            "max_speed_ratio": 0.24736471474170685,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0007571644382551312,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.6666666865348816,
+            "contact_duration_s": 0.020999999716877937,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.000634266878478229,
+            "unused21": 0.07255277037620544,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.07255277037620544,
+            "success": false
+           },
+           {
+            "time_s": 0.12999999523162842,
+            "color_progress": 0.5824222564697266,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0006810101331211627,
+            "max_corner_load_n": 21.8123722076416,
+            "max_corner_torque_nm": 0.144773930311203,
+            "max_speed_ratio": 0.26722121238708496,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.00048225143109448254,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5833333134651184,
+            "contact_duration_s": 0.04500000178813934,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0004943139501847327,
+            "unused21": 0.08908482640981674,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.08908482640981674,
+            "success": false
+           },
+           {
+            "time_s": 0.10199999809265137,
+            "color_progress": 0.5836998820304871,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0012298591900616884,
+            "max_corner_load_n": 21.056732177734375,
+            "max_corner_torque_nm": 0.10463421046733856,
+            "max_speed_ratio": 0.11633104085922241,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0006646137335337698,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5833333134651184,
+            "contact_duration_s": 0.004999999888241291,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00038074798067100346,
+            "unused21": 0.052238039672374725,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.052238039672374725,
+            "success": false
+           },
+           {
+            "time_s": 60.0,
+            "color_progress": 0.5004945397377014,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.000853672856464982,
+            "max_corner_load_n": 8.538213729858398,
+            "max_corner_torque_nm": 0.10205915570259094,
+            "max_speed_ratio": 0.2758750021457672,
+            "max_contact_gap_s": 0.0020000000949949026,
+            "max_radial_m": 0.0006594766746275127,
+            "done_reason": 4.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.5,
+            "contact_duration_s": 59.91400146484375,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00047496845945715904,
+            "unused21": 0.08693230897188187,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.08693230897188187,
+            "success": false
+           },
+           {
+            "time_s": 0.125,
+            "color_progress": 0.7043821215629578,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0012601760681718588,
+            "max_corner_load_n": 23.748884201049805,
+            "max_corner_torque_nm": 0.13496798276901245,
+            "max_speed_ratio": 0.23281227052211761,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0006181276403367519,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7083333134651184,
+            "contact_duration_s": 0.009999999776482582,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0004883259534835815,
+            "unused21": 0.09597431868314743,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.09597431868314743,
+            "success": false
+           },
+           {
+            "time_s": 0.10400000214576721,
+            "color_progress": 0.7916548848152161,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.0010697112884372473,
+            "max_corner_load_n": 21.494050979614258,
+            "max_corner_torque_nm": 0.02456289529800415,
+            "max_speed_ratio": 0.14247645437717438,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0005390566657297313,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.7916666865348816,
+            "contact_duration_s": 0.0020000000949949026,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00023086616420187056,
+            "unused21": 0.019855182617902756,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.019855182617902756,
+            "success": false
+           },
+           {
+            "time_s": 0.10499999672174454,
+            "color_progress": 0.6677402853965759,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 1.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 0.0,
+            "max_penetration_m": 0.001126105897128582,
+            "max_corner_load_n": 32.64475631713867,
+            "max_corner_torque_nm": 0.22650329768657684,
+            "max_speed_ratio": 0.13331188261508942,
+            "max_contact_gap_s": 0.0,
+            "max_radial_m": 0.0006324189016595483,
+            "done_reason": 3.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.6666666865348816,
+            "contact_duration_s": 0.008999999612569809,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.0004703414742834866,
+            "unused21": 0.08606448024511337,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.08606448024511337,
+            "success": false
+           },
+           {
+            "time_s": 0.2720000147819519,
+            "color_progress": 0.4371289014816284,
+            "solved": 0.0,
+            "solved_hold_s": 0.0,
+            "retained": 0.0,
+            "hardware_ok": 1.0,
+            "integrity_ok": 1.0,
+            "max_penetration_m": 0.0006202345830388367,
+            "max_corner_load_n": 6.310598373413086,
+            "max_corner_torque_nm": 0.03957796469330788,
+            "max_speed_ratio": 0.21853914856910706,
+            "max_contact_gap_s": 0.010999999940395355,
+            "max_radial_m": 0.0005270023248158395,
+            "done_reason": 1.0,
+            "saturated_ticks": 0.0,
+            "initial_color_progress": 0.4375,
+            "contact_duration_s": 0.1809999942779541,
+            "max_position_violation_rad": 0.0,
+            "turn_events": 0.0,
+            "illegal_states": 0.0,
+            "max_internal_penetration_m": 0.00039607289363630116,
+            "unused21": 0.025364434346556664,
+            "unused22": 0.0,
+            "unused23": 0.0,
+            "case": null,
+            "max_layer_torque_nm": 0.025364434346556664,
+            "success": false
+           }
+          ]
+         },
+         "reference_base": "Constant upper-layer-access receiving posture constructed offline by collision-constrained IK; no optimized actions, online IK or moving reference. CPU zero-action baseline9/11validretentions at8s,0solves for aligned scrambles. GPU passive auxiliary baseline15degrees1/2 and46degrees2/2solved+held at8s; such partial-start success is not PPO credit.",
+         "reflection": "Upper-layer-access posture with active60degree partial starts, broader alignment shaping and26independent PPO actions. Passive60/90degree baselines do not solve. General task verdict uses actual frozen32case CPU evidence, not curriculum metrics.",
+         "curriculum_history": [
+          {
+           "step": 0,
+           "angle_deg": 60
+          }
+         ],
+         "planned_domain_randomization": [
+          {
+           "quantity": "cube edge",
+           "range_m": [
+            0.047,
+            0.055
+           ],
+           "distribution": "1mm grid fixed perenv;env0/1nominal,remaining roundrobin"
+          },
+          {
+           "quantity": "mass",
+           "range_kg": [
+            0.045,
+            0.07
+           ],
+           "stress_range_kg": [
+            0.04,
+            0.08
+           ],
+           "distribution": "uniform perreset"
+          },
+          {
+           "quantity": "inertia multiplier",
+           "range": [
+            0.6,
+            1.4
+           ],
+           "distribution": "uniform perreset; positive geometric tensors scaledwithmass"
+          },
+          {
+           "quantity": "COM",
+           "range_m": [
+            -0.002,
+            0.002
+           ],
+           "distribution": "uniform2mm sphere via corner mass weighting"
+          },
+          {
+           "quantity": "hand/cube friction",
+           "range": [
+            0.35,
+            1.2
+           ],
+           "distribution": "uniform shared value perreset, internalcap pairsfixed.05"
+          },
+          {
+           "quantity": "bearing friction perballaxis",
+           "range_nm": [
+            0.0002,
+            0.0045
+           ],
+           "distribution": "uniform perreset"
+          },
+          {
+           "quantity": "bearing damping",
+           "range_nms_rad": [
+            1e-05,
+            8e-05
+           ],
+           "distribution": "uniform perreset"
+          },
+          {
+           "quantity": "detent stiffness",
+           "range_nm_rad": [
+            0.0004,
+            0.004
+           ],
+           "distribution": "uniform perreset"
+          },
+          {
+           "quantity": "placement",
+           "range": "10mm disk+0-15mmheight;20mm disk+0-20mmheightstress",
+           "distribution": "uniform area/height, supportclearance found againstactualgeometry"
+          },
+          {
+           "quantity": "orientation",
+           "range": "24cube orientations timesuniformyaw, thenuniformSO3",
+           "distribution": "independent ofscramblelabels"
+          },
+          {
+           "quantity": "scramble",
+           "range": "legal1-5quarterturn positiveX/Y/Zgenerators, rejectingaccidentallysolved",
+           "distribution": "independent colorseed;auxiliaryoverride ifmodepartial_u"
+          }
+         ],
+         "curriculum_executed": "Only initial nominal-physics,identity-root,zerohorizontal-placement auxiliary phase reached beforeearlystop. Fixedmass55g;nominaldetentK0 in sim5,otherwise.0025. Geometrygrid varies perenv andencodernoise as specified. Later randomization stages not executed.",
+         "training_scope": "Nominal51mm55g only onGPU,mandatory encoder noise;allcurriculumstages keep nominalphysics. CPUdeployment verifier suppliesbroadrandomization.",
+         "limitations": [
+          "Nominal GPU training only; passive auxiliary alignment must not be credited to PPO. Arbitrary color-state observability remains absent.",
+          "No target rounds. No real hardware or fracture validation."
+         ],
+         "auxiliary_evaluation": {
+          "scope": "CPU nominal51mm55g eight-second negativepartial-start auxiliary assay; not legal aligned deployment scrambles, not overall verification",
+          "by_angle": {
+           "48": {
+            "solved_and_held": 0,
+            "episodes": 4
+           },
+           "50": {
+            "solved_and_held": 0,
+            "episodes": 4
+           },
+           "60": {
+            "solved_and_held": 0,
+            "episodes": 4
+           },
+           "90": {
+            "solved_and_held": 0,
+            "episodes": 4
+           }
+          },
+          "checkpoint_sha256": "ce43712177a5…",
+          "wall_s": 148.1757252216339,
+          "limitations": [
+           "Four encoder-noise seeds per angle only; all other physics nominal.",
+           "No arbitrary-scramble competence or deployment transfer claim."
+          ],
+          "interpretation": "Separatepartial-startdiagnostic only; fullmetrics/states attached to verification. Does not affect fulltask verdict."
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "3fc064972b17",
+          "bytes": 929041,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "532092037d26",
+          "bytes": 407182,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "b383fd51032e",
+          "bytes": 403499,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "555fc2d4fda1",
+          "bytes": 488961,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0060",
+        "seq": 60,
+        "kind": "verify",
+        "version": 14,
+        "recorded_utc": "2026-11-09T06:40:38Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0059",
+         "criteria_version": 1,
+         "passed": false,
+         "checkpoint": "<path>",
+         "checkpoint_sha256": "ce43712177a5…",
+         "episodes": 32,
+         "result": {
+          "solves": 0,
+          "valid60sretention": 11.0,
+          "full_goal_met": false
+         },
+         "per_criterion": {
+          "receive_retain_hardware_integrity_to60s": 11.0,
+          "solved_final2s": 0,
+          "no_integrity_violation_observed_before_termination": 16,
+          "no_hardware_violation_observed_before_termination": 32,
+          "max_hand_cube_penetration_m": 0.0037761677522212267,
+          "max_corner_contact_or_reaction_load_n": 32.64475631713867,
+          "max_layer_torque_nm": 0.12009281665086746,
+          "layer_torque_measured": true,
+          "max_finger_speed_ratio": 0.27849745750427246,
+          "paired_observation_difference": 0.0,
+          "paired_action_difference": 0.0
+         },
+         "policy_interface": "20absolute finger residuals±.7rad around recordedreference (2s smoothblend ifstart/graspdiffer,constantwhenidentical),rate<=.03rad/controlstep;3absolute wrist position residuals±.10m aroundhome,rate<=.002m/component/step;3world wrist rotvec targets pi*action composedwithhome,angularincrement norm<=.02rad/step. Hardware controllers unchanged; all final target velocities audited.",
+         "actor_observations": "No contacts,torques,colors,face angles,physical parameters,scramble IDs or seeds enter either network. Time is step/60s.",
+         "evidence": "Frozen32case metrics,10Hzphysicalstates and top/left/right videos attached. Hardware/integrity flags summarize observed prefix only; earlyterminated episodes do not pass the60s criteria. Successful episodes,ifany,are individual cases only, not overall verification.",
+         "limitations": [
+          "Diagnostic32case counterexample subset;full1200casepassing-suite wasnotcompleted.",
+          "Public-prior internalrails/detents and conservative damage proxies cannot establish real plastic strength or deployment transfer.",
+          "No color/per-corner state enters actor. Observation-identical opposite scrambles remain a task-interface limitation.",
+          "Auxiliary fixed-turn training curriculum does not imply arbitrary-scramble competence."
+         ],
+         "reflection": "Upper-layer-access posture with active60degree partial starts, broader alignment shaping and26independent PPO actions. Passive60/90degree baselines do not solve. General task verdict uses actual frozen32case CPU evidence, not curriculum metrics.",
+         "auxiliary_evaluation": {
+          "scope": "CPU nominal51mm55g eight-second negativepartial-start auxiliary assay; not legal aligned deployment scrambles, not overall verification",
+          "by_angle": {
+           "48": {
+            "solved_and_held": 0,
+            "episodes": 4
+           },
+           "50": {
+            "solved_and_held": 0,
+            "episodes": 4
+           },
+           "60": {
+            "solved_and_held": 0,
+            "episodes": 4
+           },
+           "90": {
+            "solved_and_held": 0,
+            "episodes": 4
+           }
+          },
+          "checkpoint_sha256": "ce43712177a5…",
+          "wall_s": 148.1757252216339,
+          "limitations": [
+           "Four encoder-noise seeds per angle only; all other physics nominal.",
+           "No arbitrary-scramble competence or deployment transfer claim."
+          ]
+         }
+        },
+        "files": {
+         "file_1": {
+          "sha": "20e72f8c07c1",
+          "bytes": 38145,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "b649d531b613",
+          "bytes": 1698605,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "353ece88376e",
+          "bytes": 698682,
+          "content_type": "application/octet-stream"
+         },
+         "file_4": {
+          "sha": "00fb2805e962",
+          "bytes": 16840,
+          "content_type": "application/json"
+         },
+         "file_5": {
+          "sha": "8962a683bc8b",
+          "bytes": 681611,
+          "content_type": "application/octet-stream"
+         },
+         "video_left_failure": {
+          "sha": "532092037d26",
+          "bytes": 407182,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "b383fd51032e",
+          "bytes": 403499,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "555fc2d4fda1",
+          "bytes": 488961,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-09T00:58:19Z",
@@ -324905,7 +329159,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-09T06:32:33Z",
+  "staged_utc": "2026-11-09T06:42:33Z",
   "tasks": {
    "cube": {
     "files": {
@@ -324989,7 +329243,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-09T06:32:33Z",
+  "staged_utc": "2026-11-09T06:42:33Z",
   "tasks": {
    "tennis": {
     "status": "available",
