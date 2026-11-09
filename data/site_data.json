@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-09T13:02:38Z",
- "exported_utc": "2026-11-09T13:02:30Z",
+ "generated_utc": "2026-11-09T13:12:39Z",
+ "exported_utc": "2026-11-09T13:12:30Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-09T13:02:16",
+    "time": "2026-11-09T13:11:59",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-09T12:59:30",
+    "time": "2026-11-09T13:03:38",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -162047,6 +162047,19 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0039",
+        "seq": 39,
+        "kind": "note",
+        "version": 19,
+        "recorded_utc": "2026-11-09T13:11:59Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Iteration8 tests simulation4soft-patch torsion with a forward reference that preserves the pad/object relative rotation from the actual initial grasp, so finger motion transmits the desired upward turn rather than downward spin. Lift targets keep the closed grasp fixed before reorientation. PPO uses signed blade-up reward (downward rotation is penalized), smooth case-proximity and leftward-distance rewards, gamma0.999/GAE0.97, and the physically checked reverse-start curriculum. Initial and later pose constraints are not all solved (per-pose flags retained); no complete baseline task success has been established. The actor continues to use only allowed state/history features and every runtime motion command is neural."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-09T09:57:49Z",
@@ -355877,6 +355890,347 @@
          "text": "Fixed640case verdict 0/640 allcriteria;percriterioncounts {‘G1': 0, 'G2': 247, 'G3': 92, 'G4': 603, 'S1': 7, 'S2': 638, 'S3': 87, 'S4_source_audit': 640}. Continue diagnosis of hardware/integrity,opposition andfullturn discovery; curriculumsuccess is not taskverification."
         },
         "files": {}
+       },
+       {
+        "id": "r0037",
+        "seq": 37,
+        "kind": "iter",
+        "version": 4,
+        "recorded_utc": "2026-11-09T13:03:36Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "algorithm": "PPO",
+          "seed": 4,
+          "stage": 2,
+          "domain_randomization": false,
+          "envs": 1024,
+          "threads": 16,
+          "network": "MLP239-256-256-256, tanh; Gaussian26 then tanh, stateful delta targets",
+          "learning_rate": 0.0003,
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "value_coef": 0.5,
+          "entropy_coef": 0.001,
+          "epochs": 4,
+          "minibatch": 2048,
+          "max_grad_norm": 0.5,
+          "target_kl": 0.03,
+          "control_hz": 50,
+          "controller_hz": 1000,
+          "interface_hz": 500,
+          "policy_observations": "deployable",
+          "observation_dim": 239,
+          "action_dim": 26,
+          "hashes": {
+           "sim/scene.xml": "7db399a5469e…",
+           "sim/scene.mjb": "1dc7b769114b…",
+           "code/gpu_env.py": "49494948013f…",
+           "code/warp_forces.py": "18013b1e37a2…",
+           "code/warp_checks.py": "3c597aa5c64e…",
+           "code/torch_geometry.py": "1bc27015f9a8…",
+           "code/train_gpu_ppo.py": "b3232ec59022…",
+           "code/policy_net.py": "a935798f3617…"
+          },
+          "load": "research/iterations/iter4/parent.pt",
+          "steps_requested": 12000000,
+          "source_reference_version": 3,
+          "simulation_version": 2,
+          "grasp_weight": 1.0,
+          "style_weight": 0.8,
+          "physics": "MuJoCo Warp float32 CUDA"
+         },
+         "checkpoint_sha256": "8f6300863f81…",
+         "checkpoint": "final.pt",
+         "parent_checkpoint_sha256": "3a8e989437af…",
+         "reward_terms": [
+          {
+           "name": "hold",
+           "formula": "exp(-((cube_wrist_distance-.12)/.05)^2)",
+           "weight": 0.15,
+           "global_scale": 1.0
+          },
+          {
+           "name": "fingertip_reach",
+           "formula": "mean5 exp(-((tip_cube_distance-.035)/.035)^2)",
+           "weight": 0.3,
+           "global_scale": 1.0
+          },
+          {
+           "name": "opposed_grasp",
+           "formula": "thumb/longfinger oppositecontactangle>=60deg",
+           "weight": 1.0,
+           "global_scale": 1.0
+          },
+          {
+           "name": "wrist_style",
+           "formula": "[1-.8*((palm_normal_z-.259)^2+(finger_axis_z-.5)^2)] after.3s",
+           "weight": 0.8,
+           "global_scale": 1.0
+          },
+          {
+           "name": "goal_progress",
+           "formula": "previous minus current mean8goalquaternionerror",
+           "weight": 12.0,
+           "global_scale": 1.0
+          },
+          {
+           "name": "action_cost",
+           "formula": "mean26(a^2)",
+           "weight": -0.015,
+           "global_scale": 1.0
+          },
+          {
+           "name": "speed_cost",
+           "formula": "max(0,maxjointvelocityratio-.7)",
+           "weight": -0.15,
+           "global_scale": 1.0
+          },
+          {
+           "name": "penetration_cost",
+           "formula": "lifetime maximumhand/cubepenetration_m",
+           "weight": -5.0,
+           "global_scale": 1.0
+          },
+          {
+           "name": "turn_bonus",
+           "formula": "max8goalerror<.052rad for.1s at50Hz",
+           "weight": 3.0,
+           "global_scale": 1.0
+          },
+          {
+           "name": "training_success_bonus",
+           "formula": "solvedstable.5s,style>.95,step>50,stage>0",
+           "weight": 10.0,
+           "global_scale": 1.0
+          },
+          {
+           "name": "failure_cost",
+           "formula": "drop/hardware/integrity/numeric",
+           "weight": -20.0,
+           "global_scale": 1.0
+          },
+          {
+           "name": "compactness_integrity_cost",
+           "formula": "-.03*(wristdisplacement/.1)^2-.1*max(0,maxstrain/.002-1)",
+           "weight": 1.0,
+           "global_scale": 1.0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "encoderposition",
+           "distribution": "Gaussianindependent",
+           "sigma_rad": 0.002
+          },
+          {
+           "quantity": "encodervelocity",
+           "distribution": "Gaussianindependent",
+           "sigma_rad_s": 0.05
+          },
+          {
+           "quantity": "quarterturnface",
+           "distribution": "uniformdiscrete",
+           "values": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+           ]
+          },
+          {
+           "quantity": "quarterturndirection",
+           "distribution": "uniformdiscrete",
+           "values": [
+            -1,
+            1
+           ]
+          }
+         ],
+         "curriculum": {
+          "stage": 2,
+          "horizon_steps": 400,
+          "initial_scrambles": "1fullquarterturns",
+          "switching": "nonewithinrun",
+          "termination": "failed/horizon/orstablesuccessplusstyle"
+         },
+         "observation_space": "239featuresfrom14allowedstatefields:noisy20q/20qd,previous20targets,wristpose/velocity/previoustarget,cuberootpose/velocity,8relativepartposes/velocities,finitecube-goalaxis/direction/8targetquaternions,holdflag,time. No contacts/forces/torques/parameters/images/rewards.",
+         "action_space": "PPO26tanhoutputs:jointtargetincrements.06rad,wristposition.002m,worldrotvec.04rad per20ms. Standalonewrapperoutputsabsolute20finger+6Dwristtargets;hardware1kHz,500Hzinterfacehold.",
+         "decision_layer": "Finite44971statecubegraph,depth7,canonicalmaterialcorner0;goalquarteronly,no physical/trajectory search;allmotionPPO.",
+         "compute": {
+          "training_steps": 12058624,
+          "reported_training_loop_wall_s": 2855.3645401000977,
+          "total_process_wall_s": 2862.3355498313904,
+          "gpu_hours": 0.7950932082864973,
+          "hardware": "oneL40S CUDA simulationandPPO,4CPUtorchthreads"
+         },
+         "evaluation": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "8f6300863f81…",
+          "criteria_version": 1,
+          "simulation_version": 6,
+          "policy_execution": "Standalone14fieldwrapperabsolutetargets,notnativeactorfeatures",
+          "episodes": 640,
+          "full_640_suite": true,
+          "passed": false,
+          "success_count": 0,
+          "success_rate": 0.0,
+          "per_criterion_count": {
+           "G1": 0,
+           "G2": 255,
+           "G3": 90,
+           "G4": 622,
+           "S1": 24,
+           "S2": 631,
+           "S3": 104,
+           "S4_source_audit": 640
+          },
+          "wall_s": 119.8079354763031,
+          "limits": [
+           "Own simulation claim only; no real transfer or universal guarantee.",
+           "Idealized passive corner mechanism and convex hand collision meshes.",
+           "Recontact needs2ms absence to reject single-tick contact chatter; count is stricter than mere solver contact toggling.",
+           "Releasecheckconservativelytriggersat2mechanismwellcrossings,eventualpartialreversalscanaddcrossings;allactualmultiquarterturnscrossthisbound.",
+           "A source audit establishes no hidden goal-driven object actuation; inferred friction/strength are not hardware measurements."
+          ]
+         },
+         "reflection": "Fixed640case verdict 0/640 allcriteria;percriterioncounts {‘G1': 0, 'G2': 255, 'G3': 90, 'G4': 622, 'S1': 24, 'S2': 631, 'S3': 104, 'S4_source_audit': 640}. Continue diagnosis of hardware/integrity,opposition andfullturn discovery; curriculumsuccess is not taskverification.",
+         "evidence": "Fullper-episodecriteria/initialparameters/losslessauditaggregatesattachedtothefollowingverificationrecord;representative3viewsattachedhere."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "cf08e1fde31d",
+          "bytes": 3519484,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "e2a2391f1903",
+          "bytes": 22930,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "5ec77d25204f",
+          "bytes": 23552,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "c229329894d8",
+          "bytes": 35278,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0038",
+        "seq": 38,
+        "kind": "verify",
+        "version": 5,
+        "recorded_utc": "2026-11-09T13:03:37Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0037",
+         "criteria_version": 1,
+         "passed": false,
+         "checkpoint_sha256": "8f6300863f81…",
+         "simulation_version": 6,
+         "episodes": 640,
+         "conditions": "Frozen512nominalseeds100000..100511 plus128stress200000..200127. First288nominal24x12cardinalorientations/singleturns;restcontinuouspose/physicalvariation;stress4/5turns. Standalonewrapperabsolutecommands,determeanPPOactor,specifiedencoder noise.",
+         "result": {
+          "checkpoint": "<path>",
+          "checkpoint_sha256": "8f6300863f81…",
+          "criteria_version": 1,
+          "simulation_version": 6,
+          "policy_execution": "Standalone14fieldwrapperabsolutetargets,notnativeactorfeatures",
+          "episodes": 640,
+          "full_640_suite": true,
+          "passed": false,
+          "success_count": 0,
+          "success_rate": 0.0,
+          "per_criterion_count": {
+           "G1": 0,
+           "G2": 255,
+           "G3": 90,
+           "G4": 622,
+           "S1": 24,
+           "S2": 631,
+           "S3": 104,
+           "S4_source_audit": 640
+          },
+          "wall_s": 119.8079354763031,
+          "limits": [
+           "Own simulation claim only; no real transfer or universal guarantee.",
+           "Idealized passive corner mechanism and convex hand collision meshes.",
+           "Recontact needs2ms absence to reject single-tick contact chatter; count is stricter than mere solver contact toggling.",
+           "Releasecheckconservativelytriggersat2mechanismwellcrossings,eventualpartialreversalscanaddcrossings;allactualmultiquarterturnscrossthisbound.",
+           "A source audit establishes no hidden goal-driven object actuation; inferred friction/strength are not hardware measurements."
+          ]
+         },
+         "evidence": "Fullmetrics/parameters/frozenseedmanifestattached. Representative3viewepisodesattachedwithactualsuccess/failurelabels;bothnominalandstressmoviesalsopreservedlocally.",
+         "limitations": [
+          "Own simulation claim only; no real transfer or universal guarantee.",
+          "Idealized passive corner mechanism and convex hand collision meshes.",
+          "Recontact needs2ms absence to reject single-tick contact chatter; count is stricter than mere solver contact toggling.",
+          "Releasecheckconservativelytriggersat2mechanismwellcrossings,eventualpartialreversalscanaddcrossings;allactualmultiquarterturnscrossthisbound.",
+          "A source audit establishes no hidden goal-driven object actuation; inferred friction/strength are not hardware measurements."
+         ]
+        },
+        "files": {
+         "file_1": {
+          "sha": "0e183280bd89",
+          "bytes": 1338132,
+          "content_type": "application/json"
+         },
+         "file_2": {
+          "sha": "b885949ba7f6",
+          "bytes": 1943976,
+          "content_type": "application/octet-stream"
+         },
+         "file_3": {
+          "sha": "a814f662db6b",
+          "bytes": 260733,
+          "content_type": "application/json"
+         },
+         "file_4": {
+          "sha": "d399a3da5484",
+          "bytes": 657,
+          "content_type": "application/json"
+         },
+         "video_left_failure": {
+          "sha": "e2a2391f1903",
+          "bytes": 22930,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "5ec77d25204f",
+          "bytes": 23552,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "c229329894d8",
+          "bytes": 35278,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0039",
+        "seq": 39,
+        "kind": "note",
+        "version": 19,
+        "recorded_utc": "2026-11-09T13:03:38Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Fixed640case verdict 0/640 allcriteria;percriterioncounts {‘G1': 0, 'G2': 255, 'G3': 90, 'G4': 622, 'S1': 24, 'S2': 631, 'S3': 104, 'S4_source_audit': 640}. Continue diagnosis of hardware/integrity,opposition andfullturn discovery; curriculumsuccess is not taskverification."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-09T09:55:05Z",
@@ -355892,7 +356246,7 @@
    "plug": {
     "runs": {
      "8": {
-      "exported_utc": "2026-11-09T13:00:01Z",
+      "exported_utc": "2026-11-09T13:10:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -356150,7 +356504,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-09T13:02:33Z",
+  "staged_utc": "2026-11-09T13:12:34Z",
   "tasks": {
    "cube": {
     "files": {
@@ -356234,7 +356588,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-09T13:02:33Z",
+  "staged_utc": "2026-11-09T13:12:34Z",
   "tasks": {
    "tennis": {
     "status": "available",
