@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-10T14:22:37Z",
- "exported_utc": "2026-11-10T14:22:29Z",
+ "generated_utc": "2026-11-10T14:32:37Z",
+ "exported_utc": "2026-11-10T14:32:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-10T14:04:05",
+    "time": "2026-11-10T14:28:35",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-10T14:20:49",
+    "time": "2026-11-10T14:31:00",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -213561,6 +213561,317 @@
           "content_type": "application/json"
          }
         }
+       },
+       {
+        "id": "r0061",
+        "seq": 61,
+        "kind": "iter",
+        "version": 12,
+        "recorded_utc": "2026-11-10T14:23:14Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "algorithm": "PPO",
+         "checkpoint": "research/packages/whole_v1/actor.npz",
+         "package_sha256": "05c3cadceef7…",
+         "architecture": "141input,256tanh256tanh26velocityoutputs,plus26PPO-learnedidle-headparameters",
+         "observations": "Publicq/qd,wrist/objectstate/velocity,previous targets,step,kind; remembers initial public targets and finite object-order/goal decisions. No contacts/forces/physicalparameters/images.",
+         "actions": "20jointvelocities4rad_s,3wristvelocities1m_speraxis,3worldangularvelocitiesnorm6rad_s;50Hznetwork,integrationthroughpublictargets500Hz.",
+         "reward_terms": [
+          {
+           "name": "opposed",
+           "formula": ".1*I(thumb+anotherfinger,freeofenvironment/otherobjects)",
+           "weight": 1
+          },
+          {
+           "name": "lift",
+           "formula": ".1*clip(active_object_rise/.05,0,1)*opposed",
+           "weight": 1
+          },
+          {
+           "name": "upright",
+           "formula": ".08*max(blade_world_z,0)*opposed",
+           "weight": 1
+          },
+          {
+           "name": "standing",
+           "formula": ".30*number_of_objects_left_up_table_supported_freehand_otherobjects_with_speed<.02",
+           "weight": 1
+          },
+          {
+           "name": "wrist_style",
+           "formula": "opposed*(.03*exp(-(closest_yaw_adapted_ref_angle/35deg)^2)-.10*I(palm_tilt>75deg))",
+           "weight": 1
+          },
+          {
+           "name": "hardware_penetration",
+           "formula": "-2*I(anyhardwareviolation)-.10*I(maxpenetration>.003)",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "kind",
+           "distribution": "uniform",
+           "range": [
+            0,
+            1
+           ]
+          },
+          {
+           "quantity": "object_count",
+           "distribution": "alternating",
+           "range": [
+            2,
+            3
+           ]
+          },
+          {
+           "quantity": "massscale",
+           "distribution": "uniform",
+           "range": [
+            0.7,
+            1.3
+           ]
+          },
+          {
+           "quantity": "COMxyz_m",
+           "distribution": "uniform",
+           "range": [
+            -0.003,
+            0.003
+           ]
+          },
+          {
+           "quantity": "object_mu",
+           "distribution": "uniform",
+           "range": [
+            0.25,
+            0.65
+           ]
+          },
+          {
+           "quantity": "pad_mu",
+           "distribution": "uniform",
+           "range": [
+            0.5,
+            1.1
+           ]
+          },
+          {
+           "quantity": "table_mu",
+           "distribution": "uniform",
+           "range": [
+            0.3,
+            0.7
+           ]
+          },
+          {
+           "quantity": "starts",
+           "distribution": "87.5percentcanonicalX-upbroadlyingyaw;12.5percentfullrighttable randomquaternions,separated/touching/leaning"
+          }
+         ],
+         "curriculum": "BC/DAggerinitializationfromphysicallyprovenprimitivecontrollers,thenwhole-taskPPO. No separatelylearnedturn/releaseskills inthisactor. Frozenpickuplibraryisnotcalledbythisunifiedactor.",
+         "training": {
+          "duration": 30,
+          "method": "Whole-task PPO with BC initialization; network predicts velocities integrated into public targets",
+          "input_dim": 141,
+          "bc_updates": 32000,
+          "bc_samples": 344040,
+          "bc_wall_s": 33.60581016540527,
+          "idle_head": "26learnedPPOparametersselectedbyfiniteidlestage",
+          "ppo_steps": 102400,
+          "ppo_wall_s": 446.3501615524292,
+          "ppo_hyperparameters": {
+           "lr": 3e-06,
+           "envs": 32,
+           "horizon": 128,
+           "epochs": 5,
+           "gamma": 0.99,
+           "gae_lambda": 0.95,
+           "clip": 0.2,
+           "entropy": 0.0001,
+           "seed": 717
+          }
+         },
+         "termination": "Training resets on hardware violation or30s; verification always runsfull30s unless numerical/policyfailure.",
+         "compute": {
+          "cpu_environments": 32,
+          "gpu": "L40S0",
+          "ppo_wall_s": 446.3501615524292,
+          "gpu_allocated_hours": 0.12398615598678589
+         },
+         "evaluation": {
+          "gate": "r0060",
+          "suite": "taskv4",
+          "episodes": 64,
+          "counts": {
+           "pickup": 9,
+           "reorient": 0,
+           "placed": 0,
+           "complete": 0
+          },
+          "hardware_violations": 45,
+          "success_rate": 0
+         },
+         "reflection": "FAILEDwhole-taskbehavior. Learnedpickupdoesnottransferreliablyintoanunifiedlongactor:55/64failbeforepickup,9pickupbutnonepassreorientation.45hardwareviolations. Willdeliverthisvalidatedincumbentearlyasrequired,judge/replayalltargettrials,beforerepair. Nextlikelychangesareactionrepresentationanddecomposition,notrelaxedcriteria.",
+         "limitations": "Trainingmostlycanonicalrestingfaceandseparatedpositions;blackwriststyleunresolved;geometry/frictionpriorsuncertain;fixed-timeattemptsdo not recover failures. No officialscoreclaim."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "d2f850b9d090",
+          "bytes": 6624,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "d082a45922a8",
+          "bytes": 394946,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "b36b781c4092",
+          "bytes": 671471,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "1bc154cf8273",
+          "bytes": 502122,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0062",
+        "seq": 62,
+        "kind": "gate",
+        "version": 10,
+        "recorded_utc": "2026-11-10T14:25:50Z",
+        "exception": false,
+        "body": {
+         "suite": "task",
+         "suite_version": 4,
+         "suite_kind": "task",
+         "suite_record": "r0049",
+         "final": true,
+         "candidate_sha256": "05c3cadceef7…",
+         "method": null,
+         "hypothesis": null,
+         "predicts": null,
+         "observed": null,
+         "primitive": null,
+         "started_utc": "2026-11-10T14:23:13Z",
+         "pass_rate": 0.8,
+         "max_hardware_violations": 0,
+         "episodes": 64,
+         "counts": {
+          "pickup": 5,
+          "reorient": 0,
+          "placed": 0,
+          "complete": 0,
+          "success": 0
+         },
+         "wilson95": {
+          "pickup": [
+           0.0338,
+           0.1702
+          ],
+          "reorient": [
+           0.0,
+           0.0566
+          ],
+          "placed": [
+           0.0,
+           0.0566
+          ],
+          "complete": [
+           0.0,
+           0.0566
+          ],
+          "success": [
+           0.0,
+           0.0566
+          ]
+         },
+         "funnel_first_failed": {
+          "pickup": 59,
+          "reorient": 5,
+          "placed": 0,
+          "complete": 0,
+          "hardware": 0
+         },
+         "predicate_overrides": {
+          "pickup": 0,
+          "reorient": 0,
+          "placed": 0,
+          "complete": 0
+         },
+         "hardware_violations": 48,
+         "success_rate": 0.0,
+         "reproducible": true,
+         "wall_s": 148.8,
+         "finished_utc": "2026-11-10T14:25:50Z",
+         "meets_pass_rate": false,
+         "decision": "final",
+         "incumbent": false,
+         "reason": "success 0/64 on fresh seeds; pass rate 0.8, at most 0 hardware violations: not met"
+        },
+        "files": {
+         "results_json": {
+          "sha": "6759378ff8fc",
+          "bytes": 140555,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0063",
+        "seq": 63,
+        "kind": "verify",
+        "version": 1,
+        "recorded_utc": "2026-11-10T14:26:07Z",
+        "exception": false,
+        "body": {
+         "iteration": "r0061",
+         "criteria_version": 2,
+         "passed": false,
+         "final_gate": "r0062",
+         "package_sha256": "05c3cadceef7…",
+         "evidence": "Fresh-seed final gate r0062: 0/64 complete, 5 pickup, 0 reorient, 0 placed, 48 episodes with hardware violations. Reproducible; my 80% pass rate and zero-hardware-violation requirements are not met.",
+         "limitations": "Own MuJoCo verification only; primitive feasibility and geometric teacher successes do not establish task success. Three attached views are a development diagnostic, not final-gate evidence."
+        },
+        "files": {
+         "video_left_failure": {
+          "sha": "d082a45922a8",
+          "bytes": 394946,
+          "content_type": "video/mp4"
+         },
+         "video_right_failure": {
+          "sha": "b36b781c4092",
+          "bytes": 671471,
+          "content_type": "video/mp4"
+         },
+         "video_top_failure": {
+          "sha": "1bc154cf8273",
+          "bytes": 502122,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0064",
+        "seq": 64,
+        "kind": "note",
+        "version": 18,
+        "recorded_utc": "2026-11-10T14:28:35Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "First delivery s01 is running. Reviewed r0060 failure montages seed12017 and12034: incomplete grasp, then wrist moves high or away during fixed-time phases rather than holding/reorienting a plug. Candidate has0/64 development and0/64 fresh-final complete trials; verificationr0063 explicitly failed. Before repair I will judge and replay every target trial. My action-representation hypothesis is that integrated velocity errors compound across the30s multi-object horizon; an absolute-pose network excluding current absolute targets as copy shortcuts could improve tracking, but this is untested and will not be implemented before the required replays. Simulation-timing hypothesis: MuJoCo derived xpos can lag integrated qpos by1ms; test free-motion replay with fresh forward kinematics without changing public controller gains or limits."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-10T10:10:54Z",
@@ -450883,6 +451194,1233 @@
           "content_type": "application/json"
          }
         }
+       },
+       {
+        "id": "r0085",
+        "seq": 85,
+        "kind": "gate",
+        "version": 19,
+        "recorded_utc": "2026-11-10T14:23:21Z",
+        "exception": false,
+        "body": {
+         "suite": "turn_x_style_feasible",
+         "suite_version": 1,
+         "suite_kind": "feasibility",
+         "suite_record": "r0083",
+         "final": false,
+         "candidate_sha256": "59679ac1af86…",
+         "method": "baseline",
+         "hypothesis": "The robust cubeXquarterturn also meets the recorded active wrist,opposition and finger-motion requirements.",
+         "predicts": "turn",
+         "observed": "Initial styledXgate; physicalfeasibility r0052was29/32hardware0. This stronger proof includes exact task3activehandling checks rather than claiming physics-only feasibility proves the demonstrated manner.",
+         "primitive": "layer_turn",
+         "started_utc": "2026-11-10T14:20:54Z",
+         "pass_rate": 0.25,
+         "max_hardware_violations": 0,
+         "episodes": 32,
+         "counts": {
+          "retain": 32,
+          "turn": 21,
+          "success": 21
+         },
+         "wilson95": {
+          "retain": [
+           0.8928,
+           1.0
+          ],
+          "turn": [
+           0.4831,
+           0.7959
+          ],
+          "success": [
+           0.4831,
+           0.7959
+          ]
+         },
+         "funnel_first_failed": {
+          "retain": 0,
+          "turn": 11,
+          "hardware": 0,
+          "complete": 21
+         },
+         "predicate_overrides": {
+          "retain": 0,
+          "turn": 1
+         },
+         "hardware_violations": 0,
+         "success_rate": 0.6562,
+         "reproducible": true,
+         "wall_s": 128.5,
+         "finished_utc": "2026-11-10T14:23:20Z",
+         "meets_pass_rate": true,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent",
+         "failure_review": {
+          "stage": "turn",
+          "lost": 11,
+          "episodes": 32,
+          "seeds": [
+           28008,
+           28030
+          ],
+          "frames_per_view": 8,
+          "montages": [
+           {
+            "seed": 28008,
+            "role": "montage_1",
+            "file": "failures/seed_28008.jpg",
+            "views": null,
+            "frame_times_s": null
+           },
+           {
+            "seed": 28030,
+            "role": "montage_2",
+            "file": "failures/seed_28030.jpg",
+            "views": null,
+            "frame_times_s": null
+           }
+          ],
+          "render_wall_s": 14.8
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "e4c3cefdc534",
+          "bytes": 45409,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "ed30b6f4c382",
+          "bytes": 42162,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "b7b15d4342a7",
+          "bytes": 49278,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0086",
+        "seq": 86,
+        "kind": "gate",
+        "version": 20,
+        "recorded_utc": "2026-11-10T14:23:35Z",
+        "exception": false,
+        "body": {
+         "suite": "turn_z_style_feasible",
+         "suite_version": 1,
+         "suite_kind": "feasibility",
+         "suite_record": "r0084",
+         "final": false,
+         "candidate_sha256": "05ae65fa8692…",
+         "method": "baseline",
+         "hypothesis": "Some varied-physics cubeZflicks preserve at least80percent active opposition and finger motion while meeting90percent wristpose compliance.",
+         "predicts": "turn",
+         "observed": "Initial styledZgate; rawphysicalproof r0070was27/32hardware0. Nominal audit gives100percentwristpose,79percentopposition,89percentfingermotion, so style is a real additional restriction that must be measured.",
+         "primitive": "layer_turn",
+         "started_utc": "2026-11-10T14:20:54Z",
+         "pass_rate": 0.25,
+         "max_hardware_violations": 0,
+         "episodes": 32,
+         "counts": {
+          "retain": 32,
+          "turn": 15,
+          "success": 15
+         },
+         "wilson95": {
+          "retain": [
+           0.8928,
+           1.0
+          ],
+          "turn": [
+           0.3087,
+           0.6355
+          ],
+          "success": [
+           0.3087,
+           0.6355
+          ]
+         },
+         "funnel_first_failed": {
+          "retain": 0,
+          "turn": 17,
+          "hardware": 0,
+          "complete": 15
+         },
+         "predicate_overrides": {
+          "retain": 0,
+          "turn": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 0.4688,
+         "reproducible": true,
+         "wall_s": 138.9,
+         "finished_utc": "2026-11-10T14:23:35Z",
+         "meets_pass_rate": true,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent",
+         "failure_review": {
+          "stage": "turn",
+          "lost": 17,
+          "episodes": 32,
+          "seeds": [
+           28217,
+           28224
+          ],
+          "frames_per_view": 8,
+          "montages": [
+           {
+            "seed": 28217,
+            "role": "montage_1",
+            "file": "failures/seed_28217.jpg",
+            "views": null,
+            "frame_times_s": null
+           },
+           {
+            "seed": 28224,
+            "role": "montage_2",
+            "file": "failures/seed_28224.jpg",
+            "views": null,
+            "frame_times_s": null
+           }
+          ],
+          "render_wall_s": 19.1
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "0df3e17b3b95",
+          "bytes": 43519,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "3077712b6a51",
+          "bytes": 40768,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "fd9bd2d7d7ab",
+          "bytes": 49112,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0087",
+        "seq": 87,
+        "kind": "note",
+        "version": 32,
+        "recorded_utc": "2026-11-10T14:26:47Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Viewed r0081 failure montages seeds10054/10048: during initial tilt the fingers fail to close into stable opposed capture, then cube support is lost. Absolute-wrist MLP approximation errors compound closed-loop. Next architecture tests a trainable affine reference-action path plus nonlinear state-feedback path, both wholly inside the PPO actor; all finger/wrist commands remain outputs of PPO-trained weights. Reference actions are allowed-observation/constant-reference features, never executed as a separate base controller. The reference alone will be measured separately. This is reference-conditioned network initialization, not a reported scripted or open-loop solution; PPO trains both paths and the nonlinear path sees full object/proprioceptive state. Also reduce exploration to respect contact sensitivity. Criteria and hardware unchanged."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0088",
+        "seq": 88,
+        "kind": "iter",
+        "version": 6,
+        "recorded_utc": "2026-11-10T14:27:59Z",
+        "exception": false,
+        "body": {
+         "sim_version": 1,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "algorithm": "PPO",
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "learning_rate": 0.0001,
+          "epochs": 4,
+          "minibatch": 512,
+          "environments": 16,
+          "rollout_steps": 128,
+          "seed": 410,
+          "observation_dim": 215,
+          "action_dim": 26,
+          "device": "cuda:3"
+         },
+         "architecture": "Actor/critic215-256ELU-256ELU-128ELU, Gaussian26D actor; BC-initialized actor followed by PPO. Deterministic mean at evaluation.",
+         "observation_space": "Deployable182statefeatures plus20constantreferencejointtargets,9referencewristrotationentries,3referencewristpositionerrors andnormalizedskilltime. Reference is constanttasksetting from physicalcapture; no contacts/forces/parameters/reward input.",
+         "action_space": "26networkmeansclipped[-1,1]. Fingerqtargets=noisyobservedq+0.04a, positionlimitsclampedbyhardwarecontroller. Wristprevious-targetincrements1.5mm/0.03rad;50Hznetwork,500Hztargethold,1kHzphysicsPD. No scripted motion base.",
+         "reward_terms": [
+          {
+           "name": "held",
+           "formula": "anyhandcubecontact",
+           "weight": 1
+          },
+          {
+           "name": "opposed",
+           "formula": "thumbandanotherfingercontact",
+           "weight": 1
+          },
+          {
+           "name": "pose_tracking",
+           "formula": "exp(-2angle(actualR*referenceR^T)^2)",
+           "weight": 0.5
+          },
+          {
+           "name": "joint_tracking",
+           "formula": "exp(-mean((q-qreference)^2)/.16)",
+           "weight": 0.25
+          },
+          {
+           "name": "centering",
+           "formula": "exp(-norm(cube_local-reference_center)^2/.03^2)",
+           "weight": 0.5
+          },
+          {
+           "name": "action",
+           "formula": "sum26a^2",
+           "weight": -0.01
+          },
+          {
+           "name": "position_anchor",
+           "formula": "norm(wrist-referenceposition)^2/.02^2",
+           "weight": -2
+          },
+          {
+           "name": "failure",
+           "formula": "hardware,floor,gap>50ms,mechanismerror>8deg,distance>.2m",
+           "weight": -30
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "starts",
+           "distribution": "59actualretainedends from frozen libraryincumbentr0046,conditionalonpreviousskill success; associated49/50/51mmedgepreserved"
+          },
+          {
+           "name": "mass",
+           "distribution": "uniform52–75g"
+          },
+          {
+           "name": "hand_friction",
+           "distribution": "uniform.5–1.2"
+          },
+          {
+           "name": "mechanism_factor",
+           "distribution": "uniform.5–2"
+          },
+          {
+           "name": "encoder_noise",
+           "distribution": "qGaussian.002rad,qdGaussian.05rad/s"
+          }
+         ],
+         "curriculum": "8-second capture reference: fingersclose.5–3.5s, wristtilt3.5–6.5s, holdto8s. Actual preceding-incumbent ends only, no constructed start substitutions.",
+         "compute": {
+          "PPO_steps": 600064,
+          "PPO_wall_s": 1052.3,
+          "BC_shared_with": "grip_ppo_v2",
+          "gpu_hours": 0.29230555555555554,
+          "environments": 16,
+          "GPU": "oneL40S"
+         },
+         "evaluation": {
+          "gate": "r0069",
+          "suite": "grip_skill2/r0053",
+          "episodes": 64,
+          "retain": 63,
+          "oblique_grip": 1,
+          "success_rate": 0.015625,
+          "hardware_violations": 0,
+          "pass_rate_required": 0.9,
+          "library_eligible": false
+         },
+         "reflection": "Action-only bounded-target branch removes hardware overspeed but loses capture performance:1/64versus incumbent9/64,rejectedr0069. Viewed24037: handtiltsbefore an opposedgripsettles. Auxiliaryteacher branchv3isbetter; thisbranchisnotkept.",
+         "policy": "research/policies/grip_ppo_v2",
+         "sources": {
+          "model": "research/code/grip_model_v2.py",
+          "trainer": "research/code/train_grip_v2.py",
+          "runner": "research/code/ppo_grip_runner.py",
+          "BC": "research/code/bc_grip_v2.py"
+         },
+         "initialization": {
+          "method": "Behavior-cloning initialization only; requires PPO before deployment claims",
+          "episodes": 128,
+          "teacher_success": 49,
+          "samples": 42067,
+          "conditional_source": "actual retained ends of r0039",
+          "loss": [
+           0.03606731255971181,
+           0.020336285184570594,
+           0.013815563114229476,
+           0.011385569682848647,
+           0.009823178429223383,
+           0.008696233190831994,
+           0.007904081755063715,
+           0.007288578530103511,
+           0.00679382944677869,
+           0.006390289352903255,
+           0.006029415570078959,
+           0.005756089881294297,
+           0.005533232151142578,
+           0.00531955023231499,
+           0.0051362945842246994,
+           0.0049669850609716,
+           0.004838898204623878,
+           0.004713631989225223,
+           0.004612675122497956,
+           0.00450989822792724,
+           0.004431325841844123,
+           0.00435075806862503,
+           0.004259058844355358,
+           0.004194492980742646,
+           0.004139446890351947,
+           0.004078086654563528,
+           0.004013854350610278,
+           0.003965338188269125,
+           0.003917644254770708,
+           0.003874701178190983
+          ],
+          "wall_s": 56.79245471954346,
+          "limitation": "The49/128teacher count is completion/end-opposition/pose, not the full registered last-second stability/pose predicate; it is not a grip_skill pass claim."
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "4c2edc2b7a07",
+          "bytes": 79844,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "e0eabf1c8c6f",
+          "bytes": 69521,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "b6743f4e4fa0",
+          "bytes": 81122,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "333f8b9bbe9f",
+          "bytes": 95593,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0089",
+        "seq": 89,
+        "kind": "iter",
+        "version": 7,
+        "recorded_utc": "2026-11-10T14:28:00Z",
+        "exception": false,
+        "body": {
+         "sim_version": 1,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "algorithm": "PPO",
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "learning_rate": 0.0001,
+          "epochs": 4,
+          "minibatch": 512,
+          "environments": 16,
+          "rollout_steps": 128,
+          "seed": 410,
+          "observation_dim": 215,
+          "action_dim": 26,
+          "device": "cuda:2",
+          "auxiliary_supervised_loss": "10*mean((actormean-teacheraction)^2); PPO remains the only RL objective/algorithm."
+         },
+         "architecture": "Actor/critic215-256ELU-256ELU-128ELU, Gaussian26D actor; BC-initialized actor followed by PPO. Deterministic mean at evaluation.",
+         "observation_space": "Deployable182statefeatures plus20constantreferencejointtargets,9referencewristrotationentries,3referencewristpositionerrors andnormalizedskilltime. Reference is constanttasksetting from physicalcapture; no contacts/forces/parameters/reward input.",
+         "action_space": "26networkmeansclipped[-1,1]. Fingerqtargets=noisyobservedq+0.04a, positionlimitsclampedbyhardwarecontroller. Wristprevious-targetincrements1.5mm/0.03rad;50Hznetwork,500Hztargethold,1kHzphysicsPD. No scripted motion base.",
+         "reward_terms": [
+          {
+           "name": "held",
+           "formula": "anyhandcubecontact",
+           "weight": 1
+          },
+          {
+           "name": "opposed",
+           "formula": "thumbandanotherfingercontact",
+           "weight": 1
+          },
+          {
+           "name": "pose_tracking",
+           "formula": "exp(-2angle(actualR*referenceR^T)^2)",
+           "weight": 5
+          },
+          {
+           "name": "joint_tracking",
+           "formula": "exp(-mean((q-qreference)^2)/.16)",
+           "weight": 0.25
+          },
+          {
+           "name": "centering",
+           "formula": "exp(-norm(cube_local-reference_center)^2/.03^2)",
+           "weight": 0.5
+          },
+          {
+           "name": "action",
+           "formula": "sum26a^2",
+           "weight": -0.01
+          },
+          {
+           "name": "position_anchor",
+           "formula": "norm(wrist-referenceposition)^2/.02^2",
+           "weight": -2
+          },
+          {
+           "name": "failure",
+           "formula": "hardware,floor,gap>50ms,mechanismerror>8deg,distance>.2m",
+           "weight": -100
+          },
+          {
+           "name": "completion",
+           "formula": "oncefirstmeetsstableobliquecompletion",
+           "weight": 500
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "starts",
+           "distribution": "59actualretainedends from frozen libraryincumbentr0046,conditionalonpreviousskill success; associated49/50/51mmedgepreserved"
+          },
+          {
+           "name": "mass",
+           "distribution": "uniform52–75g"
+          },
+          {
+           "name": "hand_friction",
+           "distribution": "uniform.5–1.2"
+          },
+          {
+           "name": "mechanism_factor",
+           "distribution": "uniform.5–2"
+          },
+          {
+           "name": "encoder_noise",
+           "distribution": "qGaussian.002rad,qdGaussian.05rad/s"
+          }
+         ],
+         "curriculum": "8-second capture reference: fingersclose.5–3.5s, wristtilt3.5–6.5s, holdto8s. Actual preceding-incumbent ends only, no constructed start substitutions.",
+         "compute": {
+          "PPO_steps": 1001472,
+          "PPO_wall_s": 2073.7,
+          "BC_shared_with": "grip_ppo_v2",
+          "gpu_hours": 0.5760277777777777,
+          "environments": 16,
+          "GPU": "oneL40S"
+         },
+         "evaluation": {
+          "gate": "r0078",
+          "suite": "grip_skill2/r0053",
+          "episodes": 64,
+          "retain": 64,
+          "oblique_grip": 9,
+          "success_rate": 0.140625,
+          "hardware_violations": 0,
+          "pass_rate_required": 0.9,
+          "library_eligible": false
+         },
+         "reflection": "Reward-onlychange gives9/64unchangedincumbent,h0,rejectedr0078. Viewed24049: thumboppositionisnotestablishedconsistentlywhiletilting. Strongerpose/completionrewarddoesnotfixreference/contacttransfer.",
+         "policy": "research/policies/grip_ppo_v4",
+         "sources": {
+          "model": "research/code/grip_model_v2.py",
+          "trainer": "research/code/train_grip_v4.py",
+          "runner": "research/code/ppo_grip_reward_runner.py",
+          "BC": "research/code/bc_grip_v2.py"
+         },
+         "initialization": {
+          "method": "Behavior-cloning initialization only; requires PPO before deployment claims",
+          "episodes": 128,
+          "teacher_success": 49,
+          "samples": 42067,
+          "conditional_source": "actual retained ends of r0039",
+          "loss": [
+           0.03606731255971181,
+           0.020336285184570594,
+           0.013815563114229476,
+           0.011385569682848647,
+           0.009823178429223383,
+           0.008696233190831994,
+           0.007904081755063715,
+           0.007288578530103511,
+           0.00679382944677869,
+           0.006390289352903255,
+           0.006029415570078959,
+           0.005756089881294297,
+           0.005533232151142578,
+           0.00531955023231499,
+           0.0051362945842246994,
+           0.0049669850609716,
+           0.004838898204623878,
+           0.004713631989225223,
+           0.004612675122497956,
+           0.00450989822792724,
+           0.004431325841844123,
+           0.00435075806862503,
+           0.004259058844355358,
+           0.004194492980742646,
+           0.004139446890351947,
+           0.004078086654563528,
+           0.004013854350610278,
+           0.003965338188269125,
+           0.003917644254770708,
+           0.003874701178190983
+          ],
+          "wall_s": 56.79245471954346,
+          "limitation": "The49/128teacher count is completion/end-opposition/pose, not the full registered last-second stability/pose predicate; it is not a grip_skill pass claim."
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "ed7ae88a16e2",
+          "bytes": 137063,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "597aab3b5ff9",
+          "bytes": 108087,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "3f854fc0e63d",
+          "bytes": 128810,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "d2d6ad465c7a",
+          "bytes": 140547,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0090",
+        "seq": 90,
+        "kind": "iter",
+        "version": 8,
+        "recorded_utc": "2026-11-10T14:28:01Z",
+        "exception": false,
+        "body": {
+         "sim_version": 1,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "algorithm": "PPO",
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "learning_rate": 0.0001,
+          "epochs": 4,
+          "minibatch": 512,
+          "environments": 16,
+          "rollout_steps": 128,
+          "seed": 410,
+          "observation_dim": 260,
+          "action_dim": 29,
+          "device": "cuda:3",
+          "auxiliary_supervised_loss": "10xteacher-actionMSE alongside PPO"
+         },
+         "architecture": "260-256ELU-256ELU-128ELU actor/critic,29Gaussianoutputs; correctedmode/edgeinitialization,6Dabsolutewristrotation.",
+         "observation_space": "182deployablestatefeatures+33constantreference/timefeatures+4phaseflags+32partgoalquaternionentries+9relativecubegoalrotationentries. All goals are constant settings or finite algebra from allowed poses; no contact/force/parameter/reward actor input.",
+         "action_space": "29networkoutputs: relativefingerq0.04rad (rollphaseprevious-targetincrements0.015rad), absolutewristposition[0,0,.35]+0.05a,6Drotationcolumnsorthonormalized. AlloutputsfromPPOactor.",
+         "reward_terms": [
+          {
+           "name": "held",
+           "formula": "anyhandcubecontact",
+           "weight": 1
+          },
+          {
+           "name": "opposed",
+           "formula": "thumbandanotherfingercontact",
+           "weight": 1
+          },
+          {
+           "name": "pose_tracking",
+           "formula": "exp(-2angle(wristR*refR^T)^2)",
+           "weight": 2
+          },
+          {
+           "name": "joint_tracking",
+           "formula": "exp(-mean((q-qref)^2)/.16)",
+           "weight": 0.1
+          },
+          {
+           "name": "part_goal",
+           "formula": "exp(-2mean(partangularerror_to_subgoal)^2)",
+           "weight": 4
+          },
+          {
+           "name": "roll_goal",
+           "formula": "exp(-2relative_root_rotation_error^2),rollphaseonly",
+           "weight": 2
+          },
+          {
+           "name": "action",
+           "formula": "sum(a^2)",
+           "weight": -0.01
+          },
+          {
+           "name": "position_anchor",
+           "formula": "norm(wrist-refp)^2/.02^2",
+           "weight": -2
+          },
+          {
+           "name": "failure",
+           "formula": "hardware,floor,gap>50ms,mechanismerror>8deg,distance>.2m",
+           "weight": -100
+          },
+          {
+           "name": "completion_bonus",
+           "formula": "200onobservedphysicalsubgoaladvancement,1000onsolvedstable1s;deploymentcurriculumepisodesonly",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "deployment",
+           "distribution": "sameplacement/scramble/mass/friction/drag priors as task suite,independenttrainingseeds"
+          },
+          {
+           "name": "reference_starts",
+           "distribution": "nominal50mmreferencecontactstatesonly;24cubeframes,globalyaw,52–75gmass,mu.5–1.2,drag.5–2"
+          },
+          {
+           "name": "encoder",
+           "distribution": "qnoise.002rad,qdnoise.05rad/s"
+          }
+         ],
+         "curriculum": "30percentdeployment49/50/51mm,50percentnominal50mmphysicalturngrip,20percentnominal50mmactualcaptureendroll; independentmass/friction/mechanismrandomization and24cubeframes. Correctedmode/contact-sizecoupling.",
+         "compute": {
+          "evaluated_steps": 409600,
+          "environments": 16,
+          "GPU": "oneL40S",
+          "checkpoint_wall_s": 860.1379792690277,
+          "gpu_hours": 0.2389272164636188
+         },
+         "evaluation": {
+          "gate": "r0081",
+          "suite": "task3/r0058",
+          "criteria_version": 2,
+          "episodes": 64,
+          "retain": 42,
+          "manipulate": 1,
+          "solved_hold": 0,
+          "success_rate": 0,
+          "hardware_violations": 3,
+          "required": 0.9
+         },
+         "reflection": "Action-spacebranchfailsr0081:42retained/1manipulated/0solved/3hardwareviolations. Viewed10054/10048: fingerclosurelagswristtiltandcubecaptureisunstable. Actorapproximationandcovariateshiftremain; no solvedclaim. Whole2trainingcontinuespredeclared1M; nextarchitectureusesttrainablereferenceconditioningpathandlowexploration.",
+         "policy": "research/policies/whole_ppo_v2a",
+         "sources": {
+          "code": "research/whole_v2",
+          "finite_planner": "research/whole_v1/generator_solver.py",
+          "solver_coverage": "All16512combinations of688short-scramblestatesand24gridposes covered within22finiteT/Coperations; algebra only,not physical execution."
+         },
+         "initialization": {
+          "episodes": 192,
+          "samples": 59624,
+          "wall_s": 90.02084994316101,
+          "loss": [
+           0.044945643204079774,
+           0.016176423009871092,
+           0.011048345048687392,
+           0.008287558912517303,
+           0.006917842309668303,
+           0.005991006829359953,
+           0.005333579423461391,
+           0.004872196818581532,
+           0.004504086958637172,
+           0.0042217566050791145,
+           0.00402099048232719,
+           0.0038134599888787093,
+           0.00365595798582022,
+           0.0035226235598123283,
+           0.0034152062094331024,
+           0.003319587808484311,
+           0.0032189034361960016,
+           0.003160955339981908,
+           0.0030651998387372387,
+           0.0029923408487803537,
+           0.002937278554086698,
+           0.002876383713256058,
+           0.002828078613943427,
+           0.0027689667999674767,
+           0.00271941121612089,
+           0.002679179619906556,
+           0.0026408338917572344,
+           0.002600129042422645,
+           0.0025649481091514505,
+           0.002517004582581884,
+           0.0024942420856784143,
+           0.002461843862115869,
+           0.002427242536352124,
+           0.0024121942257717423,
+           0.002382481908807481,
+           0.002356571725528224,
+           0.0023329940177715196,
+           0.002313781054965633,
+           0.002289094365324436,
+           0.0022728481651083502,
+           0.0022561115795801646,
+           0.0022341558760517774,
+           0.0022374072566437395,
+           0.002216310507914645,
+           0.0021804212991138913,
+           0.002174511269561429,
+           0.002149329755099213,
+           0.0021399414478832377,
+           0.0021270117857936704,
+           0.00211800258974355,
+           0.0020967546237330684,
+           0.0020945849319177943,
+           0.0020955063807673487,
+           0.002067816753912047,
+           0.002058577644552699,
+           0.00205616077762421,
+           0.0020432498324821128,
+           0.002028957956944813,
+           0.0020235573478578975,
+           0.0020009753626166154,
+           0.001995037285176015,
+           0.001991390120931596,
+           0.001988259134871902,
+           0.0019672740593760026
+          ],
+          "teacher_episodes": [
+           {
+            "mode": 0,
+            "completed": false,
+            "goal_error_deg": 6.764564940836498,
+            "roll_error_deg": 87.33850801593132
+           },
+           {
+            "mode": 1,
+            "completed": false,
+            "goal_error_deg": 8.04608047319549,
+            "roll_error_deg": 60.78123772801407
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 4.0314122150990315,
+            "roll_error_deg": 9.958205938154354
+           },
+           {
+            "mode": 0,
+            "completed": true,
+            "goal_error_deg": 6.1306531117280265,
+            "roll_error_deg": 32.73180357531132
+           },
+           {
+            "mode": 1,
+            "completed": true,
+            "goal_error_deg": 7.641722670814452,
+            "roll_error_deg": 67.68435696895949
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 2.1016320498180185,
+            "roll_error_deg": 8.436837723784818
+           },
+           {
+            "mode": 0,
+            "completed": true,
+            "goal_error_deg": 2.7814770384952894,
+            "roll_error_deg": 20.367574822406706
+           },
+           {
+            "mode": 1,
+            "completed": true,
+            "goal_error_deg": 5.428548232013712,
+            "roll_error_deg": 57.22651066969916
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 0.9508865401546697,
+            "roll_error_deg": 7.156759309459528
+           },
+           {
+            "mode": 0,
+            "completed": false,
+            "goal_error_deg": 0.9963088705173273,
+            "roll_error_deg": 48.33603603720195
+           },
+           {
+            "mode": 1,
+            "completed": true,
+            "goal_error_deg": 1.0720509530923097,
+            "roll_error_deg": 33.72846045040216
+           },
+           {
+            "mode": 2,
+            "completed": false,
+            "goal_error_deg": 8.05401646486261,
+            "roll_error_deg": 78.0744524845256
+           },
+           {
+            "mode": 0,
+            "completed": false,
+            "goal_error_deg": 0.31377143240221217,
+            "roll_error_deg": 55.12683013129174
+           },
+           {
+            "mode": 1,
+            "completed": true,
+            "goal_error_deg": 5.0120440043115995,
+            "roll_error_deg": 61.20627333554402
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 0.9076626055447224,
+            "roll_error_deg": 7.888374960492061
+           },
+           {
+            "mode": 0,
+            "completed": true,
+            "goal_error_deg": 1.9656112711111553,
+            "roll_error_deg": 144.35776328068988
+           },
+           {
+            "mode": 1,
+            "completed": false,
+            "goal_error_deg": 2.105035432211493,
+            "roll_error_deg": 122.41073148547558
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 4.78356293922108,
+            "roll_error_deg": 9.100158971572698
+           },
+           {
+            "mode": 0,
+            "completed": false,
+            "goal_error_deg": 0.9853561507522712,
+            "roll_error_deg": 62.241926699237304
+           },
+           {
+            "mode": 1,
+            "completed": true,
+            "goal_error_deg": 1.311795983861085,
+            "roll_error_deg": 64.51445975731241
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 4.002012874713372,
+            "roll_error_deg": 11.559332229692311
+           },
+           {
+            "mode": 0,
+            "completed": true,
+            "goal_error_deg": 33.08255546692191,
+            "roll_error_deg": 14.697150249995822
+           },
+           {
+            "mode": 1,
+            "completed": false,
+            "goal_error_deg": 90.20549045021374,
+            "roll_error_deg": 106.13808362821415
+           },
+           {
+            "mode": 2,
+            "completed": false,
+            "goal_error_deg": 8.147395989542439,
+            "roll_error_deg": 78.5712413172898
+           },
+           {
+            "mode": 0,
+            "completed": false,
+            "goal_error_deg": 1.776066730237396,
+            "roll_error_deg": 64.22131449958668
+           },
+           {
+            "mode": 1,
+            "completed": false,
+            "goal_error_deg": 76.3897975290763,
+            "roll_error_deg": 11.780036701683589
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 2.215111978999067,
+            "roll_error_deg": 8.183093019451574
+           },
+           {
+            "mode": 0,
+            "completed": false,
+            "goal_error_deg": 2.941219478016954,
+            "roll_error_deg": 62.015739467622915
+           },
+           {
+            "mode": 1,
+            "completed": false,
+            "goal_error_deg": 80.11846210583874,
+            "roll_error_deg": 10.197621415046019
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 3.3275940764174767,
+            "roll_error_deg": 10.446252473824298
+           },
+           {
+            "mode": 0,
+            "completed": true,
+            "goal_error_deg": 3.075189079215366,
+            "roll_error_deg": 17.945673556181404
+           },
+           {
+            "mode": 1,
+            "completed": false,
+            "goal_error_deg": 83.59520694436328,
+            "roll_error_deg": 11.492693320807469
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 2.33745239468056,
+            "roll_error_deg": 9.203881982339217
+           },
+           {
+            "mode": 0,
+            "completed": true,
+            "goal_error_deg": 22.365500489780718,
+            "roll_error_deg": 42.45663048920037
+           },
+           {
+            "mode": 1,
+            "completed": false,
+            "goal_error_deg": 90.02049947974456,
+            "roll_error_deg": 122.51150773876148
+           },
+           {
+            "mode": 2,
+            "completed": false,
+            "goal_error_deg": 8.11923498068247,
+            "roll_error_deg": 78.74225860676034
+           },
+           {
+            "mode": 0,
+            "completed": false,
+            "goal_error_deg": 5.536760739562543,
+            "roll_error_deg": 73.22222545077062
+           },
+           {
+            "mode": 1,
+            "completed": false,
+            "goal_error_deg": 90.28200473403147,
+            "roll_error_deg": 78.98476418258318
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 3.9143402578749913,
+            "roll_error_deg": 11.532855193459646
+           },
+           {
+            "mode": 0,
+            "completed": true,
+            "goal_error_deg": 3.5328245959643185,
+            "roll_error_deg": 21.049820637645425
+           },
+           {
+            "mode": 1,
+            "completed": true,
+            "goal_error_deg": 12.113103092358772,
+            "roll_error_deg": 56.483039561235366
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 3.653164401186772,
+            "roll_error_deg": 6.482500883285044
+           },
+           {
+            "mode": 0,
+            "completed": false,
+            "goal_error_deg": 4.04095595319958,
+            "roll_error_deg": 69.92449811150964
+           },
+           {
+            "mode": 1,
+            "completed": true,
+            "goal_error_deg": 13.492069322798436,
+            "roll_error_deg": 62.114214299985285
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 4.237641807960343,
+            "roll_error_deg": 8.240930421318005
+           },
+           {
+            "mode": 0,
+            "completed": false,
+            "goal_error_deg": 1.9318305411826406,
+            "roll_error_deg": 75.15840261710271
+           },
+           {
+            "mode": 1,
+            "completed": false,
+            "goal_error_deg": 90.02672318219253,
+            "roll_error_deg": 140.86111247336302
+           },
+           {
+            "mode": 2,
+            "completed": false,
+            "goal_error_deg": 8.8531031522436,
+            "roll_error_deg": 80.32126236276913
+           },
+           {
+            "mode": 0,
+            "completed": false,
+            "goal_error_deg": 0.4551033948550958,
+            "roll_error_deg": 44.43443491396832
+           },
+           {
+            "mode": 1,
+            "completed": true,
+            "goal_error_deg": 6.538740942705161,
+            "roll_error_deg": 62.84979789726988
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 2.3774856349518183,
+            "roll_error_deg": 7.260148092514516
+           },
+           {
+            "mode": 0,
+            "completed": false,
+            "goal_error_deg": 5.68662811405341,
+            "roll_error_deg": 49.70105582532388
+           },
+           {
+            "mode": 1,
+            "completed": false,
+            "goal_error_deg": 90.0352991738422,
+            "roll_error_deg": 126.1098416757284
+           },
+           {
+            "mode": 2,
+            "completed": false,
+            "goal_error_deg": 8.503483925739328,
+            "roll_error_deg": 77.67717526192578
+           },
+           {
+            "mode": 0,
+            "completed": false,
+            "goal_error_deg": 4.678005969661198,
+            "roll_error_deg": 85.49520338832578
+           },
+           {
+            "mode": 1,
+            "completed": false,
+            "goal_error_deg": 83.42063001288714,
+            "roll_error_deg": 12.376971554534169
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 4.66687081741018,
+            "roll_error_deg": 4.776884067821137
+           },
+           {
+            "mode": 0,
+            "completed": true,
+            "goal_error_deg": 3.4910900002469485,
+            "roll_error_deg": 27.04271963012811
+           },
+           {
+            "mode": 1,
+            "completed": true,
+            "goal_error_deg": 6.5039515309853595,
+            "roll_error_deg": 64.42270119388112
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 1.036219218803733,
+            "roll_error_deg": 8.278893160960314
+           },
+           {
+            "mode": 0,
+            "completed": true,
+            "goal_error_deg": 8.425840659976002,
+            "roll_error_deg": 13.529725960564969
+           },
+           {
+            "mode": 1,
+            "completed": false,
+            "goal_error_deg": 8.10801435803284,
+            "roll_error_deg": 54.755212648637674
+           },
+           {
+            "mode": 2,
+            "completed": true,
+            "goal_error_deg": 1.18246126380373,
+            "roll_error_deg": 7.177719546589355
+           },
+           {
+            "mode": 0,
+            "completed": false,
+            "goal_error_deg": 2.4814882511671956,
+            "roll_error_deg": 60.743739689541975
+           }
+          ],
+          "warning": "Reference-state curriculum data, NOT deployment task success. PPO required after BC."
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "a42eb78d4a00",
+          "bytes": 58497,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "e4abc63f300f",
+          "bytes": 17539,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "5d83c62a644a",
+          "bytes": 17642,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "de9cc99d5b98",
+          "bytes": 19513,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0091",
+        "seq": 91,
+        "kind": "note",
+        "version": 33,
+        "recorded_utc": "2026-11-10T14:31:00Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Roll-reference audit localstyle_audit reproduces99active20mssamples: only28.3percentinwristposeand45.5percentfingermotion. Mostpoor samplesare4.5–6.2s,whenfinger-directiontiltexceeds100degandthecubecontinuesrollingafterfingersstop. A roughly10degworldwristshiftcanplacetheentiretargetwristpathwithintheunchangedbounds geometrically, butneedsphysicaltesting. Newcontactsearchaddsactualactivepose/finger/oppositionfractions toitsobjectiveandoptimizesworldshiftplusfinger/wristkeyframes. Nominalgeometriccompliancealoneisnotproof. Fixedwrist-onlyroll searchiscurrentlystallednear33degerror, so pivotingtoactualstyle-constrainedmotion."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-10T10:05:03Z",
@@ -450898,138 +452436,8 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-10T14:20:01Z",
+      "exported_utc": "2026-11-10T14:30:01Z",
       "submissions": [
-       {
-        "sub": "s01",
-        "status": "evaluated",
-        "submitted_utc": "2026-11-10T03:35:06Z",
-        "finished_utc": "2026-11-10T03:42:59Z",
-        "verify": null,
-        "gate": "r0025",
-        "package": "fa291d7e9a12",
-        "reason": null,
-        "note": null,
-        "evaluation": 1,
-        "started_utc": "2026-11-10T03:35:34Z",
-        "mean_progress": 0.0,
-        "successes": 0,
-        "trials_n": 6,
-        "horizon_s": 30.0,
-        "trials": [
-         {
-          "trial": 0,
-          "progress": 0.0,
-          "success": false,
-          "objects": 2,
-          "kinds": [
-           "plug_white",
-           "plug_black"
-          ],
-          "steps": 15000,
-          "expected_steps": 15000,
-          "views": [
-           "top",
-           "left",
-           "right"
-          ],
-          "rerendered": false
-         },
-         {
-          "trial": 1,
-          "progress": 0.0,
-          "success": false,
-          "objects": 2,
-          "kinds": [
-           "plug_black",
-           "plug_white"
-          ],
-          "steps": 15000,
-          "expected_steps": 15000,
-          "views": [
-           "top",
-           "left",
-           "right"
-          ],
-          "rerendered": false
-         },
-         {
-          "trial": 2,
-          "progress": 0.0,
-          "success": false,
-          "objects": 2,
-          "kinds": [
-           "plug_black",
-           "plug_white"
-          ],
-          "steps": 15000,
-          "expected_steps": 15000,
-          "views": [
-           "top",
-           "left",
-           "right"
-          ],
-          "rerendered": false
-         },
-         {
-          "trial": 3,
-          "progress": 0.0,
-          "success": false,
-          "objects": 3,
-          "kinds": [
-           "plug_white",
-           "plug_black",
-           "plug_black"
-          ],
-          "steps": 15000,
-          "expected_steps": 15000,
-          "views": [
-           "top",
-           "left",
-           "right"
-          ],
-          "rerendered": false
-         },
-         {
-          "trial": 4,
-          "progress": 0.0,
-          "success": false,
-          "objects": 3,
-          "kinds": [
-           "plug_white",
-           "plug_white",
-           "plug_black"
-          ],
-          "steps": 15000,
-          "expected_steps": 15000,
-          "views": [
-           "top",
-           "left",
-           "right"
-          ],
-          "rerendered": false
-         },
-         {
-          "trial": 5,
-          "progress": 0.0,
-          "success": false,
-          "objects": 3,
-          "kinds": [
-           "plug_black",
-           "plug_white",
-           "plug_black"
-          ],
-          "steps": 15000,
-          "expected_steps": 15000,
-          "views": [
-           "top",
-           "left",
-           "right"
-          ],
-          "rerendered": false
-         }
-        ]
-       },
        {
         "sub": "s02",
         "status": "evaluated",
@@ -451942,8 +453350,24 @@
        }
       ]
      },
+     "11": {
+      "exported_utc": "2026-11-10T14:30:01Z",
+      "submissions": [
+       {
+        "sub": "s01",
+        "status": "running",
+        "submitted_utc": "2026-11-10T14:26:15Z",
+        "finished_utc": null,
+        "verify": null,
+        "gate": "r0060",
+        "package": "05c3cadceef7",
+        "reason": null,
+        "note": null
+       }
+      ]
+     },
      "8": {
-      "exported_utc": "2026-11-10T14:20:01Z",
+      "exported_utc": "2026-11-10T14:30:02Z",
       "submissions": [
        {
         "sub": "s01",
@@ -452204,7 +453628,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-10T14:22:32Z",
+  "staged_utc": "2026-11-10T14:32:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -452288,7 +453712,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-10T14:22:32Z",
+  "staged_utc": "2026-11-10T14:32:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
