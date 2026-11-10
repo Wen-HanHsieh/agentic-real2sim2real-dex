@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-10T03:32:36Z",
- "exported_utc": "2026-11-10T03:32:29Z",
+ "generated_utc": "2026-11-10T03:42:36Z",
+ "exported_utc": "2026-11-10T03:42:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-10T03:31:25",
+    "time": "2026-11-10T03:40:06",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-10T03:31:30",
+    "time": "2026-11-10T03:41:38",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -198736,6 +198736,242 @@
         "body": {
          "kind": "hypothesis",
          "text": "Offline nominal CEM references: white remains opposed-held through3extra seconds, tilt5.17deg, relativeturn54.25deg,wrist62.47deg,palm55.89deg,hardwareOK. Black short2.1s turn gives tilt2.36deg,relative83.09,wrist74.31,opposedheld100%,hardwareOK, but in3extra seconds slips onto the right table upright; therefore black is not a stable carry reference. Next analysis will combine held carry with turn and test controlled placement, rather than treating transient upright orientation as success."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0024",
+        "seq": 24,
+        "kind": "iter",
+        "version": 2,
+        "recorded_utc": "2026-11-10T03:33:44Z",
+        "exception": false,
+        "body": {
+         "sim_version": 1,
+         "policy_observations": "deployable",
+         "checkpoint": "research/runs/ppo003/policy_0010",
+         "package_sha256": "9fe18ed47b87…",
+         "algorithm": "PPO",
+         "architecture": "147features->512tanh->512tanh->512tanh->linear26 Gaussian means; separate128x2critic",
+         "hyperparameters": {
+          "out": "research/runs/ppo003",
+          "workers": 24,
+          "updates": 100,
+          "horizon": 256,
+          "load": "research/runs/ppo002/initialization.pt",
+          "distribution": "deployment",
+          "seed": 30000,
+          "lr": 1e-06,
+          "bc_data": "research/learning/reference_data/combined.npz",
+          "bc_weight": 1.0,
+          "bc_init": 0,
+          "bc_lr": 0.001,
+          "reference_weight": 10.0,
+          "algorithm": "PPO",
+          "nobs": 147,
+          "actiondim": 26,
+          "device": "cuda:0",
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "epochs": 6,
+          "minibatch": 1024,
+          "entropy_weight": 0.001,
+          "value_weight": 0.5,
+          "grad_clip": 0.5
+         },
+         "initialization": {
+          "method": "behavior cloning on own offline geometric/scripted reference plus synthetic permitted-state labels, followed by PPO",
+          "optimizer": "Adam actorBC1e-3 linearlydecayedto1e-4,18000updates,batch2048, wristMSEweight20; inherited from ppo002 initialization before its RL updates",
+          "reference_baseline": {
+           "classification": "scripted feedback reference, NOT learned policy",
+           "episodes": 32,
+           "stages": {
+            "first_grasp": 26,
+            "first_lift": 15,
+            "first_turn": 1,
+            "first_place": 0,
+            "all_placed": 0,
+            "success": 0
+           },
+           "hardware_ok": 31,
+           "dynamic_samples": 46719,
+           "synthetic_samples": 216000
+          },
+          "synthetic_samples": 216000,
+          "dynamic_samples": 46719,
+          "dynamic_repetition": 3
+         },
+         "observation_space": "DELIVERYv2 noisyq/qd,ownprevioustargets,wrist/objectstates,kinds,step; canonicalyawframe,selectedobject/phaseonehots; no contacts,torques,parameters,images",
+         "action_space": "26NNvelocitymeans;20fingertargetvelocities scaled2rad/s,3wristlinear scaled2.5m/s,3angular scaled6rad/s; NN50Hz,integrate target+FF500Hz,controller1000Hz",
+         "decision_layer": "finite nearesteligibleobject plus approach/enclose/lift/turn/carry/lower/release/withdraw/hold; computed from permitted states; no continuous motion targets/planner",
+         "reward_terms": [
+          {
+           "name": "reach",
+           "formula": ".3 exp(-12*(capped thumb distance+capped index distance))",
+           "weight": 0.3
+          },
+          {
+           "name": "opposition",
+           "formula": "body contact thumb and another finger",
+           "weight": 0.5
+          },
+          {
+           "name": "held_lift",
+           "formula": "held*min(center rise/.1,1)",
+           "weight": 2
+          },
+          {
+           "name": "height_progress",
+           "formula": "clipped center height change +- .02 during phases0..3",
+           "weight": 12
+          },
+          {
+           "name": "upright",
+           "formula": "held*max(0,bladeZ.worldZ),phase>=3",
+           "weight": 1.5
+          },
+          {
+           "name": "turn_progress",
+           "formula": "held*change in bladeZ.worldZ,phase>=3",
+           "weight": 3
+          },
+          {
+           "name": "carry",
+           "formula": "exp(-12*XYgoal distance)*rise>.02,phase>=4",
+           "weight": 1
+          },
+          {
+           "name": "left_stand",
+           "formula": "left,upright,nohand,tablecontact,speed<.02",
+           "weight": 3
+          },
+          {
+           "name": "wrist_style",
+           "formula": ".15*palmDownCos-.5*max(0,-palmDownCos)",
+           "weight": 1
+          },
+          {
+           "name": "action_cost",
+           "formula": "mean(rawvelocityaction squared)",
+           "weight": -0.002
+          },
+          {
+           "name": "hardware",
+           "formula": "any hardware violation",
+           "weight": -10
+          },
+          {
+           "name": "reference_action",
+           "formula": "weighted mean squared error rawaction to training-only feedbackreference, fingerweight1,wristweight20",
+           "weight": -10
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "object_uniform_size_scale",
+           "distribution": "uniform",
+           "range": [
+            0.9,
+            1.1
+           ]
+          },
+          {
+           "quantity": "object_mass_factor",
+           "distribution": "uniform",
+           "range": [
+            0.65,
+            1.35
+           ]
+          },
+          {
+           "quantity": "object_COM_xyz_m",
+           "distribution": "independentuniform",
+           "range": [
+            -0.003,
+            0.003
+           ]
+          },
+          {
+           "quantity": "hand_sliding_friction",
+           "distribution": "uniform",
+           "range": [
+            0.6,
+            1.2
+           ]
+          },
+          {
+           "quantity": "object_sliding_friction",
+           "distribution": "uniform",
+           "range": [
+            0.3,
+            0.8
+           ]
+          },
+          {
+           "quantity": "table_sliding_friction",
+           "distribution": "uniform",
+           "range": [
+            0.3,
+            0.7
+           ]
+          }
+         ],
+         "curriculum": "none for RL; all starts drawn actual fulltable deployment generator; reset on hardwareviolation or fall duringtraining",
+         "training_steps": 61440,
+         "compute": {
+          "PPO_wall_seconds": 78.6964259147644,
+          "GPU_count": 1,
+          "GPU_type": "L40S",
+          "CPU_workers": 24,
+          "BC": "inherited larger-network initialization; separate approximately1minute, not precisely instrumented"
+         },
+         "evaluation": {
+          "representative_seed": 0,
+          "episodes": 1,
+          "first_grasp": true,
+          "first_lift": false,
+          "successes": 0,
+          "hardware_ok": true,
+          "gate": "pending comparison to first incumbent"
+         },
+         "reflection": "Batched architecture, initialization and optimization changes: wider linear-output actor improves BCfit, actorlr1e-6+KLstop+reference reward/BC prevent destructive largeupdates. Seed0 grasps but lifts only1.7mm lowestsolid, so task fails. Next DAgger corrections on learner states and dynamically optimized in-hand-turn references; no success claimed.",
+         "regularization": "Auxiliary BCbatchMSE weight1 duringPPO, explicit minibatchKLstop .03; actorlr1e-6,critic3e-4"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "91524e2cb927",
+          "bytes": 3373,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "d5b82be3796c",
+          "bytes": 343867,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "aa2a9544f914",
+          "bytes": 378977,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "530e0db53519",
+          "bytes": 254465,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0027",
+        "seq": 27,
+        "kind": "note",
+        "version": 13,
+        "recorded_utc": "2026-11-10T03:40:06Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Gate r0026 rejects PPO003checkpoint10 despite improved grasp26/32,lift14/32,turn1/32,zero placements: hardware failures rose3 versus incumbent1. This is an architecture-class rejection, not a kept change. I will reproduce fixed-seed failure traces, diagnose joint/contact speeds, and change the action safety/training constraints before claiming an improvement. No threshold or start will be removed to evade the hardware requirement."
         },
         "files": {}
        }
@@ -417295,6 +417531,549 @@
          "text": "Before policy evaluation, criteria version2 adds full wrist inclination because the source thumb-side axis points upward (median57.68deg), not just palm-normal elevation (18.87deg). The training actor will receive only allowed states and a finite combinatorial next-move decision derived from corner poses; every motion command remains the PPO network output. Constant initial targets retain62/64 randomized starts for2s with no hardware violations but are not a solving/style policy. An initial fingertip-only kinematic retarget replay penetrated the cube by18.6mm, so it is being replaced by collision-aware joint/root fitting rather than treated as a feasible reference."
         },
         "files": {}
+       },
+       {
+        "id": "r0017",
+        "seq": 17,
+        "kind": "sim",
+        "version": 1,
+        "recorded_utc": "2026-11-10T03:36:01Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 6,
+         "simulator": {
+          "name": "MuJoCo",
+          "version": "3.17.0",
+          "timestep_s": 0.001,
+          "integrator": "implicitfast",
+          "solver": "Newton",
+          "iterations": 30,
+          "cone": "elliptic",
+          "contact": "soft convex mesh/box contacts, condim3, hand/cube solref3–4ms, solimp.95/.99/.001"
+         },
+         "scene": {
+          "files": [
+           {
+            "path": "research/sim_v1/scene.xml",
+            "sha256": "897f8969e099…"
+           },
+           {
+            "path": "research/sim_v1/native/engine.cpp",
+            "sha256": "27bea654eb74…"
+           },
+           {
+            "path": "research/sim_v1/native/libengine.so",
+            "sha256": "445851d2268e…"
+           },
+           {
+            "path": "research/sim_v1/model_meta.json",
+            "sha256": "796f401c7e9c…"
+           },
+           {
+            "path": "research/sim_v1/collision_exclusions.json",
+            "sha256": "60cb33dde8ad…"
+           },
+           {
+            "path": "research/sim_v1/assets/corner.obj",
+            "sha256": "a9a2ed6a3756…"
+           }
+          ],
+          "hardware_assets": [
+           {
+            "path": "research/sim_v1/assets/l_adductor_pollicis_cover.STL",
+            "sha256": "d8704561e24d…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_hypothenar_cover.STL",
+            "sha256": "a7e852f4cbcc…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_index_finger_distal.STL",
+            "sha256": "47630a76817e…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_index_finger_middle.STL",
+            "sha256": "5af2f99b93fb…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_index_finger_middle_cover.STL",
+            "sha256": "94a4c8c39d43…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_index_finger_proximal.STL",
+            "sha256": "89e49d06793e…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_index_finger_proximal_abd.STL",
+            "sha256": "78f4806eec50…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_index_finger_proximal_abd_cover.STL",
+            "sha256": "b83070b58db6…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_index_finger_tip_sensor_frame.STL",
+            "sha256": "4961c77d8508…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_index_palm_cover.STL",
+            "sha256": "6498fc4cacf0…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_middle_finger_distal.STL",
+            "sha256": "47630a76817e…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_middle_finger_middle.STL",
+            "sha256": "b3bb4726751b…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_middle_finger_middle_cover.STL",
+            "sha256": "7ae178288647…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_middle_finger_proximal.STL",
+            "sha256": "8eea0513ad13…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_middle_finger_proximal_abd.STL",
+            "sha256": "78f372e54996…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_middle_finger_proximal_abd_cover.STL",
+            "sha256": "7bf9d6eb4d72…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_middle_finger_tip_sensor_frame.STL",
+            "sha256": "4961c77d8508…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_middle_palm_cover.STL",
+            "sha256": "f82e14ca0768…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_midpalm_cover.STL",
+            "sha256": "cfd75ffa0579…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_mount.STL",
+            "sha256": "db56d3547765…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_palm_index_cover.STL",
+            "sha256": "934d8ea05844…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_palm_middle_cover.STL",
+            "sha256": "561886c199a7…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_palm_ring_cover.STL",
+            "sha256": "42afb027ff29…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_pinky_distal.STL",
+            "sha256": "19f4f22a89dc…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_pinky_middle.STL",
+            "sha256": "63061786518f…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_pinky_middle_cover.STL",
+            "sha256": "df86b4f6891a…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_pinky_proximal.STL",
+            "sha256": "41939a3da708…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_pinky_proximal_abd.STL",
+            "sha256": "25fc27d8ec8d…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_pinky_proximal_abd_cover.STL",
+            "sha256": "af3b48932741…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_pinky_proximal_cover.STL",
+            "sha256": "aaf4db34c3d3…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_pinky_tip_sensor_frame.STL",
+            "sha256": "b85eff25ea1c…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_ring_finger_distal.STL",
+            "sha256": "b149433ff04d…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_ring_finger_middle.STL",
+            "sha256": "65969a58aba7…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_ring_finger_middle_cover.STL",
+            "sha256": "df7b94f3285c…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_ring_finger_proximal.STL",
+            "sha256": "b8962bc4ac95…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_ring_finger_proximal_abd.STL",
+            "sha256": "9b7aab081a9d…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_ring_finger_proximal_abd_cover.STL",
+            "sha256": "6923b109243c…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_ring_finger_tip_sensor_frame.STL",
+            "sha256": "cf69841d299d…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_ring_palm_cover.STL",
+            "sha256": "82e3ccbab119…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_thenar_cover.STL",
+            "sha256": "42e00b3e61ce…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_thumb_distal.STL",
+            "sha256": "0d89c323bf16…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_thumb_middle.STL",
+            "sha256": "3a84286a4de1…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_thumb_middle_cover.STL",
+            "sha256": "c67031f2fd27…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_thumb_palm_cover.STL",
+            "sha256": "7efd3711729a…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_thumb_proximal.STL",
+            "sha256": "5144d8ab958d…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_thumb_proximal_abd.STL",
+            "sha256": "539f4df71007…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_thumb_tip_sensor_frame.STL",
+            "sha256": "e0b34bb387e3…"
+           },
+           {
+            "path": "research/sim_v1/assets/l_wrist.STL",
+            "sha256": "cc3944120241…"
+           }
+          ],
+          "robot": "Exact supplied left Wuji URDF link transforms,inertias,meshes,joint order/limits;54bodies include massless frames,48positive-mass links; total0.7088kg",
+          "object": "51mm,56g nominal stickerless2x2;4gcore+8corners6.5g each, Blender rounded visual corners and box collision approximations; floorz0"
+         },
+         "reference": {
+          "version": 6,
+          "record": "r0010",
+          "use": "Wrist inclination/contact style and morphology-aware bounded fingertip IK analysis; no source trajectory replay in final policy",
+          "retargeting": {
+           "method": "human anatomical wrist aligned to robot palm, .902morphology relative wrist-cube vector, bounded fingertip IK; kinematic analysis only",
+           "source_reconstruction_version": 6,
+           "keyframes": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+           ],
+           "max_hand_cube_penetration_m": 0.0005538742756742351,
+           "limitation": "Not a feasible dynamic solution or learned policy; unresolved layer state uses gray rigid proxy. Interpolated robot IK is analysis, not filled-in human ground truth."
+          },
+          "source_replay": "retarget_replay_h264.mp4; gray cube because source layer states unresolved"
+         },
+         "wrist_and_fingers": {
+          "wrist": "Free6DoF l_mount;1kHz Cartesian impedance Kp2000/20,Kd60/.4,normcaps30N/2Nm; hand-only gravity/COM torque compensation; desired neural commands50Hz, executed wrist target rate limits at500Hz (2.5m/s,6rad/s), held for two1mscontroller ticks; optional feed-forward velocities0",
+          "finger": "Native PD1kHz with exact hardware kp/kd and effort saturation; qtargets clipped to limits. Velocity and position±.02rad constraints checked every1ms and invalidate/terminate an episode; no artificial qvel clipping. Encoder noise.002rad/.05rad/s at observation."
+         },
+         "mechanism": {
+          "type": "Passive retaining-core approximation inspired by Robogym spherical-cubelet models,not its scripted rotate_face initializer at execution",
+          "state_frame": "cube core center; solved axes+Xorange,+Yblue,+Zyellow; frame follows fixed red/green/white corner0. Corners1–7 rotate about center on spherical tracks. Eight corner parts have local frames/body orientations. This material-frame gauge is defined for simulation and is not claimed recovered from the video.",
+          "coupling": "Loaded positive-face layer selected from actual contact torque in anchored-corner gauge (three axes suffice modulo free whole-cube rotation). Equal/opposite corner/core spring/damping torques; detent/friction passive; quarter-turn rest updates only change coordinates, never qpos/qvel; no object actuators and no policy goal input to mechanism. Axis changes require near alignment and nonincreasing modeled coupling potential.",
+          "parameters": {
+           "[redacted]_Nm": [
+            0,
+            0.006
+           ],
+           "rotational_friction_Nm": [
+            0.0005,
+            0.004
+           ],
+           "rotational_damping_Nms": [
+            8e-05,
+            0.0003
+           ],
+           "coupling_stiffness_Nm_rad": [
+            0.15,
+            0.3
+           ],
+           "coupling_damping_Nms": 8e-05,
+           "native_ball_damping_Nms": 0.0002
+          },
+          "limitations": "Not measured MG2 internalCAD or identified torque curves. Approximate finite-stiffness coupling/single active layer; empirical energy/coupling tests and domain variation do not prove real material/fracture behavior."
+         },
+         "initial_conditions": {
+          "wrist_position_m": [
+           0,
+           0,
+           0.45
+          ],
+          "wrist_rotation_matrix": [
+           [
+            0,
+            0,
+            -1
+           ],
+           [
+            1,
+            0,
+            0
+           ],
+           [
+            0,
+            -1,
+            0
+           ]
+          ],
+          "finger_positions_rad": [
+           0.3,
+           -0.45,
+           0.4,
+           0.3,
+           0.3,
+           0,
+           0.55,
+           0.3,
+           0.3,
+           0,
+           0.55,
+           0.3,
+           0.3,
+           0,
+           0.55,
+           0.3,
+           0.3,
+           0,
+           0.55,
+           0.3
+          ],
+          "object": "Legal1–5quarter turns in anchored-corner gauge, arbitrarySO3 or24face-aligned orientations with jitter; palm offsets±15mm; collision-free vertical placement to first hand contact+.1mm; release speed norms≤.02m/s/.1rad/s",
+          "why": "Fixed cupped palm retains varied operator placements; later PPO must move to demonstrated oblique thumb-side-up wrist pose while turning. No hand-object weld/attachment."
+         },
+         "episode": {
+          "seconds": 60,
+          "network_hz": 50,
+          "command_hz": 500,
+          "physics_hz": 1000,
+          "termination": "Goal held1s,drop/externalfloorcontact,hardware violation,off-mechanism/penetration integrity failure,numerical failure or60s; final evaluator adds all criteria2skill/stability conditions"
+         },
+         "domain_randomization": {
+          "edge_mm": [
+           49,
+           53
+          ],
+          "mass_g": [
+           45,
+           70
+          ],
+          "inertia_multiplier": [
+           0.7,
+           1.4
+          ],
+          "sliding_friction": [
+           0.4,
+           1.2
+          ],
+          "mechanism_parameters": "uniform ranges above; not observable to actor"
+         },
+         "validation": {
+          "hardware_mass": 0.7088000000000001,
+          "actuators": {
+           "finger": 20,
+           "object": 0
+          },
+          "controller": {
+           "steady_offset_mm": [
+            1.6818850033259424e-18,
+            -1.423755271939272e-19,
+            0.0
+           ],
+           "steady_angle_deg": 9.085481448295443e-14,
+           "after2cm_target_step_error_mm": 6.369063748318922e-14,
+           "hardware_violation": false,
+           "max_joint_speed_ratio": 0.03102561241324473
+          },
+          "constant_target_baseline": {
+           "episodes": 64,
+           "retained_2s": 62,
+           "hardware_ok": 64,
+           "note": "Analysis baseline only, not learned, not solving/style success"
+          },
+          "passive_unforced_max_quaternion_change": 0.0,
+          "coherent_torque_turns": [
+           {
+            "axis": 0,
+            "physical_quarter_turns": 1,
+            "max_corner_detent_error_rad": 0.0010568196160064135,
+            "active": 0,
+            "hardware_ok": true,
+            "state": null,
+            "max_part_offset_m": 0.0008077929579462305
+           },
+           {
+            "axis": 1,
+            "physical_quarter_turns": 1,
+            "max_corner_detent_error_rad": 0.0024080592551744763,
+            "active": 1,
+            "hardware_ok": true,
+            "state": null,
+            "max_part_offset_m": 0.0008077929579462316
+           },
+           {
+            "axis": 2,
+            "physical_quarter_turns": 1,
+            "max_corner_detent_error_rad": 0.0013742652078600648,
+            "active": 2,
+            "hardware_ok": true,
+            "state": null,
+            "max_part_offset_m": 0.0008077929579462329
+           }
+          ],
+          "kinematic_retarget_max_penetration_m": 0.0005538742756742351,
+          "collision_filter": "Adjacent body pairs within2actuated joints excluded for overlapping mechanical housings/covers; distal digit/palm and digit/digit contacts retained. Exact pairs recorded.",
+          "initial_failure": "Unfiltered vendor convex housings overlapped, and stiff explicit corner damping destabilized; exclusions and implicit joint damping corrected it before training."
+         },
+         "media": {
+          "initial": "initial.png",
+          "reference_replay": "retarget_replay_h264.mp4"
+         },
+         "sources": [
+          "hardware/SPECS.md",
+          "hardware/LEFT_HAND.md",
+          "hardware/wuji_hand2_left/urdf/left.urdf",
+          "research/recon_v6",
+          "https://www.monster-go.com/standard2x2-2/",
+          "https://github.com/openai/robogym",
+          "https://mujoco.readthedocs.io/en/stable/computation/index.html"
+         ]
+        },
+        "files": {
+         "image": {
+          "sha": "edef3534d8f2",
+          "bytes": 156450,
+          "content_type": "image/png"
+         },
+         "replay_video": {
+          "sha": "0c351746665c",
+          "bytes": 945713,
+          "content_type": "video/mp4"
+         },
+         "scene_1": {
+          "sha": "897f8969e099",
+          "bytes": 100665,
+          "content_type": "application/xml"
+         },
+         "scene_2": {
+          "sha": "27bea654eb74",
+          "bytes": 15485,
+          "content_type": "text/plain"
+         },
+         "scene_3": {
+          "sha": "796f401c7e9c",
+          "bytes": 18012,
+          "content_type": "application/json"
+         },
+         "scene_4": {
+          "sha": "91794b9d2aad",
+          "bytes": 277,
+          "content_type": "application/json"
+         },
+         "scene_5": {
+          "sha": "3a8c3b73c97d",
+          "bytes": 27562,
+          "content_type": "application/json"
+         },
+         "scene_6": {
+          "sha": "8f9ef59c5761",
+          "bytes": 5502,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0019",
+        "seq": 19,
+        "kind": "note",
+        "version": 9,
+        "recorded_utc": "2026-11-10T03:38:13Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Task suite1/r0018 frozen before PPO. First method: end-to-end goal-conditioned PPO with a finite combinatorial next-face decision from allowed corner poses; the network alone issues all finger/wrist motion. Predict improved retain/legal_turn over untrained near-static behavior by dense next-corner potential and posture reward, with curriculum0→.3 over2M transitions. Initial grasp alone retained62/64 for2s, solved0; untrained smoke2/2retain,0turn/solve,posture fails. This is not a learned skill baseline. Stop this method class after3 consecutive gate rejections and change class. No separate skill training yet."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0020",
+        "seq": 20,
+        "kind": "note",
+        "version": 10,
+        "recorded_utc": "2026-11-10T03:41:14Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Evaluator plumbing repeats identical JSON for seeds0,1, including all numeric metrics. Task suite1 frozen. PPO implementation uses clipped likelihood ratios, GAE(.995,.95), terminal bootstrap masking,4epochs and learned Gaussian exploration; primary method source https://arxiv.org/abs/1707.06347 . Cube learning reference https://arxiv.org/abs/1910.07113 motivates separate finite cube decisions and neural manipulation plus gradual randomization; no claim its resource scale/results transfer here. Early training_goal_rate includes10% solved control starts and is explicitly not verification success. All gated evaluation starts unsolved and full DR. Initial2M curriculum0→.3 is training-only; evaluation remains fixed full difficulty."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-10T01:34:20Z",
@@ -417309,8 +418088,23 @@
   "tasks": {
    "plug": {
     "runs": {
+     "10": {
+      "exported_utc": "2026-11-10T03:40:02Z",
+      "submissions": [
+       {
+        "sub": "s01",
+        "status": "running",
+        "submitted_utc": "2026-11-10T03:35:06Z",
+        "finished_utc": null,
+        "verify": null,
+        "package": "fa291d7e9a12",
+        "reason": null,
+        "note": null
+       }
+      ]
+     },
      "8": {
-      "exported_utc": "2026-11-10T03:30:01Z",
+      "exported_utc": "2026-11-10T03:40:02Z",
       "submissions": [
        {
         "sub": "s01",
@@ -417568,7 +418362,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-10T03:32:32Z",
+  "staged_utc": "2026-11-10T03:42:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -417652,7 +418446,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-10T03:32:32Z",
+  "staged_utc": "2026-11-10T03:42:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
