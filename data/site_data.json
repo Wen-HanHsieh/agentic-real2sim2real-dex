@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-10T07:52:37Z",
- "exported_utc": "2026-11-10T07:52:29Z",
+ "generated_utc": "2026-11-10T08:02:38Z",
+ "exported_utc": "2026-11-10T08:02:30Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-10T07:52:14",
+    "time": "2026-11-10T07:59:57",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-10T07:52:05",
+    "time": "2026-11-10T08:00:19",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -204476,6 +204476,921 @@
         "body": {
          "kind": "reflection",
          "text": "v8shortapproach32complete:30grasp26lift22turn13place1success,30HWOK vsv6 28/26/24/19/1,32HWOK. Failuresincludeindexabductionduringlowheightrotatingapproach (seed18phase0,angularspeed~1.9rad/s), plusseed6close; rejecttimingshortening. v10fixed30%stiffness-reductionviaqdreference32:28grasp22lift19turn13place1success,32HWOK, maxpenetration31.04mm; loadslosecontact. Rejectfixedsoftening. CouldlaterextendNNvelocityheadwithtrackinginputsinitializedZEROnewweights thenPPO, avoidingpre-imposedcompliance. Currentv6PPOunchanged."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0093",
+        "seq": 93,
+        "kind": "iter",
+        "version": 13,
+        "recorded_utc": "2026-11-10T07:54:47Z",
+        "exception": false,
+        "body": {
+         "sim_version": 5,
+         "policy_observations": "deployable",
+         "algorithm": "PPO",
+         "architecture": "167allowedfeatures->512tanhx3->29pose, plus20x20noisyqdlinearvelocityhead; all PPOtrained;49Gaussianactions; critic128x2",
+         "observation_space": "Prior147allowedfeatures plus20trackingerrors(prevqt-noisyq)/.05clipped5. No contacts, forces, torques, masses, friction orimages.",
+         "action_space": "49rawNNactions each500Hz:20absolutejointpose proposals,3wristposition,6rotationcolumns,20jointvelocitytargets. qdt_target=10*clip(raw,-10,10). PublicPD1000Hzunchanged, actualhardwareeverytick. No scriptedruntimefeedbackcoefficients.",
+         "decision_layer": "Finite50Hzobject/subgoalstates onlyallowedstate. Liftrequires70mmrise.25s and.6s elapsed(timeout2s); alreadyuprightskipturn. goalZ12mm. Approachmin2.4max3s,close.9,turn1.8..2.4,carry.25..1.8,lowermax1.8,release/withdraw.65s. nearesteligible3attempts/object. All500HzmotionNN.",
+         "reward_terms": [
+          {
+           "name": "reach",
+           "formula": "exp(-12*sumcappedthumb/indexdistance)",
+           "weight": 0.05
+          },
+          {
+           "name": "opposition",
+           "formula": "bodythumb+anotherfinger",
+           "weight": 0.1
+          },
+          {
+           "name": "held_lift",
+           "formula": "held*min(rise/.1,1)",
+           "weight": 0.30000000000000004
+          },
+          {
+           "name": "height_progress",
+           "formula": "deltaheightclipped+-.02,phase<=3",
+           "weight": 12
+          },
+          {
+           "name": "upright",
+           "formula": "held*max(0,Rzz),phase>=3",
+           "weight": 0.2
+          },
+          {
+           "name": "turn_progress",
+           "formula": "held*deltaRzz,phase>=3",
+           "weight": 3
+          },
+          {
+           "name": "relative_turn",
+           "formula": "held*min(relativeangle/25deg,1),wrist10..85deg",
+           "weight": 0.1
+          },
+          {
+           "name": "wrist_turn_limit",
+           "formula": "held*max(0,wristangle-85deg)",
+           "weight": -0.30000000000000004
+          },
+          {
+           "name": "carry",
+           "formula": "exp(-12XYgoaldistance)*rise>.02,phase>=4",
+           "weight": 0.1
+          },
+          {
+           "name": "left_stand",
+           "formula": "3eachleftuprightreleasedtableandspeed<.02 +5all",
+           "weight": 0.1
+          },
+          {
+           "name": "wrist_style",
+           "formula": ".15palmDownCos-.5max(0,-palmDownCos)",
+           "weight": 0.1
+          },
+          {
+           "name": "lower_style",
+           "formula": "degreesoutsideforwardelevation[-20,40],lowerphase",
+           "weight": -0.003
+          },
+          {
+           "name": "joint_tracking",
+           "formula": "meantrue(q-qtarget)^2",
+           "weight": -1.0
+          },
+          {
+           "name": "joint_speed",
+           "formula": "sumrelu(absqd/VMAX-.4)^2",
+           "weight": -0.30000000000000004
+          },
+          {
+           "name": "hand_table",
+           "formula": "anyhandtablecontact",
+           "weight": -0.05
+          },
+          {
+           "name": "hardware",
+           "formula": "anypublicfingerhardwareviolation",
+           "weight": -1000
+          },
+          {
+           "name": "reference_pose",
+           "formula": "49rawproposalMSEtraining-onlylabels, q1,p100,R5,velocity.05; instantaneousweightscaled.1",
+           "weight": 0.020000000000000004
+          },
+          {
+           "name": "opposed_grip_load",
+           "formula": "min(min(Fthumb,Fother)/2N,1)*clamp(-dot(weightednormals),0,1),phases1..4; training-onlyforces",
+           "weight": 0.2
+          },
+          {
+           "name": "excess_grip_force",
+           "formula": "sumrelu(Ffinger-4N)^2",
+           "weight": -0.01
+          },
+          {
+           "name": "multi_object_carry",
+           "formula": "max(heldcount-1,0)",
+           "weight": -1.0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "geometry_mass_COM",
+           "distribution": "10seededfiniteprofilesx8kindcombosx2counts160groups",
+           "range": "9visioninclnominal,1originalfamily;XYZ[.94,.94,.85]..[1.06,1.06,1.15],massfactor.5..1.5,COM+-3mm. CPUgatefreshcontinuous."
+          },
+          {
+           "quantity": "sharedhand/objectfriction",
+           "distribution": "uniform",
+           "range": [
+            0.2,
+            0.9
+           ]
+          },
+          {
+           "quantity": "contacttime_allgeom_s",
+           "distribution": "uniform",
+           "range": [
+            0.02,
+            0.05
+           ]
+          },
+          {
+           "quantity": "tablefriction",
+           "distribution": "uniform",
+           "range": [
+            0.3,
+            0.7
+           ]
+          },
+          {
+           "quantity": "starts",
+           "distribution": "uniform32CPUsettledtablebankstates/profilegroup",
+           "range": "5120total,5107valid13invalidretained,912touching; noheldstarts. friction/compliancerandomizedafterbankresetcanunsettleleanstates."
+          }
+         ],
+         "curriculum": "Whole-tasktable-startPPOonly. Noartificialheldstarts,noseparateRLskills. Finiteobject/subgoalselector onlyallowedstate; allcontinuousmotionproposalsNN. CPUfullDRfrozengate is deploymentverification.",
+         "regularization": "auxiliaryposeBCweight.3,KLstop.03,actorlr1e-6,critic3e-4,gradnorm.5",
+         "checkpoint": "research/runs/gpu_force002/policy_0100",
+         "package_sha256": "f4c149a98309…",
+         "training_steps": 16384000,
+         "hyperparameters": {
+          "out": "research/runs/gpu_force002",
+          "worlds": 640,
+          "gpu": 1,
+          "updates": 400,
+          "horizon": 256,
+          "load": "research/learning_v6/initialization_bc_167.pt",
+          "seed": 83102,
+          "lr": 1e-06,
+          "bc_data": "research/learning_v6/pose_dataset_v1.npz",
+          "bc_weight": 0.1,
+          "bc_init": 0,
+          "bc_lr": 0.001,
+          "reference_weight": 0.2,
+          "epochs": 4,
+          "minibatch": 4096,
+          "algorithm": "PPO",
+          "nobs": 167,
+          "actiondim": 49,
+          "device": "cuda:1",
+          "gamma": 0.999,
+          "gae_lambda": 0.995,
+          "clip": 0.2,
+          "entropy_weight": 0.001,
+          "value_weight": 0.5,
+          "grad_clip": 0.5,
+          "KL_actor_stop": 0.03,
+          "actor_observations": "deployable",
+          "geometry_mass_COM_DR": "160finitegroups10profiles; freshcontinuousCPUgate"
+         },
+         "initialization": {
+          "parent": "acceptedr0073NN49cp250, firstlayer147colsretainedand20newzeros; offlinehybridreferenceBCthenPPOallweights",
+          "checkpoint": "research/learning_v6/initialization_bc_167.pt",
+          "BC_auxweight": 0.1,
+          "BC_dataset": "research/learning_v6/pose_dataset_v1.npz",
+          "baseline": "corrected500Hzscriptreference32:28grasp26lift24turn19place2allplaced1success32HWOK; NOTlearned",
+          "reference": "learning_v6/reference_v1"
+         },
+         "compute": {
+          "wall_seconds_PPO": 965.8411679267883,
+          "GPU_hours_PPO": 0.26828921331299677,
+          "GPU": 1,
+          "policy_steps": 16384000,
+          "BC_extra_compute": "30000offlineBCupdates recordedlearning_v6/initialization_bc_167.json; subsequentallweightsPPO"
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "representative_seed0": {
+           "stages": {
+            "first_grasp": true,
+            "first_lift": true,
+            "first_turn": true,
+            "first_place": true,
+            "all_placed": false,
+            "success": false
+           },
+           "hardware_ok": true,
+           "metrics": {
+            "placed_count": 1,
+            "grasp_count": 2,
+            "lift_count": 2,
+            "turn_count": 1,
+            "goal_without_style": 1,
+            "stable_seconds": 11.762000000000597,
+            "max_joint_speed_ratio": 0.8550866986214684,
+            "max_penetration_mm": 5.985572296942722,
+            "placement_ok": 1,
+            "multi_held_seconds": 0.0
+           },
+           "seed": 0,
+           "details": {
+            "objects": null
+           },
+           "hardware_events": [],
+           "wall_seconds": 73.51706528663635,
+           "method": "neural deployable policy"
+          },
+          "full32fixedCPUgate": "queuedafteriterationrecord; gate records authoritativecounts"
+         },
+         "reflection": "Scene5 validatedGPU/task_suite5 CPU. Batchlongerblack/softcontact+hybridreferences+167trackingfeatures+training-onlyopposedforcereward. PPO002settingspredeclaredr0082; predictcontrolledfirstplacementimprovementwithnohardwareincrease. Allmotion49NNoutputsPPOtrained. Criteria1unchanged; baselineexplicitlyscripted1of32.",
+         "reward_rate_note": "Instantaneousrewards*.1 at500Hz; progressandterminalHWunscaled. gamma.999lambda.995 retainphysicalhorizons of50HzPPO."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "0292247e9492",
+          "bytes": 50937,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "0c8bcb401b49",
+          "bytes": 406473,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "d67d87310ff2",
+          "bytes": 359867,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "05d42b3c1ec0",
+          "bytes": 307955,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0094",
+        "seq": 94,
+        "kind": "note",
+        "version": 50,
+        "recorded_utc": "2026-11-10T07:54:49Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Untestedrestingfacegap:referenceface5(bladesdown)unverifiedforbothkinds, retained5%CPUinitialfaceprobability. StartingofflineCEMtwofingerturnprobe jobs5/11, fromactualnominalscriptgraspliftpreconditions, 12CPUworkers96samplesx16rounds, continuousuprightprogressandoriginalhardware/style constraints. Referenceonly, noruntimeplanningandnofavorabletestfiltering. Ifpreconditionfailsrecordandskip; anysuccessfulreference stillrequiresNNinitialization/PPOandtaskgate."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0095",
+        "seq": 95,
+        "kind": "iter",
+        "version": 14,
+        "recorded_utc": "2026-11-10T07:55:11Z",
+        "exception": false,
+        "body": {
+         "sim_version": 5,
+         "policy_observations": "deployable",
+         "algorithm": "PPO",
+         "architecture": "167allowedfeatures->512tanhx3->29pose, plus20x20noisyqdlinearvelocityhead; all PPOtrained;49Gaussianactions; critic128x2",
+         "observation_space": "Prior147allowedfeatures plus20trackingerrors(prevqt-noisyq)/.05clipped5. No contacts, forces, torques, masses, friction orimages.",
+         "action_space": "49rawNNactions each500Hz:20absolutejointpose proposals,3wristposition,6rotationcolumns,20jointvelocitytargets. qdt_target=10*clip(raw,-10,10). PublicPD1000Hzunchanged, actualhardwareeverytick. No scriptedruntimefeedbackcoefficients.",
+         "decision_layer": "Finite50Hzobject/subgoalstates onlyallowedstate. Liftrequires70mmrise.25s and.6s elapsed(timeout2s); alreadyuprightskipturn. goalZ12mm. Approachmin2.4max3s,close.9,turn1.8..2.4,carry.25..1.8,lowermax1.8,release/withdraw.65s. nearesteligible3attempts/object. All500HzmotionNN.",
+         "reward_terms": [
+          {
+           "name": "reach",
+           "formula": "exp(-12*sumcappedthumb/indexdistance)",
+           "weight": 0.05
+          },
+          {
+           "name": "opposition",
+           "formula": "bodythumb+anotherfinger",
+           "weight": 0.1
+          },
+          {
+           "name": "held_lift",
+           "formula": "held*min(rise/.1,1)",
+           "weight": 0.30000000000000004
+          },
+          {
+           "name": "height_progress",
+           "formula": "deltaheightclipped+-.02,phase<=3",
+           "weight": 12
+          },
+          {
+           "name": "upright",
+           "formula": "held*max(0,Rzz),phase>=3",
+           "weight": 0.2
+          },
+          {
+           "name": "turn_progress",
+           "formula": "held*deltaRzz,phase>=3",
+           "weight": 3
+          },
+          {
+           "name": "relative_turn",
+           "formula": "held*min(relativeangle/25deg,1),wrist10..85deg",
+           "weight": 0.1
+          },
+          {
+           "name": "wrist_turn_limit",
+           "formula": "held*max(0,wristangle-85deg)",
+           "weight": -0.30000000000000004
+          },
+          {
+           "name": "carry",
+           "formula": "exp(-12XYgoaldistance)*rise>.02,phase>=4",
+           "weight": 0.1
+          },
+          {
+           "name": "left_stand",
+           "formula": "3eachleftuprightreleasedtableandspeed<.02 +5all",
+           "weight": 0.1
+          },
+          {
+           "name": "wrist_style",
+           "formula": ".15palmDownCos-.5max(0,-palmDownCos)",
+           "weight": 0.1
+          },
+          {
+           "name": "lower_style",
+           "formula": "degreesoutsideforwardelevation[-20,40],lowerphase",
+           "weight": -0.003
+          },
+          {
+           "name": "joint_tracking",
+           "formula": "meantrue(q-qtarget)^2",
+           "weight": -1.0
+          },
+          {
+           "name": "joint_speed",
+           "formula": "sumrelu(absqd/VMAX-.4)^2",
+           "weight": -0.30000000000000004
+          },
+          {
+           "name": "hand_table",
+           "formula": "anyhandtablecontact",
+           "weight": -0.05
+          },
+          {
+           "name": "hardware",
+           "formula": "anypublicfingerhardwareviolation",
+           "weight": -1000
+          },
+          {
+           "name": "reference_pose",
+           "formula": "49rawproposalMSEtraining-onlylabels, q1,p100,R5,velocity.05; instantaneousweightscaled.1",
+           "weight": 0.05
+          },
+          {
+           "name": "opposed_grip_load",
+           "formula": "min(min(Fthumb,Fother)/2N,1)*clamp(-dot(weightednormals),0,1),phases1..4; training-onlyforces",
+           "weight": 0.2
+          },
+          {
+           "name": "excess_grip_force",
+           "formula": "sumrelu(Ffinger-4N)^2",
+           "weight": -0.01
+          },
+          {
+           "name": "multi_object_carry",
+           "formula": "max(heldcount-1,0)",
+           "weight": -1.0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "geometry_mass_COM",
+           "distribution": "10seededfiniteprofilesx8kindcombosx2counts160groups",
+           "range": "9visioninclnominal,1originalfamily;XYZ[.94,.94,.85]..[1.06,1.06,1.15],massfactor.5..1.5,COM+-3mm. CPUgatefreshcontinuous."
+          },
+          {
+           "quantity": "sharedhand/objectfriction",
+           "distribution": "uniform",
+           "range": [
+            0.2,
+            0.9
+           ]
+          },
+          {
+           "quantity": "contacttime_allgeom_s",
+           "distribution": "uniform",
+           "range": [
+            0.02,
+            0.05
+           ]
+          },
+          {
+           "quantity": "tablefriction",
+           "distribution": "uniform",
+           "range": [
+            0.3,
+            0.7
+           ]
+          },
+          {
+           "quantity": "starts",
+           "distribution": "uniform32CPUsettledtablebankstates/profilegroup",
+           "range": "5120total,5107valid13invalidretained,912touching; noheldstarts. friction/compliancerandomizedafterbankresetcanunsettleleanstates."
+          }
+         ],
+         "curriculum": "Whole-tasktable-startPPOonly. Noartificialheldstarts,noseparateRLskills. Finiteobject/subgoalselector onlyallowedstate; allcontinuousmotionproposalsNN. CPUfullDRfrozengate is deploymentverification.",
+         "regularization": "auxiliaryposeBCweight.3,KLstop.03,actorlr1e-6,critic3e-4,gradnorm.5",
+         "checkpoint": "research/runs/gpu_force003/policy_0100",
+         "package_sha256": "a82e8ceee716…",
+         "training_steps": 16384000,
+         "hyperparameters": {
+          "out": "research/runs/gpu_force003",
+          "worlds": 640,
+          "gpu": 2,
+          "updates": 400,
+          "horizon": 256,
+          "load": "research/learning_v6/initialization_bc_167.pt",
+          "seed": 83103,
+          "lr": 1e-07,
+          "bc_data": "research/learning_v6/pose_dataset_v1.npz",
+          "bc_weight": 0.3,
+          "bc_init": 0,
+          "bc_lr": 0.001,
+          "reference_weight": 0.5,
+          "epochs": 4,
+          "minibatch": 4096,
+          "algorithm": "PPO",
+          "nobs": 167,
+          "actiondim": 49,
+          "device": "cuda:2",
+          "gamma": 0.999,
+          "gae_lambda": 0.995,
+          "clip": 0.2,
+          "entropy_weight": 0.001,
+          "value_weight": 0.5,
+          "grad_clip": 0.5,
+          "KL_actor_stop": 0.03,
+          "actor_observations": "deployable",
+          "geometry_mass_COM_DR": "160finitegroups10profiles; freshcontinuousCPUgate"
+         },
+         "initialization": {
+          "parent": "acceptedr0073NN49cp250, firstlayer147colsretainedand20newzeros; offlinehybridreferenceBCthenPPOallweights",
+          "checkpoint": "research/learning_v6/initialization_bc_167.pt",
+          "BC_auxweight": 0.3,
+          "BC_dataset": "research/learning_v6/pose_dataset_v1.npz",
+          "baseline": "corrected500Hzscriptreference32:28grasp26lift24turn19place2allplaced1success32HWOK; NOTlearned",
+          "reference": "learning_v6/reference_v1"
+         },
+         "compute": {
+          "wall_seconds_PPO": 982.0069496631622,
+          "GPU_hours_PPO": 0.27277970823976727,
+          "GPU": 2,
+          "policy_steps": 16384000,
+          "BC_extra_compute": "30000offlineBCupdates recordedlearning_v6/initialization_bc_167.json; subsequentallweightsPPO"
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "representative_seed0": {
+           "stages": {
+            "first_grasp": true,
+            "first_lift": true,
+            "first_turn": true,
+            "first_place": true,
+            "all_placed": false,
+            "success": false
+           },
+           "hardware_ok": true,
+           "metrics": {
+            "placed_count": 1,
+            "grasp_count": 2,
+            "lift_count": 2,
+            "turn_count": 1,
+            "goal_without_style": 1,
+            "stable_seconds": 10.886000000000305,
+            "max_joint_speed_ratio": 0.5018916003741356,
+            "max_penetration_mm": 5.137496522990407,
+            "placement_ok": 1,
+            "multi_held_seconds": 0.0
+           },
+           "seed": 0,
+           "details": {
+            "objects": null
+           },
+           "hardware_events": [],
+           "wall_seconds": 76.87224769592285,
+           "method": "neural deployable policy"
+          },
+          "full32fixedCPUgate": "queuedafteriterationrecord; gate records authoritativecounts"
+         },
+         "reflection": "Scene5 validatedGPU/task_suite5 CPU. Batchlongerblack/softcontact+hybridreferences+167trackingfeatures+training-onlyopposedforcereward. PPO003settingspredeclaredr0082; predictcontrolledfirstplacementimprovementwithnohardwareincrease. Allmotion49NNoutputsPPOtrained. Criteria1unchanged; baselineexplicitlyscripted1of32.",
+         "reward_rate_note": "Instantaneousrewards*.1 at500Hz; progressandterminalHWunscaled. gamma.999lambda.995 retainphysicalhorizons of50HzPPO."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "0ea727b494da",
+          "bytes": 51289,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "7df294f1342e",
+          "bytes": 407784,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "bf155e0fd3f5",
+          "bytes": 353333,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "130fd39a8acc",
+          "bytes": 301276,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0096",
+        "seq": 96,
+        "kind": "iter",
+        "version": 15,
+        "recorded_utc": "2026-11-10T07:55:12Z",
+        "exception": false,
+        "body": {
+         "sim_version": 5,
+         "policy_observations": "deployable",
+         "algorithm": "PPO",
+         "architecture": "167allowedfeatures->512tanhx3->29pose, plus20x20noisyqdlinearvelocityhead; all PPOtrained;49Gaussianactions; critic128x2",
+         "observation_space": "Prior147allowedfeatures plus20trackingerrors(prevqt-noisyq)/.05clipped5. No contacts, forces, torques, masses, friction orimages.",
+         "action_space": "49rawNNactions each500Hz:20absolutejointpose proposals,3wristposition,6rotationcolumns,20jointvelocitytargets. qdt_target=10*clip(raw,-10,10). PublicPD1000Hzunchanged, actualhardwareeverytick. No scriptedruntimefeedbackcoefficients.",
+         "decision_layer": "Finite50Hzobject/subgoalstates onlyallowedstate. Liftrequires70mmrise.25s and.6s elapsed(timeout2s); alreadyuprightskipturn. goalZ12mm. Approachmin2.4max3s,close.9,turn1.8..2.4,carry.25..1.8,lowermax1.8,release/withdraw.65s. nearesteligible3attempts/object. All500HzmotionNN.",
+         "reward_terms": [
+          {
+           "name": "reach",
+           "formula": "exp(-12*sumcappedthumb/indexdistance)",
+           "weight": 0.05
+          },
+          {
+           "name": "opposition",
+           "formula": "bodythumb+anotherfinger",
+           "weight": 0.1
+          },
+          {
+           "name": "held_lift",
+           "formula": "held*min(rise/.1,1)",
+           "weight": 0.30000000000000004
+          },
+          {
+           "name": "height_progress",
+           "formula": "deltaheightclipped+-.02,phase<=3",
+           "weight": 12
+          },
+          {
+           "name": "upright",
+           "formula": "held*max(0,Rzz),phase>=3",
+           "weight": 0.2
+          },
+          {
+           "name": "turn_progress",
+           "formula": "held*deltaRzz,phase>=3",
+           "weight": 3
+          },
+          {
+           "name": "relative_turn",
+           "formula": "held*min(relativeangle/25deg,1),wrist10..85deg",
+           "weight": 0.1
+          },
+          {
+           "name": "wrist_turn_limit",
+           "formula": "held*max(0,wristangle-85deg)",
+           "weight": -0.30000000000000004
+          },
+          {
+           "name": "carry",
+           "formula": "exp(-12XYgoaldistance)*rise>.02,phase>=4",
+           "weight": 0.1
+          },
+          {
+           "name": "left_stand",
+           "formula": "3eachleftuprightreleasedtableandspeed<.02 +5all",
+           "weight": 0.1
+          },
+          {
+           "name": "wrist_style",
+           "formula": ".15palmDownCos-.5max(0,-palmDownCos)",
+           "weight": 0.1
+          },
+          {
+           "name": "lower_style",
+           "formula": "degreesoutsideforwardelevation[-20,40],lowerphase",
+           "weight": -0.003
+          },
+          {
+           "name": "joint_tracking",
+           "formula": "meantrue(q-qtarget)^2",
+           "weight": -1.0
+          },
+          {
+           "name": "joint_speed",
+           "formula": "sumrelu(absqd/VMAX-.4)^2",
+           "weight": -0.30000000000000004
+          },
+          {
+           "name": "hand_table",
+           "formula": "anyhandtablecontact",
+           "weight": -0.05
+          },
+          {
+           "name": "hardware",
+           "formula": "anypublicfingerhardwareviolation",
+           "weight": -1000
+          },
+          {
+           "name": "reference_pose",
+           "formula": "49rawproposalMSEtraining-onlylabels, q1,p100,R5,velocity.05; instantaneousweightscaled.1",
+           "weight": 0.05
+          },
+          {
+           "name": "opposed_grip_load",
+           "formula": "min(min(Fthumb,Fother)/2N,1)*clamp(-dot(weightednormals),0,1),phases1..4; training-onlyforces",
+           "weight": 0.2
+          },
+          {
+           "name": "excess_grip_force",
+           "formula": "sumrelu(Ffinger-4N)^2",
+           "weight": -0.01
+          },
+          {
+           "name": "multi_object_carry",
+           "formula": "max(heldcount-1,0)",
+           "weight": -1.0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "geometry_mass_COM",
+           "distribution": "10seededfiniteprofilesx8kindcombosx2counts160groups",
+           "range": "9visioninclnominal,1originalfamily;XYZ[.94,.94,.85]..[1.06,1.06,1.15],massfactor.5..1.5,COM+-3mm. CPUgatefreshcontinuous."
+          },
+          {
+           "quantity": "sharedhand/objectfriction",
+           "distribution": "uniform",
+           "range": [
+            0.2,
+            0.9
+           ]
+          },
+          {
+           "quantity": "contacttime_allgeom_s",
+           "distribution": "uniform",
+           "range": [
+            0.02,
+            0.05
+           ]
+          },
+          {
+           "quantity": "tablefriction",
+           "distribution": "uniform",
+           "range": [
+            0.3,
+            0.7
+           ]
+          },
+          {
+           "quantity": "starts",
+           "distribution": "uniform32CPUsettledtablebankstates/profilegroup",
+           "range": "5120total,5107valid13invalidretained,912touching; noheldstarts. friction/compliancerandomizedafterbankresetcanunsettleleanstates."
+          }
+         ],
+         "curriculum": "Whole-tasktable-startPPOonly. Noartificialheldstarts,noseparateRLskills. Finiteobject/subgoalselector onlyallowedstate; allcontinuousmotionproposalsNN. CPUfullDRfrozengate is deploymentverification.",
+         "regularization": "auxiliaryposeBCweight.3,KLstop.03,actorlr1e-6,critic3e-4,gradnorm.5",
+         "checkpoint": "research/runs/gpu_force001/policy_0100",
+         "package_sha256": "dc68b958a1b0…",
+         "training_steps": 16384000,
+         "hyperparameters": {
+          "out": "research/runs/gpu_force001",
+          "worlds": 640,
+          "gpu": 0,
+          "updates": 400,
+          "horizon": 256,
+          "load": "research/learning_v6/initialization_bc_167.pt",
+          "seed": 83101,
+          "lr": 3e-07,
+          "bc_data": "research/learning_v6/pose_dataset_v1.npz",
+          "bc_weight": 0.3,
+          "bc_init": 0,
+          "bc_lr": 0.001,
+          "reference_weight": 0.5,
+          "epochs": 4,
+          "minibatch": 4096,
+          "algorithm": "PPO",
+          "nobs": 167,
+          "actiondim": 49,
+          "device": "cuda:0",
+          "gamma": 0.999,
+          "gae_lambda": 0.995,
+          "clip": 0.2,
+          "entropy_weight": 0.001,
+          "value_weight": 0.5,
+          "grad_clip": 0.5,
+          "KL_actor_stop": 0.03,
+          "actor_observations": "deployable",
+          "geometry_mass_COM_DR": "160finitegroups10profiles; freshcontinuousCPUgate"
+         },
+         "initialization": {
+          "parent": "acceptedr0073NN49cp250, firstlayer147colsretainedand20newzeros; offlinehybridreferenceBCthenPPOallweights",
+          "checkpoint": "research/learning_v6/initialization_bc_167.pt",
+          "BC_auxweight": 0.3,
+          "BC_dataset": "research/learning_v6/pose_dataset_v1.npz",
+          "baseline": "corrected500Hzscriptreference32:28grasp26lift24turn19place2allplaced1success32HWOK; NOTlearned",
+          "reference": "learning_v6/reference_v1"
+         },
+         "compute": {
+          "wall_seconds_PPO": 988.5843551158905,
+          "GPU_hours_PPO": 0.2746067653099696,
+          "GPU": 0,
+          "policy_steps": 16384000,
+          "BC_extra_compute": "30000offlineBCupdates recordedlearning_v6/initialization_bc_167.json; subsequentallweightsPPO"
+         },
+         "evaluation": {
+          "criteria_version": 1,
+          "representative_seed0": {
+           "stages": {
+            "first_grasp": true,
+            "first_lift": true,
+            "first_turn": true,
+            "first_place": true,
+            "all_placed": true,
+            "success": false
+           },
+           "hardware_ok": true,
+           "metrics": {
+            "placed_count": 2,
+            "grasp_count": 2,
+            "lift_count": 2,
+            "turn_count": 2,
+            "goal_without_style": 1,
+            "stable_seconds": 1.9060000000000015,
+            "max_joint_speed_ratio": 0.2875196795328218,
+            "max_penetration_mm": 13.935543305484343,
+            "placement_ok": 1,
+            "multi_held_seconds": 0.0
+           },
+           "seed": 0,
+           "details": {
+            "objects": null
+           },
+           "hardware_events": [],
+           "wall_seconds": 73.28746008872986,
+           "method": "neural deployable policy"
+          },
+          "full32fixedCPUgate": "queuedafteriterationrecord; gate records authoritativecounts"
+         },
+         "reflection": "Scene5 validatedGPU/task_suite5 CPU. Batchlongerblack/softcontact+hybridreferences+167trackingfeatures+training-onlyopposedforcereward. PPO001settingspredeclaredr0082; predictcontrolledfirstplacementimprovementwithnohardwareincrease. Allmotion49NNoutputsPPOtrained. Criteria1unchanged; baselineexplicitlyscripted1of32.",
+         "reward_rate_note": "Instantaneousrewards*.1 at500Hz; progressandterminalHWunscaled. gamma.999lambda.995 retainphysicalhorizons of50HzPPO."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "2c8046de7ed2",
+          "bytes": 51543,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "97a5f426f789",
+          "bytes": 427949,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "88240efd96b1",
+          "bytes": 346742,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "6eada3020bc0",
+          "bytes": 286440,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0097",
+        "seq": 97,
+        "kind": "gate",
+        "version": 10,
+        "recorded_utc": "2026-11-10T07:56:36Z",
+        "exception": false,
+        "body": {
+         "suite": "task",
+         "suite_version": 5,
+         "suite_kind": "task",
+         "suite_record": "r0079",
+         "final": false,
+         "candidate_sha256": "f8fb73109a52…",
+         "method": "simulation",
+         "hypothesis": "Reevaluateunchangedacceptedr0073policyunderrecordedscene4/task_suite5toestablishphysicalrevisionbaseline; notnewtraining. Hypothesisnewlongerblackandsoftercontactchangesheldturn/placeoutcomes; criteria1unchanged. Preserveearliersuite4evidence.",
+         "predicts": "first_turn",
+         "started_utc": "2026-11-10T07:37:12Z",
+         "pass_rate": 0.9,
+         "max_hardware_violations": 0,
+         "episodes": 32,
+         "counts": {
+          "first_grasp": 29,
+          "first_lift": 23,
+          "first_turn": 21,
+          "first_place": 10,
+          "all_placed": 0,
+          "success": 0
+         },
+         "wilson95": {
+          "first_grasp": [
+           0.7578,
+           0.9676
+          ],
+          "first_lift": [
+           0.5463,
+           0.8444
+          ],
+          "first_turn": [
+           0.4831,
+           0.7959
+          ],
+          "first_place": [
+           0.1795,
+           0.4857
+          ],
+          "all_placed": [
+           0.0,
+           0.1072
+          ],
+          "success": [
+           0.0,
+           0.1072
+          ]
+         },
+         "funnel_first_failed": {
+          "first_grasp": 3,
+          "first_lift": 6,
+          "first_turn": 2,
+          "first_place": 11,
+          "all_placed": 10,
+          "hardware": 0,
+          "complete": 0
+         },
+         "hardware_violations": 3,
+         "success_rate": 0.0,
+         "reproducible": true,
+         "wall_s": 1162.6,
+         "finished_utc": "2026-11-10T07:56:35Z",
+         "meets_pass_rate": false,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent"
+        },
+        "files": {
+         "results_json": {
+          "sha": "077dd94e558a",
+          "bytes": 14303,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0098",
+        "seq": 98,
+        "kind": "note",
+        "version": 51,
+        "recorded_utc": "2026-11-10T07:56:51Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Offlinecontinuous-orientationreferencev11: currentteachernearest-flat-faceprototype ignoresinitialobjectlean. RigidlyrotatepregraspwristoffsetandattitudebyactualInitialR*templateRtranspose; keepcanonicaluprightturnendpointandinterpolatefromadaptedgrasp. Thispreservesrelativepad/bodygeometryforleaningstartswithout runtimeIK, andusesonlyallowedposes. Testscriptbaseline32beforeBC/PPO; physicalscene/criteriaunchanged. Farstartsandfailedleanstatesretained. Separatefromfailedcurrent-tiltfeedbackv7."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0099",
+        "seq": 99,
+        "kind": "note",
+        "version": 52,
+        "recorded_utc": "2026-11-10T07:59:57Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Actionparameterizationprobev12: publicwristlimitsEXECUTEDtargetposition, notactualroot; vFFnorm<=2.5 permitssteady horizontaloffset Kd/Kp*2.5=.075m. DecodeunclippedNEURALposeproposalasvirtualposeinworkspace+75mmXYtube, smoothwithsameK5/v.55/a4, executedp=clip(virtualp), vFF=clipnorm(virtualvelocity+(2000/60)*(virtualp-executedp),2.5),Zextensiondisabled. Reasonqualifies: fixedactuatorencodingofNNproposalonly, noobjectgoal/controller/IK/replay/runtimeplanning; allcontinuousproposalsstillPPOtrainedNN. Publicgains/force/targetboxunchanged. Beforelearningtestscriptteacher32anddecoderCPU/GPUparity. Aimfargraspcoverage; actualrootoffsetdoesnotimplyfulltableguarantee. Earlierhardreachcertificatewasalreadywithdrawnr0013."
         },
         "files": {}
        }
@@ -431768,6 +432683,45 @@
          "text": "Task observation-class changes have now been rejected three times: FK819k r0042,FK2M r0053,alignment-goals r0087. Abandon further observation/goal-format variants. Alignment final retains63/64 with0HW but0turns, so it does not replace r0035. Remaining task experiments use curriculum axis and goal-prioritized reward classes already recorded. Grasp branches remain independent first-skill research, library still empty."
         },
         "files": {}
+       },
+       {
+        "id": "r0090",
+        "seq": 90,
+        "kind": "note",
+        "version": 38,
+        "recorded_utc": "2026-11-10T07:55:30Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Finalization plan at07:57: no further new policy methods. Finish pending X-face gate, evaluate first409600 BC-PPO and KL-PPO checkpoints, evaluate mixed600k and goal-focused600k. Choose incumbent strictly from dev gates, then launch fresh128task final around08:35, after stopping training to freeCPU. Use remaining time for final evidence/export and passive-mechanism energy/momentum checks; these checks characterize simulator limits and never change task criteria. Deadline09:21:37Z, leave room for verdict and reflection."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0091",
+        "seq": 91,
+        "kind": "note",
+        "version": 39,
+        "recorded_utc": "2026-11-10T07:57:07Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Simulator validation planned before relying on it: isolate the cube in zero gravity, no hand/floor contacts or external torque; initialize a coherent30degree layer displacement and release. Check passive total kinetic+spring+detent energy does not rise more than2% of initial energy plus1microjoule, and cube linear/angular momentum drift stays below1e-6kgm/s and5e-6Nms over2s. These are declared numerical tolerances for1ms integration, not real-cube identification or task success. Sweep three axes, displacement signs and mechanism resistance. No training/evaluator physics changes."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0092",
+        "seq": 92,
+        "kind": "note",
+        "version": 40,
+        "recorded_utc": "2026-11-10T08:00:19Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Isolated passive cube check r0091: all18 cases satisfy declared energy and angular-momentum tolerances;17/18 satisfy the full check. One Zpositive/max-resistance case reaches linear momentum1.0926842e-6kgm/s vs1e-6 limit, so report it failed; corresponding COMspeed~1.95e-5m/s. Maximum angular momentum3.90e-9Nms, maximum20ms energy rise2.60microjoules, no energy above initial. Do not relax tolerances. A separate half-step isolated-cube numerical check will test convergence; it is not a hardware/controller or policy evaluation and does not change training/frozen evaluation."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-10T01:34:20Z",
@@ -431783,7 +432737,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-10T07:50:02Z",
+      "exported_utc": "2026-11-10T08:00:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -432564,11 +433518,22 @@
           "rerendered": false
          }
         ]
+       },
+       {
+        "sub": "s07",
+        "status": "running",
+        "submitted_utc": "2026-11-10T07:56:42Z",
+        "finished_utc": null,
+        "verify": null,
+        "gate": "r0097",
+        "package": "f8fb73109a52",
+        "reason": null,
+        "note": null
        }
       ]
      },
      "8": {
-      "exported_utc": "2026-11-10T07:50:02Z",
+      "exported_utc": "2026-11-10T08:00:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -432829,7 +433794,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-10T07:52:32Z",
+  "staged_utc": "2026-11-10T08:02:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -432913,7 +433878,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-10T07:52:32Z",
+  "staged_utc": "2026-11-10T08:02:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
