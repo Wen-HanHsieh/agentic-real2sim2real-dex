@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-10T11:12:36Z",
- "exported_utc": "2026-11-10T11:12:29Z",
+ "generated_utc": "2026-11-10T11:22:36Z",
+ "exported_utc": "2026-11-10T11:22:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-10T11:05:36",
+    "time": "2026-11-10T11:20:29",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -209096,6 +209096,209 @@
          "text": "The robot scene now compiles with all public URDF inertias, 20 joints/armatures and 0.7088 kg hand mass. Initial self-collision tests found overlapping palm and co-located MCP/CMC bearing/cover meshes producing a false 0.58 rad thumb offset. Excluding only palm-welded parts versus the first two joint-body groups removes this structural overlap; all inter-finger and distal palm contacts remain. The 2 s free hold then has maximum finger error 0.0073 rad and speed ratio 0.039 of limit. Post-Stage-1 table-constrained MANO fitting reduces hand/table penetration from 78.9 to 9.2 mm, still failing my 3 mm physical criterion; testing a maximum-vertex table barrier next."
         },
         "files": {}
+       },
+       {
+        "id": "r0014",
+        "seq": 14,
+        "kind": "recon",
+        "version": 7,
+        "recorded_utc": "2026-11-10T11:20:29Z",
+        "exception": false,
+        "body": {
+         "summary": "Post-Stage-1 repair of the recorded hand/table failure: explicit full-hand table barrier and depth ordering refit the hand scale to 1.044. All supplied checks and the additional hand/table check now pass; every supported vertex is above the tabletop.",
+         "components": [
+          {
+           "name": "camera",
+           "status": "partial",
+           "method": "MoGe prior, PnP/profile and vertical-edge check; masked background flow; stationary-object translation",
+           "note": "1074 px prior-informed focal; broad geometric uncertainty; monocular translation inferred."
+          },
+          {
+           "name": "object_geometry",
+           "status": "partial",
+           "method": "Blender rounded housing and fixed blades; primary teardown dimension prior",
+           "note": "White Apple-style exact model unconfirmed; black identity and mass uncertain."
+          },
+          {
+           "name": "object_6d_motion",
+           "status": "partial",
+           "method": "Support-constrained global silhouette fit with visible blade direction and temporal event prior",
+           "note": "Jointly rendered medians {‘plug_white': 0.8160397942936479, 'plug_black': 0.8194407981097401}. Hidden frames invalid, dynamic depth/roll uncertain."
+          },
+          {
+           "name": "hand_motion",
+           "status": "partial",
+           "method": "Required default HaWoR/MANO followed by local copied fitter, supervised thumb/opposition and full-vertex object penetration plus skin clearance",
+           "note": "360/436 supported right-hand frames. Intersections fraction 0.0; max object penetration 0.90 mm. Config/source copied."
+          },
+          {
+           "name": "contact_phases",
+           "status": "partial",
+           "method": "Visual temporal annotations, geometric surface/opposition checks",
+           "note": "Geometric opposed contact {‘plug_white': 0.692, 'plug_black': 0.581}; phase boundaries uncertain by 3–6 frames."
+          },
+          {
+           "name": "scene",
+           "status": "ok",
+           "method": "Rigid free-body MJCF with separate body/blade colliders and fixed table",
+           "note": "Initial/final 2 s settle: drift <0.12 mm, no tipping; no claim that this proves manipulation."
+          },
+          {
+           "name": "validation",
+           "status": "ok",
+           "method": "Unchanged validate_reconstruction.py and check_reference.py",
+           "note": "Quality overall pass; all required checks evaluated, remaining self-contact warning fraction 0.0."
+          }
+         ],
+         "limitations": [
+          "Monocular metric/hidden-pose uncertainty remains. Human wrist height still needs bounded robot IK adaptation; no feasible robot trajectory is claimed."
+         ],
+         "validation": {
+          "schema": "recon-validation/1",
+          "utc": "2026-11-10T11:17:04Z",
+          "thresholds": {
+           "contact_band_mm": 5.0,
+           "phase_fail_mm": 10.0,
+           "pen_warn_mm": 5.0,
+           "pen_fail_mm": 10.0,
+           "wrist_speed_mps": 3.0,
+           "wrist_accel_mps2": 150.0,
+           "tip_speed_mps": 5.0,
+           "bone_jump_deg": 60.0,
+           "obj_jump_m": 0.1,
+           "obj_rot_jump_deg": 45.0,
+           "g": 9.81,
+           "g_tol": 2.0,
+           "rest_drift_mm": 5.0,
+           "sink_mm": 3.0,
+           "hand_chain_mm": [
+            140.0,
+            230.0
+           ],
+           "iou_warn": 0.6,
+           "hand_precision_warn": 0.7,
+           "opposition_deg": 60.0,
+           "anatomical_min_frac": 0.5
+          },
+          "checks": {
+           "reprojection": {
+            "status": "pass",
+            "per_part": null,
+            "below_threshold": null,
+            "note": "against your own masks: agreement with them is necessary, not sufficient (3D errors along the viewing ray are invisible here)"
+           },
+           "fingertip_distance": {
+            "status": "pass",
+            "phases": null
+           },
+           "anatomical_contact": {
+            "status": "pass",
+            "phases": null,
+            "note": "a grasp needs the thumb and an opposing finger on opposite sides of the object; single-finger pushes or palm support are legitimate but must be stated in the analysis. Low penetration does not imply contact."
+           },
+           "penetration_hand_object": {
+            "status": "pass",
+            "max_mm": null,
+            "frames_over_warn": null,
+            "signed": null,
+            "note": "unsigned (lower bound) distances where the object mesh is not watertight"
+           },
+           "self_penetration": {
+            "status": "pass",
+            "finger_finger_frames": null,
+            "finger_finger_frac": 0.0,
+            "hand_hand_frames": null,
+            "note": "triangle intersections between different fingers (FCL); counts are not volumes"
+           },
+           "continuity": {
+            "status": "pass",
+            "flagged": null,
+            "count": 0
+           },
+           "physics": {
+            "status": "pass",
+            "flights": null,
+            "rests": null,
+            "note": "free-flight intervals are given with --flight OBJ=a:b; rest intervals default to object intervals without contact"
+           },
+           "handedness_scale": {
+            "status": "pass",
+            "per_side": null,
+            "note": "left/right are the demonstrator's anatomical hands; a hand is never mirrored"
+           },
+           "sync": {
+            "status": "pass",
+            "t_real_monotonic": true,
+            "fps_real": 30.0,
+            "compare_frames": 436,
+            "compare_matches": true,
+            "object_offset_check": null
+           },
+           "camera_focal": {
+            "status": "pass",
+            "focal_px": 1073.7,
+            "prior_px": 1073.7,
+            "ratio": 1.0,
+            "prior_source": "<path>",
+            "focal_label": "estimated",
+            "threshold_ratio": 1.25,
+            "note": "MoGe intrinsics are a learned prior; the focal should be calibrated against known geometry (camera_calib.py pnp). A large disagreement needs its explanation in NOTES.md (which one is wrong, and why)."
+           },
+           "hand_table_additional": {
+            "status": "pass",
+            "max_penetration_mm": 0.0,
+            "frames_tested": 360,
+            "threshold_mm": 3.0,
+            "note": "All valid MANO vertices checked against tabletop; post-Stage-1 repair adds table barrier and depth order."
+           }
+          },
+          "summary": {
+           "reprojection": "pass",
+           "fingertip_distance": "pass",
+           "anatomical_contact": "pass",
+           "penetration_hand_object": "pass",
+           "self_penetration": "pass",
+           "continuity": "pass",
+           "physics": "pass",
+           "handedness_scale": "pass",
+           "sync": "pass",
+           "camera_focal": "pass"
+          },
+          "failed": [],
+          "incomplete": [],
+          "missing_required": [],
+          "overall": "pass",
+          "overall_note": "pass"
+         },
+         "check_reference": {
+          "verdict": "VALID",
+          "errors": 0,
+          "warnings": 0,
+          "error_list": []
+         },
+         "exception": null,
+         "producer": {
+          "tool": "r2s2r-d2s recon",
+          "recon_dir": "recon_post_table"
+         }
+        },
+        "files": {
+         "compare_video": {
+          "sha": "8c1aba29babf",
+          "bytes": 1993705,
+          "content_type": "video/mp4"
+         },
+         "validation_json": {
+          "sha": "1e88de089091",
+          "bytes": 7501,
+          "content_type": "application/json"
+         },
+         "viewer": {
+          "sha": "280f15051275",
+          "bytes": 6799360,
+          "content_type": "application/x-tar"
+         }
+        }
        }
       ],
       "first_recon_utc": "2026-11-10T10:10:54Z",
@@ -441208,7 +441411,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-10T11:10:01Z",
+      "exported_utc": "2026-11-10T11:20:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -442253,7 +442456,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-10T11:10:01Z",
+      "exported_utc": "2026-11-10T11:20:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -442514,7 +442717,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-10T11:12:32Z",
+  "staged_utc": "2026-11-10T11:22:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -442598,7 +442801,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-10T11:12:32Z",
+  "staged_utc": "2026-11-10T11:22:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
