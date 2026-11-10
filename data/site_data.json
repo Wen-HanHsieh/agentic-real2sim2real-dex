@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-10T18:11:44Z",
- "exported_utc": "2026-11-10T18:11:37Z",
+ "generated_utc": "2026-11-10T18:15:16Z",
+ "exported_utc": "2026-11-10T18:15:08Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-10T18:10:47",
+    "time": "2026-11-10T18:13:44",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -219478,6 +219478,181 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0146",
+        "seq": 146,
+        "kind": "iter",
+        "version": 25,
+        "recorded_utc": "2026-11-10T18:13:13Z",
+        "exception": false,
+        "body": {
+         "sim_version": 4,
+         "policy_observations": "deployable",
+         "algorithm": "Finite public-object-kind dispatch between two PPO whole-task actors; no additional optimization",
+         "checkpoint": "research/packages/pose4_mix3/actor.npz and white_actor.npz",
+         "architecture": "White256hidden actor from incumbent pose_fold1,black512hidden actor from PPO3;167 public inputs29absolute outputs;selective conditioning on both;white9.2s/oldgoalfeature,black9.8s/newgoalfeature",
+         "actions": "20q/2,3canonicalpositions*5,6GramSchmidtrotationcolumns;genericwn30secondordertargetfilter(20rad/s²,4m/s²,10rad/s²;3rad/s,1m/s,3rad/s),derivedfeedforward. Actualstate/qvelneverclipped.",
+         "reward_terms": [
+          {
+           "name": "opposed",
+           "formula": ".1*thumb+otherfingerfreeofenvironment/otherobjects",
+           "weight": 1
+          },
+          {
+           "name": "lift",
+           "formula": ".1*clip(rise/.05,0,1)*opposed",
+           "weight": 1
+          },
+          {
+           "name": "upright",
+           "formula": ".08*max(bladeZworldZ,0)*opposed",
+           "weight": 1
+          },
+          {
+           "name": "standing",
+           "formula": ".30*numberleftuprightsupportedfreehand/objectspeed<.02",
+           "weight": 1
+          },
+          {
+           "name": "wrist_style",
+           "formula": ".03exp(-(closestreferror/35deg)^2)-.10*palmtilt>75deg whileopposed",
+           "weight": 1
+          },
+          {
+           "name": "hardware_penetration",
+           "formula": "-4*anyhardwareviolation-.10*physicalpenetration>3mm",
+           "weight": 1
+          },
+          {
+           "name": "command_clearance",
+           "formula": "-.004sumclip((.0005-signedFKself/tablegap)/.003,0,2)^2;exceptthumb/indexdistal/tippreloadwhilebothactuallytouchactiveobject;training-onlyprivilegedreward",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "objectmass",
+           "distribution": "uniform",
+           "range_multiplier": [
+            0.7,
+            1.3
+           ]
+          },
+          {
+           "quantity": "objectCOM_xyz_m",
+           "distribution": "uniform",
+           "range": [
+            -0.003,
+            0.003
+           ]
+          },
+          {
+           "quantity": "objectfriction",
+           "distribution": "uniform",
+           "range": [
+            0.25,
+            0.9
+           ]
+          },
+          {
+           "quantity": "handfriction",
+           "distribution": "uniform",
+           "range": [
+            0.5,
+            1.1
+           ]
+          },
+          {
+           "quantity": "tablefriction",
+           "distribution": "uniform",
+           "range": [
+            0.3,
+            0.9
+           ]
+          }
+         ],
+         "curriculum": "75percentreachableXYbothfacefamilies/oppositesigns/allinitialyaw;25percentfullbroadrandom/touching/leaning; allphysicalDR. Encodernoisealwayspublic. Fixedfiniteinitialdistanceorderandleftslots;9.8s/object.",
+         "training": {
+          "PPOsteps": 204800,
+          "hyperparameters": {
+           "lr": 3e-06,
+           "envs": 32,
+           "horizon": 256,
+           "epochs": 5,
+           "gamma": 0.995,
+           "gae_lambda": 0.97,
+           "clip": 0.2,
+           "entropy": 0.0001,
+           "seed": 717
+          },
+          "initialization": "512-wide BC100000updates,393988X/Yteacher+DAggerrows",
+          "auxiliary_supervised_weight": 10,
+          "auxiliary_loss": "weighted MSE to teacher/DAgger labels, position30/rotation5/remaining1; separately from physical reward",
+          "source_white": "Incumbent pose_fold1 PPO102400steps, sourceiteration r0097",
+          "source_black": "PPO3 r0145, attached actual PPO3 learning curves; no new training steps for dispatch"
+         },
+         "compute": {
+          "PPOwall_s": 262.5968244075775,
+          "GPUhours": 0.0729435623354382,
+          "device": "L40S1",
+          "environments": 32,
+          "BLASthreads": 1
+         },
+         "evaluation": {
+          "gate": "r0144",
+          "suite": "taskv6",
+          "criteria_version": 2,
+          "counts": {
+           "pickup": 49,
+           "reorient": 33,
+           "placed": 19,
+           "complete": 0
+          },
+          "hardware_violations": 0,
+          "decision": "rejected"
+         },
+         "reflection": "Rejected: no additional complete episodes and five fewer pickup episodes than incumbent. Selective public-state conditioning eliminated observed hardware violations in this64seed set, but does not establish whole-task skill. Viewed seed12030 montage: first white stands, next black pickup/turn fails; next test full measured grasp state rather than another blind pose mapping. No official evaluation claim.",
+         "package": "research/packages/pose4_mix3",
+         "observations": "Publicnoisyq/qd,targethistoryerrors,initialpublictargetcontext,currentwrist/objectposes/velocities/kinds,phase,goal,step. Nocontacts,torques,mass,friction,images,siminternals.",
+         "package_sha256": "571de40f8e4a…"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "969b71a5563f",
+          "bytes": 8310,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "44527a3f73ce",
+          "bytes": 572027,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "73c23bb2ab25",
+          "bytes": 587342,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "25c08ab9ce9e",
+          "bytes": 542772,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0147",
+        "seq": 147,
+        "kind": "note",
+        "version": 47,
+        "recorded_utc": "2026-11-10T18:13:44Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Full-state experiment after r0144 rejection. Viewed failure montages seed12030 and PPO3 seed12011: one object can stand while later objects remain unpicked or are dropped. Mixture had zero hardware violations but49/33/19/0 vs incumbent54/32/23/0, so rejected and not delivered. Collected231-public-feature data with40ms-future physical reference labels: X55928,blackY31804,whiteY10148,studentX55928; weighting1/2/5/2 gives282132rows. BC50000updates55s initializes512actor fromPPO3 first167columns; added64columns zero initially. PPO204800steps now uses public actualq/wrist/object-relative state, same physical Model4/criteria2/frozen suite. No bad adaptive-hybrid teacher labels retained."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-10T10:10:54Z",
@@ -463615,7 +463790,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-10T18:11:40Z",
+  "staged_utc": "2026-11-10T18:15:11Z",
   "tasks": {
    "cube": {
     "files": {
@@ -463699,7 +463874,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-10T18:11:39Z",
+  "staged_utc": "2026-11-10T18:15:11Z",
   "tasks": {
    "tennis": {
     "status": "available",
