@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-10T13:02:36Z",
- "exported_utc": "2026-11-10T13:02:29Z",
+ "generated_utc": "2026-11-10T13:12:36Z",
+ "exported_utc": "2026-11-10T13:12:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-10T12:59:55",
+    "time": "2026-11-10T13:10:31",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -448739,6 +448739,697 @@
           "content_type": "application/json"
          }
         }
+       },
+       {
+        "id": "r0065",
+        "seq": 65,
+        "kind": "note",
+        "version": 26,
+        "recorded_utc": "2026-11-10T13:02:30Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "The axis-change blocker has two possible solutions: a whole-cube roll orthogonal to handX, or direct turns about other cube axes from the same grip. I am testing both. New bounded-error CEM references target only cubeY or cubeZ quarter-turns, rather than any face; if both become feasible, a finite3face cube solver could avoid whole-cube reorientation. No task criteria or primitive list is removed yet, and no whole-task PPO trains around the unproven motion."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0066",
+        "seq": 66,
+        "kind": "iter",
+        "version": 4,
+        "recorded_utc": "2026-11-10T13:03:32Z",
+        "exception": false,
+        "body": {
+         "sim_version": 1,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "algorithm": "PPO",
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "learning_rate": 0.0001,
+          "epochs": 4,
+          "minibatch": 512,
+          "environments": 16,
+          "rollout_steps": 128,
+          "seed": 410,
+          "observation_dim": 215,
+          "action_dim": 26,
+          "device": "cuda:2",
+          "auxiliary_supervised_loss": "10*mean((actormean-teacheraction)^2); PPO remains the only RL objective/algorithm."
+         },
+         "architecture": "Actor/critic215-256ELU-256ELU-128ELU, Gaussian26D actor; BC-initialized actor followed by PPO. Deterministic mean at evaluation.",
+         "observation_space": "Deployable182statefeatures plus20constantreferencejointtargets,9referencewristrotationentries,3referencewristpositionerrors andnormalizedskilltime. Reference is constanttasksetting from physicalcapture; no contacts/forces/parameters/reward input.",
+         "action_space": "26networkmeansclipped[-1,1]. Fingerqtargets=noisyobservedq+0.04a, positionlimitsclampedbyhardwarecontroller. Wristprevious-targetincrements1.5mm/0.03rad;50Hznetwork,500Hztargethold,1kHzphysicsPD. No scripted motion base.",
+         "reward_terms": [
+          {
+           "name": "held",
+           "formula": "anyhandcubecontact",
+           "weight": 1
+          },
+          {
+           "name": "opposed",
+           "formula": "thumbandanotherfingercontact",
+           "weight": 1
+          },
+          {
+           "name": "pose_tracking",
+           "formula": "exp(-2angle(actualR*referenceR^T)^2)",
+           "weight": 0.5
+          },
+          {
+           "name": "joint_tracking",
+           "formula": "exp(-mean((q-qreference)^2)/.16)",
+           "weight": 0.25
+          },
+          {
+           "name": "centering",
+           "formula": "exp(-norm(cube_local-reference_center)^2/.03^2)",
+           "weight": 0.5
+          },
+          {
+           "name": "action",
+           "formula": "sum26a^2",
+           "weight": -0.01
+          },
+          {
+           "name": "position_anchor",
+           "formula": "norm(wrist-referenceposition)^2/.02^2",
+           "weight": -2
+          },
+          {
+           "name": "failure",
+           "formula": "hardware,floor,gap>50ms,mechanismerror>8deg,distance>.2m",
+           "weight": -30
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "starts",
+           "distribution": "59actualretainedends from frozen libraryincumbentr0046,conditionalonpreviousskill success; associated49/50/51mmedgepreserved"
+          },
+          {
+           "name": "mass",
+           "distribution": "uniform52–75g"
+          },
+          {
+           "name": "hand_friction",
+           "distribution": "uniform.5–1.2"
+          },
+          {
+           "name": "mechanism_factor",
+           "distribution": "uniform.5–2"
+          },
+          {
+           "name": "encoder_noise",
+           "distribution": "qGaussian.002rad,qdGaussian.05rad/s"
+          }
+         ],
+         "curriculum": "8-second capture reference: fingersclose.5–3.5s, wristtilt3.5–6.5s, holdto8s. Actual preceding-incumbent ends only, no constructed start substitutions.",
+         "compute": {
+          "PPO_steps": 600064,
+          "PPO_wall_s": 926.9,
+          "BC_shared_with": "grip_ppo_v2",
+          "gpu_hours": 0.2574722222222222,
+          "environments": 16,
+          "GPU": "oneL40S"
+         },
+         "evaluation": {
+          "gate": "r0064",
+          "suite": "grip_skill2/r0053",
+          "episodes": 64,
+          "retain": 64,
+          "oblique_grip": 9,
+          "success_rate": 0.140625,
+          "hardware_violations": 0,
+          "pass_rate_required": 0.9,
+          "library_eligible": false
+         },
+         "reflection": "Bounded finger targets remove26hardware-violation episodes; supervised corrections preserve more of the teacher and improve4→9of64captures. Still far below90percent. Viewed seed24048/24020: cube/fingers do not settle into stable opposed oblique grip. Current reward branch increases pose/completion incentives; a reference-retargeting analysis will address placement-dependent misses. No whole-task claim.",
+         "policy": "research/policies/grip_ppo_v3",
+         "sources": {
+          "model": "research/code/grip_model_v2.py",
+          "trainer": "research/code/train_grip_v3.py",
+          "runner": "research/code/ppo_grip_aux_runner.py",
+          "BC": "research/code/bc_grip_v2.py"
+         },
+         "initialization": {
+          "method": "Behavior-cloning initialization only; requires PPO before deployment claims",
+          "episodes": 128,
+          "teacher_success": 49,
+          "samples": 42067,
+          "conditional_source": "actual retained ends of r0039",
+          "loss": [
+           0.03606731255971181,
+           0.020336285184570594,
+           0.013815563114229476,
+           0.011385569682848647,
+           0.009823178429223383,
+           0.008696233190831994,
+           0.007904081755063715,
+           0.007288578530103511,
+           0.00679382944677869,
+           0.006390289352903255,
+           0.006029415570078959,
+           0.005756089881294297,
+           0.005533232151142578,
+           0.00531955023231499,
+           0.0051362945842246994,
+           0.0049669850609716,
+           0.004838898204623878,
+           0.004713631989225223,
+           0.004612675122497956,
+           0.00450989822792724,
+           0.004431325841844123,
+           0.00435075806862503,
+           0.004259058844355358,
+           0.004194492980742646,
+           0.004139446890351947,
+           0.004078086654563528,
+           0.004013854350610278,
+           0.003965338188269125,
+           0.003917644254770708,
+           0.003874701178190983
+          ],
+          "wall_s": 56.79245471954346,
+          "limitation": "The49/128teacher count is completion/end-opposition/pose, not the full registered last-second stability/pose predicate; it is not a grip_skill pass claim."
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "9c550670c49b",
+          "bytes": 79399,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "da93c51c1ead",
+          "bytes": 106115,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "323011ccbd62",
+          "bytes": 117746,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "1f8d087652ce",
+          "bytes": 127922,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0067",
+        "seq": 67,
+        "kind": "suite",
+        "version": 16,
+        "recorded_utc": "2026-11-10T13:06:48Z",
+        "exception": false,
+        "body": {
+         "suite": "turn_z_feasible",
+         "suite_version": 1,
+         "suite_kind": "feasibility",
+         "criteria_version": 2,
+         "stages": [
+          "retain",
+          "turn"
+         ],
+         "pass_rate": 0.25,
+         "pass_rate_reason": "Existence/feasibility proof only: at least8/32 physical trials, no hardware violations; this is not a task reliability claim.",
+         "max_hardware_violations": 0,
+         "dev_episodes": 32,
+         "final_episodes": 32,
+         "timeout_min": 30,
+         "description": "Required cubeZquarterturn fromcanonicalgrip; bodyZisapproximatelyhandZandorthogonal tohandXroll. Same8scontact/hardware/integrity andfullmass/friction/dragDR/0.25mmplacement protocol. The legalmove checker restricts goal to cubeZ. Feasibilityonly.",
+         "precondition": null,
+         "postcondition": null,
+         "starts_from": null,
+         "primitive": "layer_turn",
+         "primitives": null,
+         "stage_predicates": {
+          "retain": [
+           {
+            "measure": "held_s",
+            "op": ">=",
+            "value": 0.5
+           }
+          ],
+          "turn": [
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.5
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1
+           },
+           {
+            "measure": "touching_environment_at_end",
+            "op": "<=",
+            "value": 0
+           }
+          ]
+         },
+         "render_command": [
+          "{python}",
+          "evaluate.py",
+          "--policy",
+          "{policy}",
+          "--seeds",
+          "{seeds}",
+          "--out",
+          "{out}",
+          "--mode",
+          "layer_turn",
+          "--render"
+         ],
+         "reason": null,
+         "evaluator_bytes": 11767320,
+         "evaluator_files": 73
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "3cc7fae31f9c",
+          "bytes": 7778,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0068",
+        "seq": 68,
+        "kind": "suite",
+        "version": 17,
+        "recorded_utc": "2026-11-10T13:06:51Z",
+        "exception": false,
+        "body": {
+         "suite": "reorient_feasible",
+         "suite_version": 3,
+         "suite_kind": "feasibility",
+         "criteria_version": 2,
+         "stages": [
+          "retain",
+          "reorient"
+         ],
+         "pass_rate": 0.25,
+         "pass_rate_reason": "Existence/feasibility proof only: at least8/32 physical trials, no hardware violations; this is not a task reliability claim.",
+         "max_hardware_violations": 0,
+         "dev_episodes": 32,
+         "final_episodes": 32,
+         "timeout_min": 30,
+         "description": "WholecubehandXquarterroll, preservingrelativecornerstateswithin5deg, nowpairedwith the orthogonal cubeZturn reference. This pair exposesotherfaceaxes; same strict8scontact/integrity/hardware0 andfullDR. The prior handY/Zalternative wasunproven; no goalcriterionrelaxed.",
+         "precondition": null,
+         "postcondition": null,
+         "starts_from": null,
+         "primitive": "reorientation",
+         "primitives": null,
+         "stage_predicates": {
+          "retain": [
+           {
+            "measure": "held_s",
+            "op": ">=",
+            "value": 0.5
+           }
+          ],
+          "reorient": [
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.5
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1
+           },
+           {
+            "measure": "touching_environment_at_end",
+            "op": "<=",
+            "value": 0
+           }
+          ]
+         },
+         "render_command": [
+          "{python}",
+          "evaluate.py",
+          "--policy",
+          "{policy}",
+          "--seeds",
+          "{seeds}",
+          "--out",
+          "{out}",
+          "--mode",
+          "reorientation",
+          "--render"
+         ],
+         "reason": "Alternative controller search found a physical cubeZturn, orthogonal to the existing handXroll. This pair can exposeotheraxes. Switch required roll back to handXonly for this new pair; retain all strict success/hardware/contact/DRchecks. Earlier handY/Zalternative remains unproven and is not claimed successful.",
+         "evaluator_bytes": 11767926,
+         "evaluator_files": 73
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "97434af183b9",
+          "bytes": 7778,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0069",
+        "seq": 69,
+        "kind": "gate",
+        "version": 12,
+        "recorded_utc": "2026-11-10T13:07:13Z",
+        "exception": false,
+        "body": {
+         "suite": "grip_skill",
+         "suite_version": 2,
+         "suite_kind": "skill",
+         "suite_record": "r0053",
+         "final": false,
+         "candidate_sha256": "00dfd9f1688f…",
+         "method": "action_space",
+         "hypothesis": "The predeclared action-space-only ablation tests whether bounded finger errors alone improve capture, without supervised corrections during PPO.",
+         "predicts": "oblique_grip",
+         "observed": "Variant fixed before r0064. I opened r0064 seed24048/24020 and r0054 seed24026/24046: pressure/windup is corrected by bounded actions, while grip settling remains poor. This ablation isolates removal of the auxiliary teacher correction from the accepted r0064 model; same BC initialization, source starts and reward.",
+         "primitive": null,
+         "started_utc": "2026-11-10T13:03:34Z",
+         "pass_rate": 0.9,
+         "max_hardware_violations": 0,
+         "episodes": 64,
+         "counts": {
+          "retain": 63,
+          "oblique_grip": 1,
+          "success": 1
+         },
+         "wilson95": {
+          "retain": [
+           0.9167,
+           0.9972
+          ],
+          "oblique_grip": [
+           0.0028,
+           0.0833
+          ],
+          "success": [
+           0.0028,
+           0.0833
+          ]
+         },
+         "funnel_first_failed": {
+          "retain": 1,
+          "oblique_grip": 62,
+          "hardware": 0,
+          "complete": 1
+         },
+         "predicate_overrides": {
+          "retain": 0,
+          "oblique_grip": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 0.0156,
+         "reproducible": true,
+         "wall_s": 197.3,
+         "finished_utc": "2026-11-10T13:07:12Z",
+         "meets_pass_rate": false,
+         "decision": "rejected",
+         "incumbent": false,
+         "previous_incumbent": "r0064",
+         "delta": {
+          "retain": -1,
+          "oblique_grip": -8,
+          "success": -8
+         },
+         "margin": 4,
+         "hardware_delta": 0,
+         "reason": "the predicted 'oblique_grip' changed by -8 episodes (needs +4); lost more than 4 episodes in 'oblique_grip' (-8), 'success' (-8)",
+         "failure_review": {
+          "stage": "oblique_grip",
+          "lost": 62,
+          "episodes": 64,
+          "seeds": [
+           24037,
+           24021
+          ],
+          "frames_per_view": 8,
+          "montages": [
+           {
+            "seed": 24037,
+            "role": "montage_1",
+            "file": "failures/seed_24037.jpg",
+            "views": null,
+            "frame_times_s": null
+           },
+           {
+            "seed": 24021,
+            "role": "montage_2",
+            "file": "failures/seed_24021.jpg",
+            "views": null,
+            "frame_times_s": null
+           }
+          ],
+          "render_wall_s": 17.7
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "e1fda0135303",
+          "bytes": 46446,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "d7a310b9989a",
+          "bytes": 43003,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "c400594e74b2",
+          "bytes": 96049,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0070",
+        "seq": 70,
+        "kind": "gate",
+        "version": 13,
+        "recorded_utc": "2026-11-10T13:10:19Z",
+        "exception": false,
+        "body": {
+         "suite": "turn_z_feasible",
+         "suite_version": 1,
+         "suite_kind": "feasibility",
+         "suite_record": "r0067",
+         "final": false,
+         "candidate_sha256": "05ae65fa8692…",
+         "method": "baseline",
+         "hypothesis": "The new bounded finger reference can complete an orthogonal cubeZquarter-turn under varied physics, making the previously proven handXroll useful for exposing axes.",
+         "predicts": "turn",
+         "observed": "Initial cubeZgate. Offline reference completes a legal quarter with1.27deg error,3.20deg mechanism error,0.178speedratio,0gap and82percent total opposed contact. It changes the solution approach rather than assuming the two handXmotions suffice.",
+         "primitive": "layer_turn",
+         "started_utc": "2026-11-10T13:06:56Z",
+         "pass_rate": 0.25,
+         "max_hardware_violations": 0,
+         "episodes": 32,
+         "counts": {
+          "retain": 32,
+          "turn": 27,
+          "success": 27
+         },
+         "wilson95": {
+          "retain": [
+           0.8928,
+           1.0
+          ],
+          "turn": [
+           0.6825,
+           0.9314
+          ],
+          "success": [
+           0.6825,
+           0.9314
+          ]
+         },
+         "funnel_first_failed": {
+          "retain": 0,
+          "turn": 5,
+          "hardware": 0,
+          "complete": 27
+         },
+         "predicate_overrides": {
+          "retain": 0,
+          "turn": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 0.8438,
+         "reproducible": true,
+         "wall_s": 188.5,
+         "finished_utc": "2026-11-10T13:10:18Z",
+         "meets_pass_rate": true,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent",
+         "failure_review": {
+          "stage": "turn",
+          "lost": 5,
+          "episodes": 32,
+          "seeds": [
+           27004,
+           27022
+          ],
+          "frames_per_view": 8,
+          "montages": [
+           {
+            "seed": 27004,
+            "role": "montage_1",
+            "file": "failures/seed_27004.jpg",
+            "views": null,
+            "frame_times_s": null
+           },
+           {
+            "seed": 27022,
+            "role": "montage_2",
+            "file": "failures/seed_27022.jpg",
+            "views": null,
+            "frame_times_s": null
+           }
+          ],
+          "render_wall_s": 11.8
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "f6b088d32ac1",
+          "bytes": 44139,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "43af7a977127",
+          "bytes": 40082,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "0ed399a76707",
+          "bytes": 48974,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0071",
+        "seq": 71,
+        "kind": "gate",
+        "version": 14,
+        "recorded_utc": "2026-11-10T13:10:31Z",
+        "exception": false,
+        "body": {
+         "suite": "reorient_feasible",
+         "suite_version": 3,
+         "suite_kind": "feasibility",
+         "suite_record": "r0068",
+         "final": false,
+         "candidate_sha256": "bcec36c97f8d…",
+         "method": "baseline",
+         "hypothesis": "The pure handXroll remains feasible and is now orthogonal to the new cubeZturn; together they can change the accessible puzzle axis.",
+         "predicts": "reorient",
+         "observed": "New required-pair baseline. Prior r0060 proved this handXroll19/32hardware0. Reference classification exposed its parallelism to the original handXturn; the new cubeZturn resolves that structural issue without relaxing the manipulation criteria.",
+         "primitive": "reorientation",
+         "started_utc": "2026-11-10T13:07:14Z",
+         "pass_rate": 0.25,
+         "max_hardware_violations": 0,
+         "episodes": 32,
+         "counts": {
+          "retain": 32,
+          "reorient": 19,
+          "success": 19
+         },
+         "wilson95": {
+          "retain": [
+           0.8928,
+           1.0
+          ],
+          "reorient": [
+           0.4226,
+           0.7448
+          ],
+          "success": [
+           0.4226,
+           0.7448
+          ]
+         },
+         "funnel_first_failed": {
+          "retain": 0,
+          "reorient": 13,
+          "hardware": 0,
+          "complete": 19
+         },
+         "predicate_overrides": {
+          "retain": 0,
+          "reorient": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 0.5938,
+         "reproducible": true,
+         "wall_s": 179.7,
+         "finished_utc": "2026-11-10T13:10:30Z",
+         "meets_pass_rate": true,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent",
+         "failure_review": {
+          "stage": "reorient",
+          "lost": 13,
+          "episodes": 32,
+          "seeds": [
+           26028,
+           26029
+          ],
+          "frames_per_view": 8,
+          "montages": [
+           {
+            "seed": 26028,
+            "role": "montage_1",
+            "file": "failures/seed_26028.jpg",
+            "views": null,
+            "frame_times_s": null
+           },
+           {
+            "seed": 26029,
+            "role": "montage_2",
+            "file": "failures/seed_26029.jpg",
+            "views": null,
+            "frame_times_s": null
+           }
+          ],
+          "render_wall_s": 14.5
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "f29c9f82e82a",
+          "bytes": 43669,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "edd246779e91",
+          "bytes": 39680,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "89ccadff9152",
+          "bytes": 48771,
+          "content_type": "application/json"
+         }
+        }
        }
       ],
       "first_recon_utc": "2026-11-10T10:05:03Z",
@@ -448754,7 +449445,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-10T13:00:01Z",
+      "exported_utc": "2026-11-10T13:10:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -449799,7 +450490,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-10T13:00:01Z",
+      "exported_utc": "2026-11-10T13:10:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -450060,7 +450751,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-10T13:02:32Z",
+  "staged_utc": "2026-11-10T13:12:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -450144,7 +450835,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-10T13:02:32Z",
+  "staged_utc": "2026-11-10T13:12:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
