@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-10T12:02:37Z",
- "exported_utc": "2026-11-10T12:02:29Z",
+ "generated_utc": "2026-11-10T12:12:36Z",
+ "exported_utc": "2026-11-10T12:12:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-10T12:02:07",
+    "time": "2026-11-10T12:12:05",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-10T12:00:33",
+    "time": "2026-11-10T12:10:27",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -210793,6 +210793,412 @@
           "content_type": "application/json"
          }
         }
+       },
+       {
+        "id": "r0028",
+        "seq": 28,
+        "kind": "iter",
+        "version": 1,
+        "recorded_utc": "2026-11-10T12:02:37Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "algorithm": "PPO with BC initialization; initial failed direct absolute-target representation",
+         "architecture": "108 input,256tanh,256tanh,26outputs; Gaussianstd exp(-4), critic256x256",
+         "observations": "Only public noisyq/qd,wrist/object pose/velocity, previous targets, step,kind; yaw-canonical coordinates remembered from initial object state.",
+         "actions": "20joint targets,3relativewristposition,3wristrotationvector; direct network outputs50Hz, interface rate-limits at500Hz and derives feedforward velocities.",
+         "reward_terms": [
+          {
+           "name": "opposed",
+           "formula": ".1*opposed at50Hz",
+           "weight": 1
+          },
+          {
+           "name": "rise",
+           "formula": ".1*clip(rise/.05,0,1)",
+           "weight": 1
+          },
+          {
+           "name": "wrist_tracking",
+           "formula": ".04*exp(-position_error/.04)",
+           "weight": 1
+          },
+          {
+           "name": "joint_tracking",
+           "formula": ".02*exp(-mean_q_error_squared/.1)",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-.5 ifhardwareviolation",
+           "weight": 1
+          },
+          {
+           "name": "penetration",
+           "formula": "-.1 ifpenetration>.003",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "mass_scale",
+           "distribution": "uniform",
+           "range": [
+            0.7,
+            1.3
+           ]
+          },
+          {
+           "name": "com_xyz_m",
+           "distribution": "uniform",
+           "range": [
+            -0.003,
+            0.003
+           ]
+          },
+          {
+           "name": "object_friction",
+           "distribution": "uniform",
+           "range": [
+            0.25,
+            0.65
+           ]
+          },
+          {
+           "name": "pad_friction",
+           "distribution": "uniform",
+           "range": [
+            0.5,
+            1.1
+           ]
+          },
+          {
+           "name": "table_friction",
+           "distribution": "uniform",
+           "range": [
+            0.3,
+            0.7
+           ]
+          },
+          {
+           "name": "startxyyaw",
+           "distribution": "uniform",
+           "range": "x±.05,y[-.16,-.04],yaw±.35, two kinds"
+          }
+         ],
+         "training": {
+          "duration": 6,
+          "method": "PPO with BC initialization; all continuous targets directly predicted by actor",
+          "input_dim": 108,
+          "bc_updates": 12000,
+          "bc_samples": 57600,
+          "bc_wall_s": 12.937819957733154,
+          "ppo_steps": 40960,
+          "ppo_wall_s": 79.59413433074951,
+          "ppo_hyperparameters": {
+           "lr": 5e-05,
+           "envs": 32,
+           "horizon": 128,
+           "epochs": 5,
+           "gamma": 0.99,
+           "gae_lambda": 0.95,
+           "clip": 0.2,
+           "entropy": 0.0001,
+           "seed": 717
+          }
+         },
+         "evaluation": "Pickup skill gate pending/result to be added by separate note; deterministic diagnostic no lift. BC-only direct-target baseline also never grasps.",
+         "reflection": "FAILED: BC found a copying shortcut from current/previous targets; deterministic closed loop remains near initial pose despite tiny supervised loss. PPO then stays outside teacher distribution. Stop this representation and learn velocity outputs integrated into targets, with PPO; this is an action-space change, not a reward-only tweak.",
+         "curriculum": "Canonical lying initial family, randomized kind/yaw/position/physics; firstskill only; all whole-task primitives not yetproven.",
+         "compute": "32CPUworkers, GPU0actor; saved40960PPOsteps around80s, interrupted afterdiagnosing failed initialization."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "124a9a96a40b",
+          "bytes": 3390,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "bcf29225e8ac",
+          "bytes": 156337,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "2c780d45ef3d",
+          "bytes": 187468,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "7c0220d72009",
+          "bytes": 154909,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0029",
+        "seq": 29,
+        "kind": "note",
+        "version": 8,
+        "recorded_utc": "2026-11-10T12:02:56Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Pickup learned gate r0027 (iteration r0028) failed0/32,10 hardware violations. I viewed seed22005 montage: through0.75–5.25s the wrist stays high while fingers drift, never approaching the plug. Deterministic BC-only diagnostic also stays near initial pose. Inference: absolute-target BC copied current/previous targets rather than learning phase progress. Switch action representation to26 network-predicted velocities integrated through the public targets; keep PPO, lower update rate and use KL stopping. This change addresses the observed stalled approach, not the task criteria."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0030",
+        "seq": 30,
+        "kind": "gate",
+        "version": 4,
+        "recorded_utc": "2026-11-10T12:11:10Z",
+        "exception": false,
+        "body": {
+         "suite": "pickup_skill",
+         "suite_version": 1,
+         "suite_kind": "skill",
+         "suite_record": "r0023",
+         "final": false,
+         "candidate_sha256": "6da179f006c4…",
+         "method": "action_space",
+         "hypothesis": "Velocity-output PPO removes direct target copying and should improve physical approach and pickup; BC diagnostic still exhibits covariate drift, so this candidate may fail grasp.",
+         "predicts": "lift",
+         "observed": "r0027 seed22005 at0.75-5.25s: wrist remains high and drifts without approaching plug; inferred absolute-target copying shortcut.",
+         "primitive": null,
+         "started_utc": "2026-11-10T12:10:40Z",
+         "pass_rate": 0.85,
+         "max_hardware_violations": 0,
+         "episodes": 32,
+         "counts": {
+          "lift": 0,
+          "success": 0
+         },
+         "wilson95": {
+          "lift": [
+           0.0,
+           0.1072
+          ],
+          "success": [
+           0.0,
+           0.1072
+          ]
+         },
+         "funnel_first_failed": {
+          "lift": 32,
+          "hardware": 0,
+          "complete": 0
+         },
+         "predicate_overrides": {
+          "lift": 0
+         },
+         "hardware_violations": 6,
+         "success_rate": 0.0,
+         "reproducible": true,
+         "wall_s": 20.3,
+         "finished_utc": "2026-11-10T12:11:09Z",
+         "meets_pass_rate": false,
+         "decision": "rejected",
+         "incumbent": false,
+         "previous_incumbent": "r0027",
+         "delta": {
+          "lift": 0,
+          "success": 0
+         },
+         "margin": 2,
+         "hardware_delta": -4,
+         "reason": "the predicted 'lift' changed by +0 episodes (needs +2)",
+         "failure_review": {
+          "stage": "lift",
+          "lost": 32,
+          "episodes": 32,
+          "seeds": [
+           22026,
+           22007
+          ],
+          "frames_per_view": 8,
+          "montages": [
+           {
+            "seed": 22026,
+            "role": "montage_1",
+            "file": "failures/seed_22026.jpg",
+            "views": null,
+            "frame_times_s": null
+           },
+           {
+            "seed": 22007,
+            "role": "montage_2",
+            "file": "failures/seed_22007.jpg",
+            "views": null,
+            "frame_times_s": null
+           }
+          ],
+          "render_wall_s": 7.1
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "cc3f53792dbb",
+          "bytes": 51529,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "380cdc4260f4",
+          "bytes": 49517,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "1ef347a89a08",
+          "bytes": 34715,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0031",
+        "seq": 31,
+        "kind": "iter",
+        "version": 2,
+        "recorded_utc": "2026-11-10T12:12:05Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "algorithm": "PPO after velocity-output BC, seed717",
+         "architecture": "108input,256tanh,256tanh,26networkvelocityoutputs",
+         "observations": "Only public noisyq/qd,wrist/object pose/velocity, previous targets, step,kind; yaw-canonical coordinates remembered from initial object state.",
+         "actions": "20joint velocities scaled4rad_s,3wristvelocities.5m_s,3angularvelocities3rad_s; integrate public targets at500Hz. Network sampled50Hz; no scripted continuous base.",
+         "reward_terms": [
+          {
+           "name": "opposed",
+           "formula": ".1*opposed at50Hz",
+           "weight": 1
+          },
+          {
+           "name": "rise",
+           "formula": ".1*clip(rise/.05,0,1)",
+           "weight": 1
+          },
+          {
+           "name": "wrist_tracking",
+           "formula": ".04*exp(-position_error/.04)",
+           "weight": 1
+          },
+          {
+           "name": "joint_tracking",
+           "formula": ".02*exp(-mean_q_error_squared/.1)",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-.5 ifhardwareviolation",
+           "weight": 1
+          },
+          {
+           "name": "penetration",
+           "formula": "-.1 ifpenetration>.003",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "mass_scale",
+           "distribution": "uniform",
+           "range": [
+            0.7,
+            1.3
+           ]
+          },
+          {
+           "name": "com_xyz_m",
+           "distribution": "uniform",
+           "range": [
+            -0.003,
+            0.003
+           ]
+          },
+          {
+           "name": "object_friction",
+           "distribution": "uniform",
+           "range": [
+            0.25,
+            0.65
+           ]
+          },
+          {
+           "name": "pad_friction",
+           "distribution": "uniform",
+           "range": [
+            0.5,
+            1.1
+           ]
+          },
+          {
+           "name": "table_friction",
+           "distribution": "uniform",
+           "range": [
+            0.3,
+            0.7
+           ]
+          },
+          {
+           "name": "startxyyaw",
+           "distribution": "uniform",
+           "range": "x±.05,y[-.16,-.04],yaw±.35, two kinds"
+          }
+         ],
+         "training": {
+          "duration": 6,
+          "method": "PPO with BC initialization; all continuous targets directly predicted by actor",
+          "input_dim": 108,
+          "bc_updates": 12000,
+          "bc_samples": 57600,
+          "bc_wall_s": 12.892725467681885,
+          "ppo_steps": 204800,
+          "ppo_wall_s": 248.55142402648926,
+          "ppo_hyperparameters": {
+           "lr": 3e-06,
+           "envs": 32,
+           "horizon": 128,
+           "epochs": 5,
+           "gamma": 0.99,
+           "gae_lambda": 0.95,
+           "clip": 0.2,
+           "entropy": 0.0001,
+           "seed": 717
+          }
+         },
+         "evaluation": "r0030:0/32 pickups,6hardwareviolations; rejected versusr0027 incumbent",
+         "reflection": "FAILED. Velocity removes direct identity shortcut, but network copies current velocities and drifts off teacher distribution. Next method: DAgger correction labels on learner states, then PPO; no criteria changes.",
+         "curriculum": "Canonical lying initial family, randomized kind/yaw/position/physics; firstskill only; all whole-task primitives not yetproven.",
+         "compute": "32CPUworkers+GPU0, saved checkpoint per controller.json; interrupted after diagnosing no grasp."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "398e43c43838",
+          "bytes": 12053,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "b307b05e523f",
+          "bytes": 358287,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "ad06a60d9716",
+          "bytes": 283487,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "1213032e5c0d",
+          "bytes": 558372,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-10T10:10:54Z",
@@ -444520,6 +444926,469 @@
          "text": "A different grasp reference (settled scan z=-0.105,y=-0.060,x=0) gives a physical nominal deployment capture: open palm to opposed grip, then oblique wrist, holding8s with0gap,1.33deg mechanism error,0.091speed ratio and97.25percent opposed samples. Other12 grasp references mostly dropped during tilt; no initial placement or final task criteria changed. Next learned skill will be oblique capture from end states actually reached by the accepted retention incumbent, once that incumbent exists."
         },
         "files": {}
+       },
+       {
+        "id": "r0038",
+        "seq": 38,
+        "kind": "gate",
+        "version": 4,
+        "recorded_utc": "2026-11-10T12:04:21Z",
+        "exception": false,
+        "body": {
+         "suite": "turn_feasible",
+         "suite_version": 1,
+         "suite_kind": "feasibility",
+         "suite_record": "r0034",
+         "final": false,
+         "candidate_sha256": "180f4d0d7909…",
+         "method": "feedback",
+         "hypothesis": "Restoring original spline timing and adding a corner-state-triggered catching grip will retain the cube after its quarter-turn, unlike the slowed path.",
+         "predicts": "turn",
+         "observed": "Viewed r0035 seed23002/23007 montages: contact is lost around3–4s. Nominal diagnostics show the slow path stalls27deg; original timing reaches93deg but loses contact afterward. Offline catch optimization now reaches2.31deg alignment error and holds8s with0gap,4.51deg manifold error and0.642speed ratio.",
+         "primitive": "layer_turn",
+         "started_utc": "2026-11-10T11:59:03Z",
+         "pass_rate": 0.25,
+         "max_hardware_violations": 0,
+         "episodes": 32,
+         "counts": {
+          "retain": 32,
+          "turn": 5,
+          "success": 5
+         },
+         "wilson95": {
+          "retain": [
+           0.8928,
+           1.0
+          ],
+          "turn": [
+           0.0686,
+           0.3175
+          ],
+          "success": [
+           0.0686,
+           0.3175
+          ]
+         },
+         "funnel_first_failed": {
+          "retain": 0,
+          "turn": 27,
+          "hardware": 0,
+          "complete": 5
+         },
+         "predicate_overrides": {
+          "retain": 0,
+          "turn": 0
+         },
+         "hardware_violations": 5,
+         "success_rate": 0.1562,
+         "reproducible": true,
+         "wall_s": 88.5,
+         "finished_utc": "2026-11-10T12:00:43Z",
+         "meets_pass_rate": false,
+         "hardware_redraw": {
+          "episodes": 32,
+          "candidate_violations_total": 10,
+          "incumbent_violations_total": 5,
+          "seeds_sha256": "35dad734f3f1…"
+         },
+         "decision": "rejected",
+         "incumbent": false,
+         "previous_incumbent": "r0035",
+         "delta": {
+          "retain": 0,
+          "turn": 5,
+          "success": 5
+         },
+         "margin": 2,
+         "hardware_delta": 1,
+         "reason": "hardware violations rose by 1; hardware re-draw on 32 fresh seeds: candidate 10 vs incumbent 5 over both sets",
+         "failure_review": {
+          "stage": "turn",
+          "lost": 27,
+          "episodes": 32,
+          "seeds": [
+           23008,
+           23007
+          ],
+          "frames_per_view": 8,
+          "montages": [
+           {
+            "seed": 23008,
+            "role": "montage_1",
+            "file": "failures/seed_23008.jpg",
+            "views": null,
+            "frame_times_s": null
+           },
+           {
+            "seed": 23007,
+            "role": "montage_2",
+            "file": "failures/seed_23007.jpg",
+            "views": null,
+            "frame_times_s": null
+           }
+          ],
+          "render_wall_s": 9.9
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "35448632306c",
+          "bytes": 41640,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "c8030d0cce9e",
+          "bytes": 41770,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "bbae494a9c3e",
+          "bytes": 49295,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0039",
+        "seq": 39,
+        "kind": "gate",
+        "version": 5,
+        "recorded_utc": "2026-11-10T12:04:39Z",
+        "exception": false,
+        "body": {
+         "suite": "retain_skill",
+         "suite_version": 2,
+         "suite_kind": "skill",
+         "suite_record": "r0029",
+         "final": false,
+         "candidate_sha256": "8d9f407cb94b…",
+         "method": "baseline",
+         "hypothesis": "A PPO-trained closed-loop network can match passive retention while adapting to placement and physical uncertainty, with no privileged observations.",
+         "predicts": "retain",
+         "observed": "Initial PPO retention skill gate. Scripted feasibility r0030 retained32/32; no previous PPO gate. During training1,001,472steps, no hardware episodes appeared in logged completions.",
+         "primitive": null,
+         "started_utc": "2026-11-10T12:03:03Z",
+         "pass_rate": 0.9,
+         "max_hardware_violations": 0,
+         "episodes": 64,
+         "counts": {
+          "retain": 54,
+          "success": 54
+         },
+         "wilson95": {
+          "retain": [
+           0.7357,
+           0.9129
+          ],
+          "success": [
+           0.7357,
+           0.9129
+          ]
+         },
+         "funnel_first_failed": {
+          "retain": 10,
+          "hardware": 0,
+          "complete": 54
+         },
+         "predicate_overrides": {
+          "retain": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 0.8438,
+         "reproducible": true,
+         "wall_s": 89.8,
+         "finished_utc": "2026-11-10T12:04:38Z",
+         "meets_pass_rate": false,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent",
+         "failure_review": {
+          "stage": "retain",
+          "lost": 10,
+          "episodes": 64,
+          "seeds": [
+           22047,
+           22005
+          ],
+          "frames_per_view": 8,
+          "montages": [
+           {
+            "seed": 22047,
+            "role": "montage_1",
+            "file": "failures/seed_22047.jpg",
+            "views": null,
+            "frame_times_s": null
+           },
+           {
+            "seed": 22005,
+            "role": "montage_2",
+            "file": "failures/seed_22005.jpg",
+            "views": null,
+            "frame_times_s": null
+           }
+          ],
+          "render_wall_s": 3.6
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "b12a67816f93",
+          "bytes": 45279,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "a0687e3943b1",
+          "bytes": 46635,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "2add183955c0",
+          "bytes": 89479,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0040",
+        "seq": 40,
+        "kind": "iter",
+        "version": 1,
+        "recorded_utc": "2026-11-10T12:06:18Z",
+        "exception": false,
+        "body": {
+         "sim_version": 1,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "algorithm": "PPO",
+          "gamma": 0.995,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "learning_rate": 0.0003,
+          "epochs": 4,
+          "minibatch": 512,
+          "environments": 16,
+          "rollout_steps": 128,
+          "seed": 410,
+          "observation_dim": 182,
+          "action_dim": 26,
+          "device": "cuda:2"
+         },
+         "architecture": "Separate actor and critic MLP182-256ELU-256ELU-128ELU; actor26 Gaussian means and learned diagonal logstd. Deterministic mean at evaluation.",
+         "observation_space": "182 fixed-scale features from noisy20q/20qd, previous finger/wrist targets, wrist and cube poses/velocities, eight relative part poses and velocities. No contacts, force/torque, parameters, images or rewards.",
+         "action_space": "26 network outputs clipped[-1,1]: integrated20finger targets +/-0.04rad, wristposition +/-1.5mm, wristworldrotation +/-0.03rad per20ms; targets held500Hz, physics/PD1kHz.",
+         "reward_terms": [
+          {
+           "name": "held",
+           "formula": "any hand-cube contact",
+           "weight": 1
+          },
+          {
+           "name": "palm_up",
+           "formula": "dot(palm_normal,world_up)",
+           "weight": 0.3
+          },
+          {
+           "name": "cube_speed",
+           "formula": "min(10,norm(cube_linear_velocity))",
+           "weight": -0.1
+          },
+          {
+           "name": "action",
+           "formula": "sum26 action^2",
+           "weight": -0.02
+          },
+          {
+           "name": "target_tracking",
+           "formula": "min(10,norm(previous_q_target-q))",
+           "weight": -0.2
+          },
+          {
+           "name": "failure",
+           "formula": "hardware,environment,gap>50ms,mechanismerror>8deg orcube-wristdistance>.2m",
+           "weight": -10
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "edge",
+           "distribution": "uniform discrete49,50,51mm across workers"
+          },
+          {
+           "name": "mass",
+           "distribution": "uniform52–75g"
+          },
+          {
+           "name": "hand_friction",
+           "distribution": "uniform0.5–1.2"
+          },
+          {
+           "name": "mechanism_factor",
+           "distribution": "uniform0.5–2"
+          },
+          {
+           "name": "placement",
+           "distribution": "75percent radius10mm/tilt15deg,25percent20mm/25deg; uniformdisk and bounded tilt, all24faceups/continuousyaw"
+          },
+          {
+           "name": "scramble",
+           "distribution": "uniform1–4nontrivialquarterturns, all6faces,noimmediateinverse"
+          }
+         ],
+         "curriculum": "none; first separate retention skill on deployment starts, registered retain_skill2/r0029 before training",
+         "compute": {
+          "steps": 1001472,
+          "wall_s": 1354.5,
+          "gpu_hours": 0.37625,
+          "environments": 16,
+          "GPU": "oneL40S"
+         },
+         "evaluation": {
+          "gate": "r0039",
+          "suite": "retain_skill2",
+          "episodes": 64,
+          "retained": 54,
+          "success_rate": 0.84375,
+          "hardware_violations": 0,
+          "pass_rate_required": 0.9,
+          "library_eligible": false
+         },
+         "reflection": "First PPO network worsens passive retention. I inspected r0039 seed22047/22005 montages: wrist translation of7–13mm precedes a rolling cube and support loss within0.6–0.7s. Next hypothesis: reward must anchor the wrist and penalize unnecessary actions, instead of allowing translation with only a palm-up orientation reward.",
+         "policy": "research/policies/retain_ppo_v1",
+         "sources": {
+          "model": "research/code/ppo_model.py",
+          "trainer": "research/code/train_retain.py"
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "46a9335315d7",
+          "bytes": 128231,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "f2045ba961e8",
+          "bytes": 62175,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "4cf2db3c53ed",
+          "bytes": 50597,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "e55fc14ed455",
+          "bytes": 58780,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0041",
+        "seq": 41,
+        "kind": "note",
+        "version": 17,
+        "recorded_utc": "2026-11-10T12:07:15Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "PPO retention iteration r0040/gate r0039 is54/64 (84.38percent), hardware0, below90percent and not in the skill library. Viewed both montages: early wrist translation precedes roll-off. Restarted PPO with stronger action penalty and explicit wrist-target position/orientation anchor rewards (24envs for throughput;400ksteps planned). Turn feedback r0038 improves0→5/32 but is rejected for5hardware episodes (10overbothseedsets). Viewed seed23008/23007 montages: one speed-limit event during a partial turn and one early grip loss. Next turn method adds state-feedback braking and diagnoses the affected joints; broad physics remains difficult."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0042",
+        "seq": 42,
+        "kind": "suite",
+        "version": 10,
+        "recorded_utc": "2026-11-10T12:08:53Z",
+        "exception": false,
+        "body": {
+         "suite": "grip_skill",
+         "suite_version": 1,
+         "suite_kind": "skill",
+         "criteria_version": 1,
+         "stages": [
+          "retain",
+          "oblique_grip"
+         ],
+         "pass_rate": 0.9,
+         "pass_rate_reason": "At least90% across varied fixed starts is the recorded reliability criterion.",
+         "max_hardware_violations": 0,
+         "dev_episodes": 64,
+         "final_episodes": 32,
+         "timeout_min": 30,
+         "description": "Second skill: palm-supported retention to an oblique opposed grip. Strict90percent conditional success, fixed64seeds. Physics unchangedsim1; criteria1human wrist and contact bounds.",
+         "precondition": "Conditional actual retained end states after3s of PPO incumbent r0039 (54of64deployment starts retained). Source hand/object qpos,velocities and targets preserved; new mass/friction/drag DR. Not hand-constructed placements.",
+         "postcondition": "By8s, retained with hardware0/integrity<=8deg/no supportgap>50ms; last1s wristpose90percent in recorded oblique bounds and opposed contacts80percent; endcube speed<=.05m/s andangular<=.5rad/s.",
+         "starts_from": "54 actual successful retention ends from r0039; preceding retention success84.38percent is reported separately. No claim that the previous skill is reliable or in the library.",
+         "primitive": null,
+         "primitives": null,
+         "stage_predicates": {
+          "retain": [
+           {
+            "measure": "held_s",
+            "op": ">=",
+            "value": 0.5
+           }
+          ],
+          "oblique_grip": [
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.8
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1
+           },
+           {
+            "measure": "touching_environment_at_end",
+            "op": "<=",
+            "value": 0
+           }
+          ]
+         },
+         "render_command": [
+          "{python}",
+          "evaluate.py",
+          "--policy",
+          "{policy}",
+          "--seeds",
+          "{seeds}",
+          "--out",
+          "{out}",
+          "--mode",
+          "oblique_grip",
+          "--render"
+         ],
+         "reason": null,
+         "evaluator_bytes": 11822013,
+         "evaluator_files": 73
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "f1f5422f4c65",
+          "bytes": 8006,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0043",
+        "seq": 43,
+        "kind": "note",
+        "version": 18,
+        "recorded_utc": "2026-11-10T12:10:27Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Registered grip_skill r0042 before any grip PPO training. Its starts are54 actual retained end states from the previous skill incumbent r0039, conditional on retention success, not constructed poses. r0039 is an incumbent but below the90percent library threshold; I report that limitation separately and will not compose it as a reliable library skill. In parallel with retention repair, I will initialize a separate network from the demonstrated physical capture reference and then run PPO on these actual ends. All motion outputs remain network actions; the time/reference features are constant task settings, and there is no scripted motion base at evaluation."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-10T10:05:03Z",
@@ -444535,7 +445404,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-10T12:00:01Z",
+      "exported_utc": "2026-11-10T12:10:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -445580,7 +446449,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-10T12:00:01Z",
+      "exported_utc": "2026-11-10T12:10:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -445841,7 +446710,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-10T12:02:32Z",
+  "staged_utc": "2026-11-10T12:12:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -445925,7 +446794,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-10T12:02:32Z",
+  "staged_utc": "2026-11-10T12:12:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
