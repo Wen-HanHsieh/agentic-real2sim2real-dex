@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-11T16:12:39Z",
- "exported_utc": "2026-11-11T16:12:30Z",
+ "generated_utc": "2026-11-11T16:22:39Z",
+ "exported_utc": "2026-11-11T16:22:30Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-11T16:11:30",
+    "time": "2026-11-11T16:17:27",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-11T16:10:35",
+    "time": "2026-11-11T16:21:16",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -238861,6 +238861,19 @@
           "content_type": "application/json"
          }
         }
+       },
+       {
+        "id": "r0115",
+        "seq": 115,
+        "kind": "note",
+        "version": 35,
+        "recorded_utc": "2026-11-11T16:17:27Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Holdv2acceptedr0113=47/64steady(white23black24),0HW,stillbelow80%. Viewedlatestfailure19blackdrops.5-.75s,29black1.0-1.25s, despiteinitialup7-8deg. Holdv3keepsacceptedPPOasfrozenNNbranchandtrainsneuralresidualwithPPO; densepose rewardretained, addscappednormalforceclosurebonus.05peropposingbranchat1.5N, plus-.1*relativeangularspeed. Forcesaretrainingrewardonly, neveractorinput. Physicalreason: worstpriorgravitytorque~.0754kg*9.81*.011m=.0081Nm; two1.5Npatches atminimumtorsionalfriction.003m offer~.009Nm, andslidingfriction.4supports1.2N>weight. This is a contact-model argument, not real-force measurement. Hardware/verificationunchanged. Nativefullv15alsotestsfrozenPPOsource+NNresidual, withacceptedholdv2mean, lowerholdingexplorationstd-5.5; batchchangesexplicit. Sourcefingerfunctionretainedexactlyatinit, allnewmotionfromPPO."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-11T10:09:00Z",
@@ -494331,6 +494344,936 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0139",
+        "seq": 139,
+        "kind": "iter",
+        "version": 22,
+        "recorded_utc": "2026-11-11T16:13:56Z",
+        "exception": false,
+        "body": {
+         "sim_version": 3,
+         "simulation_version": 3,
+         "algorithm": "PPO",
+         "policy_observations": "privileged",
+         "checkpoint": "<path>",
+         "training_checkpoint": "<path>",
+         "hyperparameters": {
+          "iterations": 900,
+          "steps_per_iter": 32,
+          "epochs": 4,
+          "minibatches": 8,
+          "gamma": 0.995,
+          "lam": 0.95,
+          "clip": 0.2,
+          "lr": 0.00015,
+          "critic_lr": 0.0003,
+          "freeze_actor_norm": true,
+          "ent_coef": 0.0002,
+          "vf_coef": 1.0,
+          "max_grad_norm": 1.0,
+          "target_kl": 0.03,
+          "hidden": [
+           256,
+           256
+          ],
+          "critic_hidden": [
+           256,
+           256
+          ],
+          "init_log_std": -3.9,
+          "action_mode": "clip",
+          "actor_keys": [
+           "privileged",
+           "goal"
+          ],
+          "critic_keys": [
+           "privileged",
+           "goal"
+          ],
+          "reward_scale": 0.1,
+          "residual_scale": 0.5,
+          "critic_warmup": 0,
+          "action_dim": null,
+          "device": "cuda:0",
+          "seed": 1433,
+          "log_every": 10,
+          "verbose": true,
+          "checkpoint_path": null,
+          "checkpoint_every": 0,
+          "environments": 512,
+          "iterations_evaluated": 401,
+          "env_steps": 6569984,
+          "hidden_activation": "ELU",
+          "prior_checkpoint": "research/training/upper_minus_teacher2/checkpoint_280.pt"
+         },
+         "observation_space": {
+          "keys": [
+           "privileged",
+           "goal"
+          ],
+          "description": "Privileged164 (allowed state141+contact6+mass8+k1+friction8), requestedgoal19; optional contact_features60: per-finger resultant force/moment, force-weighted contactposition, selected-part normal load. Optionalangle1 is training goal/90, fixed1 at fullquarter evaluation. Actor privileged, not deployable."
+         },
+         "action_space": {
+          "mode": "arc-reference plus .7rad NN residual q20,wrist .01m/.5rad worldpose",
+          "target_filter_tau_s": 0,
+          "limits": "existing .04rad/.4mm/.01rad per50Hz target increments, exact hardware PD/impedance; noobjectactuation"
+         },
+         "reward_terms": [
+          {
+           "name": "progress",
+           "formula": "20*(previous_objective-current_objective), objective=mean_angle+max(bodydrift-15deg,0)+.5max(alignment-3deg,0)",
+           "weight": "included"
+          },
+          {
+           "name": "contact",
+           "formula": ".05 if any handcube contact",
+           "weight": "included"
+          },
+          {
+           "name": "opposed",
+           "formula": ".2 if thumb+other finger",
+           "weight": "included"
+          },
+          {
+           "name": "accuracy",
+           "formula": ".25exp(-3max_angle_rad)",
+           "weight": "included"
+          },
+          {
+           "name": "near",
+           "formula": ".5 if targetangle<=5deg,position<=1.5mm,coherence/alignment<=3deg,body<=15deg",
+           "weight": "included"
+          },
+          {
+           "name": "action",
+           "formula": "-.002mean(a²)",
+           "weight": "included"
+          },
+          {
+           "name": "failure",
+           "formula": "-10 onHW/floor/gap>4ms/pen2mm/overflow/posture/drift40mm",
+           "weight": "included"
+          },
+          {
+           "name": "body",
+           "formula": "-.5max(bodydrift-15deg,0)",
+           "weight": "included"
+          },
+          {
+           "name": "alignment",
+           "formula": "-.5max(alignment-3deg,0)",
+           "weight": "included"
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "32fixed initial positions",
+           "distribution": "uniform±1mm inhand axes,nominal51mm55gmu.8,physical seeds0..31",
+           "hardware_noise": "encoder.002rad/.05rad/s"
+          }
+         ],
+         "curriculum": {
+          "training_angle_deg_at_checkpoint": 30.0,
+          "rule": "30→45→60→75→90 after>.6trainingcompletion and>=40iterationsperlevel",
+          "partial_layer_coherence": "At intermediate layer angles, use max part error to intermediate requested configuration<=3deg instead of legaldetent alignment. At90 restore original legalalignment3deg. Partial subgoals nevercount verification."
+         },
+         "compute": {
+          "wall_s": 1961.061470746994,
+          "gpu_hours": 0.5447392974297206,
+          "gpu_count": 1,
+          "gpu": "L40S",
+          "note": "script-reported trainingwall; environmentinitialization may be excluded in earlier runs"
+         },
+         "evaluation": {
+          "episodes": 16,
+          "held": 16,
+          "moved": 0,
+          "settled": 0,
+          "hardware_violations": 5,
+          "success_rate": 0.0,
+          "scope": "FULL90degree CPU signed primitive criteria2; if trainingangle<90 this is an off-curriculum full-goal failure test, not partial-goal success. Independent32seed both-sign gate follows ifretained.",
+          "metrics": "<path>"
+         },
+         "reflection": "Record actual PPO run configuration and full-quarter CPU evidence. Unproven partial-angle training/privileged teachers are not final deployable policies. Legacy activation mismatch was corrected separately; this candidate must use sourceELU. For absolute teacher, every request is NN output; BC from partial prior onlyinitializes weights, no reference executes. For residualteacher, disclosed base alonefailed fullgoal."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "eee5d610662a",
+          "bytes": 182382,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "7a5341de5fec",
+          "bytes": 284949,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "cbcae99df8c4",
+          "bytes": 178541,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "aa600625cf0b",
+          "bytes": 312648,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0140",
+        "seq": 140,
+        "kind": "note",
+        "version": 46,
+        "recorded_utc": "2026-11-11T16:14:52Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Absolute-target teacher6 firstactorupdates have excessiveKL(e.g3.44) after lowstdBC warmstart. Preserve BC initializers and restartPPO with actorlr2e-7 (10xlower), actor normalization frozen, anglechannel variance1 for useful15degree goal increments, and per-minibatch KL actor stopping at1.5*.03 while critic continues. This is still clippedPPO; prior implementation stopped only after an entireepoch. No actor/base/object-controller changes. Resume BC weights rather than alreadyovershot checkpoints. Current small-angle evidence is stillfailure, not proof. Teacher6b is the last major trainingrun before finalverification window."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0141",
+        "seq": 141,
+        "kind": "iter",
+        "version": 23,
+        "recorded_utc": "2026-11-11T16:14:52Z",
+        "exception": false,
+        "body": {
+         "sim_version": 3,
+         "simulation_version": 3,
+         "algorithm": "PPO",
+         "policy_observations": "privileged",
+         "checkpoint": "<path>",
+         "training_checkpoint": "<path>",
+         "hyperparameters": {
+          "iterations": 900,
+          "steps_per_iter": 32,
+          "epochs": 4,
+          "minibatches": 8,
+          "gamma": 0.995,
+          "lam": 0.95,
+          "clip": 0.2,
+          "lr": 0.00015,
+          "critic_lr": 0.0003,
+          "freeze_actor_norm": true,
+          "ent_coef": 0.0002,
+          "vf_coef": 1.0,
+          "max_grad_norm": 1.0,
+          "target_kl": 0.03,
+          "hidden": [
+           256,
+           256
+          ],
+          "critic_hidden": [
+           256,
+           256
+          ],
+          "init_log_std": -3.9,
+          "action_mode": "clip",
+          "actor_keys": [
+           "privileged",
+           "goal"
+          ],
+          "critic_keys": [
+           "privileged",
+           "goal"
+          ],
+          "reward_scale": 0.1,
+          "residual_scale": 0.5,
+          "critic_warmup": 0,
+          "action_dim": null,
+          "device": "cuda:2",
+          "seed": 1434,
+          "log_every": 10,
+          "verbose": true,
+          "checkpoint_path": null,
+          "checkpoint_every": 0,
+          "environments": 512,
+          "iterations_evaluated": 321,
+          "env_steps": 5259264,
+          "hidden_activation": "ELU",
+          "prior_checkpoint": "research/training/front_teacher2/checkpoint_280.pt"
+         },
+         "observation_space": {
+          "keys": [
+           "privileged",
+           "goal"
+          ],
+          "description": "Privileged164 (allowed state141+contact6+mass8+k1+friction8), requestedgoal19; optional contact_features60: per-finger resultant force/moment, force-weighted contactposition, selected-part normal load. Optionalangle1 is training goal/90, fixed1 at fullquarter evaluation. Actor privileged, not deployable."
+         },
+         "action_space": {
+          "mode": "arc-reference plus .7rad NN residual q20,wrist .01m/.5rad worldpose",
+          "target_filter_tau_s": 0,
+          "limits": "existing .04rad/.4mm/.01rad per50Hz target increments, exact hardware PD/impedance; noobjectactuation"
+         },
+         "reward_terms": [
+          {
+           "name": "progress",
+           "formula": "20*(previous_objective-current_objective), objective=mean_angle+max(bodydrift-15deg,0)+.5max(alignment-3deg,0)",
+           "weight": "included"
+          },
+          {
+           "name": "contact",
+           "formula": ".05 if any handcube contact",
+           "weight": "included"
+          },
+          {
+           "name": "opposed",
+           "formula": ".2 if thumb+other finger",
+           "weight": "included"
+          },
+          {
+           "name": "accuracy",
+           "formula": ".25exp(-3max_angle_rad)",
+           "weight": "included"
+          },
+          {
+           "name": "near",
+           "formula": ".5 if targetangle<=5deg,position<=1.5mm,coherence/alignment<=3deg,body<=15deg",
+           "weight": "included"
+          },
+          {
+           "name": "action",
+           "formula": "-.002mean(a²)",
+           "weight": "included"
+          },
+          {
+           "name": "failure",
+           "formula": "-10 onHW/floor/gap>4ms/pen2mm/overflow/posture/drift40mm",
+           "weight": "included"
+          },
+          {
+           "name": "body",
+           "formula": "-.5max(bodydrift-15deg,0)",
+           "weight": "included"
+          },
+          {
+           "name": "alignment",
+           "formula": "-.5max(alignment-3deg,0)",
+           "weight": "included"
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "32fixed initial positions",
+           "distribution": "uniform±1mm inhand axes,nominal51mm55gmu.8,physical seeds0..31",
+           "hardware_noise": "encoder.002rad/.05rad/s"
+          }
+         ],
+         "curriculum": {
+          "training_angle_deg_at_checkpoint": 30.0,
+          "rule": "30→45→60→75→90 after>.6trainingcompletion and>=40iterationsperlevel",
+          "partial_layer_coherence": "At intermediate layer angles, use max part error to intermediate requested configuration<=3deg instead of legaldetent alignment. At90 restore original legalalignment3deg. Partial subgoals nevercount verification."
+         },
+         "compute": {
+          "wall_s": 1889.311921596527,
+          "gpu_hours": 0.5248088671101464,
+          "gpu_count": 1,
+          "gpu": "L40S",
+          "note": "script-reported trainingwall; environmentinitialization may be excluded in earlier runs"
+         },
+         "evaluation": {
+          "episodes": 16,
+          "held": 16,
+          "moved": 0,
+          "settled": 0,
+          "hardware_violations": 3,
+          "success_rate": 0.0,
+          "scope": "FULL90degree CPU signed primitive criteria2; if trainingangle<90 this is an off-curriculum full-goal failure test, not partial-goal success. Independent32seed both-sign gate follows ifretained.",
+          "metrics": "<path>"
+         },
+         "reflection": "Record actual PPO run configuration and full-quarter CPU evidence. Unproven partial-angle training/privileged teachers are not final deployable policies. Legacy activation mismatch was corrected separately; this candidate must use sourceELU. For absolute teacher, every request is NN output; BC from partial prior onlyinitializes weights, no reference executes. For residualteacher, disclosed base alonefailed fullgoal."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "73ec5d12137b",
+          "bytes": 149537,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "22c3c2622ee6",
+          "bytes": 280789,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "3d4c08c0df6d",
+          "bytes": 211690,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "882fa25bce56",
+          "bytes": 322637,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0142",
+        "seq": 142,
+        "kind": "iter",
+        "version": 24,
+        "recorded_utc": "2026-11-11T16:15:36Z",
+        "exception": false,
+        "body": {
+         "sim_version": 3,
+         "simulation_version": 3,
+         "algorithm": "PPO",
+         "policy_observations": "privileged",
+         "checkpoint": "<path>",
+         "training_checkpoint": "<path>",
+         "hyperparameters": {
+          "iterations": 1000,
+          "steps_per_iter": 32,
+          "epochs": 4,
+          "minibatches": 8,
+          "gamma": 0.995,
+          "lam": 0.95,
+          "clip": 0.2,
+          "lr": 3e-05,
+          "critic_lr": 0.0003,
+          "freeze_actor_norm": true,
+          "ent_coef": 0.0002,
+          "vf_coef": 1.0,
+          "max_grad_norm": 1.0,
+          "target_kl": 0.03,
+          "hidden": [
+           256,
+           256
+          ],
+          "critic_hidden": [
+           256,
+           256
+          ],
+          "init_log_std": -3.9,
+          "action_mode": "clip",
+          "actor_keys": [
+           "privileged",
+           "goal"
+          ],
+          "critic_keys": [
+           "privileged",
+           "goal"
+          ],
+          "reward_scale": 0.1,
+          "residual_scale": 0.5,
+          "critic_warmup": 10,
+          "action_dim": null,
+          "device": "cuda:3",
+          "seed": 1436,
+          "log_every": 10,
+          "verbose": true,
+          "checkpoint_path": null,
+          "checkpoint_every": 0,
+          "environments": 512,
+          "iterations_evaluated": 521,
+          "env_steps": 8536064,
+          "hidden_activation": "ELU",
+          "prior_checkpoint": null
+         },
+         "observation_space": {
+          "keys": [
+           "privileged",
+           "goal"
+          ],
+          "description": "Privileged164 (allowed state141+contact6+mass8+k1+friction8), requestedgoal19; optional contact_features60: per-finger resultant force/moment, force-weighted contactposition, selected-part normal load. Optionalangle1 is training goal/90, fixed1 at fullquarter evaluation. Actor privileged, not deployable."
+         },
+         "action_space": {
+          "mode": "arc-reference plus .7rad NN residual q20,wrist .01m/.5rad worldpose",
+          "target_filter_tau_s": 0.5,
+          "limits": "existing .04rad/.4mm/.01rad per50Hz target increments, exact hardware PD/impedance; noobjectactuation"
+         },
+         "reward_terms": [
+          {
+           "name": "progress",
+           "formula": "20*(previous_objective-current_objective), objective=mean_angle+max(bodydrift-15deg,0)+.5max(alignment-3deg,0)",
+           "weight": "included"
+          },
+          {
+           "name": "contact",
+           "formula": ".05 if any handcube contact",
+           "weight": "included"
+          },
+          {
+           "name": "opposed",
+           "formula": ".2 if thumb+other finger",
+           "weight": "included"
+          },
+          {
+           "name": "accuracy",
+           "formula": ".25exp(-3max_angle_rad)",
+           "weight": "included"
+          },
+          {
+           "name": "near",
+           "formula": ".5 if targetangle<=5deg,position<=1.5mm,coherence/alignment<=3deg,body<=15deg",
+           "weight": "included"
+          },
+          {
+           "name": "action",
+           "formula": "-.002mean(a²)",
+           "weight": "included"
+          },
+          {
+           "name": "failure",
+           "formula": "-10 onHW/floor/gap>4ms/pen2mm/overflow/posture/drift40mm",
+           "weight": "included"
+          },
+          {
+           "name": "body",
+           "formula": "-.5max(bodydrift-15deg,0)",
+           "weight": "included"
+          },
+          {
+           "name": "alignment",
+           "formula": "-.5max(alignment-3deg,0)",
+           "weight": "included"
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "32fixed initial positions",
+           "distribution": "uniform±1mm inhand axes,nominal51mm55gmu.8,physical seeds0..31",
+           "hardware_noise": "encoder.002rad/.05rad/s"
+          }
+         ],
+         "curriculum": {
+          "training_angle_deg_at_checkpoint": 30.0,
+          "rule": "30→45→60→75→90 after>.6trainingcompletion and>=40iterationsperlevel",
+          "partial_layer_coherence": "At intermediate layer angles, use max part error to intermediate requested configuration<=3deg instead of legaldetent alignment. At90 restore original legalalignment3deg. Partial subgoals nevercount verification."
+         },
+         "compute": {
+          "wall_s": 2473.2760298252106,
+          "gpu_hours": 0.6870211193958918,
+          "gpu_count": 1,
+          "gpu": "L40S",
+          "note": "script-reported trainingwall; environmentinitialization may be excluded in earlier runs"
+         },
+         "evaluation": {
+          "episodes": 16,
+          "held": 16,
+          "moved": 0,
+          "settled": 0,
+          "hardware_violations": 5,
+          "success_rate": 0.0,
+          "scope": "FULL90degree CPU signed primitive criteria2; if trainingangle<90 this is an off-curriculum full-goal failure test, not partial-goal success. Independent32seed both-sign gate follows ifretained.",
+          "metrics": "<path>"
+         },
+         "reflection": "Record actual PPO run configuration and full-quarter CPU evidence. Unproven partial-angle training/privileged teachers are not final deployable policies. Legacy activation mismatch was corrected separately; this candidate must use sourceELU. For absolute teacher, every request is NN output; BC from partial prior onlyinitializes weights, no reference executes. For residualteacher, disclosed base alonefailed fullgoal."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "325d689980f9",
+          "bytes": 222165,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "a57ba4a15421",
+          "bytes": 84566,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "00bbf1ff3569",
+          "bytes": 57655,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "3fb48d49ee3a",
+          "bytes": 93407,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0143",
+        "seq": 143,
+        "kind": "iter",
+        "version": 25,
+        "recorded_utc": "2026-11-11T16:16:07Z",
+        "exception": false,
+        "body": {
+         "sim_version": 3,
+         "simulation_version": 3,
+         "algorithm": "PPO",
+         "policy_observations": "privileged",
+         "checkpoint": "<path>",
+         "training_checkpoint": "<path>",
+         "hyperparameters": {
+          "iterations": 600,
+          "steps_per_iter": 32,
+          "epochs": 4,
+          "minibatches": 8,
+          "gamma": 0.995,
+          "lam": 0.95,
+          "clip": 0.2,
+          "lr": 3e-05,
+          "critic_lr": 0.0003,
+          "freeze_actor_norm": true,
+          "ent_coef": 0.0002,
+          "vf_coef": 1.0,
+          "max_grad_norm": 1.0,
+          "target_kl": 0.03,
+          "hidden": [
+           256,
+           256
+          ],
+          "critic_hidden": [
+           256,
+           256
+          ],
+          "init_log_std": -3.9,
+          "action_mode": "clip",
+          "actor_keys": [
+           "privileged",
+           "contact_features",
+           "goal"
+          ],
+          "critic_keys": [
+           "privileged",
+           "contact_features",
+           "goal"
+          ],
+          "reward_scale": 0.1,
+          "residual_scale": 0.5,
+          "critic_warmup": 10,
+          "action_dim": null,
+          "device": "cuda:0",
+          "seed": 1433,
+          "log_every": 10,
+          "verbose": true,
+          "checkpoint_path": null,
+          "checkpoint_every": 0,
+          "environments": 2048,
+          "iterations_evaluated": 161,
+          "env_steps": 10551296,
+          "hidden_activation": "ELU",
+          "prior_checkpoint": "research/training/upper_minus_teacher3c/checkpoint_360.pt"
+         },
+         "observation_space": {
+          "keys": [
+           "privileged",
+           "contact_features",
+           "goal"
+          ],
+          "description": "Privileged164 (allowed state141+contact6+mass8+k1+friction8), requestedgoal19; optional contact_features60: per-finger resultant force/moment, force-weighted contactposition, selected-part normal load. Optionalangle1 is training goal/90, fixed1 at fullquarter evaluation. Actor privileged, not deployable."
+         },
+         "action_space": {
+          "mode": "arc-reference plus .7rad NN residual q20,wrist .01m/.5rad worldpose",
+          "target_filter_tau_s": 0.5,
+          "limits": "existing .04rad/.4mm/.01rad per50Hz target increments, exact hardware PD/impedance; noobjectactuation"
+         },
+         "reward_terms": [
+          {
+           "name": "progress",
+           "formula": "20*(previous_objective-current_objective), objective=mean_angle+max(bodydrift-15deg,0)+.5max(alignment-3deg,0)",
+           "weight": "included"
+          },
+          {
+           "name": "contact",
+           "formula": ".05 if any handcube contact",
+           "weight": "included"
+          },
+          {
+           "name": "opposed",
+           "formula": ".2 if thumb+other finger",
+           "weight": "included"
+          },
+          {
+           "name": "accuracy",
+           "formula": ".25exp(-3max_angle_rad)",
+           "weight": "included"
+          },
+          {
+           "name": "near",
+           "formula": ".5 if targetangle<=5deg,position<=1.5mm,coherence/alignment<=3deg,body<=15deg",
+           "weight": "included"
+          },
+          {
+           "name": "action",
+           "formula": "-.002mean(a²)",
+           "weight": "included"
+          },
+          {
+           "name": "failure",
+           "formula": "-10 onHW/floor/gap>4ms/pen2mm/overflow/posture/drift40mm",
+           "weight": "included"
+          },
+          {
+           "name": "body",
+           "formula": "-.5max(bodydrift-15deg,0)",
+           "weight": "included"
+          },
+          {
+           "name": "alignment",
+           "formula": "-.5max(alignment-3deg,0)",
+           "weight": "included"
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "32fixed initial positions",
+           "distribution": "uniform±1mm inhand axes,nominal51mm55gmu.8,physical seeds0..31",
+           "hardware_noise": "encoder.002rad/.05rad/s"
+          }
+         ],
+         "curriculum": {
+          "training_angle_deg_at_checkpoint": 30.0,
+          "rule": "30→45→60→75→90 after>.6trainingcompletion and>=40iterationsperlevel",
+          "partial_layer_coherence": "At intermediate layer angles, use max part error to intermediate requested configuration<=3deg instead of legaldetent alignment. At90 restore original legalalignment3deg. Partial subgoals nevercount verification."
+         },
+         "compute": {
+          "wall_s": 1752.7864725589752,
+          "gpu_hours": 0.486885131266382,
+          "gpu_count": 1,
+          "gpu": "L40S",
+          "note": "script-reported trainingwall; environmentinitialization may be excluded in earlier runs"
+         },
+         "evaluation": {
+          "episodes": 16,
+          "held": 16,
+          "moved": 0,
+          "settled": 0,
+          "hardware_violations": 9,
+          "success_rate": 0.0,
+          "scope": "FULL90degree CPU signed primitive criteria2; if trainingangle<90 this is an off-curriculum full-goal failure test, not partial-goal success. Independent32seed both-sign gate follows ifretained.",
+          "metrics": "<path>"
+         },
+         "reflection": "Record actual PPO run configuration and full-quarter CPU evidence. Unproven partial-angle training/privileged teachers are not final deployable policies. Legacy activation mismatch was corrected separately; this candidate must use sourceELU. For absolute teacher, every request is NN output; BC from partial prior onlyinitializes weights, no reference executes. For residualteacher, disclosed base alonefailed fullgoal."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "32c14370d952",
+          "bytes": 76102,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "e75be56de696",
+          "bytes": 52159,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "1a95e6809bb4",
+          "bytes": 27930,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "739d6b83000e",
+          "bytes": 57503,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0144",
+        "seq": 144,
+        "kind": "iter",
+        "version": 26,
+        "recorded_utc": "2026-11-11T16:16:57Z",
+        "exception": false,
+        "body": {
+         "sim_version": 3,
+         "simulation_version": 3,
+         "algorithm": "PPO",
+         "policy_observations": "privileged",
+         "checkpoint": "<path>",
+         "training_checkpoint": "<path>",
+         "hyperparameters": {
+          "iterations": 600,
+          "steps_per_iter": 32,
+          "epochs": 4,
+          "minibatches": 8,
+          "gamma": 0.995,
+          "lam": 0.95,
+          "clip": 0.2,
+          "lr": 3e-05,
+          "critic_lr": 0.0003,
+          "freeze_actor_norm": true,
+          "ent_coef": 0.0002,
+          "vf_coef": 1.0,
+          "max_grad_norm": 1.0,
+          "target_kl": 0.03,
+          "hidden": [
+           256,
+           256
+          ],
+          "critic_hidden": [
+           256,
+           256
+          ],
+          "init_log_std": -3.9,
+          "action_mode": "clip",
+          "actor_keys": [
+           "privileged",
+           "contact_features",
+           "goal"
+          ],
+          "critic_keys": [
+           "privileged",
+           "contact_features",
+           "goal"
+          ],
+          "reward_scale": 0.1,
+          "residual_scale": 0.5,
+          "critic_warmup": 10,
+          "action_dim": null,
+          "device": "cuda:2",
+          "seed": 1434,
+          "log_every": 10,
+          "verbose": true,
+          "checkpoint_path": null,
+          "checkpoint_every": 0,
+          "environments": 2048,
+          "iterations_evaluated": 161,
+          "env_steps": 10551296,
+          "hidden_activation": "ELU",
+          "prior_checkpoint": "research/training/front_teacher3c/checkpoint_320.pt"
+         },
+         "observation_space": {
+          "keys": [
+           "privileged",
+           "contact_features",
+           "goal"
+          ],
+          "description": "Privileged164 (allowed state141+contact6+mass8+k1+friction8), requestedgoal19; optional contact_features60: per-finger resultant force/moment, force-weighted contactposition, selected-part normal load. Optionalangle1 is training goal/90, fixed1 at fullquarter evaluation. Actor privileged, not deployable."
+         },
+         "action_space": {
+          "mode": "arc-reference plus .7rad NN residual q20,wrist .01m/.5rad worldpose",
+          "target_filter_tau_s": 0.5,
+          "limits": "existing .04rad/.4mm/.01rad per50Hz target increments, exact hardware PD/impedance; noobjectactuation"
+         },
+         "reward_terms": [
+          {
+           "name": "progress",
+           "formula": "20*(previous_objective-current_objective), objective=mean_angle+max(bodydrift-15deg,0)+.5max(alignment-3deg,0)",
+           "weight": "included"
+          },
+          {
+           "name": "contact",
+           "formula": ".05 if any handcube contact",
+           "weight": "included"
+          },
+          {
+           "name": "opposed",
+           "formula": ".2 if thumb+other finger",
+           "weight": "included"
+          },
+          {
+           "name": "accuracy",
+           "formula": ".25exp(-3max_angle_rad)",
+           "weight": "included"
+          },
+          {
+           "name": "near",
+           "formula": ".5 if targetangle<=5deg,position<=1.5mm,coherence/alignment<=3deg,body<=15deg",
+           "weight": "included"
+          },
+          {
+           "name": "action",
+           "formula": "-.002mean(a²)",
+           "weight": "included"
+          },
+          {
+           "name": "failure",
+           "formula": "-10 onHW/floor/gap>4ms/pen2mm/overflow/posture/drift40mm",
+           "weight": "included"
+          },
+          {
+           "name": "body",
+           "formula": "-.5max(bodydrift-15deg,0)",
+           "weight": "included"
+          },
+          {
+           "name": "alignment",
+           "formula": "-.5max(alignment-3deg,0)",
+           "weight": "included"
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "32fixed initial positions",
+           "distribution": "uniform±1mm inhand axes,nominal51mm55gmu.8,physical seeds0..31",
+           "hardware_noise": "encoder.002rad/.05rad/s"
+          }
+         ],
+         "curriculum": {
+          "training_angle_deg_at_checkpoint": 30.0,
+          "rule": "30→45→60→75→90 after>.6trainingcompletion and>=40iterationsperlevel",
+          "partial_layer_coherence": "At intermediate layer angles, use max part error to intermediate requested configuration<=3deg instead of legaldetent alignment. At90 restore original legalalignment3deg. Partial subgoals nevercount verification."
+         },
+         "compute": {
+          "wall_s": 1474.645892381668,
+          "gpu_hours": 0.40962385899490783,
+          "gpu_count": 1,
+          "gpu": "L40S",
+          "note": "script-reported trainingwall; environmentinitialization may be excluded in earlier runs"
+         },
+         "evaluation": {
+          "episodes": 16,
+          "held": 16,
+          "moved": 0,
+          "settled": 0,
+          "hardware_violations": 1,
+          "success_rate": 0.0,
+          "scope": "FULL90degree CPU signed primitive criteria2; if trainingangle<90 this is an off-curriculum full-goal failure test, not partial-goal success. Independent32seed both-sign gate follows ifretained.",
+          "metrics": "<path>"
+         },
+         "reflection": "Record actual PPO run configuration and full-quarter CPU evidence. Unproven partial-angle training/privileged teachers are not final deployable policies. Legacy activation mismatch was corrected separately; this candidate must use sourceELU. For absolute teacher, every request is NN output; BC from partial prior onlyinitializes weights, no reference executes. For residualteacher, disclosed base alonefailed fullgoal."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "25fa8b1a8e43",
+          "bytes": 76633,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "ed29cd672765",
+          "bytes": 189807,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "8b09177bfa3c",
+          "bytes": 148557,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "77310adb5c1a",
+          "bytes": 222645,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0145",
+        "seq": 145,
+        "kind": "note",
+        "version": 47,
+        "recorded_utc": "2026-11-11T16:20:32Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Hold4c improves devstable39/96 from28but gate r0135rejects higherHW(11vs5overdev+redraw). Initialize an ELU previous-command skip branch so the actor mean is .2*oldNNrequest+.8*previousabsolutecommand, then train every new/old weight withPPO. This is a single exported NN using allowed previous-target inputs, no external hand-designed controller/reference at execution. It changes action smoothness without changing hardwarePD gains/limits. TinyGaussianstd and per-minibatchKLstop are part ofPPO continuation. Algebraic initialization parity is checked beforetraining. Auxiliaryholdonly; no claim it solves a turn or fixes invalidinitialplacements."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0146",
+        "seq": 146,
+        "kind": "note",
+        "version": 48,
+        "recorded_utc": "2026-11-11T16:21:16Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Teacher6b launch failed before any PPOrollout because the resume-script extraction omitted the angle-input helper (NameError). Restored the helper and relaunched from the same saved BCinitializers; no policy result came from the failed launches. Keep setup-error logs. All exported teacher6b candidates must show actual PPOupdates before evaluation/claim."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-11T10:10:32Z",
@@ -494346,7 +495289,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-11T16:10:01Z",
+      "exported_utc": "2026-11-11T16:20:01Z",
       "submissions": [
        {
         "sub": "s04",
@@ -495001,7 +495944,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-11T16:10:01Z",
+      "exported_utc": "2026-11-11T16:20:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -495396,7 +496339,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-11T16:10:01Z",
+      "exported_utc": "2026-11-11T16:20:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -495657,7 +496600,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-11T16:12:33Z",
+  "staged_utc": "2026-11-11T16:22:33Z",
   "tasks": {
    "cube": {
     "files": {
@@ -495741,7 +496684,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-11T16:12:33Z",
+  "staged_utc": "2026-11-11T16:22:33Z",
   "tasks": {
    "tennis": {
     "status": "available",
