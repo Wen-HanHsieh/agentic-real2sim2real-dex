@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-11T14:22:37Z",
- "exported_utc": "2026-11-11T14:22:30Z",
+ "generated_utc": "2026-11-11T14:32:37Z",
+ "exported_utc": "2026-11-11T14:32:30Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-11T14:21:43",
+    "time": "2026-11-11T14:32:21",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -484750,6 +484750,463 @@
          "text": "Hold3 frozen-normalization gate r0082 was rejected:28/96 stable versus incumbent33/96, HW2 unchanged. Viewed seed31 gradual outward slip by4s and seed91 rapid departure by.6s. Holding restoration is too tied to one grasp; PPO curriculum remained narrow. Switch action coordinates to NN absolute finger/wrist targets, with only affine position-target decoding and existing target slew/controllers, unit frozen input normalization and full deployment randomization from iteration0. No reference/controller is added at execution. Actor emits joint-limit-normalized absolute q and wrist displacement/orientation; every desired target comes from the PPO NN. This is a batched action-space+curriculum change, not retention until a new frozen hold gate. Physical simulation and all existing candidates unchanged."
         },
         "files": {}
+       },
+       {
+        "id": "r0087",
+        "seq": 87,
+        "kind": "suite",
+        "version": 34,
+        "recorded_utc": "2026-11-11T14:22:53Z",
+        "exception": false,
+        "body": {
+         "suite": "hold",
+         "suite_version": 4,
+         "suite_kind": "skill",
+         "criteria_version": 2,
+         "stages": [
+          "held",
+          "stable"
+         ],
+         "pass_rate": 0.8,
+         "pass_rate_reason": "Auxiliary hold skill; must hold across deployment starts before compositional reuse.",
+         "max_hardware_violations": 0,
+         "dev_episodes": 96,
+         "final_episodes": 96,
+         "timeout_min": 60,
+         "description": "Auxiliary deployable PPO steady holding skill; does not prove a turn primitive. Criteria2 style audit and1msCPUcontact/posture checks.",
+         "precondition": "Operator has placed legal cube in common hand.",
+         "postcondition": "Eight seconds supported without dropping or hardware violation.",
+         "starts_from": "Deployment randomized operator placements, no previous learned skill.",
+         "primitive": null,
+         "primitives": null,
+         "stage_predicates": {
+          "held": [
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.25
+           },
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0.002
+           }
+          ],
+          "stable": [
+           {
+            "measure": "held_s",
+            "op": ">=",
+            "value": 7.99
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1
+           },
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0.002
+           }
+          ]
+         },
+         "primitive_spec": null,
+         "harness_predicates": [],
+         "reference_check": null,
+         "reason": "Add absolute NN position-target action coordinate decoder; same criteria2, physics and fixed starts. Old delta policies decode identically. Source now also accepts action_mode absolute_pose from a standalone NN with affine joint-limit/wrist target scaling and existing slew/controller limits.",
+         "evaluator_bytes": 12067322,
+         "evaluator_files": 127
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "c5a621a39fbc",
+          "bytes": 13003,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0088",
+        "seq": 88,
+        "kind": "iter",
+        "version": 6,
+        "recorded_utc": "2026-11-11T14:23:37Z",
+        "exception": false,
+        "body": {
+         "sim_version": 3,
+         "simulation_version": 3,
+         "algorithm": "PPO",
+         "policy_observations": "privileged",
+         "checkpoint": "<path>",
+         "training_checkpoint": "<path>",
+         "hyperparameters": {
+          "environments": 512,
+          "iterations_evaluated": 161,
+          "steps_per_iteration": 32,
+          "epochs": 4,
+          "minibatches": 8,
+          "lr": 0.00015,
+          "critic_lr": 0.0003,
+          "freeze_actor_norm": true,
+          "initial_log_std": -2.3,
+          "actor_hidden": [
+           256,
+           256
+          ],
+          "critic_hidden": [
+           256,
+           256
+          ],
+          "gamma": 0.995,
+          "lambda": 0.95,
+          "seed": 1434,
+          "reward_scale": 0.1,
+          "entropy_weight": 0.0002
+         },
+         "observation_space": "Privileged164+goal19: deployable state141 plus contacts6,part masses8,magnetk1,friction8; privileged teacher only. This is not a deployable skill or final task policy.",
+         "action_space": "26D absolute residual over arc reference: .7rad joint pose,.01m wrist position,.5rad wrist rotation, joint target slew .04rad per50Hz, wrist .4mm/.01rad; exact hardware PD/impedance. Script reference is disclosed.",
+         "base_controller": "arc1 CPU feasibility baseline r0051 roll/r0045 front or reverse upper arc; zero full turns, holding/partial motion only. NN residual teacher for feasibility, not final.",
+         "reward_terms": [
+          {
+           "name": "progress",
+           "formula": "20*(previous_mean_angle-current_mean_angle)",
+           "weight": "included"
+          },
+          {
+           "name": "contact",
+           "formula": ".05 if any hand-cube contact",
+           "weight": "included"
+          },
+          {
+           "name": "opposed",
+           "formula": ".05 if thumb+other finger contact",
+           "weight": "included"
+          },
+          {
+           "name": "accuracy",
+           "formula": ".25exp(-3*max_angle_rad)",
+           "weight": "included"
+          },
+          {
+           "name": "near",
+           "formula": ".5 if all8 angle<=5deg,position<=1.5mm,alignment<=3deg,body<=15deg",
+           "weight": "included"
+          },
+          {
+           "name": "action",
+           "formula": "-.002mean(a²)",
+           "weight": "included"
+          },
+          {
+           "name": "failure",
+           "formula": "-10 on HW/floor/gap>4ms/pen>=2mm/invalidoverflow/posture/drift>40mm",
+           "weight": "included"
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "32 fixed physical operator placements",
+           "distribution": "uniform offsets peraxis±1mm, seeds0..31",
+           "physics": "nominal51mm55gmu.8; no broad physics randomization in proof teacher"
+          }
+         ],
+         "curriculum": "none: signed full-quarter primitive; no whole-task training",
+         "compute": {
+          "wall_s": 667.1552784442902,
+          "gpu_hours": 0.1853209106789695,
+          "gpu_count": 1,
+          "gpu": "L40S",
+          "parallel_worlds": 512
+         },
+         "evaluation": {
+          "episodes": 16,
+          "held": 16,
+          "moved": 0,
+          "settled": 0,
+          "success_rate": 0.0,
+          "hardware_violations": 3,
+          "scope": "CPU signed primitive,16 fixed starts; independent frozen32seed both-sign gate follows",
+          "metrics": "<path>"
+         },
+         "reflection": "Privileged PPO learns a residual over previously failed geometric arc, including wrist assistance. CPU criteria2 contact-rich style/settling/HW checks are authoritative; GPU training success omits full style audit and is not a verification claim. After proof, deployable standalone network BC+PPO would be required."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "9d3aec6c70df",
+          "bytes": 66618,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "dbefd9dcbbba",
+          "bytes": 233338,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "e68c3d97892c",
+          "bytes": 179797,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "137da62fcbfd",
+          "bytes": 278400,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0089",
+        "seq": 89,
+        "kind": "gate",
+        "version": 16,
+        "recorded_utc": "2026-11-11T14:26:37Z",
+        "exception": false,
+        "body": {
+         "suite": "front_twist-feas",
+         "suite_version": 3,
+         "suite_kind": "feasibility",
+         "suite_record": "r0065",
+         "final": false,
+         "candidate_sha256": "c4b0e91a9977…",
+         "method": "privileged-PPO-residual",
+         "hypothesis": "Privileged PPO residual learns substantial front-face angular progress over failed arc; earlyCPU audit still finds body drift/style/settling failures. Establish failed feasibility baseline while diagnosing those misses. Not deployable or final.",
+         "predicts": "moved",
+         "observed": "Previous front gate gate-20261111T120803Z-3xmj seed23 partially shears layers then stalls. Latest CPU teacher audit seed14 reaches2.1deg face error but only53.9deg opposed progress and no final settle; it is a failure despite geometric near-quarter.",
+         "primitive": "front_twist",
+         "started_utc": "2026-11-11T14:24:50Z",
+         "pass_rate": 0.25,
+         "max_hardware_violations": 0,
+         "episodes": 32,
+         "counts": {
+          "held": 32,
+          "moved": 0,
+          "settled": 0,
+          "success": 0
+         },
+         "wilson95": {
+          "held": [
+           0.8928,
+           1.0
+          ],
+          "moved": [
+           0.0,
+           0.1072
+          ],
+          "settled": [
+           0.0,
+           0.1072
+          ],
+          "success": [
+           0.0,
+           0.1072
+          ]
+         },
+         "funnel_first_failed": {
+          "held": 0,
+          "moved": 32,
+          "settled": 0,
+          "hardware": 0,
+          "complete": 0
+         },
+         "predicate_overrides": {
+          "held": 0,
+          "moved": 0,
+          "settled": 0
+         },
+         "hardware_violations": 2,
+         "success_rate": 0.0,
+         "reproducible": true,
+         "wall_s": 71.4,
+         "finished_utc": "2026-11-11T14:26:37Z",
+         "meets_pass_rate": false,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent",
+         "failure_review": {
+          "stage": "moved",
+          "lost": 32,
+          "episodes": 32,
+          "montages": [
+           {
+            "role": "montage_1",
+            "frame_times_s": null
+           },
+           {
+            "role": "montage_2",
+            "frame_times_s": null
+           }
+          ]
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "0d2b5ad89a15",
+          "bytes": 95569,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "38476544f5d2",
+          "bytes": 94602,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "1386cd5d517f",
+          "bytes": 60368,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0090",
+        "seq": 90,
+        "kind": "note",
+        "version": 27,
+        "recorded_utc": "2026-11-11T14:27:20Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "The chosen common cube centre is116mm distal of wrist, supported at finger covers, and broad offset holding remains poor. Diagnose an alternative chosen start closer to the palm centre (local distal55–98mm,normal26–52mm), same human-like wrist. Offline GPU common-grasp CEM scores unactuated support, palm contact, opposed holding, low drift and hardware compliance; operator placement clamp is initialization only. No new start is retained until CPU narrow+broad audit and a new simulation/suite record. This may sacrifice old trajectory references; current simulation/suites remain unchanged."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0091",
+        "seq": 91,
+        "kind": "note",
+        "version": 28,
+        "recorded_utc": "2026-11-11T14:28:31Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Front PPO gate r0089 remains0/32,HW2. Viewed seed28 partial shear/body drift by1–3s followed by stalled held pose; seed15 unsupported negative stays still. CPU teacher160 seed14 has face error2.06deg but opposed progress53.88deg and settle0. Training logs show reverse-upper body drift~49deg, front~38deg despite small layer angle error: reward allowed optimizing relative-layer error by moving the held half. Continue from saved checkpoints with a constrained objective (body drift above15deg and alignment above3deg in potential and dense penalties), opposed bonus .2 instead .05. Roll continues with alignment/opposition penalty. This is an explicit batched reward change, not a criteria change; CPU gates remain authoritative. Stop unproductive original runs and preserve their checkpoints. Passive coherent-layer guide passes legal-path zero-force audit but no controller succeeds; do not retain physics change. New-grasp CEM initially overflowed constraints, so discard those candidate scores and rerun with larger allocation only, rejecting any overflow."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0092",
+        "seq": 92,
+        "kind": "note",
+        "version": 29,
+        "recorded_utc": "2026-11-11T14:30:34Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "CPU exact-criteria refinement of extra positive upper starts16 and18 succeeds with opposed progress84.1/81.9deg, settled1.22/.84s, HW0. Combined with six existing positives, the pending family gate may meet aggregate8/32. This would be a family-suite proof at its recorded aggregate rate, not evidence for upper-negative: no reverse move has yet passed. Do not represent the family aggregate as proof/mastery of both signed moves. Continue reverse-upper proof and separately report each sign."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0093",
+        "seq": 93,
+        "kind": "gate",
+        "version": 17,
+        "recorded_utc": "2026-11-11T14:32:22Z",
+        "exception": false,
+        "body": {
+         "suite": "upper_twist-feas",
+         "suite_version": 3,
+         "suite_kind": "feasibility",
+         "suite_record": "r0064",
+         "final": false,
+         "candidate_sha256": "084d405c169d…",
+         "method": "state-conditioned-reference",
+         "hypothesis": "Expand physical-state reference library with CPU-refined positive starts16 and18. Expect eight of32 successes with HW0, meeting aggregatefamily threshold, but reverse upper remains unsupported and is explicitly not claimed feasible.",
+         "predicts": "settled",
+         "observed": "gate-20261111T141223Z-52af seed12 reaches geometric quarter but lacks67.5deg opposed progress; unsupported starts remain static. New positive starts have84.1/81.9deg opposed progress and finalalignment2.89/2.74deg, noHW in CPUaudit. Guard retained; negative fallback is failure.",
+         "primitive": "upper_twist",
+         "started_utc": "2026-11-11T14:30:30Z",
+         "pass_rate": 0.25,
+         "max_hardware_violations": 0,
+         "episodes": 32,
+         "counts": {
+          "held": 32,
+          "moved": 9,
+          "settled": 8,
+          "success": 8
+         },
+         "wilson95": {
+          "held": [
+           0.8928,
+           1.0
+          ],
+          "moved": [
+           0.1556,
+           0.4537
+          ],
+          "settled": [
+           0.1325,
+           0.4211
+          ],
+          "success": [
+           0.1325,
+           0.4211
+          ]
+         },
+         "funnel_first_failed": {
+          "held": 0,
+          "moved": 23,
+          "settled": 1,
+          "hardware": 0,
+          "complete": 8
+         },
+         "predicate_overrides": {
+          "held": 0,
+          "moved": 0,
+          "settled": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 0.25,
+         "reproducible": true,
+         "wall_s": 75.8,
+         "finished_utc": "2026-11-11T14:32:21Z",
+         "meets_pass_rate": true,
+         "decision": "accepted",
+         "incumbent": true,
+         "previous_incumbent": "r0084",
+         "delta": {
+          "held": 0,
+          "moved": 2,
+          "settled": 2,
+          "success": 2
+         },
+         "margin": 2,
+         "hardware_delta": 0,
+         "reason": "'settled' improved by +2 (>= +2) with no stage losing more than 2",
+         "failure_review": {
+          "stage": "moved",
+          "lost": 23,
+          "episodes": 32,
+          "montages": [
+           {
+            "role": "montage_1",
+            "frame_times_s": null
+           },
+           {
+            "role": "montage_2",
+            "frame_times_s": null
+           }
+          ]
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "239c7e8ca677",
+          "bytes": 95789,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "a769c3a5a2f6",
+          "bytes": 96126,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "69e2652d20c2",
+          "bytes": 60639,
+          "content_type": "application/json"
+         }
+        }
        }
       ],
       "first_recon_utc": "2026-11-11T10:10:32Z",
@@ -484765,7 +485222,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-11T14:20:01Z",
+      "exported_utc": "2026-11-11T14:30:01Z",
       "submissions": [
        {
         "sub": "s04",
@@ -485420,7 +485877,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-11T14:20:01Z",
+      "exported_utc": "2026-11-11T14:30:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -485815,7 +486272,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-11T14:20:01Z",
+      "exported_utc": "2026-11-11T14:30:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -486076,7 +486533,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-11T14:22:32Z",
+  "staged_utc": "2026-11-11T14:32:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -486160,7 +486617,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-11T14:22:32Z",
+  "staged_utc": "2026-11-11T14:32:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
