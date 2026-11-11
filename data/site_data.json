@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-11T17:37:02Z",
- "exported_utc": "2026-11-11T17:36:52Z",
+ "generated_utc": "2026-11-11T17:42:38Z",
+ "exported_utc": "2026-11-11T17:42:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-11T17:35:49",
+    "time": "2026-11-11T17:40:30",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-11T17:31:27",
+    "time": "2026-11-11T17:40:51",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -243119,6 +243119,203 @@
           "content_type": "application/json"
          }
         }
+       },
+       {
+        "id": "r0151",
+        "seq": 151,
+        "kind": "note",
+        "version": 44,
+        "recorded_utc": "2026-11-11T17:36:53Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Before reading any fresh final result, test one last development-only timing variant: shorten the optional PPO stabilization from.24s to.12s, with identical motion heads, physics, global5s/turn4s/hold1s criteria and hardware limits. Reviewed rejectedr0148:17black falls out by.62s after only.31s hand contact;6white stays upright but opposed intervals fragment and standardturnfails;29black drops with peak speed1.402x limit. Shorter stabilization may perturb the initial contact geometry less before the faster turn. This is a policy timing parameter, not a relaxation of task thresholds. Precommit selection rule: replace the prior choice only if this dev gate accepts, has0hardware on the original64, and allorderedcompletion exceeds13; otherwise keep r0144. Never compare final results to choose. No further candidates after this timing test."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0152",
+        "seq": 152,
+        "kind": "iter",
+        "version": 30,
+        "recorded_utc": "2026-11-11T17:37:58Z",
+        "exception": false,
+        "body": {
+         "sim_version": 8,
+         "policy_observations": "deployable",
+         "policy": "research/candidates/settled_short_hold4",
+         "algorithm": {
+          "name": "PPO",
+          "heads": {
+           "settle/": {
+            "steps": 614400,
+            "metadata": null
+           },
+           "main/turn/": {
+            "steps": 3276800,
+            "metadata": null
+           },
+           "main/hold/": {
+            "steps": 1228800,
+            "metadata": null
+           }
+          },
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "clip": 0.2,
+          "epochs": 5,
+          "batch_size": 8192,
+          "lr": 1e-05,
+          "entropy_weight": 0.0001,
+          "value_weight": 0.5,
+          "max_grad_norm": 1,
+          "target_kl": 0.02,
+          "kl_control": "Exact Gaussian anchor KL backtracking, then actor early stop",
+          "training_run": "ppo_hold_v4_current",
+          "phase": "Same PPO-trained motion heads as r0141, with finite initial stabilization shortened to.12s. No extra training transitions are claimed.",
+          "num_envs": 384,
+          "workers": 16,
+          "seed": 212026,
+          "critic_lr": 0.001,
+          "updates": 100,
+          "rollout_steps": 32,
+          "critic_warmup_updates": 25,
+          "logstd_init": -5.5
+         },
+         "observation_interface": "98 allowed encoder, previous finger/wrist targets, wrist/object states, step and kind. Holding uses zero local time. No contacts, forces, torques or physical parameters enter the actor.",
+         "action_interface": "Turn head:20 targets base+.7*tanh plus3 wrist targets. Holding:20 increments.04rad plus3 rotation-vector increments norm.01rad; all hardware wrapper caps unchanged.",
+         "reward_terms": [
+          {
+           "name": "grip",
+           "formula": "opposedcontact",
+           "weight": 0.12
+          },
+          {
+           "name": "goal",
+           "formula": "up15degANDopposed",
+           "weight": 0.5
+          },
+          {
+           "name": "velocity",
+           "formula": "-.1*objectangularspeed-2*objectlinearspeed",
+           "weight": 1
+          },
+          {
+           "name": "smoothness",
+           "formula": "mean squarednormalizedincrement",
+           "weight": -0.001
+          },
+          {
+           "name": "failure",
+           "formula": "environment/bracing/hardwareindicator",
+           "weight": -1
+          },
+          {
+           "name": "terminal_success",
+           "formula": "2scompleteandlast1ssteady",
+           "weight": 5
+          },
+          {
+           "name": "early_stop",
+           "formula": "terminatedbefore2s",
+           "weight": -3
+          },
+          {
+           "name": "progress",
+           "formula": "previous angular error minus current angular error to world up, radians",
+           "weight": 10
+          },
+          {
+           "name": "orientation",
+           "formula": "squared angular error to world up, radians squared",
+           "weight": -1
+          },
+          {
+           "name": "posture",
+           "formula": "unused",
+           "weight": 0
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "holding physical initial states",
+           "distribution": "204 actual current PPOv8 turn endpoints:84 white,120 black; seeds230000–230383, captured only after valid turn. Physical parameters, qpos, qvel and targets preserved. This is a curriculum, not evaluation coverage."
+          },
+          {
+           "quantity": "encoder noise",
+           "distribution": "Independent Gaussian .002rad/.05rad/s every decision"
+          },
+          {
+           "quantity": "turn/settle source",
+           "distribution": "Existing full documented randomized geometry, mass, valid inertia, COM, friction and held placement; source iteration records retain their training details."
+          }
+         ],
+         "curriculum": "2N normal-force and wrist pose/velocity teacher initialization on actual current turn endpoints, linear encoder-error features folded into first layer; then1,228,800 PPO transitions. Teacher forces never enter actor observations or deployment.",
+         "compute": {
+          "seconds": 543.03,
+          "gpu_hours": 0.15084166666666665,
+          "backend": "Native CPU MuJoCo, Torch GPU PPO",
+          "run": "ppo_hold_v4_current",
+          "scope": "Holding4 training only; composition reuses previously recorded source heads."
+         },
+         "evaluation": {
+          "criteria_version": 5,
+          "suite_version": 7,
+          "gate_request": "gate-20261111T173654Z-n6le",
+          "local_episodes": [
+           {
+            "seed": 0,
+            "stages": null,
+            "hardware_ok": true,
+            "metrics": null
+           },
+           {
+            "seed": 1,
+            "stages": null,
+            "hardware_ok": true,
+            "metrics": null
+           }
+          ]
+         },
+         "reflection": "Precommitted development-only timing test r0151. No final results used for selection. Retain only if gate accepted with0hardware and allorderedcompletion>13; otherwise discard.",
+         "limitations": "Training proxies and local two-seed checks are not robustness claims. Standard gate measurements may overrule local stages. Contact behavior can differ between GPU and CPU. Earlier inferred-armature wording was incorrect; all vendor armatures match exactly. Holding4 policy metadata incorrectly inherited a PPO614k starts label; actual training cache is train_v8,204 current PPOv8 endpoints, as recorded here. No hardware values changed."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "7b9a93755da7",
+          "bytes": 30987,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "5688ef96afe6",
+          "bytes": 88431,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "656d6fbd3581",
+          "bytes": 100387,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "38d343dbe6be",
+          "bytes": 162894,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0153",
+        "seq": 153,
+        "kind": "note",
+        "version": 45,
+        "recorded_utc": "2026-11-11T17:38:42Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Budget cutoff for the precommitted last timing test: it must satisfy r0151 acceptance/zero-hardware/allordered conditions by17:43UTC to become the final choice. A pending hardware redraw already fails the original64 zero-hardware condition; a pending/unaccepted test at the cutoff is discarded for selection. This cutoff preserves time for one fresh128 final gate and evidence. No additional candidates will be evaluated. The already-completed original final gate remains uninspected until the development selection decision."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-11T10:09:00Z",
@@ -504046,6 +504243,19 @@
          "text": "With~25minleft, no further PPO hyperparameter sweep. Last contact-rich feasibility hypothesis: the front reference uses a fixed world-space middle-finger arc while the cube drifts during the pinky grip transfer. I will test object-relative online IK on an independent data copy, plus proprioceptive target-error limiting, as a privileged scripted feasibility diagnostic. This never acts on the object state/forces and is not a deployable learned policy; final retained-policy/verification choices remain frozen."
         },
         "files": {}
+       },
+       {
+        "id": "r0202",
+        "seq": 202,
+        "kind": "note",
+        "version": 74,
+        "recorded_utc": "2026-11-11T17:40:51Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Last front diagnostic is negative: object-relative online IK with independent kinematic MjData copies and proprioceptive tracking-error caps.025/.05/.1rad completes0/6quarter turns across both signs,0hardwareviolations, maximum layer progress19.61degrees. It removes the prior speed-limit failures but does not generate the required contact-rich motion. Also checked the suspected projected-axis mismatch: nominal projected wristfront and actual requestedface axes differ0degrees, so that is not the explanation. No controller retained and no hardware impossibility claimed. The packaged learned reverse249 local witness reproduces gate-compatible metrics exactly under pinned runtime."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-11T10:10:32Z",
@@ -504061,7 +504271,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-11T17:30:01Z",
+      "exported_utc": "2026-11-11T17:40:01Z",
       "submissions": [
        {
         "sub": "s04",
@@ -504716,7 +504926,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-11T17:30:01Z",
+      "exported_utc": "2026-11-11T17:40:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -505111,7 +505321,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-11T17:30:01Z",
+      "exported_utc": "2026-11-11T17:40:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -505372,7 +505582,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-11T17:36:56Z",
+  "staged_utc": "2026-11-11T17:42:33Z",
   "tasks": {
    "cube": {
     "files": {
@@ -505456,7 +505666,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-11T17:36:56Z",
+  "staged_utc": "2026-11-11T17:42:33Z",
   "tasks": {
    "tennis": {
     "status": "available",
