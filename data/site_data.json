@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-12T17:22:36Z",
- "exported_utc": "2026-11-12T17:22:30Z",
+ "generated_utc": "2026-11-12T17:32:37Z",
+ "exported_utc": "2026-11-12T17:32:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-12T17:20:56",
+    "time": "2026-11-12T17:29:38",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-12T17:20:20",
+    "time": "2026-11-12T17:28:54",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -243906,9 +243906,221 @@
          "text": "Inspected tracker overlays f0 and f105. White initial silhouette fit has a false orientation: +z blades axis points toward image right although visible blades are behind the housing at upper left. This is the x/z ambiguity of a nearly square white housing, despite IoU 0.917. Running an extension in our own workspace that seeds the first pose from visible blade direction and estimated table normal; installed tracker is unchanged. Black initial blade direction is correct. Background feature tracking estimates up to 4.55 degrees camera rotation, which is now incorporated; camera translation remains unobservable."
         },
         "files": {}
+       },
+       {
+        "id": "r0004",
+        "seq": 4,
+        "kind": "note",
+        "version": 4,
+        "recorded_utc": "2026-11-12T17:25:23Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Default required MANO fit completed all 436 frame slots in 26 GPU seconds, initialized from HaWoR detections on 360 frames. Its scorer: median given-mask IoU 0.858, any-probe contact within 10 mm 0.981, max sampled penetration 3.9 mm. These are fit diagnostics, not proof of correct opposed grasp. Original tracks drift/flip their axes during known rest despite high silhouettes, so I am fitting a workspace tracker copy with an explicit weak orientation prior from visible blade direction and table-supported upright endpoints. Hidden intermediate rotation remains inferred and invalid where no video evidence supports it."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0005",
+        "seq": 5,
+        "kind": "recon",
+        "version": 1,
+        "recorded_utc": "2026-11-12T17:28:00Z",
+        "exception": false,
+        "body": {
+         "summary": "First output-contract VALID reconstruction with all quality checks evaluated. Quality overall fails self-intersection; object-axis ambiguities and opposed contact are being refined during the full reconstruction hour.",
+         "components": [
+          {
+           "name": "camera",
+           "status": "partial",
+           "method": "MoGe focal prior and background rotation",
+           "note": "Focal inferred, no reliable geometric calibration; translation not estimated."
+          },
+          {
+           "name": "object_geometry",
+           "status": "partial",
+           "method": "Blender geometric models",
+           "note": "Generic blade-spacing anchor; body and mass uncertain, manufacturer unknown."
+          },
+          {
+           "name": "objects_6d",
+           "status": "failed",
+           "method": "Silhouette render-and-compare first pass",
+           "note": "Mask fit good, but white x/z ambiguity and axes drifting during rest; constrained refit running."
+          },
+          {
+           "name": "hand_motion",
+           "status": "partial",
+           "method": "Required HaWoR -> default MANO scene fit",
+           "note": "Median mask IoU .858, 360 supported frames; self-penetration quality check failed."
+          },
+          {
+           "name": "contact_phases",
+           "status": "partial",
+           "method": "Visual annotation plus 3D checking",
+           "note": "Any-finger distances pass; opposed grip fractions poor. Refinement required."
+          }
+         ],
+         "limitations": [
+          "Output completeness does not imply physical fidelity: known orientation ambiguity, rest drift and poor opposed contact. This preliminary version is not used to measure the demonstrated turn."
+         ],
+         "validation": {
+          "schema": "recon-validation/1",
+          "utc": "2026-11-12T17:25:21Z",
+          "thresholds": {
+           "contact_band_mm": 5.0,
+           "phase_fail_mm": 10.0,
+           "pen_warn_mm": 5.0,
+           "pen_fail_mm": 10.0,
+           "wrist_speed_mps": 3.0,
+           "wrist_accel_mps2": 150.0,
+           "tip_speed_mps": 5.0,
+           "bone_jump_deg": 60.0,
+           "obj_jump_m": 0.1,
+           "obj_rot_jump_deg": 45.0,
+           "g": 9.81,
+           "g_tol": 2.0,
+           "rest_drift_mm": 5.0,
+           "sink_mm": 3.0,
+           "hand_chain_mm": [
+            140.0,
+            230.0
+           ],
+           "iou_warn": 0.6,
+           "hand_precision_warn": 0.7,
+           "opposition_deg": 60.0,
+           "anatomical_min_frac": 0.5
+          },
+          "checks": {
+           "reprojection": {
+            "status": "pass",
+            "per_part": null,
+            "below_threshold": null,
+            "note": "against your own masks: agreement with them is necessary, not sufficient (3D errors along the viewing ray are invisible here)"
+           },
+           "fingertip_distance": {
+            "status": "pass",
+            "phases": null
+           },
+           "anatomical_contact": {
+            "status": "warn",
+            "phases": null,
+            "note": "a grasp needs the thumb and an opposing finger on opposite sides of the object; single-finger pushes or palm support are legitimate but must be stated in the analysis. Low penetration does not imply contact."
+           },
+           "penetration_hand_object": {
+            "status": "warn",
+            "max_mm": null,
+            "frames_over_warn": null,
+            "signed": null,
+            "note": "unsigned (lower bound) distances where the object mesh is not watertight"
+           },
+           "self_penetration": {
+            "status": "fail",
+            "finger_finger_frames": null,
+            "finger_finger_frac": 0.478,
+            "hand_hand_frames": null,
+            "note": "triangle intersections between different fingers (FCL); counts are not volumes"
+           },
+           "continuity": {
+            "status": "pass",
+            "flagged": null,
+            "count": 0
+           },
+           "physics": {
+            "status": "warn",
+            "flights": null,
+            "rests": null,
+            "note": "free-flight intervals are given with --flight OBJ=a:b; rest intervals default to object intervals without contact"
+           },
+           "handedness_scale": {
+            "status": "pass",
+            "per_side": null,
+            "note": "left/right are the demonstrator's anatomical hands; a hand is never mirrored"
+           },
+           "sync": {
+            "status": "warn",
+            "t_real_monotonic": true,
+            "fps_real": 30.0,
+            "compare_frames": 436,
+            "compare_matches": true,
+            "object_offset_check": null
+           },
+           "camera_focal": {
+            "status": "pass",
+            "focal_px": 1056.1,
+            "prior_px": 1056.1,
+            "ratio": 1.0,
+            "prior_source": "--focal-prior",
+            "focal_label": "estimated",
+            "threshold_ratio": 1.25,
+            "note": "MoGe intrinsics are a learned prior; the focal should be calibrated against known geometry (camera_calib.py pnp). A large disagreement needs its explanation in NOTES.md (which one is wrong, and why)."
+           }
+          },
+          "summary": {
+           "reprojection": "pass",
+           "fingertip_distance": "pass",
+           "anatomical_contact": "warn",
+           "penetration_hand_object": "warn",
+           "self_penetration": "fail",
+           "continuity": "pass",
+           "physics": "warn",
+           "handedness_scale": "pass",
+           "sync": "warn",
+           "camera_focal": "pass"
+          },
+          "failed": [
+           "self_penetration"
+          ],
+          "incomplete": [],
+          "missing_required": [],
+          "overall": "fail",
+          "overall_note": "not pass: failed checks: self_penetration"
+         },
+         "check_reference": {
+          "verdict": "VALID",
+          "errors": 0,
+          "warnings": 1,
+          "error_list": []
+         },
+         "exception": null,
+         "producer": {
+          "tool": "r2s2r-d2s recon",
+          "recon_dir": "recon"
+         }
+        },
+        "files": {
+         "compare_video": {
+          "sha": "6a3138f720f7",
+          "bytes": 2128639,
+          "content_type": "video/mp4"
+         },
+         "validation_json": {
+          "sha": "8c737755b253",
+          "bytes": 7717,
+          "content_type": "application/json"
+         },
+         "viewer": {
+          "sha": "d70e551a80ef",
+          "bytes": 6553600,
+          "content_type": "application/x-tar"
+         }
+        }
+       },
+       {
+        "id": "r0006",
+        "seq": 6,
+        "kind": "note",
+        "version": 5,
+        "recorded_utc": "2026-11-12T17:29:38Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Reconstruction v1 recorded as r0005 (output contract VALID, quality FAIL). Its 3D opposition fractions .246 white/.096 black expose a weakness of closest-any-probe contact fitting, and FCL finds finger self-intersection in .478 of valid frames. I copied the required MANO fitter to research/handlib_opposed (installed copy untouched), adding losses for thumb/index regional surface contact and separation in the visually observed hold intervals (white f98–175, black f283–365), plus distal finger centreline separation. This is inferred contact supervision, not measured force/contact ground truth. Config increases penetration weight .05 to .3, depth-order 0 to .15, frees scale prior 1 to .3 and runs 800 iterations. Will compare image IoU, opposed contacts and self-intersections before keeping it."
+        },
+        "files": {}
        }
       ],
-      "first_recon_utc": null,
+      "first_recon_utc": "2026-11-12T17:28:00Z",
       "chain_ok": true,
       "run": 13
      }
@@ -504918,6 +505130,32 @@
          "text": "Cube logo and shape suggest Monster Go MG2 Standard (identity inferred). Official manufacturer lists 51 mm, 56 g, ABS and an integrated plastic core with adjustable elasticity: https://www.monster-go.com/standard2x2-2/ . Use these as priors, not measured ground truth. A six-corner PnP attempt is poorly conditioned in focal length (unrestricted fit tends to infinity); retain median MoGe focal 1157 px with explicit depth uncertainty and refine with additional visible-face geometry. Layer turns remain unobserved in the rigid-body tracker."
         },
         "files": {}
+       },
+       {
+        "id": "r0003",
+        "seq": 3,
+        "kind": "note",
+        "version": 3,
+        "recorded_utc": "2026-11-12T17:24:58Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Reconstruction diagnosis: rigid-envelope tracking finished all395frames, median fitted silhouette IoU0.9285 with no lost frames. Initial hand-written PnP gravity caused11.84mm displacement in a0.5s resting-cube simulation. Rebased gravity by22.15deg to the mean tracked normal of the observed resting face; image poses and fitted IoU are unchanged. Rest-test displacement fell to1.68mm, deepest contact0.027mm. Default MANO fit completed unchanged (400iterations,42s,scale0.998); scoring and gravity-consistent refit are running. Formal scene analysis was written after the initial envelope geometry, an acknowledged local ordering deviation; no robot/training simulation has been built."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0004",
+        "seq": 4,
+        "kind": "note",
+        "version": 4,
+        "recorded_utc": "2026-11-12T17:28:54Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Hand baseline showed why contact alone is insufficient: left median visible IoU0.3394 and only12.5% manipulation frames pass0.5, despite any-probe contact1.0. Montages at frames120/245 show the rendered near-side hand hidden by the cube. Testing unchanged fitter with depth-order2, penetration0.2,scale1,800iterations. Also corrected my first gravity refinement: a numerical rest test alone could not resolve the Necker-cube ambiguity. Visible top-edge lengths135/110px identify in-plane tracker axes0/1; the top normal is-axis2, with camera above support (downward gravity camera zpositive). Rebased W accordingly; image poses unchanged, rest displacement2.80mm/0.5s. Background-flow max rotation0.449deg with0.034px median residual supports a static-camera approximation. These limitations and corrections are retained in NOTES."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": null,
@@ -504933,7 +505171,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-12T17:20:01Z",
+      "exported_utc": "2026-11-12T17:30:01Z",
       "submissions": [
        {
         "sub": "s04",
@@ -505588,7 +505826,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-12T17:20:01Z",
+      "exported_utc": "2026-11-12T17:30:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -505983,7 +506221,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-12T17:20:01Z",
+      "exported_utc": "2026-11-12T17:30:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -506244,7 +506482,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-12T17:22:32Z",
+  "staged_utc": "2026-11-12T17:32:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -506328,7 +506566,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-12T17:22:32Z",
+  "staged_utc": "2026-11-12T17:32:31Z",
   "tasks": {
    "tennis": {
     "status": "available",
