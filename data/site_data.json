@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-13T23:32:37Z",
- "exported_utc": "2026-11-13T23:32:29Z",
+ "generated_utc": "2026-11-13T23:42:38Z",
+ "exported_utc": "2026-11-13T23:42:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-13T23:31:59",
+    "time": "2026-11-13T23:36:03",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -542843,6 +542843,224 @@
           "content_type": "application/json"
          }
         }
+       },
+       {
+        "id": "r0076",
+        "seq": 76,
+        "kind": "note",
+        "version": 31,
+        "recorded_utc": "2026-11-13T23:35:30Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Tanh saturation diagnosis from teacher-forced prediction, narrowcase32middlefingerjoint4: reference normalizedtarget backs off1.0 at2–3.6s to.843 after4.4s; neuralplan stays1.0 throughend. Joint11MSE.00163 dominateserror, despiteotherjoints4e-6. The tanhheadlosesgradientwhenreturningfromsaturation, so betterphasefitcannotcorrectthefinalbrace. Testrawlinear-outputMSE withboundedGaussianactions/ReLUactor, retaininghardwaretargetbounds/rate. Thisispretrainingonly; initial-onlyneuraltrajectorybaseline isexplicitlyopenloop andcannotbethefinalpolicy. SubsequentPPOunfreezescurrentobservationweightsandmustbeverifiedasclosedloop. PPO002gatesr0074CCW0/64HW13,r0075CW1/64HW12 bothrejected; switcharchitecture/actiondistribution insteadofanotheroptimizeronlytrial."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0077",
+        "seq": 77,
+        "kind": "iter",
+        "version": 10,
+        "recorded_utc": "2026-11-13T23:36:03Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "policy_checkpoint": "research/candidates/turn_ppo_002/policy.pt",
+         "checkpoint_sha256": "4ba4fc047024…",
+         "algorithm": "PPO40updates with per-minibatch GaussianKLguard.04,actorrollbackandratehalving,separateactor/criticgradientclipping",
+         "architecture": "512x512ELU actor/critic,736deployableinputs (184x4history),identitynorm",
+         "observations": "Noisyq/qd,ownpreviouscommands,wristpose/velocity,8cornerposes/velocities,goalaxis/direction,sin/coslayerangle,time. No contacts/forces/physicsparameters.",
+         "actions": "20directjointtargetincrements.015rad/action,clippedhardwarelimits,fixedwrist",
+         "reward_terms": [
+          {
+           "name": "angleprogress",
+           "formula": "Delta clipped signed goal-angle progress",
+           "weight": 40
+          },
+          {
+           "name": "activeprogress",
+           "formula": "Delta clipped activefingerprogress/70deg",
+           "weight": 20
+          },
+          {
+           "name": "firstturned",
+           "formula": "First goalpose+style+health predicates",
+           "weight": 30
+          },
+          {
+           "name": "restprogress",
+           "formula": "Delta terminalrest/.5s",
+           "weight": 30
+          },
+          {
+           "name": "terminalsuccess",
+           "formula": "Exact goal/rest/passive/contact/health/hardware criteria at6s",
+           "weight": 50
+          },
+          {
+           "name": "failure",
+           "formula": "Once on irrecoverabledrop/health/hardware",
+           "weight": -40
+          },
+          {
+           "name": "actionregularization",
+           "formula": "Mean squared normalizedaction perstep",
+           "weight": -0.002
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Gaussian.002rad/.05rad/s"
+          },
+          {
+           "name": "legalcorneridentity",
+           "distribution": "8legal20movescrambles perCPUtrajectory,physicallyidenticaloccupiedsolid"
+          }
+         ],
+         "curriculum": "Six actualmastered-griphandoffs whereprivilegedcontroller succeeds95.3%GPU; finalskillgatesstill64deploymenthandoffs at.8",
+         "evaluation": {
+          "cpu_episodes": 6,
+          "cpu_turned": 5,
+          "cpu_settled": 0,
+          "cpu_hardware": 0,
+          "gates": {
+           "cw": {
+            "record": "r0075",
+            "counts": null,
+            "hardware": 12,
+            "decision": "rejected"
+           },
+           "ccw": {
+            "record": "r0074",
+            "counts": null,
+            "hardware": 13,
+            "decision": "rejected"
+           }
+          }
+         },
+         "parity": "Simulation2 static/statechecks and128movingquarterturnoutcomesPASS; repeatonkeptPPOcheckpointrequired.",
+         "reflection": "Updateinstabilityrepaired,but almostno stochasticsettling. OwnCPU6narrowstarts5turned0settled0HW; frozenCW1/64HW12,CCW0/64HW13, bothgaterejected. Do notkeepthischeckpoint. Tanhfinaltarget saturation and4frameobservationambiguity remain; nextarchitecture/actiondistributionchange basedonmeasuredcommanddrift.",
+         "training": {
+          "algorithm": "PPO",
+          "sim_version": 2,
+          "policy_observations": "deployable",
+          "actor_features": 736,
+          "history": 4,
+          "actions": 20,
+          "worlds": 2048,
+          "updates": 40,
+          "samples": 5242880,
+          "seed": 22,
+          "wall_seconds": 871.9047346115112,
+          "gpu_hours": 0.24219575981299082,
+          "config": {
+           "iterations": 40,
+           "steps_per_iter": 64,
+           "epochs": 4,
+           "minibatches": 4,
+           "gamma": 0.995,
+           "lam": 0.95,
+           "clip": 0.2,
+           "lr": 0.0001,
+           "ent_coef": 0.0001,
+           "vf_coef": 1.0,
+           "max_grad_norm": 1.0,
+           "target_kl": 0.03,
+           "hidden": [
+            256,
+            256
+           ],
+           "critic_hidden": [
+            256,
+            256
+           ],
+           "init_log_std": -3.0,
+           "action_mode": "tanh",
+           "actor_keys": [
+            "deployable"
+           ],
+           "critic_keys": [
+            "deployable"
+           ],
+           "reward_scale": 1.0,
+           "residual_scale": 0.5,
+           "critic_warmup": 0,
+           "action_dim": null,
+           "device": "cuda:0",
+           "seed": 22,
+           "log_every": 10,
+           "verbose": true,
+           "checkpoint_path": null,
+           "checkpoint_every": 0,
+           "callback": null,
+           "violation_keys": [
+            "hw_violations",
+            "safety_violations"
+           ],
+           "stall_patience": 20,
+           "stall_kl": 1e-06,
+           "stall_rel_change": 1e-06,
+           "kl_warn": null,
+           "eval_callback": null,
+           "eval_every": 10,
+           "eval_metric": "success",
+           "best_checkpoint_path": null,
+           "restore_best": false,
+           "log_path": null
+          },
+          "handoff_bank": null,
+          "handoff_training_fraction": 0,
+          "normalization": "Fixed identity; input units manually scaled identically on CPU/GPU. No teacher or scripted residual.",
+          "reward": "40*delta clipped signed goal progress +20*delta active finger progress/70deg +30first eligible turned +30delta terminal-rest progress +50exact terminal success -40irrecoverable health/retention/HW failure -.002mean(action²); no alive reward",
+          "domain_randomization": "`None` beyond deterministic bank of physically settled placement/yaw/up-face/legal-scramble starts and encoder noise.",
+          "action_scale": 0.015,
+          "skill": "turn",
+          "initialization": "research/turn_bc_002/bc.pt"
+         },
+         "optimizer": {
+          "actor_lr": 1e-06,
+          "critic_lr": 0.0001,
+          "action_std_initial": "exp(-3)",
+          "samples": 5242880,
+          "updates": 40,
+          "seed": 22,
+          "wall_seconds": 871.8916611671448,
+          "kl_range": [
+           0.003268516156822443,
+           0.005829735659062862
+          ],
+          "parameter_change_range": [
+           1.2792894267477095e-05,
+           2.0390780264278874e-05
+          ]
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "ca4d782b2491",
+          "bytes": 467720,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "44f942432479",
+          "bytes": 301601,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "4496e72f16bc",
+          "bytes": 338764,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "62398afb10b9",
+          "bytes": 370794,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-13T19:40:59Z",
@@ -542858,7 +543076,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-13T23:30:02Z",
+      "exported_utc": "2026-11-13T23:40:01Z",
       "submissions": [
        {
         "sub": "s04",
@@ -543513,7 +543731,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-13T23:30:02Z",
+      "exported_utc": "2026-11-13T23:40:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -543908,7 +544126,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-13T23:30:02Z",
+      "exported_utc": "2026-11-13T23:40:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -544169,7 +544387,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-13T23:32:32Z",
+  "staged_utc": "2026-11-13T23:42:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -544253,7 +544471,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-13T23:32:32Z",
+  "staged_utc": "2026-11-13T23:42:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
