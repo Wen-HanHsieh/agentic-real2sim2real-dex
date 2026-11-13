@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-13T23:12:39Z",
- "exported_utc": "2026-11-13T23:12:29Z",
+ "generated_utc": "2026-11-13T23:22:37Z",
+ "exported_utc": "2026-11-13T23:22:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-13T23:11:00",
+    "time": "2026-11-13T23:20:41",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-13T23:10:54",
+    "time": "2026-11-13T23:21:50",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -260025,6 +260025,50 @@
         "body": {
          "kind": "decision",
          "text": "Deeperposeaudit: the demonstration's objectX axis is not the canonicalrobotwristX usedinourfirstsimulation. Reconstructedstart objectX in anatomicalrobotpalmcoordinates iswhite(-.438,-.024,-.899),black(.757,-.062,.651); blackrelativeaxis maps(.585,.113,.803) inthatframe. The recordedfullrobot_wrist_reference_rotation also includesroll/pitchnotcapturedbysimpleRx tilts. Newstudyuses full recordedpalm/objectrotation matrices, inferredcontactregions, andkinematicIKwithfreeobjectcenter. It keeps looked-upgeometry andactualhardware unchanged. This should improvefidelityand mayalignrotationwith thumbCMC/fingerabduction better. These hypotheses are notverifiedclaims."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0058",
+        "seq": 58,
+        "kind": "note",
+        "version": 28,
+        "recorded_utc": "2026-11-13T23:15:45Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Timing-onlycontrollerchange acceptedr0056:9/64steady versus1/64, same13HW. Keepservo4.0–4.5s andfreezealltargets4.8s. Command-errorcapprototype(.7*kd*vmax/kp basednoisyq) yields32test0HWbutonly5fingerturn/2steady versus16/7uncapped; do notkeepasposthocfix. StablePPO2nowchecksupdatedrewardthenruns: same60referenceplans, approvedtiming, actorlr1e-5/critic2e-4,10criticwarmupupdates,rewardscale.1, prewarmed390Dactorstatsfrom118successfulcontrollerrollouts/35400frames, minibatchKLstop. Ownhelpercopyteacher_stable.py only; installedtoolsunchanged. ThisbatchedoptimizerstabilityfixaddressesrecordedKL66.4/48.6, whilebase/timingareheldfixedversusacceptedincumbent."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0059",
+        "seq": 59,
+        "kind": "criteria",
+        "version": 3,
+        "recorded_utc": "2026-11-13T23:19:05Z",
+        "exception": false,
+        "body": {
+         "reason": "Tighten demonstrated-skill fidelity after full palm/object frame audit: enforce initial gravity-in-wrist pose and blade-direction reorientation. Retain all previous thresholds; no relaxation to pass a policy."
+        },
+        "files": {
+         "criteria_md": {
+          "sha": "2b7d9ee618ee",
+          "bytes": 11578,
+          "content_type": "text/markdown"
+         }
+        }
+       },
+       {
+        "id": "r0060",
+        "seq": 60,
+        "kind": "note",
+        "version": 29,
+        "recorded_utc": "2026-11-13T23:20:41Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Criteria3 recordedr0059 tightens ratherthanrelaxes fidelity: initialgravity-in-wristwithin20deg of full recordedpalmframe, plus>=60degblade-directionturnrelativehandinsideoneopposedinterval. Fullgeodesic60/passive15/wrist25/finalworldup10/steady1s/allhardware rulesremain. Newreference-orientedIKgraspstudyfinds physicallystableeligibleholdsforbothkindsnominalandlargegeometry; retargetingmotionnow uses shortestblade-to-up axis in that recordedframe and boundedwristassistance, notcanonicalwristX rotation. No simulation/suiteversion adopteduntilphysicalprototypesvalidated. PPO2continuesinoldsimulationasoptimizationresearch; nooldcriteria2resultwillberelabelledcriteria3."
         },
         "files": {}
        }
@@ -541629,6 +541673,571 @@
          "text": "Initial6-handoffcurriculum teacher953/1000approx (512measured95.31%) earns166.26 vs hold0.76 and random-29.18,0HW. Narrow BC40000updates fitsactionMSE~.0004 but only4/512deployablesuccess(0.78%),2hardware. PPOturn_001 startsfromthisnarrow BC network:2048worlds40updatesx64steps,lr1e-4,actionstdexp(-3),direct20deltaq.015,4history. Hypothesis: PPO can use positive partial rotation reward(return32.35) to learn corrective feedback and terminalstabilization; stop this method after40updates if it still almostneverfinishes. In parallel test absolute-position outputs to avoid integrating BC delta errors. Frozen skill suitesr0057/r0058 remaindeploymenthandoffs at80%, no curriculum success is mastery."
         },
         "files": {}
+       },
+       {
+        "id": "r0063",
+        "seq": 63,
+        "kind": "note",
+        "version": 29,
+        "recorded_utc": "2026-11-13T23:13:34Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "TurnPPO001 exposes an optimizer problem before its first checkpoint: update1 approximateKL86.4, then24.3,15.5 despite small relativeparameterchange. BC network is highly sensitive at actionstd.05; an epoch-level KLstop acts too late. Stop after checkpoint10 and evaluate/archive it. Next PPO implementation checks exact Gaussian KL after each minibatch, rolls back actor/logstd steps exceeding.04, halves their rates, and clips actor/criticgradients separately. Startactorlr1e-6 vscritic1e-4. This is optimizer repair, not a reward/criteria or physics change. Absolute-target BCnarrow reaches~4e-6MSE vsdelta~4e-4; testphysicalrollout before choosing that action space."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0064",
+        "seq": 64,
+        "kind": "gate",
+        "version": 10,
+        "recorded_utc": "2026-11-13T23:15:48Z",
+        "exception": false,
+        "body": {
+         "suite": "skill-cw",
+         "suite_version": 1,
+         "suite_kind": "skill",
+         "suite_record": "r0057",
+         "final": false,
+         "candidate_sha256": "1ac84d31e2f6…",
+         "method": "algorithm-settings",
+         "hypothesis": "Initial narrow-curriculum PPO from behavior-cloned coordinated trajectories, direct delta finger targets. This first optimizer trial is archived after10updates because KL overshot; establish its frozen deployment-handoff baseline.",
+         "predicts": "settled",
+         "observed": "Feasibility r0055 seed310005 stays near-20deg rather than completing the requested quarter-turn; deployable feedback should advance uncovered states.",
+         "primitive": "turn_cw",
+         "started_utc": "2026-11-13T23:14:39Z",
+         "pass_rate": 0.8,
+         "max_hardware_violations": 0,
+         "handoff": {
+          "episodes": 64,
+          "fraction": 1.0,
+          "follows": [
+           "grip"
+          ],
+          "pool_states": 58,
+          "pool_sha256": "1c4d8002e6ec…"
+         },
+         "episodes": 64,
+         "counts": {
+          "gripped": 6,
+          "turned": 0,
+          "settled": 0,
+          "success": 0
+         },
+         "wilson95": {
+          "gripped": [
+           0.0437,
+           0.1898
+          ],
+          "turned": [
+           0.0,
+           0.0566
+          ],
+          "settled": [
+           0.0,
+           0.0566
+          ],
+          "success": [
+           0.0,
+           0.0566
+          ]
+         },
+         "funnel_first_failed": {
+          "gripped": 58,
+          "turned": 6,
+          "settled": 0,
+          "hardware": 0,
+          "complete": 0
+         },
+         "predicate_overrides": {
+          "gripped": 0,
+          "turned": 0,
+          "settled": 0
+         },
+         "hardware_violations": 10,
+         "success_rate": 0.0,
+         "reproducible": true,
+         "wall_s": 54.5,
+         "finished_utc": "2026-11-13T23:15:47Z",
+         "meets_pass_rate": false,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent",
+         "failure_review": {
+          "stage": "gripped",
+          "lost": 58,
+          "episodes": 64,
+          "montages": [
+           {
+            "role": "montage_1",
+            "frame_times_s": null
+           },
+           {
+            "role": "montage_2",
+            "frame_times_s": null
+           }
+          ]
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "32c44d75bc4a",
+          "bytes": 116702,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "cf4aa412cb96",
+          "bytes": 118003,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "0ded919b17ae",
+          "bytes": 110169,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0065",
+        "seq": 65,
+        "kind": "gate",
+        "version": 11,
+        "recorded_utc": "2026-11-13T23:15:53Z",
+        "exception": false,
+        "body": {
+         "suite": "skill-ccw",
+         "suite_version": 1,
+         "suite_kind": "skill",
+         "suite_record": "r0058",
+         "final": false,
+         "candidate_sha256": "1ac84d31e2f6…",
+         "method": "algorithm-settings",
+         "hypothesis": "Initial narrow-curriculum PPO from behavior-cloned coordinated trajectories, direct delta finger targets. This first optimizer trial is archived after10updates because KL overshot; establish its frozen deployment-handoff baseline.",
+         "predicts": "settled",
+         "observed": "Feasibility r0054 seed310049 holds still throughout; a deployable feedback network should act outside the finite catalog.",
+         "primitive": "turn_ccw",
+         "started_utc": "2026-11-13T23:14:42Z",
+         "pass_rate": 0.8,
+         "max_hardware_violations": 0,
+         "handoff": {
+          "episodes": 64,
+          "fraction": 1.0,
+          "follows": [
+           "grip"
+          ],
+          "pool_states": 58,
+          "pool_sha256": "1c4d8002e6ec…"
+         },
+         "episodes": 64,
+         "counts": {
+          "gripped": 1,
+          "turned": 1,
+          "settled": 0,
+          "success": 0
+         },
+         "wilson95": {
+          "gripped": [
+           0.0028,
+           0.0833
+          ],
+          "turned": [
+           0.0028,
+           0.0833
+          ],
+          "settled": [
+           0.0,
+           0.0566
+          ],
+          "success": [
+           0.0,
+           0.0566
+          ]
+         },
+         "funnel_first_failed": {
+          "gripped": 63,
+          "turned": 0,
+          "settled": 1,
+          "hardware": 0,
+          "complete": 0
+         },
+         "predicate_overrides": {
+          "gripped": 1,
+          "turned": 1,
+          "settled": 0
+         },
+         "hardware_violations": 16,
+         "success_rate": 0.0,
+         "reproducible": true,
+         "wall_s": 53.9,
+         "finished_utc": "2026-11-13T23:15:52Z",
+         "meets_pass_rate": false,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent",
+         "failure_review": {
+          "stage": "gripped",
+          "lost": 63,
+          "episodes": 64,
+          "montages": [
+           {
+            "role": "montage_1",
+            "frame_times_s": null
+           },
+           {
+            "role": "montage_2",
+            "frame_times_s": null
+           }
+          ]
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "07c99f7bdd32",
+          "bytes": 119224,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "1ae339354f9f",
+          "bytes": 117235,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "8362a924368c",
+          "bytes": 110177,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0066",
+        "seq": 66,
+        "kind": "note",
+        "version": 30,
+        "recorded_utc": "2026-11-13T23:21:03Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Viewed unstablePPO001 latest gate failures: CW310009 closes fingers but cube rolls out by1.04s (layer nearzero), CCW310026 tips/reorients whole cube1.12–4.56s with nearzero layer motion. Gates:0/64settledboth,10CW/16CCWhardware violations; discarded. NarrowdeltaBC CPU completes turned4/6butsettled0; commandedjointtrajectory drifts0.1–0.6rad fromteacher. AbsoluteBCMSE4e-6still0/512GPU, so lower supervised loss alone does not predict physical success. Hypothesis: the four-frame actor cannot retain which initial handoff/trajectory it began from after states drift; append the episode initial184deployablefeatures as permitted history, preserving current4frames. Fit and DAgger with this initial-state memory, then PPO. No contacts/forces/parameters enter actor; frozencriteriaunchanged."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0067",
+        "seq": 67,
+        "kind": "iter",
+        "version": 3,
+        "recorded_utc": "2026-11-13T23:21:49Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "policy_checkpoint": "research/candidates/turn_bc_002/policy.pt",
+         "checkpoint_sha256": "5e103a36483e…",
+         "algorithm": "Behavior-cloning initialization only; finalpolicyrequiresPPO",
+         "architecture": "512x512ELU actor/critic,736deployableinputs (184x4history),identitynorm",
+         "observations": "Noisyq/qd,ownpreviouscommands,wristpose/velocity,8cornerposes/velocities,goalaxis/direction,sin/coslayerangle,time. No contacts/forces/physicsparameters.",
+         "actions": "20directjointtargetincrements.015rad/action,clippedhardwarelimits,fixedwrist",
+         "reward_terms": [
+          {
+           "name": "supervised_action_MSE",
+           "formula": "Mean squared actor output minus CPUverifiedteacher target",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Gaussian.002rad/.05rad/s"
+          },
+          {
+           "name": "legalcorneridentity",
+           "distribution": "8legal20movescrambles perCPUtrajectory,physicallyidenticaloccupiedsolid"
+          }
+         ],
+         "curriculum": "Six actualmastered-griphandoffs whereprivilegedcontroller succeeds95.3%GPU; finalskillgatesstill64deploymenthandoffs at.8",
+         "evaluation": {
+          "cpu_episodes": 6,
+          "cpu_turned": 4,
+          "cpu_settled": 0,
+          "cpu_hardware": 0,
+          "cpu_metrics": "research/turn_bc_002_cpu_eval/results.json",
+          "gpu": [
+           {
+            "controller": "network",
+            "n": 512,
+            "return_mean": 32.35008239746094,
+            "success_first_episode": 0.0078125,
+            "hardware_episode_fraction": 0.00390625,
+            "length": 222.0234375,
+            "seconds": 32.16333055496216,
+            "cases": null
+           }
+          ]
+         },
+         "parity": "Simulation2 static/statechecks and128movingquarterturnoutcomesPASS; repeatonkeptPPOcheckpointrequired.",
+         "reflection": "LowerBCtrainingerror doesnotensureclosedloop success. Deltaerrorsaccumulate; absolutetargetvariantalsofails. PPO001overshotKL andisdiscarded; repairedPPOchecksKLperminibatch. Initial-state-memoryandDAgger hypothesesfollow; nofulltasksuccessclaim.",
+         "training": {
+          "method": "BC initialization only; PPO follows",
+          "source": "research/turn_data_002/narrow_dataset.npz",
+          "updates": 40000,
+          "samples": 81920000,
+          "wall_seconds": 51.71124291419983,
+          "observation": "184 deployable features x4 history, identity normalization",
+          "action": "20 finger-target increments scale.015rad; fixed wrist",
+          "architecture": "512x512ELU",
+          "seed": 73
+         },
+         "reward_note": "Supervisedwarmstart; rewardaudited separately, noRLupdatesyet."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "63de7ef61564",
+          "bytes": 11202,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "80988bbaf2bc",
+          "bytes": 302205,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "13d7a730c490",
+          "bytes": 338187,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "f66e189fa5f6",
+          "bytes": 370433,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0068",
+        "seq": 68,
+        "kind": "iter",
+        "version": 4,
+        "recorded_utc": "2026-11-13T23:21:50Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "policy_checkpoint": "research/candidates/turn_bc_abs_001/policy.pt",
+         "checkpoint_sha256": "31dd4c891f29…",
+         "algorithm": "Behavior-cloning initialization only; finalpolicyrequiresPPO",
+         "architecture": "512x512ELU actor/critic,736deployableinputs (184x4history),identitynorm",
+         "observations": "Noisyq/qd,ownpreviouscommands,wristpose/velocity,8cornerposes/velocities,goalaxis/direction,sin/coslayerangle,time. No contacts/forces/physicsparameters.",
+         "actions": "20normalizedabsolute fingerpositiontargets,mappedtohardwarelimitswith.015rad/actionratelimit;fixedwrist",
+         "reward_terms": [
+          {
+           "name": "supervised_action_MSE",
+           "formula": "Mean squared actor output minus CPUverifiedteacher target",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Gaussian.002rad/.05rad/s"
+          },
+          {
+           "name": "legalcorneridentity",
+           "distribution": "8legal20movescrambles perCPUtrajectory,physicallyidenticaloccupiedsolid"
+          }
+         ],
+         "curriculum": "Six actualmastered-griphandoffs whereprivilegedcontroller succeeds95.3%GPU; finalskillgatesstill64deploymenthandoffs at.8",
+         "evaluation": {
+          "cpu_episodes": 6,
+          "cpu_turned": 1,
+          "cpu_settled": 0,
+          "cpu_hardware": 2,
+          "cpu_metrics": "research/turn_bc_abs_001_cpu_eval/results.json",
+          "gpu": [
+           {
+            "controller": "network",
+            "n": 512,
+            "return_mean": 13.258203506469727,
+            "success_first_episode": 0.0,
+            "hardware_episode_fraction": 0.029296875,
+            "length": 225.099609375,
+            "seconds": 32.57150673866272,
+            "cases": null
+           }
+          ]
+         },
+         "parity": "Simulation2 static/statechecks and128movingquarterturnoutcomesPASS; repeatonkeptPPOcheckpointrequired.",
+         "reflection": "LowerBCtrainingerror doesnotensureclosedloop success. Deltaerrorsaccumulate; absolutetargetvariantalsofails. PPO001overshotKL andisdiscarded; repairedPPOchecksKLperminibatch. Initial-state-memoryandDAgger hypothesesfollow; nofulltasksuccessclaim.",
+         "training": {
+          "method": "BC initialization only; PPO follows",
+          "source": "research/turn_data_002/absolute_narrow_dataset.npz",
+          "updates": 40000,
+          "samples": 81920000,
+          "wall_seconds": 50.478532552719116,
+          "observation": "184 deployable features x4 history, identity normalization",
+          "action": "20 finger-target increments scale.015rad; fixed wrist",
+          "architecture": "512x512ELU",
+          "seed": 73
+         },
+         "reward_note": "Supervisedwarmstart; rewardaudited separately, noRLupdatesyet."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "68443222c140",
+          "bytes": 11304,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "a9f4975f90e4",
+          "bytes": 299388,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "8d9400df1cd6",
+          "bytes": 299416,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "8f6d63b89450",
+          "bytes": 319842,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0069",
+        "seq": 69,
+        "kind": "iter",
+        "version": 5,
+        "recorded_utc": "2026-11-13T23:21:51Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "policy_checkpoint": "research/candidates/turn_ppo_001/policy.pt",
+         "checkpoint_sha256": "bf2a4523a4a2…",
+         "algorithm": "PPO, early-stopped after10updates dueoversizedKL",
+         "architecture": "512x512ELU actor/critic,736deployableinputs (184x4history),identitynorm",
+         "observations": "Noisyq/qd,ownpreviouscommands,wristpose/velocity,8cornerposes/velocities,goalaxis/direction,sin/coslayerangle,time. No contacts/forces/physicsparameters.",
+         "actions": "20directjointtargetincrements.015rad/action,clippedhardwarelimits,fixedwrist",
+         "reward_terms": [
+          {
+           "name": "angleprogress",
+           "formula": "Delta clipped signed goal-angle progress",
+           "weight": 40
+          },
+          {
+           "name": "activeprogress",
+           "formula": "Delta clipped activefingerprogress/70deg",
+           "weight": 20
+          },
+          {
+           "name": "firstturned",
+           "formula": "First goalpose+style+health predicates",
+           "weight": 30
+          },
+          {
+           "name": "restprogress",
+           "formula": "Delta terminalrest/.5s",
+           "weight": 30
+          },
+          {
+           "name": "terminalsuccess",
+           "formula": "Exact goal/rest/passive/contact/health/hardware criteria at6s",
+           "weight": 50
+          },
+          {
+           "name": "failure",
+           "formula": "Once on irrecoverabledrop/health/hardware",
+           "weight": -40
+          },
+          {
+           "name": "actionregularization",
+           "formula": "Mean squared normalizedaction perstep",
+           "weight": -0.002
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Gaussian.002rad/.05rad/s"
+          },
+          {
+           "name": "legalcorneridentity",
+           "distribution": "8legal20movescrambles perCPUtrajectory,physicallyidenticaloccupiedsolid"
+          }
+         ],
+         "curriculum": "Six actualmastered-griphandoffs whereprivilegedcontroller succeeds95.3%GPU; finalskillgatesstill64deploymenthandoffs at.8",
+         "evaluation": {
+          "cpu_episodes": 6,
+          "cpu_turned": 2,
+          "cpu_settled": 0,
+          "cpu_hardware": 2,
+          "cpu_metrics": "research/turn_ppo_001_cpu_eval/results.json",
+          "gates": {
+           "cw": {
+            "record": "r0064",
+            "counts": null,
+            "hardware": 10
+           },
+           "ccw": {
+            "record": "r0065",
+            "counts": null,
+            "hardware": 16
+           }
+          }
+         },
+         "parity": "Simulation2 static/statechecks and128movingquarterturnoutcomesPASS; repeatonkeptPPOcheckpointrequired.",
+         "reflection": "LowerBCtrainingerror doesnotensureclosedloop success. Deltaerrorsaccumulate; absolutetargetvariantalsofails. PPO001overshotKL andisdiscarded; repairedPPOchecksKLperminibatch. Initial-state-memoryandDAgger hypothesesfollow; nofulltasksuccessclaim.",
+         "training": {
+          "updates": 10,
+          "worlds": 2048,
+          "steps_per_update": 64,
+          "samples": 1310720,
+          "seed": 22,
+          "lr": 0.0001,
+          "entropy": 0.0001,
+          "action_std": "exp(-3)",
+          "gamma": 0.995,
+          "lam": 0.95,
+          "clip": 0.2,
+          "epochs": 4,
+          "minibatches": 4,
+          "wall_seconds": 192.950439453125,
+          "warmstart": "turn_bc_002/bc.pt",
+          "approx_KL_first": 86.39898681640625,
+          "approx_KL_last": 8.44925308227539
+         }
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "6a7295947bdb",
+          "bytes": 102343,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "315bbb19f1dc",
+          "bytes": 335972,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "e9d796da66f3",
+          "bytes": 334038,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "548ee9416487",
+          "bytes": 376547,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-13T19:40:59Z",
@@ -541644,7 +542253,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-13T23:10:01Z",
+      "exported_utc": "2026-11-13T23:20:01Z",
       "submissions": [
        {
         "sub": "s04",
@@ -542299,7 +542908,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-13T23:10:01Z",
+      "exported_utc": "2026-11-13T23:20:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -542694,7 +543303,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-13T23:10:01Z",
+      "exported_utc": "2026-11-13T23:20:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -542955,7 +543564,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-13T23:12:32Z",
+  "staged_utc": "2026-11-13T23:22:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -543039,7 +543648,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-13T23:12:32Z",
+  "staged_utc": "2026-11-13T23:22:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
