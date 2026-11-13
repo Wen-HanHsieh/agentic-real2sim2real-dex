@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-13T21:32:38Z",
- "exported_utc": "2026-11-13T21:32:29Z",
+ "generated_utc": "2026-11-13T21:42:38Z",
+ "exported_utc": "2026-11-13T21:42:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-13T21:31:31",
+    "time": "2026-11-13T21:40:47",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-13T21:31:21",
+    "time": "2026-11-13T21:39:59",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -258059,6 +258059,1267 @@
          "text": "Next feasibility method is privileged physical lookahead. It will copy the exact initial model/state, search a small set of6s joint-target trajectories entirely in a clone, and execute a selected free-physics plan. No forces, welds, state edits or live-model mutations. This is explicitly an oracle feasibility controller, never a deployable skill or task policy. It can also supply successful start/goal rollouts for residual PPO curriculum. It addresses the still-unproven turn link rather than training whole-task before primitive feasibility."
         },
         "files": {}
+       },
+       {
+        "id": "r0035",
+        "seq": 35,
+        "kind": "sim",
+        "version": 3,
+        "recorded_utc": "2026-11-13T21:36:16Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 3,
+         "criteria_version": 2,
+         "simulator": "MuJoCo 3.17.0 CPU authoritative; MuJoCo Warp 3.17.0 optional training pending formal parity",
+         "physics": {
+          "timestep": 0.001,
+          "integrator": "implicitfast",
+          "solver": "Newton",
+          "iterations": 100,
+          "ls_iterations": 50,
+          "tolerance": 1e-06,
+          "contact": "convex mesh, condim4 torsion, multiccd on",
+          "solref": [
+           0.008,
+           1.0
+          ],
+          "restitution": "damped contact, damping ratio1; no independently sampled restitution",
+          "sliding_mu": [
+           0.4,
+           1.2
+          ],
+          "spin_mu": [
+           0.0005,
+           0.003
+          ],
+          "rolling_mu": 0.0001
+         },
+         "scene": {
+          "manifest": "scene_manifest.json",
+          "files": "six compiled hand/right/plug models, generator and copied reconstruction mesh assets",
+          "world": "Zup, table top0, floor-.75, wrist nominal[0,0,.45]",
+          "objects": "white housing42x27x41mm; black29.42x23.95x51.87mm; two separate metal blades each.0013kg; convex housing. Object+Z outward blades,+X acrosspair.",
+          "sources": [
+           "recorded reconstructionv3 geometry and mass/source priors",
+           "hardware/SPECS.md and RIGHT_HAND.md exact URDF controller via provided HandScene/CpuHand"
+          ]
+         },
+         "reference": {
+          "version": 3,
+          "primary": "black314-326; relative76.3deg about(.9584,.2750,-.0770), wrist20.6deg",
+          "retarget": "continuous three-pad IK following reconstructed direction and blade-up endpoint, joint limits and contact penetration penalty. Kinematic replay prescribes object motion and is NOT feasibility evidence.",
+          "deviations": "Palm-down white-style wrist for both objects, rather than black oblique palm. Slower3s turn/8s episode versus human.4s turn. No pickup/table placement, deployment starts held."
+         },
+         "controllers": {
+          "wrist": "free6DoF impedance at1kHz, translational Kp2000/Kd60, rotational20/.4, force30N torque2Nm, target speed2.5m/s and6rad/s at500Hz, own-hand gravity compensation only",
+          "fingers": "exact URDF20joint order/limits/efforts/speeds, provided1kHz PD with motor torque clipping;500Hz targetfilter; policy50Hz",
+          "noise": "finger q Gaussianstd.002rad,qd.05rad/s; no tactile/force sensing to actor",
+          "audit": "all1kHzphysics ticks, joint pos limits+.02rad tolerance, prescribed velocities and clipped efforts"
+         },
+         "starts": {
+          "wrist": "RW=[[0,0,-1],[1,0,0],[0,-1,0]], root[0,0,.45]",
+          "fingers": "per-kind grasp JSON, multiplier3 motorpreload; root and object free throughout physical preparation",
+          "proposal": "±5mm wrist-frame translation and independent Euler±15deg, initial blades nearhorizontal",
+          "eligibility": "same fixed mass/friction/COM draw retained; resample pose only until1.2s free settle leaves opposed hand support, noenv, blades75–105deg, prep rotation<=20deg, tailspeed<.02m/s/.2rad/s. Never filter by task controller success. No weld/attachment/external forces. After24failedposeproposals increase motorpreload3->4, after48->5. No turning outcome consulted.",
+          "randomization": "kindBernoulli.5; size categoricalwhite.9/1/1.1 black.85/1/1.15; massuniformwhite.038–.083 black.020–.070kg; COMindependentuniform±3mm; slidingmuuniform.4–1.2; spinmuuniform.0005–.003",
+          "coverage": "offline64starts:63/64 pass1shold/0hardware;32eachkind, allsixgeometries. Meanproposalattemptwhite2.47/black2.13, max14/8. Formal fresh64gatecheck pending.",
+          "proposal_cap": 512
+         },
+         "episode": {
+          "task_seconds": 8,
+          "settle_seconds": 1.2,
+          "turn_seconds": 6,
+          "policy_hz": 50,
+          "physics_hz": 1000,
+          "log_hz": 500,
+          "termination": "fixed duration, failures retained; no early truncation"
+         },
+         "validation": {
+          "mujoco_version": "3.17.0",
+          "hardware_source": "hardware/wuji_hand2_right/urdf/wuji_hand2_right.urdf",
+          "hand_mass": 0.7088000000000002,
+          "convex_support_max_error_m": 3.5362045514020224e-09,
+          "body_mass_max_error": 0.0,
+          "body_inertia_max_error": 0.0,
+          "body_ipos_max_error": 0.0,
+          "joint_range_max_error": 0.0,
+          "model_check": {
+           "errors": [],
+           "warnings": [
+            "condim 4 (torsional friction) on 53 geom/pair(s): not covered by `verify`; run outcome parity"
+           ],
+           "notes": [
+            "multiccd on (default): MJWarp's float32 polygon clipping gives a different contact count in a few % of mesh-mesh states; no outcome effect measured. Disabling it changes the physics: do it on both backends or not at all",
+            "hand right, 20 finger joints, hand mass 0.7088 kg, 1 object tree(s): ['plug']"
+           ],
+           "pair_type_counts": {
+            "box-mesh": 51,
+            "mesh-plane": 51,
+            "mesh-mesh": 744
+           },
+           "status": "warn"
+          },
+          "replay": [
+           {
+            "kind": 0,
+            "source_interval_frames": null,
+            "retarget": "continuous three-pad pose IK, collision penalty, slower playback",
+            "max_all_[redacted]_mm": 1.0830825645733708,
+            "ik_final_cost": 0.8057117384757699
+           },
+           {
+            "kind": 1,
+            "source_interval_frames": null,
+            "retarget": "continuous three-pad pose IK, collision penalty, slower playback",
+            "max_all_[redacted]_mm": 1.1198002042762587,
+            "ik_final_cost": 1.3469122251023986
+           }
+          ],
+          "gpu_smoke": {
+           "worlds": 128,
+           "opposed": 128,
+           "hardware": 0,
+           "overflow": 0,
+           "buffers": [
+            1980,
+            68
+           ],
+           "seconds": 92.41934657096863
+          },
+          "start_audit1024": {
+           "episodes": 1024,
+           "success": 1013,
+           "hardware": 0,
+           "dropped": 6,
+           "max_attempts": 45,
+           "mean_attempts": 3.31640625,
+           "physical_draws": "820000–821023, no physics draws skipped or redrawn"
+          },
+          "held_policy_parity": {
+           "command": "outcome",
+           "cpu_file": "research/settle_ppo_v2/parity_cpu.json",
+           "gpu_file": "research/settle_ppo_v2/parity_gpu.json",
+           "criterion": "Outcome parity (same policy, both backends, >= min-seeds seeds, scored by the evaluator's judge) is the criterion that counts. State-level and replay checks are diagnostics.",
+           "min_seeds": 128,
+           "metrics": {
+            "success": null,
+            "hardware_violation": null,
+            "dropped": null
+           },
+           "failures": [],
+           "warnings": [],
+           "n_seeds": {
+            "cpu": 192,
+            "gpu": 192
+           },
+           "per_seed_agreement": {
+            "n_shared_seeds": 192,
+            "success": 1.0,
+            "hardware_violation": 1.0,
+            "success_cpu_only": 0,
+            "success_gpu_only": 0,
+            "mcnemar_p": 1.0
+           },
+           "status": "pass"
+          }
+         },
+         "limitations": [
+          "Geometry and physical parameters are class priors, not measured ground truth. Effective friction and COM randomized; no material compliance identification.",
+          "Convex CAD collision hulls preserve original convex support within3.54nm and exact masses/inertias/jointlimits, but render surfaces simplified.",
+          "GPU smoke128identicalheldworlds is not outcome parity; formal CPU/GPU tests required before relying on GPU training.",
+          "Kinematic replay penetrations~1.1mm, physical initial holds~.4mm. Current physical IK prototype underturns; no learned policy or feasibility claim yet.",
+          "300-state diagnostic fails31%contact-set mismatch, high qacc near switch; hold outcomes192seeds exactlyagree bothbackends. Movingpolicy outcomeparity mandatory."
+         ],
+         "changes": "Initial hand preload adapts after unsuccessful pose proposals:3first24,4next24,5thereafter; same sampled physical model and same pose envelope.1024completephysicaldraws accepted with max45poseattempts. Adds explicit feasibility-only copied-model planner protocol to evaluator; no change to live physics or deployable actor observations."
+        },
+        "files": {
+         "scene_1": {
+          "sha": "35a80cbfa0c9",
+          "bytes": 4565,
+          "content_type": "text/plain"
+         },
+         "scene_2": {
+          "sha": "a2e5271a5fba",
+          "bytes": 11113,
+          "content_type": "text/plain"
+         },
+         "scene_3": {
+          "sha": "9b55a10a63e6",
+          "bytes": 206,
+          "content_type": "application/json"
+         },
+         "scene_4": {
+          "sha": "da0fdfbb3b48",
+          "bytes": 2084,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0036",
+        "seq": 36,
+        "kind": "note",
+        "version": 17,
+        "recorded_utc": "2026-11-13T21:36:17Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Settle skill mastered: gate r0032 passes64/64 actual deployment handoffs with zerohardware; deployable3-framehistory PPO actor. Repeated192seed checkpoint CPU/GPU parity passes191/192both,0hardwareboth,1dropboth, zerooverflow using128contactslots/world. Initial-state generation with adaptive preload accepts all1024physicaldraws, max45poseproposals; independent CPU1.2s hold audit records remaining failures rather than filtering their physics. No turn or task mastery claimed yet."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0037",
+        "seq": 37,
+        "kind": "suite",
+        "version": 6,
+        "recorded_utc": "2026-11-13T21:36:48Z",
+        "exception": false,
+        "body": {
+         "suite": "task",
+         "suite_version": 2,
+         "suite_kind": "task",
+         "criteria_version": 2,
+         "stages": [
+          "secured",
+          "finger_turn",
+          "steady"
+         ],
+         "pass_rate": 0.9,
+         "pass_rate_reason": "Own robust deployment goal: >=90% fresh full-range episodes, both objects reported separately, zero hardware violations.",
+         "max_hardware_violations": 0,
+         "dev_episodes": 64,
+         "final_episodes": 192,
+         "timeout_min": 30,
+         "description": "One initially opposed-held white or black fixed-blade charger. Active finger turn>=60deg, wrist<=25deg, steady world blades-up<=10deg for final1s.8s. Exact criteria2 custom and standard predicates.",
+         "precondition": null,
+         "postcondition": null,
+         "starts_from": null,
+         "primitive": null,
+         "primitives": [
+          "settle",
+          "turn_hold"
+         ],
+         "stage_predicates": {
+          "secured": [
+           {
+            "measure": "held_s",
+            "op": ">=",
+            "value": 0.49
+           },
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.45
+           },
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0
+           }
+          ],
+          "finger_turn": [
+           {
+            "measure": "opposed_rel_rotation_deg",
+            "op": ">=",
+            "value": 60
+           },
+           {
+            "measure": "passive_rel_rotation_deg",
+            "op": "<=",
+            "value": 15
+           },
+           {
+            "measure": "wrist.max_rotation_deg",
+            "op": "<=",
+            "value": 25
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1
+           },
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0
+           }
+          ],
+          "steady": [
+           {
+            "measure": "final_axis_angle_deg",
+            "op": "<=",
+            "value": 10,
+            "args": null
+           },
+           {
+            "measure": "last_second_max_speed_m_s",
+            "op": "<=",
+            "value": 0.01
+           },
+           {
+            "measure": "last_second_max_angular_speed_rad_s",
+            "op": "<=",
+            "value": 0.1
+           },
+           {
+            "measure": "held_s",
+            "op": ">=",
+            "value": 7.95
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1
+           },
+           {
+            "measure": "touching_environment_at_end",
+            "op": "<=",
+            "value": 0
+           },
+           {
+            "measure": "goal_error_deg",
+            "op": "<=",
+            "value": 25
+           }
+          ]
+         },
+         "primitive_spec": null,
+         "harness_predicates": [],
+         "reference_check": null,
+         "chain": [
+          {
+           "primitive": "settle",
+           "follows": [
+            "start"
+           ]
+          },
+          {
+           "primitive": "turn_hold",
+           "follows": [
+            "settle"
+           ]
+          }
+         ],
+         "follows": null,
+         "handoff_fraction": null,
+         "handoff": null,
+         "start_check": {
+          "support": "hand"
+         },
+         "start_check_result": {
+          "episodes": 64,
+          "passed": 63,
+          "rate": 0.9844,
+          "required": 0.95,
+          "hold_s": 1.0,
+          "support": "hand",
+          "limits": {
+           "displacement_m": 0.02,
+           "rotation_deg": 20.0,
+           "end_speed_m_s": 0.05,
+           "end_angular_speed_rad_s": 0.5
+          },
+          "hand_still": {
+           "wrist_displacement_m": 0.005,
+           "wrist_rotation_deg": 3.0,
+           "joint_deviation_rad": 0.15
+          },
+          "measures": "meas-4",
+          "wall_s": 27.1,
+          "handoff_episodes": 0,
+          "failed": [
+           {
+            "reasons": null
+           }
+          ],
+          "deployment_start_pool": 63
+         },
+         "reason": "Simulationv3 fixes rare infeasible initial hand preloads without redrawing physics; same criteria2 thresholds. Explicit feasibility-only copied-model oracle option; task command refuses oracle policies.",
+         "evaluator_bytes": 101409612,
+         "evaluator_files": 29
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "e6bc7e4cfdd4",
+          "bytes": 3254,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0038",
+        "seq": 38,
+        "kind": "suite",
+        "version": 7,
+        "recorded_utc": "2026-11-13T21:38:41Z",
+        "exception": false,
+        "body": {
+         "suite": "settle_feas",
+         "suite_version": 2,
+         "suite_kind": "feasibility",
+         "criteria_version": 2,
+         "stages": [
+          "secured"
+         ],
+         "pass_rate": 0.25,
+         "pass_rate_reason": "Feasibility threshold: some reliably supported entry states, learning mastery separately>=.8.",
+         "max_hardware_violations": 0,
+         "dev_episodes": 64,
+         "final_episodes": 192,
+         "timeout_min": 30,
+         "description": "Hold and settle the already opposed-grasped plug1.2s with hand support only.",
+         "precondition": null,
+         "postcondition": null,
+         "starts_from": null,
+         "primitive": "settle",
+         "primitives": null,
+         "stage_predicates": {
+          "secured": [
+           {
+            "measure": "held_s",
+            "op": ">=",
+            "value": 0.49
+           },
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.45
+           },
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1
+           },
+           {
+            "measure": "touching_environment_at_end",
+            "op": "<=",
+            "value": 0
+           }
+          ]
+         },
+         "primitive_spec": {
+          "motion": "other",
+          "support": "none",
+          "angle_deg": 5,
+          "demo_interval_s": [
+           10.2,
+           10.4666666667
+          ],
+          "video_evidence": "The black charger is already grasped off the table with thumb beneath and opposing index/middle fingers, before the visible finger turn begins. The grip stabilizes before reorientation.",
+          "reference": {
+           "unavailable": "Entry is stabilization of an already held deployment object rather than a reconstructed reorientation; video pose is nearly static and partly occluded."
+          },
+          "task_condition": "Deployment starts with the plug held. Establish physically supported opposed grip for the demonstrated finger manipulation.",
+          "deviations": "Robot starts from a physically prepared palm-down grip (white-style palm), stabilizes1.2s, no pickup or table support. Black demonstrated palm is oblique. Schema angle_deg=5 is the required schema floor for this nonrotational entry, not a measured turn or pass requirement; motion=other."
+         },
+         "harness_predicates": [
+          {
+           "measure": "environment_contact_s",
+           "op": "<=",
+           "value": 0.05,
+           "objects": "each"
+          }
+         ],
+         "reference_check": {
+          "unavailable": "Entry is stabilization of an already held deployment object rather than a reconstructed reorientation; video pose is nearly static and partly occluded."
+         },
+         "chain": null,
+         "follows": [
+          "start"
+         ],
+         "handoff_fraction": 1.0,
+         "handoff": {
+          "fraction": 1.0,
+          "pool_states": 63,
+          "pool_sha256": "18421bd70ccc…",
+          "sources": [
+           {
+            "follows": "start",
+            "suite": "task",
+            "version": 2,
+            "record": "r0037",
+            "states": 63
+           }
+          ],
+          "dev_episodes": 64
+         },
+         "start_check": {
+          "support": "hand"
+         },
+         "start_check_result": {
+          "episodes": 64,
+          "passed": 64,
+          "rate": 1.0,
+          "required": 0.95,
+          "hold_s": 1.0,
+          "support": "hand",
+          "limits": {
+           "displacement_m": 0.02,
+           "rotation_deg": 20.0,
+           "end_speed_m_s": 0.05,
+           "end_angular_speed_rad_s": 0.5
+          },
+          "hand_still": {
+           "wrist_displacement_m": 0.005,
+           "wrist_rotation_deg": 3.0,
+           "joint_deviation_rad": 0.15
+          },
+          "measures": "meas-4",
+          "wall_s": 3.0,
+          "handoff_episodes": 64,
+          "failed": []
+         },
+         "reason": "Refresh entry starts from taskv2 adaptive preload physical sampler, same criteria2 and holdcontroller.",
+         "evaluator_bytes": 101409612,
+         "evaluator_files": 29
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "e6bc7e4cfdd4",
+          "bytes": 3254,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0039",
+        "seq": 39,
+        "kind": "suite",
+        "version": 8,
+        "recorded_utc": "2026-11-13T21:38:44Z",
+        "exception": false,
+        "body": {
+         "suite": "settle_skill",
+         "suite_version": 2,
+         "suite_kind": "skill",
+         "criteria_version": 2,
+         "stages": [
+          "secured"
+         ],
+         "pass_rate": 0.8,
+         "pass_rate_reason": "Own primitive mastery>=80% full-range starts with zero hardware violations.",
+         "max_hardware_violations": 0,
+         "dev_episodes": 64,
+         "final_episodes": 192,
+         "timeout_min": 30,
+         "description": "Hold and settle the already opposed-grasped plug1.2s with hand support only.",
+         "precondition": "Initially opposed-held plug, horizontal blades.",
+         "postcondition": "Stabilized opposed hand support, no environmental contact, tail speed<.05m/s and.5rad/s.",
+         "starts_from": "Frozen passing task deployment starts through gate handoff states.",
+         "primitive": "settle",
+         "primitives": null,
+         "stage_predicates": {
+          "secured": [
+           {
+            "measure": "held_s",
+            "op": ">=",
+            "value": 0.49
+           },
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.45
+           },
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1
+           },
+           {
+            "measure": "touching_environment_at_end",
+            "op": "<=",
+            "value": 0
+           }
+          ]
+         },
+         "primitive_spec": {
+          "motion": "other",
+          "support": "none",
+          "angle_deg": 5,
+          "demo_interval_s": [
+           10.2,
+           10.4666666667
+          ],
+          "video_evidence": "The black charger is already grasped off the table with thumb beneath and opposing index/middle fingers, before the visible finger turn begins. The grip stabilizes before reorientation.",
+          "reference": {
+           "unavailable": "Entry is stabilization of an already held deployment object rather than a reconstructed reorientation; video pose is nearly static and partly occluded."
+          },
+          "task_condition": "Deployment starts with the plug held. Establish physically supported opposed grip for the demonstrated finger manipulation.",
+          "deviations": "Robot starts from a physically prepared palm-down grip (white-style palm), stabilizes1.2s, no pickup or table support. Black demonstrated palm is oblique. Schema angle_deg=5 is the required schema floor for this nonrotational entry, not a measured turn or pass requirement; motion=other."
+         },
+         "harness_predicates": [
+          {
+           "measure": "environment_contact_s",
+           "op": "<=",
+           "value": 0.05,
+           "objects": "each"
+          }
+         ],
+         "reference_check": {
+          "unavailable": "Entry is stabilization of an already held deployment object rather than a reconstructed reorientation; video pose is nearly static and partly occluded."
+         },
+         "chain": null,
+         "follows": [
+          "start"
+         ],
+         "handoff_fraction": 1.0,
+         "handoff": {
+          "fraction": 1.0,
+          "pool_states": 63,
+          "pool_sha256": "18421bd70ccc…",
+          "sources": [
+           {
+            "follows": "start",
+            "suite": "task",
+            "version": 2,
+            "record": "r0037",
+            "states": 63
+           }
+          ],
+          "dev_episodes": 64
+         },
+         "start_check": {
+          "support": "hand"
+         },
+         "start_check_result": {
+          "episodes": 64,
+          "passed": 64,
+          "rate": 1.0,
+          "required": 0.95,
+          "hold_s": 1.0,
+          "support": "hand",
+          "limits": {
+           "displacement_m": 0.02,
+           "rotation_deg": 20.0,
+           "end_speed_m_s": 0.05,
+           "end_angular_speed_rad_s": 0.5
+          },
+          "hand_still": {
+           "wrist_displacement_m": 0.005,
+           "wrist_rotation_deg": 3.0,
+           "joint_deviation_rad": 0.15
+          },
+          "measures": "meas-4",
+          "wall_s": 3.2,
+          "handoff_episodes": 64,
+          "failed": []
+         },
+         "reason": "Refresh entry starts from taskv2 adaptive preload sampler; same deployablePPO candidate and criteria2.",
+         "evaluator_bytes": 101409612,
+         "evaluator_files": 29
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "e6bc7e4cfdd4",
+          "bytes": 3254,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0040",
+        "seq": 40,
+        "kind": "gate",
+        "version": 6,
+        "recorded_utc": "2026-11-13T21:40:11Z",
+        "exception": false,
+        "body": {
+         "suite": "settle_feas",
+         "suite_version": 2,
+         "suite_kind": "feasibility",
+         "suite_record": "r0038",
+         "final": false,
+         "candidate_sha256": "a30fd53ee361…",
+         "method": "simulation",
+         "hypothesis": "Same hold controller proves entry from revised taskv2 physical starts.",
+         "predicts": "secured",
+         "observed": "r0022 lastcontactloss at1.162s in712030; adaptive initialpreload addresses rare weakgrips before deployment, without consulting turn success.",
+         "primitive": "settle",
+         "started_utc": "2026-11-13T21:40:03Z",
+         "pass_rate": 0.25,
+         "max_hardware_violations": 0,
+         "handoff": {
+          "episodes": 64,
+          "fraction": 1.0,
+          "follows": [
+           "start"
+          ],
+          "pool_states": 63,
+          "pool_sha256": "18421bd70ccc…"
+         },
+         "episodes": 64,
+         "counts": {
+          "secured": 64,
+          "success": 64
+         },
+         "wilson95": {
+          "secured": [
+           0.9434,
+           1.0
+          ],
+          "success": [
+           0.9434,
+           1.0
+          ]
+         },
+         "funnel_first_failed": {
+          "secured": 0,
+          "hardware": 0,
+          "complete": 64
+         },
+         "predicate_overrides": {
+          "secured": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 1.0,
+         "reproducible": true,
+         "wall_s": 5.3,
+         "finished_utc": "2026-11-13T21:40:10Z",
+         "meets_pass_rate": true,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent"
+        },
+        "files": {
+         "results_json": {
+          "sha": "ab8025d77968",
+          "bytes": 83629,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0041",
+        "seq": 41,
+        "kind": "gate",
+        "version": 7,
+        "recorded_utc": "2026-11-13T21:40:11Z",
+        "exception": false,
+        "body": {
+         "suite": "settle_skill",
+         "suite_version": 2,
+         "suite_kind": "skill",
+         "suite_record": "r0039",
+         "final": false,
+         "candidate_sha256": "eb47db8df318…",
+         "method": "simulation",
+         "hypothesis": "Frozen mastered deployablePPO settles revised taskv2 starts without further training.",
+         "predicts": "secured",
+         "observed": "Previous settle skill r0032 had64/64complete0HW; new evaluationrefreshonly tests adaptive initialhand starts.",
+         "primitive": "settle",
+         "started_utc": "2026-11-13T21:40:03Z",
+         "pass_rate": 0.8,
+         "max_hardware_violations": 0,
+         "handoff": {
+          "episodes": 64,
+          "fraction": 1.0,
+          "follows": [
+           "start"
+          ],
+          "pool_states": 63,
+          "pool_sha256": "18421bd70ccc…"
+         },
+         "episodes": 64,
+         "counts": {
+          "secured": 64,
+          "success": 64
+         },
+         "wilson95": {
+          "secured": [
+           0.9434,
+           1.0
+          ],
+          "success": [
+           0.9434,
+           1.0
+          ]
+         },
+         "funnel_first_failed": {
+          "secured": 0,
+          "hardware": 0,
+          "complete": 64
+         },
+         "predicate_overrides": {
+          "secured": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 1.0,
+         "reproducible": true,
+         "wall_s": 5.6,
+         "finished_utc": "2026-11-13T21:40:10Z",
+         "meets_pass_rate": true,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent"
+        },
+        "files": {
+         "results_json": {
+          "sha": "f585511d797e",
+          "bytes": 83629,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0042",
+        "seq": 42,
+        "kind": "suite",
+        "version": 9,
+        "recorded_utc": "2026-11-13T21:40:44Z",
+        "exception": false,
+        "body": {
+         "suite": "turn_feas",
+         "suite_version": 2,
+         "suite_kind": "feasibility",
+         "criteria_version": 2,
+         "stages": [
+          "secured",
+          "finger_turn",
+          "steady"
+         ],
+         "pass_rate": 0.25,
+         "pass_rate_reason": "Feasibility threshold: some reliably supported entry states, learning mastery separately>=.8.",
+         "max_hardware_violations": 0,
+         "dev_episodes": 64,
+         "final_episodes": 192,
+         "timeout_min": 30,
+         "description": "Prove active opposed finger reorientation and final steady blades-up hold from actual successful settle handoffs.",
+         "precondition": null,
+         "postcondition": null,
+         "starts_from": null,
+         "primitive": "turn_hold",
+         "primitives": null,
+         "stage_predicates": {
+          "secured": [
+           {
+            "measure": "held_s",
+            "op": ">=",
+            "value": 0.49
+           },
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.45
+           },
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0
+           }
+          ],
+          "finger_turn": [
+           {
+            "measure": "opposed_rel_rotation_deg",
+            "op": ">=",
+            "value": 60
+           },
+           {
+            "measure": "passive_rel_rotation_deg",
+            "op": "<=",
+            "value": 15
+           },
+           {
+            "measure": "wrist.max_rotation_deg",
+            "op": "<=",
+            "value": 25
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1
+           },
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0
+           }
+          ],
+          "steady": [
+           {
+            "measure": "final_axis_angle_deg",
+            "op": "<=",
+            "value": 10,
+            "args": null
+           },
+           {
+            "measure": "last_second_max_speed_m_s",
+            "op": "<=",
+            "value": 0.01
+           },
+           {
+            "measure": "last_second_max_angular_speed_rad_s",
+            "op": "<=",
+            "value": 0.1
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1
+           },
+           {
+            "measure": "touching_environment_at_end",
+            "op": "<=",
+            "value": 0
+           },
+           {
+            "measure": "goal_error_deg",
+            "op": "<=",
+            "value": 25
+           },
+           {
+            "measure": "held_s",
+            "op": ">=",
+            "value": 5.95
+           }
+          ]
+         },
+         "primitive_spec": {
+          "motion": "reorientation",
+          "support": "none",
+          "angle_deg": 76.3,
+          "demo_interval_s": [
+           10.466666666666667,
+           10.866666666666667
+          ],
+          "video_evidence": "The black charger is unsupported in the hand. The thumb stays beneath one side while index and middle fingers curl/reposition on the opposing side. The housing and outward blades rotate relative to the palm toward blades-up, then the hand steadies its grasp.",
+          "reference": {
+           "states": "assets/reference_black.npz",
+           "object": "black_plug",
+           "interval_s": [
+            10.466666666666667,
+            10.866666666666667
+           ],
+           "axis_object": [
+            0.9584,
+            0.275,
+            -0.077
+           ]
+          },
+          "task_condition": "Use finger manipulation of the already-held plug to point its metal blades up and hold it steadily, with no external support.",
+          "deviations": "Robot uses a palm-down grip for both kinds (white-style wrist rather than oblique black palm), allows bounded<=25deg wrist assistance while fingers must turn>=60deg relative to wrist.6s primitive/8s task rather than human.4s turn; slower hardware and deliberate settling. Contact configuration approximates demonstrated thumb/index/middle opposition; exact skin rolling is unobservable."
+         },
+         "harness_predicates": [
+          {
+           "measure": "environment_contact_s",
+           "op": "<=",
+           "value": 0.05,
+           "objects": "each"
+          },
+          {
+           "measure": "opposed_rel_rotation_deg",
+           "op": ">=",
+           "value": 57.2,
+           "objects": "any"
+          },
+          {
+           "measure": "passive_rel_rotation_deg",
+           "op": "<=",
+           "value": 26.7,
+           "objects": "any"
+          },
+          {
+           "measure": "goal_error_deg",
+           "op": "<=",
+           "value": 25.0,
+           "objects": "any"
+          }
+         ],
+         "reference_check": {
+          "object": "black_plug",
+          "t0": 10.467,
+          "t1": 10.867,
+          "rel_rotation_deg": 76.3,
+          "axis_object": [
+           0.9584,
+           0.275,
+           -0.077
+          ],
+          "wrist_rotation_deg": 20.6,
+          "object_world_rotation_deg": 89.7,
+          "angle_deg_spec": 76.3,
+          "angle_tolerance_deg": 15.26,
+          "axis_error_deg": 0.0
+         },
+         "chain": null,
+         "follows": [
+          "settle"
+         ],
+         "handoff_fraction": 1.0,
+         "handoff": {
+          "fraction": 1.0,
+          "pool_states": 64,
+          "pool_sha256": "ffa47b47c1e7…",
+          "sources": [
+           {
+            "follows": "settle",
+            "suite": "settle_skill",
+            "version": 2,
+            "kind": "skill",
+            "record": "r0041",
+            "mastered": true,
+            "states": 64
+           }
+          ],
+          "dev_episodes": 64
+         },
+         "start_check": null,
+         "start_check_result": null,
+         "reason": "Simulationv3 adaptive initialpreload; refresh actual handoffs from mastered settle_skillv2 r0041, and enable explicitly privileged copied-model planner for feasibility.",
+         "evaluator_bytes": 101409612,
+         "evaluator_files": 29
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "e6bc7e4cfdd4",
+          "bytes": 3254,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0043",
+        "seq": 43,
+        "kind": "note",
+        "version": 18,
+        "recorded_utc": "2026-11-13T21:40:45Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Refreshed v2entry gates r0040 hold64/64 and r0041 deployablePPO64/64, both0HW. These mastered actual ends now seed turnv2 suites. Oraclepilot3/4complete,0HW. Viewed latest rejected r0030 montages712033/712010: the first develops wrong bladeaxis by~3.01s and remainsoblique, the second turns but its finalhousing stays angled despitefingersmoving. Exact copied-model search tests actual contact evolution and hardware before choosing commands, rather than another wristcap setting. Finalactor willneverreceiveoraclemodel/state or physicsparameters."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0044",
+        "seq": 44,
+        "kind": "suite",
+        "version": 10,
+        "recorded_utc": "2026-11-13T21:40:47Z",
+        "exception": false,
+        "body": {
+         "suite": "turn_skill",
+         "suite_version": 2,
+         "suite_kind": "skill",
+         "criteria_version": 2,
+         "stages": [
+          "secured",
+          "finger_turn",
+          "steady"
+         ],
+         "pass_rate": 0.8,
+         "pass_rate_reason": "Own mastery requirement>=80% from full-range successful entry handoffs, zero hardware violations.",
+         "max_hardware_violations": 0,
+         "dev_episodes": 64,
+         "final_episodes": 192,
+         "timeout_min": 30,
+         "description": "Prove active opposed finger reorientation and final steady blades-up hold from actual successful settle handoffs.",
+         "precondition": "Opposed hand-supported sideways plug after settle.",
+         "postcondition": "Active relative turn>=60deg and final1s steady blades-up<=10deg, unsupported externally.",
+         "starts_from": "Successful settle feasibility handoffs initially; refresh from mastered settle skill after training.",
+         "primitive": "turn_hold",
+         "primitives": null,
+         "stage_predicates": {
+          "secured": [
+           {
+            "measure": "held_s",
+            "op": ">=",
+            "value": 0.49
+           },
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.45
+           },
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0
+           }
+          ],
+          "finger_turn": [
+           {
+            "measure": "opposed_rel_rotation_deg",
+            "op": ">=",
+            "value": 60
+           },
+           {
+            "measure": "passive_rel_rotation_deg",
+            "op": "<=",
+            "value": 15
+           },
+           {
+            "measure": "wrist.max_rotation_deg",
+            "op": "<=",
+            "value": 25
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1
+           },
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0
+           }
+          ],
+          "steady": [
+           {
+            "measure": "final_axis_angle_deg",
+            "op": "<=",
+            "value": 10,
+            "args": null
+           },
+           {
+            "measure": "last_second_max_speed_m_s",
+            "op": "<=",
+            "value": 0.01
+           },
+           {
+            "measure": "last_second_max_angular_speed_rad_s",
+            "op": "<=",
+            "value": 0.1
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1
+           },
+           {
+            "measure": "touching_environment_at_end",
+            "op": "<=",
+            "value": 0
+           },
+           {
+            "measure": "goal_error_deg",
+            "op": "<=",
+            "value": 25
+           },
+           {
+            "measure": "held_s",
+            "op": ">=",
+            "value": 5.95
+           }
+          ]
+         },
+         "primitive_spec": {
+          "motion": "reorientation",
+          "support": "none",
+          "angle_deg": 76.3,
+          "demo_interval_s": [
+           10.466666666666667,
+           10.866666666666667
+          ],
+          "video_evidence": "The black charger is unsupported in the hand. The thumb stays beneath one side while index and middle fingers curl/reposition on the opposing side. The housing and outward blades rotate relative to the palm toward blades-up, then the hand steadies its grasp.",
+          "reference": {
+           "states": "assets/reference_black.npz",
+           "object": "black_plug",
+           "interval_s": [
+            10.466666666666667,
+            10.866666666666667
+           ],
+           "axis_object": [
+            0.9584,
+            0.275,
+            -0.077
+           ]
+          },
+          "task_condition": "Use finger manipulation of the already-held plug to point its metal blades up and hold it steadily, with no external support.",
+          "deviations": "Robot uses a palm-down grip for both kinds (white-style wrist rather than oblique black palm), allows bounded<=25deg wrist assistance while fingers must turn>=60deg relative to wrist.6s primitive/8s task rather than human.4s turn; slower hardware and deliberate settling. Contact configuration approximates demonstrated thumb/index/middle opposition; exact skin rolling is unobservable."
+         },
+         "harness_predicates": [
+          {
+           "measure": "environment_contact_s",
+           "op": "<=",
+           "value": 0.05,
+           "objects": "each"
+          },
+          {
+           "measure": "opposed_rel_rotation_deg",
+           "op": ">=",
+           "value": 57.2,
+           "objects": "any"
+          },
+          {
+           "measure": "passive_rel_rotation_deg",
+           "op": "<=",
+           "value": 26.7,
+           "objects": "any"
+          },
+          {
+           "measure": "goal_error_deg",
+           "op": "<=",
+           "value": 25.0,
+           "objects": "any"
+          }
+         ],
+         "reference_check": {
+          "object": "black_plug",
+          "t0": 10.467,
+          "t1": 10.867,
+          "rel_rotation_deg": 76.3,
+          "axis_object": [
+           0.9584,
+           0.275,
+           -0.077
+          ],
+          "wrist_rotation_deg": 20.6,
+          "object_world_rotation_deg": 89.7,
+          "angle_deg_spec": 76.3,
+          "angle_tolerance_deg": 15.26,
+          "axis_error_deg": 0.0
+         },
+         "chain": null,
+         "follows": [
+          "settle"
+         ],
+         "handoff_fraction": 1.0,
+         "handoff": {
+          "fraction": 1.0,
+          "pool_states": 64,
+          "pool_sha256": "ffa47b47c1e7…",
+          "sources": [
+           {
+            "follows": "settle",
+            "suite": "settle_skill",
+            "version": 2,
+            "kind": "skill",
+            "record": "r0041",
+            "mastered": true,
+            "states": 64
+           }
+          ],
+          "dev_episodes": 64
+         },
+         "start_check": null,
+         "start_check_result": null,
+         "reason": "Refresh turn skill from mastered settle_skillv2 actual successful endpoints; same criteria2 and full-range physics, deployable learned policies only for mastery.",
+         "evaluator_bytes": 101409612,
+         "evaluator_files": 29
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "e6bc7e4cfdd4",
+          "bytes": 3254,
+          "content_type": "application/json"
+         }
+        }
        }
       ],
       "first_recon_utc": "2026-11-13T19:44:50Z",
@@ -535863,6 +537124,1307 @@
           "content_type": "application/json"
          }
         }
+       },
+       {
+        "id": "r0032",
+        "seq": 32,
+        "kind": "suite",
+        "version": 5,
+        "recorded_utc": "2026-11-13T21:33:11Z",
+        "exception": false,
+        "body": {
+         "suite": "feas-grip",
+         "suite_version": 2,
+         "suite_kind": "feasibility",
+         "criteria_version": 1,
+         "stages": [
+          "gripped"
+         ],
+         "pass_rate": 0.25,
+         "pass_rate_reason": "Required feasibility threshold; any controller, from actual supported deployment starts.",
+         "max_hardware_violations": 0,
+         "dev_episodes": 64,
+         "final_episodes": 128,
+         "timeout_min": 60,
+         "description": "Entry settle/grip primitive: continuous0.30s opposed support, retained and legal, no environment, human-like wrist, exact hardware. Fixed hold is a physical baseline, not final learned policy.",
+         "precondition": null,
+         "postcondition": null,
+         "starts_from": null,
+         "primitive": "grip",
+         "primitives": null,
+         "stage_predicates": {
+          "gripped": [
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0,
+            "objects": "each"
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1,
+            "objects": "each"
+           },
+           {
+            "measure": "wrist.max_rotation_deg",
+            "op": "<=",
+            "value": 25,
+            "objects": "each"
+           },
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.3,
+            "objects": "each"
+           }
+          ]
+         },
+         "primitive_spec": {
+          "motion": "other",
+          "support": "none",
+          "angle_deg": 5,
+          "demo_interval_s": [
+           4.533333333333333,
+           5.1
+          ],
+          "video_evidence": "The left thumb braces lower/front tiles while the long fingers support the rear/side during this stable grip interval. No table support is used. Exact hidden pads and finger joints are occluded.",
+          "reference": {
+           "unavailable": "This entry link establishes opposed support, not an object reorientation. Whole-object and MANO poses are reconstructed, but the hidden contact/robot settling motion has no unique measured state trajectory. The reconstruction reports94.1%opposed coverage over the hold."
+          },
+          "task_condition": "Cube placed in the chosen palm pose must remain held before the requested face turn.",
+          "deviations": "The robot starts in a fixed44deg palm/finger cradle and settles slowly; the human median axes are21.7/23.3deg. The chosen posture stays inside criteria v1 morphology/uncertainty bounds. No release phase. Schema-only angle_deg5 placeholder: service refuses angle0 even for motion=other. This nonrotating entry skill is judged by opposed support, not by achieving5deg. No5deg motion is claimed from the video."
+         },
+         "harness_predicates": [
+          {
+           "measure": "environment_contact_s",
+           "op": "<=",
+           "value": 0.05,
+           "objects": "each"
+          }
+         ],
+         "reference_check": {
+          "unavailable": "This entry link establishes opposed support, not an object reorientation. Whole-object and MANO poses are reconstructed, but the hidden contact/robot settling motion has no unique measured state trajectory. The reconstruction reports94.1%opposed coverage over the hold."
+         },
+         "chain": null,
+         "follows": [
+          "start"
+         ],
+         "handoff_fraction": 1.0,
+         "handoff": {
+          "fraction": 1.0,
+          "pool_states": 62,
+          "pool_sha256": "a57e2a6f38d5…",
+          "sources": [
+           {
+            "follows": "start",
+            "suite": "task",
+            "version": 2,
+            "record": "r0031",
+            "states": 62
+           }
+          ],
+          "dev_episodes": 64
+         },
+         "start_check": {
+          "support": "hand"
+         },
+         "start_check_result": {
+          "episodes": 64,
+          "passed": 64,
+          "rate": 1.0,
+          "required": 0.95,
+          "hold_s": 1.0,
+          "support": "hand",
+          "limits": {
+           "displacement_m": 0.02,
+           "rotation_deg": 20.0,
+           "end_speed_m_s": 0.05,
+           "end_angular_speed_rad_s": 0.5
+          },
+          "hand_still": {
+           "wrist_displacement_m": 0.005,
+           "wrist_rotation_deg": 3.0,
+           "joint_deviation_rad": 0.15
+          },
+          "measures": "meas-4",
+          "wall_s": 21.1,
+          "handoff_episodes": 64,
+          "failed": []
+         },
+         "reason": "Repair deterministic rendering from isolated output; export own exact handoff states to training log. Criteria/physics/judge/controller unchanged.",
+         "evaluator_bytes": 35330229,
+         "evaluator_files": 13
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "eaacec4b8add",
+          "bytes": 1654,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0033",
+        "seq": 33,
+        "kind": "gate",
+        "version": 2,
+        "recorded_utc": "2026-11-13T21:35:00Z",
+        "exception": false,
+        "body": {
+         "suite": "feas-grip",
+         "suite_version": 2,
+         "suite_kind": "feasibility",
+         "suite_record": "r0032",
+         "final": false,
+         "candidate_sha256": "f009848affc3…",
+         "method": "evaluation",
+         "hypothesis": "Repeat the identical fixed hold with repaired failure rendering and current supported deployment handoffs; grip should retain feasibility while exposing any internal deformation.",
+         "predicts": "gripped",
+         "observed": null,
+         "primitive": "grip",
+         "started_utc": "2026-11-13T21:34:33Z",
+         "pass_rate": 0.25,
+         "max_hardware_violations": 0,
+         "handoff": {
+          "episodes": 64,
+          "fraction": 1.0,
+          "follows": [
+           "start"
+          ],
+          "pool_states": 62,
+          "pool_sha256": "a57e2a6f38d5…"
+         },
+         "episodes": 64,
+         "counts": {
+          "gripped": 63,
+          "success": 63
+         },
+         "wilson95": {
+          "gripped": [
+           0.9167,
+           0.9972
+          ],
+          "success": [
+           0.9167,
+           0.9972
+          ]
+         },
+         "funnel_first_failed": {
+          "gripped": 1,
+          "hardware": 0,
+          "complete": 63
+         },
+         "predicate_overrides": {
+          "gripped": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 0.9844,
+         "reproducible": true,
+         "wall_s": 20.8,
+         "finished_utc": "2026-11-13T21:34:59Z",
+         "meets_pass_rate": true,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent",
+         "failure_review": {
+          "stage": "gripped",
+          "lost": 1,
+          "episodes": 64,
+          "montages": [
+           {
+            "role": "montage_1",
+            "frame_times_s": null
+           }
+          ]
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "2e7174bdc767",
+          "bytes": 111979,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "42a6833673e0",
+          "bytes": 102463,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0034",
+        "seq": 34,
+        "kind": "suite",
+        "version": 6,
+        "recorded_utc": "2026-11-13T21:35:02Z",
+        "exception": false,
+        "body": {
+         "suite": "skill-grip",
+         "suite_version": 2,
+         "suite_kind": "skill",
+         "criteria_version": 1,
+         "stages": [
+          "gripped"
+         ],
+         "pass_rate": 0.8,
+         "pass_rate_reason": "Criteria v1 reusable deployable-skill mastery requirement.",
+         "max_hardware_violations": 0,
+         "dev_episodes": 64,
+         "final_episodes": 128,
+         "timeout_min": 60,
+         "description": "Entry settle/grip primitive: continuous0.30s opposed support, retained and legal, no environment, human-like wrist, exact hardware. Fixed hold is a physical baseline, not final learned policy.",
+         "precondition": "Supported aligned puzzle placed in the chosen hand cradle.",
+         "postcondition": "Retained legal opposed grip sustained0.30s.",
+         "starts_from": "Task suite supported deployment starts,100%handoff.",
+         "primitive": "grip",
+         "primitives": null,
+         "stage_predicates": {
+          "gripped": [
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0,
+            "objects": "each"
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1,
+            "objects": "each"
+           },
+           {
+            "measure": "wrist.max_rotation_deg",
+            "op": "<=",
+            "value": 25,
+            "objects": "each"
+           },
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.3,
+            "objects": "each"
+           }
+          ]
+         },
+         "primitive_spec": {
+          "motion": "other",
+          "support": "none",
+          "angle_deg": 5,
+          "demo_interval_s": [
+           4.533333333333333,
+           5.1
+          ],
+          "video_evidence": "The left thumb braces lower/front tiles while the long fingers support the rear/side during this stable grip interval. No table support is used. Exact hidden pads and finger joints are occluded.",
+          "reference": {
+           "unavailable": "This entry link establishes opposed support, not an object reorientation. Whole-object and MANO poses are reconstructed, but the hidden contact/robot settling motion has no unique measured state trajectory. The reconstruction reports94.1%opposed coverage over the hold."
+          },
+          "task_condition": "Cube placed in the chosen palm pose must remain held before the requested face turn.",
+          "deviations": "The robot starts in a fixed44deg palm/finger cradle and settles slowly; the human median axes are21.7/23.3deg. The chosen posture stays inside criteria v1 morphology/uncertainty bounds. No release phase. Schema-only angle_deg5 placeholder: service refuses angle0 even for motion=other. This nonrotating entry skill is judged by opposed support, not by achieving5deg. No5deg motion is claimed from the video."
+         },
+         "harness_predicates": [
+          {
+           "measure": "environment_contact_s",
+           "op": "<=",
+           "value": 0.05,
+           "objects": "each"
+          }
+         ],
+         "reference_check": {
+          "unavailable": "This entry link establishes opposed support, not an object reorientation. Whole-object and MANO poses are reconstructed, but the hidden contact/robot settling motion has no unique measured state trajectory. The reconstruction reports94.1%opposed coverage over the hold."
+         },
+         "chain": null,
+         "follows": [
+          "start"
+         ],
+         "handoff_fraction": 1.0,
+         "handoff": {
+          "fraction": 1.0,
+          "pool_states": 62,
+          "pool_sha256": "a57e2a6f38d5…",
+          "sources": [
+           {
+            "follows": "start",
+            "suite": "task",
+            "version": 2,
+            "record": "r0031",
+            "states": 62
+           }
+          ],
+          "dev_episodes": 64
+         },
+         "start_check": {
+          "support": "hand"
+         },
+         "start_check_result": {
+          "episodes": 64,
+          "passed": 64,
+          "rate": 1.0,
+          "required": 0.95,
+          "hold_s": 1.0,
+          "support": "hand",
+          "limits": {
+           "displacement_m": 0.02,
+           "rotation_deg": 20.0,
+           "end_speed_m_s": 0.05,
+           "end_angular_speed_rad_s": 0.5
+          },
+          "hand_still": {
+           "wrist_displacement_m": 0.005,
+           "wrist_rotation_deg": 3.0,
+           "joint_deviation_rad": 0.15
+          },
+          "measures": "meas-4",
+          "wall_s": 23.9,
+          "handoff_episodes": 64,
+          "failed": []
+         },
+         "reason": "Repair isolated-output rendering and export exact handoff starts for training; unchanged grip criterion and physics. Current task v2 supported deployment starts.",
+         "evaluator_bytes": 35330229,
+         "evaluator_files": 13
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "eaacec4b8add",
+          "bytes": 1654,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0035",
+        "seq": 35,
+        "kind": "sim",
+        "version": 2,
+        "recorded_utc": "2026-11-13T21:37:52Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 4,
+         "simulator": {
+          "name": "MuJoCo",
+          "version": "3.17.0",
+          "gpu": "MuJoCo Warp, same binary and reference actuator model",
+          "timestep": 0.001,
+          "integrator": 3,
+          "solver": 2,
+          "iterations": 100,
+          "ls_iterations": 50,
+          "tolerance": 1e-06,
+          "cone": 1,
+          "gravity": [
+           0.0,
+           0.0,
+           -9.81
+          ]
+         },
+         "scene_files": {},
+         "robot": {
+          "variant": "Wuji Hand2.2 left, hwspec1.3L",
+          "source": "Unmodified public-kit URDF/meshes and d2s_warp_scene HandScene; exact reference CpuHand/WarpHandEnv loops.",
+          "hand_mass_kg": 0.7088000000000002,
+          "joint_names": [
+           "l_thumb_cmc_flex",
+           "l_thumb_cmc_abd",
+           "l_thumb_mcp",
+           "l_thumb_ip",
+           "l_index_finger_mcp_flex",
+           "l_index_finger_mcp_abd",
+           "l_index_finger_pip",
+           "l_index_finger_dip",
+           "l_middle_finger_mcp_flex",
+           "l_middle_finger_mcp_abd",
+           "l_middle_finger_pip",
+           "l_middle_finger_dip",
+           "l_ring_finger_mcp_flex",
+           "l_ring_finger_mcp_abd",
+           "l_ring_finger_pip",
+           "l_ring_finger_dip",
+           "l_pinky_mcp_flex",
+           "l_pinky_mcp_abd",
+           "l_pinky_pip",
+           "l_pinky_dip"
+          ],
+          "lower": [
+           -1.187,
+           -1.484,
+           -0.1,
+           -0.1,
+           -0.1,
+           -0.698,
+           -0.1,
+           -0.1,
+           -0.1,
+           -0.698,
+           -0.1,
+           -0.1,
+           -0.1,
+           -0.698,
+           -0.1,
+           -0.1,
+           -0.1,
+           -0.698,
+           -0.1,
+           -0.1
+          ],
+          "upper": [
+           1.291,
+           0.698,
+           1.57,
+           1.57,
+           1.57,
+           0.698,
+           2.094,
+           1.57,
+           1.57,
+           0.698,
+           2.094,
+           1.57,
+           1.57,
+           0.698,
+           2.094,
+           1.57,
+           1.57,
+           0.698,
+           2.094,
+           1.57
+          ],
+          "velocity": [
+           8.587,
+           11.1,
+           12.86,
+           13.5,
+           8.203,
+           8.11,
+           12.86,
+           13.5,
+           8.203,
+           8.11,
+           12.86,
+           13.5,
+           8.203,
+           8.11,
+           12.86,
+           13.5,
+           8.203,
+           8.11,
+           12.86,
+           13.5
+          ],
+          "effort": [
+           0.6,
+           0.6,
+           0.3,
+           0.3,
+           2.0,
+           0.2,
+           0.3,
+           0.3,
+           2.0,
+           0.2,
+           0.3,
+           0.3,
+           2.0,
+           0.2,
+           0.3,
+           0.3,
+           2.0,
+           0.2,
+           0.3,
+           0.3
+          ],
+          "kp": [
+           4.0,
+           4.0,
+           2.0,
+           2.0,
+           10.0,
+           2.0,
+           2.0,
+           2.0,
+           10.0,
+           2.0,
+           2.0,
+           2.0,
+           10.0,
+           2.0,
+           2.0,
+           2.0,
+           10.0,
+           2.0,
+           2.0,
+           2.0
+          ],
+          "kd": [
+           0.04,
+           0.04,
+           0.02,
+           0.02,
+           0.1,
+           0.02,
+           0.02,
+           0.02,
+           0.1,
+           0.02,
+           0.02,
+           0.02,
+           0.1,
+           0.02,
+           0.02,
+           0.02,
+           0.1,
+           0.02,
+           0.02,
+           0.02
+          ],
+          "encoder_noise": {
+           "position_sigma_rad": 0.002,
+           "velocity_sigma_rad_s": 0.05
+          },
+          "self_collision": "Between fingers per HandScene; native CAD overlaps excluded as provided."
+         },
+         "controller": {
+          "physics_hz": 1000,
+          "target_hold_hz": 500,
+          "policy_hz": 50,
+          "ticks_per_action": 20,
+          "wrist": "Free6DOF reference impedance, kp_lin2000 kd_lin60 kp_rot20 kd_rot0.4 caps30N2Nm; only hand weight compensated; reference target-rate caps. Same hardware checks each physics tick.",
+          "finger": "Exact joint PD and saturation from left spec; target integrated by actor .01rad per20ms and clipped to limits; optional wrist offsets .01m/.15rad from chosen start."
+         },
+         "object": {
+          "identity": "Stickerless2x2 cube; exact product unknown.",
+          "geometry": "Eight25.3mm rounded convex corner bodies, bevel0.6mm, centres±12.85mm; cubeedge51mm, internalgap0.4mm.",
+          "mass_kg": 0.05,
+          "source": [
+           "https://www.gancube.com/products/gan251-m-air-2x2-magnetic-speed-cube",
+           "https://www.gancube.cn/en/GAN251-M/",
+           "https://arxiv.org/abs/1910.07113"
+          ],
+          "source_caveat": "Manufacturer dimensions/mass/magnetism are priors, not identification. OpenAI2019 centre-passing cubie joint model motivates the surrogate, not recovered real core.",
+          "mechanism": "One free carrier plus8centre-passing passive ball joints. Goal-independent nearest-six-face-manifold elastic field, stiffness0.3Nm,damping0.0015Nms; common rigid rotation and selected face tangent projected out. Periodic90deg magnetic detent with4mNm peak total layer torque and cosine potential. No requested-move/goal input to object forces. Initial legal scramble is the zero-strain base. Approximates hidden retention geometry; not a measured mechanism.",
+          "native_joint": {
+           "frictionloss_Nm": 0.001,
+           "damping_Nms": 3e-05,
+           "armature_kgm2": 1e-06
+          },
+          "contact": {
+           "hand_object_sliding_mu": 0.9,
+           "intercorner_mu": 0.15,
+           "condim": 3
+          },
+          "frames": "Corner body origins lie at the common mechanism centre; body COMs/collision geoms are rotated±12.85mm corner centres. Logs include all labelled corner COM poses. Whole-object orientation follows the lower-four-corner aggregate relative to one initial lower-corner frame, avoiding carrier gauge motion. Target face is selected geometrically at request time."
+         },
+         "initial_conditions": {
+          "method": "One fixed commanded hand pose. Operator slow insertion with±10mmxy,±2.5mmheight,±10degtilt,continuousyaw, then2.5s seating while holding layers aligned. Temporary fixture/armature exists only during preparation; restored exact scene binary before episode. No resampling or failure filtering. Cube symmetry independently changes six nominal up-faces and20move legal scrambles, preserving occupied solid. Settled pose distribution includes greater cant than input tilt. Actual loaded finger positions vary through physical compliance.",
+          "parameters": {
+           "local_offset": [
+            -0.02,
+            0,
+            -0.005
+           ],
+           "elevation": 44
+          },
+          "direction": "+1CCW,-1CW from above selected top face; request independent of up face.",
+          "limitations": "Preparation assumes operator holds layers aligned while seating; no physical operator hand model. Two fresh starts fail support and remain failures."
+         },
+         "episode": {
+          "max_seconds": 8,
+          "skill_grip_seconds": 2,
+          "termination": "Time limit, or irrecoverable separation after the first1s; unrecoverable failure is never a successful catch.",
+          "observations": "Noisy q/qd, wrist pose/velocities, previous commands, object/corner poses/velocities, requested move and geometry-derived goal, time;4frames history. Contacts, forces and physics parameters excluded from actor; judge/critic may use them."
+         },
+         "reference": {
+          "path": "research/recon_feature",
+          "version": 4,
+          "use": "Measured94.89deg upper/lower turn at95/101 guides quarter-turn skill, visible thumb/lower brace and long-finger sweep guide contacts. TASK supplies reverse direction and90deg goal. Recorded partial2endpoint reference; no hidden intermediate trajectory asserted.",
+          "retarget": "Collision-aware kinematic IK retimes to3s, index chosen as an inferred long-finger pusher; deployment-aligned starting cube and44deg wrist axes differ from source. Intermediate poses are interpolation assumptions, not recovered demonstration."
+         },
+         "validation": {
+          "static": {
+           "command": "static",
+           "cpu_model": "research/evaluator/scene.mjb",
+           "gpu_model": "research/evaluator/scene.mjb",
+           "warnings": [],
+           "failures": [],
+           "notes": [
+            "mujoco_warp.put_model raises opt.tolerance to max(tolerance, 1e-6) for float32; that is expected and not reported as a difference.",
+            "Per-world DR fields set on the mujoco_warp Model after put_model are not visible here; save the MjModel you pass to put_model, and check post-put_model opt edits with compare_warp_opt(mj_model, warp_model)."
+           ],
+           "size_diffs": [],
+           "option_diffs": [],
+           "array_diffs": [],
+           "pair_type_counts": {
+            "mesh-mesh": 412,
+            "mesh-plane": 8
+           },
+           "box_box_pairs": [],
+           "task_bodies": "cube",
+           "status": "pass"
+          },
+          "native_model_check": {
+           "errors": [],
+           "warnings": [
+            "8 ball joint(s): verified only in the generic 2x2x2 test object (ball joints with springs, parts with gaps); run outcome parity with a judge that includes the object's internal state"
+           ],
+           "notes": [
+            "multiccd on (default): MJWarp's float32 polygon clipping gives a different contact count in a few % of mesh-mesh states; no outcome effect measured. Disabling it changes the physics: do it on both backends or not at all",
+            "hand left, 20 finger joints, hand mass 0.7088 kg, 1 object tree(s): ['cube']",
+            "largest mesh has 6635 vertices (convex hull used for collision); hull size drives GPU narrowphase cost"
+           ],
+           "pair_type_counts": {
+            "mesh-mesh": 1012,
+            "mesh-plane": 56
+           },
+           "status": "warn"
+          },
+          "judge": {
+           "cases": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+           ],
+           "rigid_rotation_rejected": true,
+           "limitation": "Endpoint quaternion cannot distinguish -90 from +270; the trajectory judge additionally unwraps angle and checks path."
+          },
+          "support": "126/128 fresh precheck starts pass d2s_measures.start_check; one preparation drop and one residual-rotation failure. Failed starts remain in all evaluations.",
+          "support_file": "research/fresh_precheck/support_check.json",
+          "mechanism_null": "Before magnetic detent,78legal face-turn configurations have<3.8e-17Nm constraint torque; total rigid torque and legal-face torque residual<3.5e-17. Twelvefree deformation relaxations stable at0.15Nm stiffness; updated0.3Nm dynamics checked in loaded holds.",
+          "force_port": {
+           "max_force_error": 4.1302556902378385e-08,
+           "hardware_episodes": 0,
+           "overflow": 0
+          },
+          "retarget": {
+           "measured_layer_deg": 94.89,
+           "duration_s": 3.0,
+           "max_hand_object_penetration_m": 0.00040846038118547135,
+           "max_hand_self_penetration_m": 4.903677047008368e-05,
+           "max_index_goal_position_error_m": 0.03624251201992141,
+           "description": "Robot start differs from the human cube cant to match deployment. Thumb/lower-support role is held; index is a chosen long-finger pusher because exact driving digit was occluded. Intermediate layer and finger motion are kinematic interpolation/IK assumptions; only endpoints are measured. No feasibility success is inferred."
+          },
+          "gpu_parity": "StaticPASS;128seed hold outcomePASS for grip and internal selected-top-manifold health; exact counts125/126success,1drop,0hardware on both. CPUfloat32-rounded baseline also125grip,0hardware. Contact-state diagnosticWARN10.4%set mismatch; preserved, not suppressed. Hold does not exercise full90degturn; repeat parity on learned/kept turning policy.",
+          "policy_feasibility": "No turning primitive proven. Kinematic replay has36.2mm maximum index tracking error despite0.409mm maximum penetration: one uninterrupted index sweep is not established feasible. Probe incremental sweeps/regrasps.",
+          "parity_outcome_grip": {
+           "command": "outcome",
+           "cpu_file": "research/parity_cpu_grip.json",
+           "gpu_file": "research/parity_gpu_grip.json",
+           "criterion": "Outcome parity (same policy, both backends, >= min-seeds seeds, scored by the evaluator's judge) is the criterion that counts. State-level and replay checks are diagnostics.",
+           "min_seeds": 128,
+           "metrics": {
+            "success": null,
+            "hardware_violation": null,
+            "dropped": null
+           },
+           "failures": [],
+           "warnings": [],
+           "n_seeds": {
+            "cpu": 128,
+            "gpu": 128
+           },
+           "per_seed_agreement": {
+            "n_shared_seeds": 128,
+            "success": 1.0,
+            "hardware_violation": 1.0,
+            "success_cpu_only": 0,
+            "success_gpu_only": 0,
+            "mcnemar_p": 1.0
+           },
+           "status": "pass"
+          },
+          "parity_outcome_internal": {
+           "command": "outcome",
+           "cpu_file": "research/parity_cpu_internal.json",
+           "gpu_file": "research/parity_gpu_internal.json",
+           "criterion": "Outcome parity (same policy, both backends, >= min-seeds seeds, scored by the evaluator's judge) is the criterion that counts. State-level and replay checks are diagnostics.",
+           "min_seeds": 128,
+           "metrics": {
+            "success": null,
+            "hardware_violation": null,
+            "dropped": null
+           },
+           "failures": [],
+           "warnings": [],
+           "n_seeds": {
+            "cpu": 128,
+            "gpu": 128
+           },
+           "per_seed_agreement": {
+            "n_shared_seeds": 128,
+            "success": 1.0,
+            "hardware_violation": 1.0,
+            "success_cpu_only": 0,
+            "success_gpu_only": 0,
+            "mcnemar_p": 1.0
+           },
+           "status": "pass"
+          },
+          "parity_states": {
+           "command": "states",
+           "model": "research/evaluator/scene.mjb",
+           "gpu_model": "research/evaluator/scene.mjb",
+           "states_file": "research/parity_contact_states.npz",
+           "states_in_file": 96,
+           "states_compared": 96,
+           "device": "cuda:1",
+           "float32_note": "MJWarp computes in float32. States are rounded to float32 and the same rounded values are given to the CPU, so initial rounding is not counted as a difference; float32 arithmetic still is.",
+           "internal_buffers": {
+            "nconmax": 128,
+            "njmax": 512
+           },
+           "contacts_per_state_mean": {
+            "cpu": 12.510416666666666,
+            "gpu": 12.479166666666666
+           },
+           "contact_set_mismatch": 0.10416666666666667,
+           "frac_states_penetrating_pair_missing_on_gpu": 0.0,
+           "frac_states_penetrating_pair_extra_on_gpu": 0.0,
+           "normal_deg_matched_pairs": {
+            "p50": 0.00030610119235087365,
+            "p95": 0.0037934061280055693,
+            "n": 580
+           },
+           "normal_deg_state_max": {
+            "p50": 0.0016112918753827172,
+            "p95": 8.946971762711167
+           },
+           "pair_type_breakdown": {
+            "mesh-mesh": null
+           },
+           "qacc_rel_err": {
+            "all_dofs": null,
+            "wrist_free": null,
+            "cube_free": null
+           },
+           "qacc_rel_err_formula": "|qacc_gpu - qacc_cpu| / (|qacc_cpu| + 1e-3), per state",
+           "nonfinite_gpu_qacc_states": 0,
+           "buffers": {
+            "nconmax": 128,
+            "njmax": 512,
+            "caps_source": "nconmax given, njmax given",
+            "peak_contacts_per_world": 19,
+            "peak_constraints_per_world": 81,
+            "peak_cpu_ncon": 20,
+            "peak_cpu_nefc": 84,
+            "worlds_over_nconmax": 0,
+            "worlds_over_njmax": 0,
+            "first_states_over": null,
+            "suggested_nconmax": 40,
+            "suggested_njmax": 168,
+            "note": "Per-world check (conservative): MJWarp pools contacts as nconmax*nworld, but a batch where many worlds reach this state would overflow. Sampled states may miss the worst DR start; check overflow on every rollout too."
+           },
+           "qacc_threshold_on": "wrist_free",
+           "warnings": [
+            "contact-set mismatch 10.4% > 10%",
+            "qacc relative error p95 2.134 (wrist_free) > 0.10"
+           ],
+           "failures": [],
+           "note": "Outcome parity (same policy, both backends, >= min-seeds seeds, scored by the evaluator's judge) is the criterion that counts. State-level and replay checks are diagnostics.",
+           "status": "warn"
+          },
+          "gpu_smoke": {
+           "nworld": 128,
+           "policy_steps_per_second": 2433.173773325505,
+           "hardware": 0,
+           "overflow": 0
+          },
+          "feature_parity": {
+           "features": 184,
+           "history": 4,
+           "max_error": 1.7881393432617188e-07
+          }
+         },
+         "media": {
+          "image": "research/sim/record_initial.png",
+          "replay": "research/sim/retarget_replay.mp4"
+         },
+         "limitations": [
+          "Unidentified hidden cube mechanism and unmeasured contact parameters.",
+          "Partial reference; exact driving digit/hidden articulation unresolved.",
+          "No real robot or target environment; all future claims restricted to this simulator."
+         ],
+         "changes": "Validation/package update only: same physical binary, starts, passive force law and criteria. Add128seed CPU/GPU/internal-health parity, CPUfloat32 baseline, deployable feature parity, and self-contained binary/source archive.",
+         "model_archive": {
+          "parts": [
+           "research/sim/model_part_00.npz",
+           "research/sim/model_part_01.npz",
+           "research/sim/model_part_02.npz",
+           "research/sim/model_part_03.npz",
+           "research/sim/model_part_04.npz",
+           "research/sim/model_part_05.npz"
+          ],
+          "join": "Concatenate mjb_bytes in numeric order; sha256 must match scene.mjb in scene_files."
+         }
+        },
+        "files": {
+         "image": {
+          "sha": "80a41dc1070f",
+          "bytes": 106093,
+          "content_type": "image/png"
+         },
+         "replay_video": {
+          "sha": "65bb25da14bb",
+          "bytes": 274163,
+          "content_type": "video/mp4"
+         },
+         "scene_1": {
+          "sha": "a5c8f60d6b2f",
+          "bytes": 1759465,
+          "content_type": "application/octet-stream"
+         },
+         "scene_10": {
+          "sha": "5ce896262057",
+          "bytes": 2036,
+          "content_type": "application/json"
+         },
+         "scene_11": {
+          "sha": "585864a1d6d7",
+          "bytes": 2697,
+          "content_type": "application/json"
+         },
+         "scene_12": {
+          "sha": "9a2ec2524084",
+          "bytes": 2040,
+          "content_type": "application/json"
+         },
+         "scene_2": {
+          "sha": "ae8378640482",
+          "bytes": 4239420,
+          "content_type": "application/octet-stream"
+         },
+         "scene_3": {
+          "sha": "a417fbcdb64c",
+          "bytes": 4235350,
+          "content_type": "application/octet-stream"
+         },
+         "scene_4": {
+          "sha": "e988649d68ac",
+          "bytes": 3848789,
+          "content_type": "application/octet-stream"
+         },
+         "scene_5": {
+          "sha": "965bda8b0715",
+          "bytes": 1477069,
+          "content_type": "application/octet-stream"
+         },
+         "scene_6": {
+          "sha": "95cc4be08071",
+          "bytes": 1976326,
+          "content_type": "application/octet-stream"
+         },
+         "scene_7": {
+          "sha": "3b7d41ed799f",
+          "bytes": 33842,
+          "content_type": "application/json"
+         },
+         "scene_8": {
+          "sha": "9866a3aeffe5",
+          "bytes": 1839,
+          "content_type": "application/json"
+         },
+         "scene_9": {
+          "sha": "b484bf5cc306",
+          "bytes": 2028,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0036",
+        "seq": 36,
+        "kind": "note",
+        "version": 21,
+        "recorded_utc": "2026-11-13T21:38:45Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "I viewed r0033 failure montage seed310049: the cube remains between thumb/curled fingers throughout0–1.82s, with almost no finger sweep and no visible drop. Edge alignment changes slightly late; the numeric trace confirms the rejection is internal health (12.627deg/4.03mm selected-top-manifold residual), not retention. Grip PPO will therefore optimize opposed-support progress only while retention and health remain valid, penalize irrecoverable health/hardware/drop failures, and lightly penalize action magnitude. Reward check on1024first episodes gives proven fixedhold9.6875 versus random5.0681 (hold is both the proven controller and hold baseline),0hardware. Actor sees184deployable features x4history and emits20joint-target increments; no scripted residual. Half of training draws are exact exported gate starts, half the128prepared placement bank. Gate log tail preserved7exactstarts/endstates; this sampling limitation is explicit."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0037",
+        "seq": 37,
+        "kind": "suite",
+        "version": 7,
+        "recorded_utc": "2026-11-13T21:39:45Z",
+        "exception": false,
+        "body": {
+         "suite": "feas-cw",
+         "suite_version": 1,
+         "suite_kind": "feasibility",
+         "criteria_version": 1,
+         "stages": [
+          "gripped",
+          "turned",
+          "settled"
+         ],
+         "pass_rate": 0.25,
+         "pass_rate_reason": "Criteria v1: prove each requested direction from actual grip handoffs before whole-task training.",
+         "max_hardware_violations": 0,
+         "dev_episodes": 64,
+         "final_episodes": 128,
+         "timeout_min": 60,
+         "description": "One requestedcwupper-layer90deg turn,with alignment/terminalrest,retention and labelled-corner health.6s after2s grip handoff; preserves deployment reference corner identities. Direction is explicitly overridden by this library skill request; posture/state are the supplied handoff.",
+         "precondition": null,
+         "postcondition": null,
+         "starts_from": null,
+         "primitive": "turn_cw",
+         "primitives": null,
+         "stage_predicates": {
+          "gripped": [
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0,
+            "objects": "each"
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1,
+            "objects": "each"
+           },
+           {
+            "measure": "wrist.max_rotation_deg",
+            "op": "<=",
+            "value": 25,
+            "objects": "each"
+           },
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.3,
+            "objects": "each"
+           }
+          ],
+          "turned": [
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0,
+            "objects": "each"
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1,
+            "objects": "each"
+           },
+           {
+            "measure": "wrist.max_rotation_deg",
+            "op": "<=",
+            "value": 25,
+            "objects": "each"
+           },
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.3,
+            "objects": "each"
+           }
+          ],
+          "settled": [
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0,
+            "objects": "each"
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1,
+            "objects": "each"
+           },
+           {
+            "measure": "wrist.max_rotation_deg",
+            "op": "<=",
+            "value": 25,
+            "objects": "each"
+           }
+          ]
+         },
+         "primitive_spec": {
+          "motion": "articulation",
+          "support": "none",
+          "angle_deg": 90,
+          "demo_interval_s": [
+           3.1666666666666665,
+           3.3666666666666667
+          ],
+          "video_evidence": "Thumb visibly braces lower/front tiles and long fingers sweep/support the upper/rear region; upper tile corners change relative to the lower four while the whole cube remains held. Exact driving digit and rear pads are hidden.",
+          "reference": {
+           "states": "top_turn_reference.npz",
+           "object": "cube_upper_aggregate",
+           "interval_s": [
+            3.1666666666666665,
+            3.3666666666666667
+           ],
+           "axis_object": [
+            0.1402,
+            -0.0774,
+            0.9871
+           ]
+          },
+          "task_condition": "Turn exactly the initial top four corner identitiescw90degrees,all layers aligned,held throughout,with fingers.",
+          "deviations": "Partial visible aggregate endpoints measure94.89deg relative lower and99.23deg relative hand; intermediate hidden articulation is unresolved. TASK prescribes90deg, reverse direction and final alignment. Robot may use slower incremental sweeps/regrasps because uninterrupted index IK misses its goal by36mm. No table or wrist-only motion."
+         },
+         "harness_predicates": [
+          {
+           "measure": "environment_contact_s",
+           "op": "<=",
+           "value": 0.05,
+           "objects": "each"
+          }
+         ],
+         "reference_check": {
+          "object": "cube_upper_aggregate",
+          "t0": 3.167,
+          "t1": 3.367,
+          "rel_rotation_deg": 99.2,
+          "axis_object": [
+           0.1402,
+           -0.0774,
+           0.9871
+          ],
+          "wrist_rotation_deg": 7.8,
+          "object_world_rotation_deg": 96.0,
+          "angle_deg_spec": 90.0,
+          "angle_tolerance_deg": 18.0,
+          "axis_error_deg": 0.0
+         },
+         "chain": null,
+         "follows": [
+          "grip"
+         ],
+         "handoff_fraction": 1.0,
+         "handoff": {
+          "fraction": 1.0,
+          "pool_states": 63,
+          "pool_sha256": "f32ec382825b…",
+          "sources": [
+           {
+            "follows": "grip",
+            "suite": "feas-grip",
+            "version": 2,
+            "kind": "feasibility",
+            "record": "r0033",
+            "mastered": false,
+            "states": 63
+           }
+          ],
+          "dev_episodes": 64
+         },
+         "start_check": null,
+         "start_check_result": null,
+         "reason": null,
+         "evaluator_bytes": 35331288,
+         "evaluator_files": 14
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "43eebbdad523",
+          "bytes": 1744,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0038",
+        "seq": 38,
+        "kind": "suite",
+        "version": 8,
+        "recorded_utc": "2026-11-13T21:39:59Z",
+        "exception": false,
+        "body": {
+         "suite": "feas-ccw",
+         "suite_version": 1,
+         "suite_kind": "feasibility",
+         "criteria_version": 1,
+         "stages": [
+          "gripped",
+          "turned",
+          "settled"
+         ],
+         "pass_rate": 0.25,
+         "pass_rate_reason": "Criteria v1: prove each requested direction from actual grip handoffs before whole-task training.",
+         "max_hardware_violations": 0,
+         "dev_episodes": 64,
+         "final_episodes": 128,
+         "timeout_min": 60,
+         "description": "One requestedccwupper-layer90deg turn,with alignment/terminalrest,retention and labelled-corner health.6s after2s grip handoff; preserves deployment reference corner identities. Direction is explicitly overridden by this library skill request; posture/state are the supplied handoff.",
+         "precondition": null,
+         "postcondition": null,
+         "starts_from": null,
+         "primitive": "turn_ccw",
+         "primitives": null,
+         "stage_predicates": {
+          "gripped": [
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0,
+            "objects": "each"
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1,
+            "objects": "each"
+           },
+           {
+            "measure": "wrist.max_rotation_deg",
+            "op": "<=",
+            "value": 25,
+            "objects": "each"
+           },
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.3,
+            "objects": "each"
+           }
+          ],
+          "turned": [
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0,
+            "objects": "each"
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1,
+            "objects": "each"
+           },
+           {
+            "measure": "wrist.max_rotation_deg",
+            "op": "<=",
+            "value": 25,
+            "objects": "each"
+           },
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.3,
+            "objects": "each"
+           }
+          ],
+          "settled": [
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0,
+            "objects": "each"
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1,
+            "objects": "each"
+           },
+           {
+            "measure": "wrist.max_rotation_deg",
+            "op": "<=",
+            "value": 25,
+            "objects": "each"
+           }
+          ]
+         },
+         "primitive_spec": {
+          "motion": "articulation",
+          "support": "none",
+          "angle_deg": 90,
+          "demo_interval_s": [
+           3.1666666666666665,
+           3.3666666666666667
+          ],
+          "video_evidence": "Thumb visibly braces lower/front tiles and long fingers sweep/support the upper/rear region; upper tile corners change relative to the lower four while the whole cube remains held. Exact driving digit and rear pads are hidden.",
+          "reference": {
+           "states": "top_turn_reference.npz",
+           "object": "cube_upper_aggregate",
+           "interval_s": [
+            3.1666666666666665,
+            3.3666666666666667
+           ],
+           "axis_object": [
+            0.1402,
+            -0.0774,
+            0.9871
+           ]
+          },
+          "task_condition": "Turn exactly the initial top four corner identitiesccw90degrees,all layers aligned,held throughout,with fingers.",
+          "deviations": "Partial visible aggregate endpoints measure94.89deg relative lower and99.23deg relative hand; intermediate hidden articulation is unresolved. TASK prescribes90deg, reverse direction and final alignment. Robot may use slower incremental sweeps/regrasps because uninterrupted index IK misses its goal by36mm. No table or wrist-only motion."
+         },
+         "harness_predicates": [
+          {
+           "measure": "environment_contact_s",
+           "op": "<=",
+           "value": 0.05,
+           "objects": "each"
+          }
+         ],
+         "reference_check": {
+          "object": "cube_upper_aggregate",
+          "t0": 3.167,
+          "t1": 3.367,
+          "rel_rotation_deg": 99.2,
+          "axis_object": [
+           0.1402,
+           -0.0774,
+           0.9871
+          ],
+          "wrist_rotation_deg": 7.8,
+          "object_world_rotation_deg": 96.0,
+          "angle_deg_spec": 90.0,
+          "angle_tolerance_deg": 18.0,
+          "axis_error_deg": 0.0
+         },
+         "chain": null,
+         "follows": [
+          "grip"
+         ],
+         "handoff_fraction": 1.0,
+         "handoff": {
+          "fraction": 1.0,
+          "pool_states": 63,
+          "pool_sha256": "f32ec382825b…",
+          "sources": [
+           {
+            "follows": "grip",
+            "suite": "feas-grip",
+            "version": 2,
+            "kind": "feasibility",
+            "record": "r0033",
+            "mastered": false,
+            "states": 63
+           }
+          ],
+          "dev_episodes": 64
+         },
+         "start_check": null,
+         "start_check_result": null,
+         "reason": null,
+         "evaluator_bytes": 35331288,
+         "evaluator_files": 14
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "43eebbdad523",
+          "bytes": 1744,
+          "content_type": "application/json"
+         }
+        }
        }
       ],
       "first_recon_utc": "2026-11-13T19:40:59Z",
@@ -535878,7 +538440,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-13T21:30:01Z",
+      "exported_utc": "2026-11-13T21:40:01Z",
       "submissions": [
        {
         "sub": "s04",
@@ -536533,7 +539095,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-13T21:30:01Z",
+      "exported_utc": "2026-11-13T21:40:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -536928,7 +539490,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-13T21:30:01Z",
+      "exported_utc": "2026-11-13T21:40:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -537189,7 +539751,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-13T21:32:32Z",
+  "staged_utc": "2026-11-13T21:42:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -537273,7 +539835,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-13T21:32:32Z",
+  "staged_utc": "2026-11-13T21:42:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
