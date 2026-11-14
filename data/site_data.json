@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-14T01:42:39Z",
- "exported_utc": "2026-11-14T01:42:29Z",
+ "generated_utc": "2026-11-14T01:52:40Z",
+ "exported_utc": "2026-11-14T01:52:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-14T01:38:11",
+    "time": "2026-11-14T01:48:20",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -548833,6 +548833,164 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0118",
+        "seq": 118,
+        "kind": "note",
+        "version": 43,
+        "recorded_utc": "2026-11-14T01:43:13Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Fresh-start nearest-reference transfer is only22/2048=1.07%, with38 hardware-violating episodes: current finite joint-space plans are highly placement/contact specific. First4096-world audit failed GPU allocation before rollouts; successful2048 audit has no overflow. Change teacher representation: offline retarget source finger-link trajectories to each fresh cube pose using rigid lower-layer alignment and constrained kinematic IK, then physically audit these references. They are privileged training proposals only; no IK or stored trajectories will be used as final motion policy. This addresses r0112CW310061: large cube roll begins by1.12s although layer eventually reaches-90deg, and r0111CCW310039: cube is retained but layer staysnear0. Supervised full-batch LBFGS refinement meanwhile stalled at MSE1.563e-6; not evaluated physically or kept."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0119",
+        "seq": 119,
+        "kind": "note",
+        "version": 44,
+        "recorded_utc": "2026-11-14T01:44:47Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Initial neural-prior curriculum is reliable: PPO001 checkpoint10 GPU990/1024=96.68%, CPU12/12; separate-head PPO002 checkpoint40 GPU976/1024=95.31%,0HW. Widen from the better measured checkpoint001 to20 coherent starts, retaining25% of earlier12. Batch explicit changes: motion exploration increases from exp(-5.5) to exp(-3.5), while settling stays exp(-8), with separate head optimizers/KL guards. A prior noise audit on20 gives72.56% stochastic/0.879%HW, so motion noise preserves a useful success signal; no broad deployment claim. Run003 targets correction of the8 weaker starts. Stop002 rather than spend more on already-reliable narrow cases."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0120",
+        "seq": 120,
+        "kind": "iter",
+        "version": 25,
+        "recorded_utc": "2026-11-14T01:48:20Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "checkpoint_sha256": "a82cc85465df…",
+         "reward_terms": [
+          {
+           "name": "angleprogress",
+           "weight": 40,
+           "formula": "Delta clipped signed goal-angleprogress"
+          },
+          {
+           "name": "activeprogress",
+           "weight": 20,
+           "formula": "Delta clipped activefingerrotation/70deg"
+          },
+          {
+           "name": "firstturned",
+           "weight": 30,
+           "formula": "Onebonusforgoalpose+style+health"
+          },
+          {
+           "name": "restprogress",
+           "weight": 30,
+           "formula": "Delta exactterminalrest/.5s"
+          },
+          {
+           "name": "strictsuccess",
+           "weight": 50,
+           "formula": "Exactfullstyle/goal/health/contact/rest/passivecriteriaat6s"
+          },
+          {
+           "name": "failure",
+           "weight": -40,
+           "formula": "Onceonirrecoverablehealth/drop/HW"
+          },
+          {
+           "name": "regularization",
+           "weight": -0.002,
+           "formula": "Mean squared normalizedabsolutepositionactionperstep"
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Independent Gaussian noise: 0.002 rad and 0.05 rad/s. Physical parameters fixed."
+          }
+         ],
+         "algorithm": "PPO neural residual; 40 additional updates x2048x64=5,242,880 steps, seed53, initialized from neural_prior_ppo_001 checkpoint10.",
+         "architecture": "Frozen 512x512 ReLU BC prior, plus two independent 256x256 ELU PPO residual heads for motion and settling; 960 residual inputs. No reference trajectory at execution.",
+         "observations": "920 permitted canonical state/history features, plus 20 neural-prior targets and their 20 differences from previous own targets divided by .05. These extra features are computed only from permitted observations and neural outputs. Four recent frames plus initial observation. No privileged inputs.",
+         "actions": "Neural prior target plus .05 rad times PPO residual; hardware-bounded, target rate .015 rad per 20 ms. Fixed wrist.",
+         "curriculum": "Twelve actual grip endpoints where a corrected fresh audit of the neural prior passes 96.09%, zero hardware violations. Earlier 13-start selection excluded one failed active-contact case only from this initial training curriculum; frozen suites unchanged.",
+         "optimizer": {
+          "motion_log_std": -5.5,
+          "settle_log_std": -8,
+          "actor_lr_initial": 1e-05,
+          "actor_lr_last": 6.25e-07,
+          "critic_lr": 0.0003,
+          "KL_guard": "Separate exact Gaussian KL .04 rollback and rate adaptation for each head; separate gradient clipping.",
+          "heads_share_optimizer_rate": false,
+          "motion_lr_initial": 1e-05,
+          "settle_lr_initial": 1e-07,
+          "phase_std_fixed": true,
+          "settle_lr_last": 1.25e-08
+         },
+         "compute": {
+          "wall_seconds": 450.74126625061035,
+          "gpu_hours": 0.1252059072918362,
+          "gpu": "OneL40S cuda3"
+         },
+         "evaluation": {
+          "gpu": [
+           {
+            "controller": "network",
+            "n": 1024,
+            "return_mean": 165.9305877685547,
+            "success_first_episode": 0.953125,
+            "hardware_episode_fraction": 0.0,
+            "length": 300.0,
+            "seconds": 29.325748205184937,
+            "cases": null
+           }
+          ],
+          "cpu_episodes": 12,
+          "cpu_success": 12,
+          "cpu_hardware": 0,
+          "prior_alone": [
+           {
+            "controller": "teacher",
+            "n": 1024,
+            "return_mean": 166.1689453125,
+            "success_first_episode": 0.9609375,
+            "hardware_episode_fraction": 0.0,
+            "length": 299.7939453125,
+            "seconds": 58.95736074447632,
+            "cases": null
+           }
+          ]
+         },
+         "reflection": "Mean policy GPU976/1024=95.31%,0HW; CPU narrow curriculum result attached. Separating phase rates permits larger useful motion updates, but no measured improvement over checkpoint001 (96.68%). Not kept as deployment incumbent. Widen the better prior001 to20 starts with25% earlier curriculum and larger motion exploration; no full-task or real-world claim."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "ae3e1a926ff8",
+          "bytes": 412827,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "2caeb23525f7",
+          "bytes": 278972,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "9362aa4d41cc",
+          "bytes": 300874,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "1fa6312a43b4",
+          "bytes": 358402,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-13T19:40:59Z",
@@ -548848,7 +549006,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-14T01:40:01Z",
+      "exported_utc": "2026-11-14T01:50:01Z",
       "submissions": [
        {
         "sub": "s04",
@@ -549503,7 +549661,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-14T01:40:01Z",
+      "exported_utc": "2026-11-14T01:50:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -549898,7 +550056,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-14T01:40:01Z",
+      "exported_utc": "2026-11-14T01:50:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -550159,7 +550317,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-14T01:42:33Z",
+  "staged_utc": "2026-11-14T01:52:33Z",
   "tasks": {
    "cube": {
     "files": {
@@ -550243,7 +550401,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-14T01:42:32Z",
+  "staged_utc": "2026-11-14T01:52:33Z",
   "tasks": {
    "tennis": {
     "status": "available",
