@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-14T01:32:39Z",
- "exported_utc": "2026-11-14T01:32:29Z",
+ "generated_utc": "2026-11-14T01:42:39Z",
+ "exported_utc": "2026-11-14T01:42:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-14T01:30:22",
+    "time": "2026-11-14T01:38:11",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -548329,6 +548329,510 @@
          "text": "Expand beyond frozen dev handoffs: generate128 independent deployment starts(seeds600000..600127), execute the existing mastered grip PPO for2s, retain actual successful end states without resampling failures. Compare nearest optimized turn references as privileged teachers on these fresh geometries, optimize/CPUvalidate where needed, then distil only robust>=.9 subsets and retain25% earlier starts. This is grip-skill data collection, not full-task training. Frozen skill/task suite starts and thresholds remain unchanged; final fresh gate stays untouched."
         },
         "files": {}
+       },
+       {
+        "id": "r0114",
+        "seq": 114,
+        "kind": "note",
+        "version": 42,
+        "recorded_utc": "2026-11-14T01:32:49Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Neural residual PPO001 early updates reveal the same bottleneck: terminal head low variance triggers shared KL rollback, reducing motion LR1e-5->3.125e-7 by update4. Change optimizer grouping, not reward: independent motion/settle learning rates, separate per-head gradient clipping and per-head exact Gaussian KL rollback; fixed phase std. Motion targetLR1e-5, settle1e-7. This prevents quiet-rest steps from suppressing motion learning. Keep current PPO001 checkpoint10 as evaluated diagnostic before resuming separately; stop weak privileged teacher002 after its valid resume60 checkpoint and use freed GPU for fresh-state teacher audits."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0115",
+        "seq": 115,
+        "kind": "iter",
+        "version": 22,
+        "recorded_utc": "2026-11-14T01:37:38Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "checkpoint_sha256": "992395c60f4e…",
+         "reward_terms": [
+          {
+           "name": "angleprogress",
+           "weight": 40,
+           "formula": "Delta clipped signed goal-angleprogress"
+          },
+          {
+           "name": "activeprogress",
+           "weight": 20,
+           "formula": "Delta clipped activefingerrotation/70deg"
+          },
+          {
+           "name": "firstturned",
+           "weight": 30,
+           "formula": "Onebonusforgoalpose+style+health"
+          },
+          {
+           "name": "restprogress",
+           "weight": 30,
+           "formula": "Delta exactterminalrest/.5s"
+          },
+          {
+           "name": "strictsuccess",
+           "weight": 50,
+           "formula": "Exactfullstyle/goal/health/contact/rest/passivecriteriaat6s"
+          },
+          {
+           "name": "failure",
+           "weight": -40,
+           "formula": "Onceonirrecoverablehealth/drop/HW"
+          },
+          {
+           "name": "regularization",
+           "weight": -0.002,
+           "formula": "Mean squared normalizedabsolutepositionactionperstep"
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Independent Gaussian noise: 0.002 rad and 0.05 rad/s. Physical parameters fixed."
+          }
+         ],
+         "algorithm": "Clipped Gaussian PPO with auxiliary supervised MSE (weight 1000); checkpoint 60 of 2048 worlds x 64 steps = 7,864,320 steps; seed 48.",
+         "architecture": "Actor: 512x512 ReLU with raw linear output. Critic: 512x512 ELU. Fixed training-data normalization, minimum standard deviation .01, clipping at 10. All actor inputs unfrozen for PPO.",
+         "observations": "920 permitted features: four recent 184-feature frames and the initial observation. Noisy finger positions/velocities, previous commands, wrist pose/velocity, canonicalized cubie states, goal axis/direction, layer angle and time. No forces, contacts or physical parameters.",
+         "actions": "Twenty absolute joint targets, bounded by hardware limits and a .015 rad per 20 ms target rate; fixed wrist.",
+         "curriculum": "Twenty deduplicated actual mastered-grip endpoints. Reference teacher previously passed 94.53% on these starts. A finite initial-geometry decision layer retains the earlier six-case PPO skill and uses PPO grip support elsewhere.",
+         "optimizer": {
+          "actor_lr_initial": 1e-07,
+          "actor_lr_last": 1.25e-08,
+          "critic_lr": 0.0001,
+          "log_std": -9,
+          "std_min": -12,
+          "KL_guard": 0.04,
+          "auxiliary_MSE_weight": 1000
+         },
+         "compute": {
+          "wall_seconds": 703.828897,
+          "gpu_hours": 0.19550802694444444,
+          "gpu": "One L40S, cuda:3"
+         },
+         "evaluation": {
+          "corrected_gpu": [
+           {
+            "controller": "network",
+            "n": 1024,
+            "return_mean": 139.99856567382812,
+            "success_first_episode": 0.744140625,
+            "hardware_episode_fraction": 0.005859375,
+            "length": 281.994140625,
+            "seconds": 64.83085942268372,
+            "cases": null
+           }
+          ],
+          "gates": {
+           "cw": {
+            "record": "r0112",
+            "decision": "accepted",
+            "reason": "'turned' improved by +10 (>= +4) with no stage losing more than 4",
+            "suite": "skill-cw",
+            "suite_version": 2,
+            "final": false,
+            "counts": null,
+            "delta": null,
+            "margin": 4,
+            "hardware_violations": 0,
+            "success_rate": 0.2188,
+            "meets_pass_rate": false,
+            "funnel_first_failed": null,
+            "predicate_overrides": null,
+            "reproducible": true,
+            "candidate_sha256": "7aa866803986…",
+            "incumbent": true,
+            "hardware_redraw": null,
+            "failure_review": null,
+            "handoff": null
+           },
+           "ccw": {
+            "record": "r0111",
+            "decision": "accepted",
+            "reason": "'turned' improved by +5 (>= +4) with no stage losing more than 4",
+            "suite": "skill-ccw",
+            "suite_version": 2,
+            "final": false,
+            "counts": null,
+            "delta": null,
+            "margin": 4,
+            "hardware_violations": 0,
+            "success_rate": 0.1094,
+            "meets_pass_rate": false,
+            "funnel_first_failed": null,
+            "predicate_overrides": null,
+            "reproducible": true,
+            "candidate_sha256": "7aa866803986…",
+            "incumbent": true,
+            "hardware_redraw": null,
+            "failure_review": null,
+            "handoff": null
+           }
+          }
+         },
+         "parity": {
+          "task": {
+           "command": "outcome",
+           "cpu_file": "research/selector_parity_006_u0060/cpu_task.json",
+           "gpu_file": "research/selector_parity_006_u0060/gpu_task.json",
+           "criterion": "Outcome parity (same policy, both backends, >= min-seeds seeds, scored by the evaluator's judge) is the criterion that counts. State-level and replay checks are diagnostics.",
+           "min_seeds": 128,
+           "metrics": {
+            "success": null,
+            "hardware_violation": null,
+            "dropped": null
+           },
+           "failures": [],
+           "warnings": [],
+           "n_seeds": {
+            "cpu": 128,
+            "gpu": 128
+           },
+           "per_seed_agreement": {
+            "n_shared_seeds": 128,
+            "success": 0.984375,
+            "hardware_violation": 1.0,
+            "success_cpu_only": 1,
+            "success_gpu_only": 1,
+            "mcnemar_p": 1.0
+           },
+           "status": "pass"
+          },
+          "internal": {
+           "command": "outcome",
+           "cpu_file": "research/selector_parity_006_u0060/cpu_internal.json",
+           "gpu_file": "research/selector_parity_006_u0060/gpu_internal.json",
+           "criterion": "Outcome parity (same policy, both backends, >= min-seeds seeds, scored by the evaluator's judge) is the criterion that counts. State-level and replay checks are diagnostics.",
+           "min_seeds": 128,
+           "metrics": {
+            "success": null,
+            "hardware_violation": null,
+            "dropped": null
+           },
+           "failures": [],
+           "warnings": [],
+           "n_seeds": {
+            "cpu": 128,
+            "gpu": 128
+           },
+           "per_seed_agreement": {
+            "n_shared_seeds": 128,
+            "success": 0.984375,
+            "hardware_violation": 1.0,
+            "success_cpu_only": 2,
+            "success_gpu_only": 0,
+            "mcnemar_p": 0.5
+           },
+           "status": "pass"
+          },
+          "cpu32": {
+           "command": "outcome",
+           "cpu_file": "research/selector_parity_006_u0060/cpu_task.json",
+           "gpu_file": "research/selector_parity_006_u0060/cpu32_task.json",
+           "criterion": "Outcome parity (same policy, both backends, >= min-seeds seeds, scored by the evaluator's judge) is the criterion that counts. State-level and replay checks are diagnostics.",
+           "min_seeds": 128,
+           "metrics": {
+            "success": null,
+            "hardware_violation": null,
+            "dropped": null
+           },
+           "failures": [],
+           "warnings": [],
+           "n_seeds": {
+            "cpu": 128,
+            "gpu": 128
+           },
+           "per_seed_agreement": {
+            "n_shared_seeds": 128,
+            "success": 0.9921875,
+            "hardware_violation": 1.0,
+            "success_cpu_only": 0,
+            "success_gpu_only": 1,
+            "mcnemar_p": 1.0
+           },
+           "status": "pass"
+          }
+         },
+         "reflection": "Accepted by corrected skill gates: CW 14/64 settled, CCW 9/64 turned and 7/64 settled, both zero hardware violations. Neither skill is mastered (80% required). Direct actor changes remain tiny; change architecture/exploration rather than continue identical training. Training used the old handoff progress counter; keeper gates and parity used the corrected counter. The canonical feature fix preceded this run. The unevaluated final update-120 checkpoint is not selected. No full-task or real-world success claim."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "01afc071e259",
+          "bytes": 647823,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "cf3329c3723b",
+          "bytes": 282832,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "fcc1f1f1ddff",
+          "bytes": 305683,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "4ce2a038f4b1",
+          "bytes": 361188,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0116",
+        "seq": 116,
+        "kind": "iter",
+        "version": 23,
+        "recorded_utc": "2026-11-14T01:37:39Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "checkpoint_sha256": "c3417660939a…",
+         "reward_terms": [
+          {
+           "name": "angleprogress",
+           "weight": 40,
+           "formula": "Delta clipped signed goal-angleprogress"
+          },
+          {
+           "name": "activeprogress",
+           "weight": 20,
+           "formula": "Delta clipped activefingerrotation/70deg"
+          },
+          {
+           "name": "firstturned",
+           "weight": 30,
+           "formula": "Onebonusforgoalpose+style+health"
+          },
+          {
+           "name": "restprogress",
+           "weight": 30,
+           "formula": "Delta exactterminalrest/.5s"
+          },
+          {
+           "name": "strictsuccess",
+           "weight": 50,
+           "formula": "Exactfullstyle/goal/health/contact/rest/passivecriteriaat6s"
+          },
+          {
+           "name": "failure",
+           "weight": -40,
+           "formula": "Onceonirrecoverablehealth/drop/HW"
+          },
+          {
+           "name": "regularization",
+           "weight": -0.002,
+           "formula": "Mean squared normalizedabsolutepositionactionperstep"
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Independent Gaussian noise: 0.002 rad and 0.05 rad/s. Physical parameters fixed."
+          }
+         ],
+         "algorithm": "PPO neural residual over a frozen supervised neural prior; 10 updates x 2048 worlds x 64 steps = 1,310,720 steps; seed 52.",
+         "architecture": "Frozen 512x512 ReLU BC prior, plus two independent 256x256 ELU PPO residual heads for motion and settling; 960 residual inputs. No reference trajectory at execution.",
+         "observations": "920 permitted canonical state/history features, plus 20 neural-prior targets and their 20 differences from previous own targets divided by .05. These extra features are computed only from permitted observations and neural outputs. Four recent frames plus initial observation. No privileged inputs.",
+         "actions": "Neural prior target plus .05 rad times PPO residual; hardware-bounded, target rate .015 rad per 20 ms. Fixed wrist.",
+         "curriculum": "Twelve actual grip endpoints where a corrected fresh audit of the neural prior passes 96.09%, zero hardware violations. Earlier 13-start selection excluded one failed active-contact case only from this initial training curriculum; frozen suites unchanged.",
+         "optimizer": {
+          "motion_log_std": -5.5,
+          "settle_log_std": -8,
+          "actor_lr_initial": 1e-05,
+          "actor_lr_last": 3.125e-07,
+          "critic_lr": 0.0003,
+          "KL_guard": 0.04,
+          "heads_share_optimizer_rate": true
+         },
+         "compute": {
+          "wall_seconds": 157.80041885375977,
+          "gpu_hours": 0.04383344968159993,
+          "gpu": "One L40S, cuda:3"
+         },
+         "evaluation": {
+          "gpu": [
+           {
+            "controller": "network",
+            "n": 1024,
+            "return_mean": 166.66116333007812,
+            "success_first_episode": 0.966796875,
+            "hardware_episode_fraction": 0.0,
+            "length": 300.0,
+            "seconds": 35.87539291381836,
+            "cases": null
+           }
+          ],
+          "cpu_episodes": 12,
+          "cpu_success": 12,
+          "cpu_hardware": 0,
+          "prior_alone": [
+           {
+            "controller": "teacher",
+            "n": 1024,
+            "return_mean": 166.1689453125,
+            "success_first_episode": 0.9609375,
+            "hardware_episode_fraction": 0.0,
+            "length": 299.7939453125,
+            "seconds": 58.95736074447632,
+            "cases": null
+           }
+          ]
+         },
+         "reflection": "Mean policy 12/12 CPU and 990/1024 GPU (96.68%), zero hardware violations on this narrow curriculum. Not a broad skill mastery claim. Shared KL rollback sharply reduces motion learning rate during quiet settling; follow-up separates head rates, clipping and KL guards. Both motion prior and residual are neural networks; no stored CEM reference or execution planner. Architecture eligibility reasoning recorded in r0110."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "0fbd2f7e46a4",
+          "bytes": 99790,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "804c794f2f1a",
+          "bytes": 286036,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "003f33e0ea92",
+          "bytes": 307261,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "0967afd95a62",
+          "bytes": 366711,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0117",
+        "seq": 117,
+        "kind": "iter",
+        "version": 24,
+        "recorded_utc": "2026-11-14T01:38:12Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "privileged",
+         "checkpoint_sha256": "239e5270af8c…",
+         "algorithm": "PPO teacher residual; evaluated global checkpoint60 = original30 plus resumed30, 7,864,320 steps. Parent teacher001 separately recorded r0096.",
+         "architecture": "Two 256x256 ELU actor heads: motion until4.1s, frozen settling head thereafter. Critic256x256ELU. 1040 inputs, identity normalization.",
+         "observations": "Privileged: 920 canonical state/history features plus80 future CEM joint offsets,20 reference targets and20 reference-minus-command errors. Future reference is NOT permitted to the final policy.",
+         "actions": "20 residuals in[-.05,.05]rad over frozen optimized CEM reference; actual targets bounded by hardware limits and .015rad per20ms. Fixed wrist.",
+         "reward_terms": [
+          {
+           "name": "angleprogress",
+           "weight": 40,
+           "formula": "Delta clipped signed goal-angleprogress"
+          },
+          {
+           "name": "activeprogress",
+           "weight": 20,
+           "formula": "Delta clipped activefingerrotation/70deg"
+          },
+          {
+           "name": "firstturned",
+           "weight": 30,
+           "formula": "Onebonusforgoalpose+style+health"
+          },
+          {
+           "name": "restprogress",
+           "weight": 30,
+           "formula": "Delta exactterminalrest/.5s"
+          },
+          {
+           "name": "strictsuccess",
+           "weight": 50,
+           "formula": "Exactfullstyle/goal/health/contact/rest/passivecriteriaat6s"
+          },
+          {
+           "name": "failure",
+           "weight": -40,
+           "formula": "Onceonirrecoverablehealth/drop/HW"
+          },
+          {
+           "name": "regularization",
+           "weight": -0.002,
+           "formula": "Mean squared normalizedabsolutepositionactionperstep"
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Gaussian .002rad and .05rad/s"
+          },
+          {
+           "name": "starts",
+           "distribution": "75% full128 actual grip endpoints/directions, 25% earlier strong21 curriculum"
+          }
+         ],
+         "curriculum": "Earlier teacher001 passed95.8% stochastic on strong21 before widening; full128 includes unproven references that RL must correct. Current full teacher is below .9, so not distilled across full128.",
+         "optimizer": {
+          "actor_lr_original": 3e-05,
+          "actor_lr_resume": 1.5e-05,
+          "critic_lr": 0.0003,
+          "KL_guard": 0.04,
+          "motion_log_std": -3.5,
+          "settle_log_std": -7,
+          "frozen_settle": true,
+          "auxiliary_loss": "none"
+         },
+         "compute": {
+          "valid_checkpoint_wall_seconds": 1512.3015706539154,
+          "gpu_hours": 0.4200837696260876,
+          "additional_compute": "Original run aborted on contact-buffer overflow after update30 checkpoint; unsaved weights discarded. Resume later continued past evaluated checkpoint30 to valid checkpoint60 before interruption. Those later checkpoints were not compared here."
+         },
+         "evaluation": {
+          "cpu_episodes": 64,
+          "cpu_success": 22,
+          "cpu_hardware": 2,
+          "gpu": [
+           {
+            "controller": "network",
+            "n": 1024,
+            "return_mean": 70.92172241210938,
+            "success_first_episode": 0.328125,
+            "hardware_episode_fraction": 0.0107421875,
+            "length": 245.5634765625,
+            "seconds": 95.49870991706848,
+            "cases": null
+           }
+          ]
+         },
+         "reflection": "Privileged teacher only: CPU22/64 with2 hardware violations, GPU336/1024 with11. No final/deployable or mastery claim. Frozen late head and weak full references limit progress. Original30 updates used wrong commanded-wrist canonical ordering, fixed before resumed segment; both evaluated gates use corrected observed-wrist features. Both segments used the old initial progress counter; CPU/GPU evaluation used its corrected version. Unsaved overflowed states were never kept. Stop this weak approach and collect fresh-state robust references; future distillation needs>=.9 teacher success on its student starts."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "869c98719066",
+          "bytes": 797885,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "9d3fab5098f5",
+          "bytes": 257665,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "0674918d8240",
+          "bytes": 293936,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "dec07e58331a",
+          "bytes": 321112,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-13T19:40:59Z",
@@ -548344,7 +548848,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-14T01:30:01Z",
+      "exported_utc": "2026-11-14T01:40:01Z",
       "submissions": [
        {
         "sub": "s04",
@@ -548999,7 +549503,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-14T01:30:01Z",
+      "exported_utc": "2026-11-14T01:40:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -549394,7 +549898,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-14T01:30:01Z",
+      "exported_utc": "2026-11-14T01:40:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -549655,7 +550159,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-14T01:32:33Z",
+  "staged_utc": "2026-11-14T01:42:33Z",
   "tasks": {
    "cube": {
     "files": {
@@ -549739,7 +550243,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-14T01:32:33Z",
+  "staged_utc": "2026-11-14T01:42:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
