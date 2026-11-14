@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-14T14:52:38Z",
- "exported_utc": "2026-11-14T14:52:29Z",
+ "generated_utc": "2026-11-14T15:02:38Z",
+ "exported_utc": "2026-11-14T15:02:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-14T14:52:00",
+    "time": "2026-11-14T15:00:32",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-14T14:43:29",
+    "time": "2026-11-14T14:54:22",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -282028,6 +282028,988 @@
          "manifest_json": {
           "sha": "fe4597538473",
           "bytes": 8399,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0038",
+        "seq": 38,
+        "kind": "iter",
+        "version": 3,
+        "recorded_utc": "2026-11-14T14:54:07Z",
+        "exception": false,
+        "body": {
+         "sim_version": 4,
+         "algorithm": "PPO state-feedback residual over a frozen neural reference, exported as one feedforward network",
+         "reward_terms": [
+          {
+           "name": "goal_progress",
+           "formula": "15 times change in mean world-up and initial-wrist-relative-up cosine",
+           "weight": 15
+          },
+          {
+           "name": "turn_progress",
+           "formula": "0.03 times increase of opposed relative turn capped at40deg",
+           "weight": 0.03
+          },
+          {
+           "name": "retained_bonus",
+           "formula": "once when continuous opposition reaches0.25s",
+           "weight": 1
+          },
+          {
+           "name": "turned_bonus",
+           "formula": "once when turn>=40deg,passive<=15deg and active-contact test holds",
+           "weight": 4
+          },
+          {
+           "name": "steady_progress",
+           "formula": "2 times change of exp(-tilt/15-speed/.02-angular/.2) after turn",
+           "weight": 2
+          },
+          {
+           "name": "completion_bonus",
+           "formula": "final full goal/skill success",
+           "weight": 20
+          },
+          {
+           "name": "passive_penalty",
+           "formula": "new passive degrees",
+           "weight": -0.03
+          },
+          {
+           "name": "hardware_penalty",
+           "formula": "first hardware violation",
+           "weight": -20
+          },
+          {
+           "name": "drop_penalty",
+           "formula": "first object environment contact or out-of-reach",
+           "weight": -10
+          },
+          {
+           "name": "regularization",
+           "formula": "action change squared and velocity-limit proximity",
+           "weight": 0.0001
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "casing scale",
+           "distribution": "uniform discrete",
+           "values": [
+            0.95,
+            1,
+            1.05
+           ]
+          },
+          {
+           "quantity": "mass factor",
+           "distribution": "uniform",
+           "range": [
+            0.8,
+            1.2
+           ]
+          },
+          {
+           "quantity": "combined casing/rubber friction",
+           "distribution": "uniform",
+           "range": [
+            0.4,
+            1.0
+           ]
+          },
+          {
+           "quantity": "COM xyz offset m",
+           "distribution": "independent uniform",
+           "range": [
+            -0.003,
+            0.003
+           ]
+          },
+          {
+           "quantity": "initial placement proposal",
+           "translation_m": [
+            -0.003,
+            0.003
+           ],
+           "rotation_xyz_deg": [
+            -10,
+            10
+           ],
+           "condition": "physical4s settling with quietfinal0.5s; same frozen evaluator"
+          }
+         ],
+         "policy_observations": "deployable",
+         "policy": {
+          "checkpoint": "research/ppo_v2_continue/checkpoint_010",
+          "architecture": "Packed MLP354-256-256-128-23; frozen64-64-32 phase/kind branch plus trainable192-192-96 state-feedback branch atscale.02; 3-framehistory",
+          "observations": "Same deployable118featuresx3; noisy encoders, own previous commands,wrist and object states,kind,time. Actor has no contacts,forces,torques orphysicalparameters; critic same allowed observations.",
+          "actions": "Neural20finger offsets and3wrist rotationcomponents; ring/pinky offsets are fixed zero neural outputs, others PPO-controlled. Same public controllers and targetfilters.",
+          "algorithm_parameters": {
+           "gamma": 0.995,
+           "gae_lambda": 0.97,
+           "clip": 0.2,
+           "epochs": 4,
+           "batch": 8192,
+           "lr": 0.0002,
+           "initial_finger_std": 0.005,
+           "initial_wrist_std": 0.01,
+           "KL_stop": 0.02,
+           "environments": 4096,
+           "episode_steps": 200,
+           "seed": 381
+          },
+          "initialization": "Compact phase/kind network predicts only the proven baseline commands. Basealone43/64development successes,0HW. Packed output matches PyTorch2.38e-7; all execution is from this network, with no CEM trajectory file lookup."
+         },
+         "compute": {
+          "continuation_completed_transitions_at_checkpoint": 8192000,
+          "prior_same_model_transitions": 6553600,
+          "evaluated_policy_total_transitions": 14745600,
+          "wall_s": 229.72736620903015,
+          "GPU": "physicalGPU1,L40S",
+          "remaining_run": "PPOv2continues to its original method budget; this private probe is not kept."
+         },
+         "evaluation": {
+          "dev_episodes": 64,
+          "dev_successes": 46,
+          "dev_hardware_violations": 0,
+          "dev_stages": {
+           "retained": 63,
+           "turned": 61,
+           "steady": 46
+          },
+          "gate": null,
+          "kept": false,
+          "incumbent_remains": "r0033 checkpoint1 in skill; r0026 analysis controller in task"
+         },
+         "reflection": "Deterministic CPU score46/64 versus45/64 at checkpoint1 gives no clear gain; stochastic completion remainszero and reward~16 is flat. Continue the declared budget before switching the control-rate method. New10Hz/interpolated/final-held-target baseline is feasible privately and passes128-seed outcomeparity, but it is not this checkpoint and is not claimed as an RL result.",
+         "actual_training_distribution": "Level0 never advances: uniform draws among364 selected successful starts from the512 catalog. The target physical priors span the listed ranges, but this selection is conditional, not a uniform full deployment draw. CPU dev evaluation uses fresh full-distribution seeds."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "e55e91746cd7",
+          "bytes": 5181,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "8a5478d82afa",
+          "bytes": 103598,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "e8fa820d24d7",
+          "bytes": 71527,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "a6d2291edf0e",
+          "bytes": 103348,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0039",
+        "seq": 39,
+        "kind": "suite",
+        "version": 8,
+        "recorded_utc": "2026-11-14T14:54:23Z",
+        "exception": false,
+        "body": {
+         "suite": "turn_skill",
+         "suite_version": 3,
+         "suite_kind": "skill",
+         "criteria_version": 1,
+         "stages": [
+          "retained",
+          "turned",
+          "steady"
+         ],
+         "pass_rate": 0.8,
+         "pass_rate_reason": "Ownmasteryrequirement>=0.8fromactualdeploymenthandoffswithzerohardwareviolation",
+         "max_hardware_violations": 0,
+         "dev_episodes": 64,
+         "final_episodes": 128,
+         "timeout_min": 30,
+         "description": "Onealreadyheldplugofbalancedkind,physicallyconditionedstableopposedstarts,50–110degbladeerror,activefingerturn>=40degandpassive<=15deg,final1sbladeswithin15degstableandheld;palm/wristboundsandzerohardwareviolations. Exactcustomchecks are frozen in evaluator/core.py.Version2retainsunusedassetsforsharedGPUtopology;actualphysicalarraysidentical.Nojudgingthreshold/startdistributionchanges.Version3 corrects renderer near-clipping via model.stat.extent=.5; permits optional neural decision repetition/interpolation and final target hold, with default existing50Hz behavior unchanged. Physical models, starts, stages, thresholds, and hardware rules are unchanged.",
+         "precondition": "Onealreadyheldstationaryopposedplug,startblades50–110degfromup",
+         "postcondition": "Activein-handturn>=40deg,steadyfinal1sbladesupwithin15deg,withinallhardwareandwristbounds",
+         "starts_from": "Atleast50percentexacthandoffstatesfromtaskstartcheck;restindependentdeploymentdistribution",
+         "primitive": "turn_and_hold",
+         "primitives": null,
+         "stage_predicates": {
+          "retained": [
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.25
+           },
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0
+           }
+          ],
+          "turned": [
+           {
+            "measure": "opposed_rel_rotation_deg",
+            "op": ">=",
+            "value": 40
+           },
+           {
+            "measure": "passive_rel_rotation_deg",
+            "op": "<=",
+            "value": 15
+           }
+          ],
+          "steady": [
+           {
+            "measure": "final_axis_angle_deg",
+            "op": "<=",
+            "value": 15,
+            "args": null
+           },
+           {
+            "measure": "last_second_max_speed_m_s",
+            "op": "<=",
+            "value": 0.02
+           },
+           {
+            "measure": "last_second_max_angular_speed_rad_s",
+            "op": "<=",
+            "value": 0.2
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1
+           },
+           {
+            "measure": "goal_error_deg",
+            "op": "<=",
+            "value": 25
+           },
+           {
+            "measure": "wrist.max_rotation_deg",
+            "op": "<=",
+            "value": 35
+           },
+           {
+            "measure": "wrist.path_length_m",
+            "op": "<=",
+            "value": 0.15
+           }
+          ]
+         },
+         "primitive_spec": {
+          "motion": "reorientation",
+          "support": "none",
+          "angle_deg": 54.1366,
+          "demo_interval_s": [
+           10.266666666666667,
+           11.166666666666666
+          ],
+          "video_evidence": "Blackplugframes308–335:thethumbopposestheindex/middleonthecasing;signedbladeaxisrotatesupwhileindexbendsandthumbdistaljointopens.Thehandkeepscontact,andthenstabilizestheplug.Inferredcontactlocationsareoccludedanduncertain;notclaimedasexacttactilelabels.",
+          "reference": {
+           "states": "reference_black.npz",
+           "object": "plug_black",
+           "interval_s": [
+            10.266666666666667,
+            11.166666666666666
+           ],
+           "axis_object": [
+            -0.374825,
+            0.924112,
+            0.074311
+           ]
+          },
+          "task_condition": "Fingersmustturnthealreadyheldplugrelativetohanduntilbladespointupandholdsteady;wrist-onlyturningandpassivepivotdonotcount.",
+          "deviations": "Sameprimitiveforbothkinds.Thehumansblackwristis50–74degfromdown;robotstarts20degfromdowntocoverwhitepostureandchoosesaper-kindopposedgripfromphysicaltests.Robotinitialbladeaxiserror50–110degmayrequiremorethandemonstrated54deg.Thewristmayrotate<=35deg;requiredrelativefingerturnandactive-contactchecksremainstrict.Rigidtwo-padretargetpenetrates6–7.5mm,socontactsmustrollinsteadoflockingthesamepadpoints. The physical robot baseline uses thumb IP flexion and index MCP extension with index PIP flexion; inferred human thumb distal extension is uncertain and is not an actuator-level correspondence. Different pad geometry, joint axes and the chosen supported grasp require rolling contacts instead of a locked retarget (which penetrates6–7.5mm). Actual successful robot turns can be about90–100deg around a different object-frame axis: for learned dev104100 white,96.5deg axis[-.8242,.5629,.0621]; dev104101 black,95.1deg axis[-.5207,.6234,.5833]. These are disclosed deviations, not claims of exact trajectory imitation; the transferred skill is active finger-driven reorientation in opposition with a demo-like wrist and the same blade-up held goal."
+         },
+         "harness_predicates": [
+          {
+           "measure": "environment_contact_s",
+           "op": "<=",
+           "value": 0.05,
+           "objects": "each"
+          },
+          {
+           "measure": "opposed_rel_rotation_deg",
+           "op": ">=",
+           "value": 40.6,
+           "objects": "any"
+          },
+          {
+           "measure": "passive_rel_rotation_deg",
+           "op": "<=",
+           "value": 18.9,
+           "objects": "any"
+          },
+          {
+           "measure": "goal_error_deg",
+           "op": "<=",
+           "value": 25.0,
+           "objects": "any"
+          }
+         ],
+         "reference_check": {
+          "object": "plug_black",
+          "t0": 10.267,
+          "t1": 11.167,
+          "rel_rotation_deg": 54.1,
+          "axis_object": [
+           -0.3748,
+           0.9241,
+           0.0743
+          ],
+          "wrist_rotation_deg": 34.4,
+          "object_world_rotation_deg": 80.9,
+          "angle_deg_spec": 54.1366,
+          "angle_tolerance_deg": 15.0,
+          "axis_error_deg": 0.4
+         },
+         "chain": null,
+         "follows": [
+          "start"
+         ],
+         "handoff_fraction": 0.5,
+         "handoff": {
+          "fraction": 0.5,
+          "pool_states": 61,
+          "pool_sha256": "7f29738427a1…",
+          "sources": [
+           {
+            "follows": "start",
+            "suite": "task",
+            "version": 3,
+            "record": "r0037",
+            "states": 61
+           }
+          ],
+          "dev_episodes": 32
+         },
+         "start_check": {
+          "support": "hand"
+         },
+         "start_check_result": {
+          "episodes": 64,
+          "passed": 62,
+          "rate": 0.9688,
+          "required": 0.95,
+          "hold_s": 1.0,
+          "support": "hand",
+          "limits": {
+           "displacement_m": 0.02,
+           "rotation_deg": 20.0,
+           "end_speed_m_s": 0.05,
+           "end_angular_speed_rad_s": 0.5
+          },
+          "hand_still": {
+           "wrist_displacement_m": 0.005,
+           "wrist_rotation_deg": 3.0,
+           "joint_deviation_rad": 0.15
+          },
+          "measures": "meas-4",
+          "wall_s": 14.5,
+          "handoff_episodes": 32,
+          "failed": [
+           {
+            "reasons": null
+           },
+           {
+            "reasons": null
+           }
+          ]
+         },
+         "reason": "Correct renderer clipping; support optional neural target interpolation/final hold; refresh actual taskv3 handoffs and disclose measured robot motion deviations; criteria/physics unchanged",
+         "evaluator_bytes": 103794837,
+         "evaluator_files": 79
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "fe4597538473",
+          "bytes": 8399,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0040",
+        "seq": 40,
+        "kind": "suite",
+        "version": 9,
+        "recorded_utc": "2026-11-14T14:54:25Z",
+        "exception": false,
+        "body": {
+         "suite": "turn_feasible",
+         "suite_version": 3,
+         "suite_kind": "feasibility",
+         "criteria_version": 1,
+         "stages": [
+          "retained",
+          "turned",
+          "steady"
+         ],
+         "pass_rate": 0.25,
+         "pass_rate_reason": "Minimumphysicalfeasibilityevidencefromdeploymenthandoffs;notmastery",
+         "max_hardware_violations": 0,
+         "dev_episodes": 64,
+         "final_episodes": 128,
+         "timeout_min": 30,
+         "description": "Onealreadyheldplugofbalancedkind,physicallyconditionedstableopposedstarts,50–110degbladeerror,activefingerturn>=40degandpassive<=15deg,final1sbladeswithin15degstableandheld;palm/wristboundsandzerohardwareviolations. Exactcustomchecks are frozen in evaluator/core.py.Version2retainsunusedassetsforsharedGPUtopology;actualphysicalarraysidentical.Nojudgingthreshold/startdistributionchanges.Version3 corrects renderer near-clipping via model.stat.extent=.5; permits optional neural decision repetition/interpolation and final target hold, with default existing50Hz behavior unchanged. Physical models, starts, stages, thresholds, and hardware rules are unchanged.",
+         "precondition": null,
+         "postcondition": null,
+         "starts_from": null,
+         "primitive": "turn_and_hold",
+         "primitives": null,
+         "stage_predicates": {
+          "retained": [
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.25
+           },
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0
+           }
+          ],
+          "turned": [
+           {
+            "measure": "opposed_rel_rotation_deg",
+            "op": ">=",
+            "value": 40
+           },
+           {
+            "measure": "passive_rel_rotation_deg",
+            "op": "<=",
+            "value": 15
+           }
+          ],
+          "steady": [
+           {
+            "measure": "final_axis_angle_deg",
+            "op": "<=",
+            "value": 15,
+            "args": null
+           },
+           {
+            "measure": "last_second_max_speed_m_s",
+            "op": "<=",
+            "value": 0.02
+           },
+           {
+            "measure": "last_second_max_angular_speed_rad_s",
+            "op": "<=",
+            "value": 0.2
+           },
+           {
+            "measure": "touching_hand_at_end",
+            "op": ">=",
+            "value": 1
+           },
+           {
+            "measure": "goal_error_deg",
+            "op": "<=",
+            "value": 25
+           },
+           {
+            "measure": "wrist.max_rotation_deg",
+            "op": "<=",
+            "value": 35
+           },
+           {
+            "measure": "wrist.path_length_m",
+            "op": "<=",
+            "value": 0.15
+           }
+          ]
+         },
+         "primitive_spec": {
+          "motion": "reorientation",
+          "support": "none",
+          "angle_deg": 54.1366,
+          "demo_interval_s": [
+           10.266666666666667,
+           11.166666666666666
+          ],
+          "video_evidence": "Blackplugframes308–335:thethumbopposestheindex/middleonthecasing;signedbladeaxisrotatesupwhileindexbendsandthumbdistaljointopens.Thehandkeepscontact,andthenstabilizestheplug.Inferredcontactlocationsareoccludedanduncertain;notclaimedasexacttactilelabels.",
+          "reference": {
+           "states": "reference_black.npz",
+           "object": "plug_black",
+           "interval_s": [
+            10.266666666666667,
+            11.166666666666666
+           ],
+           "axis_object": [
+            -0.374825,
+            0.924112,
+            0.074311
+           ]
+          },
+          "task_condition": "Fingersmustturnthealreadyheldplugrelativetohanduntilbladespointupandholdsteady;wrist-onlyturningandpassivepivotdonotcount.",
+          "deviations": "Sameprimitiveforbothkinds.Thehumansblackwristis50–74degfromdown;robotstarts20degfromdowntocoverwhitepostureandchoosesaper-kindopposedgripfromphysicaltests.Robotinitialbladeaxiserror50–110degmayrequiremorethandemonstrated54deg.Thewristmayrotate<=35deg;requiredrelativefingerturnandactive-contactchecksremainstrict.Rigidtwo-padretargetpenetrates6–7.5mm,socontactsmustrollinsteadoflockingthesamepadpoints. The physical robot baseline uses thumb IP flexion and index MCP extension with index PIP flexion; inferred human thumb distal extension is uncertain and is not an actuator-level correspondence. Different pad geometry, joint axes and the chosen supported grasp require rolling contacts instead of a locked retarget (which penetrates6–7.5mm). Actual successful robot turns can be about90–100deg around a different object-frame axis: for learned dev104100 white,96.5deg axis[-.8242,.5629,.0621]; dev104101 black,95.1deg axis[-.5207,.6234,.5833]. These are disclosed deviations, not claims of exact trajectory imitation; the transferred skill is active finger-driven reorientation in opposition with a demo-like wrist and the same blade-up held goal."
+         },
+         "harness_predicates": [
+          {
+           "measure": "environment_contact_s",
+           "op": "<=",
+           "value": 0.05,
+           "objects": "each"
+          },
+          {
+           "measure": "opposed_rel_rotation_deg",
+           "op": ">=",
+           "value": 40.6,
+           "objects": "any"
+          },
+          {
+           "measure": "passive_rel_rotation_deg",
+           "op": "<=",
+           "value": 18.9,
+           "objects": "any"
+          },
+          {
+           "measure": "goal_error_deg",
+           "op": "<=",
+           "value": 25.0,
+           "objects": "any"
+          }
+         ],
+         "reference_check": {
+          "object": "plug_black",
+          "t0": 10.267,
+          "t1": 11.167,
+          "rel_rotation_deg": 54.1,
+          "axis_object": [
+           -0.3748,
+           0.9241,
+           0.0743
+          ],
+          "wrist_rotation_deg": 34.4,
+          "object_world_rotation_deg": 80.9,
+          "angle_deg_spec": 54.1366,
+          "angle_tolerance_deg": 15.0,
+          "axis_error_deg": 0.4
+         },
+         "chain": null,
+         "follows": [
+          "start"
+         ],
+         "handoff_fraction": 0.5,
+         "handoff": {
+          "fraction": 0.5,
+          "pool_states": 61,
+          "pool_sha256": "7f29738427a1…",
+          "sources": [
+           {
+            "follows": "start",
+            "suite": "task",
+            "version": 3,
+            "record": "r0037",
+            "states": 61
+           }
+          ],
+          "dev_episodes": 32
+         },
+         "start_check": {
+          "support": "hand"
+         },
+         "start_check_result": {
+          "episodes": 64,
+          "passed": 63,
+          "rate": 0.9844,
+          "required": 0.95,
+          "hold_s": 1.0,
+          "support": "hand",
+          "limits": {
+           "displacement_m": 0.02,
+           "rotation_deg": 20.0,
+           "end_speed_m_s": 0.05,
+           "end_angular_speed_rad_s": 0.5
+          },
+          "hand_still": {
+           "wrist_displacement_m": 0.005,
+           "wrist_rotation_deg": 3.0,
+           "joint_deviation_rad": 0.15
+          },
+          "measures": "meas-4",
+          "wall_s": 16.1,
+          "handoff_episodes": 32,
+          "failed": [
+           {
+            "reasons": null
+           }
+          ]
+         },
+         "reason": "Correct renderer clipping; support optional neural target interpolation/final hold; refresh actual taskv3 handoffs and disclose measured robot motion deviations; criteria/physics unchanged",
+         "evaluator_bytes": 103794837,
+         "evaluator_files": 79
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "fe4597538473",
+          "bytes": 8399,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0041",
+        "seq": 41,
+        "kind": "note",
+        "version": 15,
+        "recorded_utc": "2026-11-14T14:55:40Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Suite version3 is registered: taskr0037, skillr0039, feasibilityr0040. Physics, criteria and starts are unchanged; the program corrects renderer clipping and supports optional action-repeat/interpolation/final hold. The new mode's analysis neural baseline scores46/64 privately with zero hardware violations and passes128-seed CPU/GPU outcome parity (94CPU/93GPU successes,zeroHW,7drops each). A stochastic4096-world rollout now earns completion reward at~69.9% success on the full512 catalog, whereas constant50Hz exploration hadzero completion. Actual robot joint/axis deviations from MANO are now explicit in each primitive spec; e.g.white96.5deg axis[-.8242,.5629,.0621],black95.1deg axis[-.5207,.6234,.5833],rather than claiming exact54deg human-axis imitation. I opened the latest old montage r0033, still blank; the next gates provide visible standard views. The current PPO method is finishing its budget, and the next control-rate method will start only after that budget/curve review."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0042",
+        "seq": 42,
+        "kind": "gate",
+        "version": 6,
+        "recorded_utc": "2026-11-14T14:56:25Z",
+        "exception": false,
+        "body": {
+         "suite": "turn_feasible",
+         "suite_version": 3,
+         "suite_kind": "feasibility",
+         "suite_record": "r0040",
+         "final": false,
+         "candidate_sha256": "df5a11ffa970…",
+         "method": "Analysis neural reference, target interpolation",
+         "hypothesis": "The neural reference with10Hz targets, linear interpolation and a final held neural target should remain physically feasible on the refreshed deployment handoffs; verify it with corrected standard views",
+         "predicts": "steady",
+         "observed": null,
+         "primitive": "turn_and_hold",
+         "started_utc": "2026-11-14T14:55:40Z",
+         "pass_rate": 0.25,
+         "max_hardware_violations": 0,
+         "handoff": {
+          "episodes": 32,
+          "fraction": 0.5,
+          "follows": [
+           "start"
+          ],
+          "pool_states": 61,
+          "pool_sha256": "7f29738427a1…"
+         },
+         "episodes": 64,
+         "counts": {
+          "retained": 61,
+          "turned": 59,
+          "steady": 43,
+          "success": 43
+         },
+         "wilson95": {
+          "retained": [
+           0.871,
+           0.9839
+          ],
+          "turned": [
+           0.8298,
+           0.9662
+          ],
+          "steady": [
+           0.55,
+           0.7743
+          ],
+          "success": [
+           0.55,
+           0.7743
+          ]
+         },
+         "funnel_first_failed": {
+          "retained": 3,
+          "turned": 2,
+          "steady": 16,
+          "hardware": 0,
+          "complete": 43
+         },
+         "predicate_overrides": {
+          "retained": 0,
+          "turned": 0,
+          "steady": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 0.6719,
+         "reproducible": true,
+         "wall_s": 15.9,
+         "finished_utc": "2026-11-14T14:56:24Z",
+         "meets_pass_rate": true,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent",
+         "failure_review": {
+          "stage": "steady",
+          "lost": 16,
+          "episodes": 64,
+          "montages": [
+           {
+            "role": "montage_1",
+            "frame_times_s": null
+           },
+           {
+            "role": "montage_2",
+            "frame_times_s": null
+           }
+          ]
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "fbb300af0e05",
+          "bytes": 63481,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "814b40316311",
+          "bytes": 60395,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "51d45c274d73",
+          "bytes": 106412,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0043",
+        "seq": 43,
+        "kind": "note",
+        "version": 16,
+        "recorded_utc": "2026-11-14T14:59:37Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Visible review of r0042: in failure455406574, the white plug is still in thumb/index opposition but remains visibly tilted as the fingers settle around2.5s; its terminal tilt32.6deg and relative-goal error29.9deg confirm an alignment failure. The successful560517645 black rollout visibly rolls the casing with the opposed fingers and holds its blades up. Thus the remaining control-rate experiment needs object-state feedback that corrects the terminal finger motion before the final held-target phase; holding an incorrect endpoint will not solve it. New feasibility baseline r0042 passes43/64 with zero hardware violations. The forthcoming PPO run will keep the same4s episode and final1s stability criteria."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0044",
+        "seq": 44,
+        "kind": "gate",
+        "version": 7,
+        "recorded_utc": "2026-11-14T15:00:30Z",
+        "exception": false,
+        "body": {
+         "suite": "turn_skill",
+         "suite_version": 3,
+         "suite_kind": "skill",
+         "suite_record": "r0039",
+         "final": false,
+         "candidate_sha256": "dcc417818dfb…",
+         "method": "Existing PPO network baseline",
+         "hypothesis": "Establish the previously accepted deployable PPO network on refreshed taskv3 handoffs and corrected standard views; no mastery claim yet",
+         "predicts": "steady",
+         "observed": null,
+         "primitive": "turn_and_hold",
+         "started_utc": "2026-11-14T14:59:37Z",
+         "pass_rate": 0.8,
+         "max_hardware_violations": 0,
+         "handoff": {
+          "episodes": 32,
+          "fraction": 0.5,
+          "follows": [
+           "start"
+          ],
+          "pool_states": 61,
+          "pool_sha256": "7f29738427a1…"
+         },
+         "episodes": 64,
+         "counts": {
+          "retained": 58,
+          "turned": 58,
+          "steady": 40,
+          "success": 40
+         },
+         "wilson95": {
+          "retained": [
+           0.8102,
+           0.9563
+          ],
+          "turned": [
+           0.8102,
+           0.9563
+          ],
+          "steady": [
+           0.5025,
+           0.7333
+          ],
+          "success": [
+           0.5025,
+           0.7333
+          ]
+         },
+         "funnel_first_failed": {
+          "retained": 6,
+          "turned": 0,
+          "steady": 18,
+          "hardware": 0,
+          "complete": 40
+         },
+         "predicate_overrides": {
+          "retained": 0,
+          "turned": 0,
+          "steady": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 0.625,
+         "reproducible": true,
+         "wall_s": 22.4,
+         "finished_utc": "2026-11-14T15:00:29Z",
+         "meets_pass_rate": false,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent",
+         "failure_review": {
+          "stage": "steady",
+          "lost": 18,
+          "episodes": 64,
+          "montages": [
+           {
+            "role": "montage_1",
+            "frame_times_s": null
+           },
+           {
+            "role": "montage_2",
+            "frame_times_s": null
+           }
+          ]
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "34f3e0f9ed23",
+          "bytes": 60185,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "9f4d94872dea",
+          "bytes": 63660,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "a2f297d63e8b",
+          "bytes": 106458,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0045",
+        "seq": 45,
+        "kind": "gate",
+        "version": 8,
+        "recorded_utc": "2026-11-14T15:00:32Z",
+        "exception": false,
+        "body": {
+         "suite": "task",
+         "suite_version": 3,
+         "suite_kind": "task",
+         "suite_record": "r0037",
+         "final": false,
+         "candidate_sha256": "dcc417818dfb…",
+         "method": "Existing PPO network baseline",
+         "hypothesis": "Establish the previously accepted PPO network as the new task baseline with visible standard reviews; it remains below the required80percent",
+         "predicts": "steady",
+         "observed": null,
+         "primitive": null,
+         "started_utc": "2026-11-14T14:59:34Z",
+         "pass_rate": 0.8,
+         "max_hardware_violations": 0,
+         "episodes": 64,
+         "counts": {
+          "retained": 58,
+          "turned": 57,
+          "steady": 44,
+          "success": 44
+         },
+         "wilson95": {
+          "retained": [
+           0.8102,
+           0.9563
+          ],
+          "turned": [
+           0.791,
+           0.946
+          ],
+          "steady": [
+           0.5661,
+           0.7877
+          ],
+          "success": [
+           0.5661,
+           0.7877
+          ]
+         },
+         "funnel_first_failed": {
+          "retained": 6,
+          "turned": 1,
+          "steady": 13,
+          "hardware": 0,
+          "complete": 44
+         },
+         "predicate_overrides": {
+          "retained": 0,
+          "turned": 0,
+          "steady": 0
+         },
+         "hardware_violations": 1,
+         "success_rate": 0.6875,
+         "reproducible": true,
+         "wall_s": 22.4,
+         "finished_utc": "2026-11-14T15:00:31Z",
+         "meets_pass_rate": false,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent",
+         "failure_review": {
+          "stage": "steady",
+          "lost": 13,
+          "episodes": 64,
+          "montages": [
+           {
+            "role": "montage_1",
+            "frame_times_s": null
+           },
+           {
+            "role": "montage_2",
+            "frame_times_s": null
+           }
+          ]
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "5fccde1124f0",
+          "bytes": 52780,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "c9f554913c3f",
+          "bytes": 53379,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "f6bd4366821f",
+          "bytes": 106374,
           "content_type": "application/json"
          }
         }
@@ -580302,6 +581284,19 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0054",
+        "seq": 54,
+        "kind": "note",
+        "version": 24,
+        "recorded_utc": "2026-11-14T14:54:22Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Turnbaseline gatesCW r0046 andCCW r0052 complete0strictturns/HW0. ViewedCW391487985: cubeloseslower supportanddropsaround3.1s; CW493491768 andCCW822275093 showthumboppositionlostduringindexmotion,CCWdropafter3s. Bias-preservingcube-relativethumbhold plus.6sinitialopposition improveslocalgrip30/32CCW,32/32CW/HW0, butstillnostrictturn. SomeCCWjointanglesreach90 withlargebacktrackingandlowactivecontact. Offlinefixed-materialcontactIK overfullquarter hasbest4.47mmCCW/5.19mmCWindexerror. Test an83%-quarter fingerstroke, keepingcontactuntilatleast75% actualrotation, then releasefor<=25% detentfinishing. Reconstruction index38.8mmsweep is shorterthanideal55mm90deg-arc at35mmradius; partial/rollingcontactisphysicallyconsistent,not a relaxedgoal. Allsigned90deg,travel,active/opposition andloadcriteriaunchanged. Budget10min geometricsearch/128physicaldevrollouts."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-14T12:17:43Z",
@@ -580317,7 +581312,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-14T14:50:01Z",
+      "exported_utc": "2026-11-14T15:00:02Z",
       "submissions": [
        {
         "sub": "s04",
@@ -580972,7 +581967,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-14T14:50:01Z",
+      "exported_utc": "2026-11-14T15:00:02Z",
       "submissions": [
        {
         "sub": "s01",
@@ -581367,7 +582362,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-14T14:50:01Z",
+      "exported_utc": "2026-11-14T15:00:02Z",
       "submissions": [
        {
         "sub": "s01",
@@ -581628,7 +582623,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-14T14:52:32Z",
+  "staged_utc": "2026-11-14T15:02:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -581712,7 +582707,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-14T14:52:32Z",
+  "staged_utc": "2026-11-14T15:02:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
