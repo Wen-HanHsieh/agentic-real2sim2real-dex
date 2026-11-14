@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-14T23:08:16Z",
- "exported_utc": "2026-11-14T23:08:01Z",
+ "generated_utc": "2026-11-14T23:13:09Z",
+ "exported_utc": "2026-11-14T23:12:59Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-14T22:57:38",
+    "time": "2026-11-14T23:11:44",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-14T23:05:36",
+    "time": "2026-11-14T23:10:12",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -292495,6 +292495,538 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0048",
+        "seq": 48,
+        "kind": "criteria",
+        "version": 2,
+        "recorded_utc": "2026-11-14T23:11:26Z",
+        "exception": false,
+        "body": {
+         "reason": "Clarify actual tabletop support and held carry before whole-task gates; thresholds unchanged"
+        },
+        "files": {
+         "criteria_md": {
+          "sha": "e9a2bd8efb31",
+          "bytes": 11003,
+          "content_type": "text/markdown"
+         }
+        }
+       },
+       {
+        "id": "r0049",
+        "seq": 49,
+        "kind": "sim",
+        "version": 7,
+        "recorded_utc": "2026-11-14T23:11:27Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 4,
+         "simulator": {
+          "name": "MuJoCo",
+          "version": "3.17.0",
+          "timestep_s": 0.001,
+          "solver": "Newton, iterations100, ls_iterations50, multiccd; HandScene parity defaults",
+          "hand_hull_vertices": 128
+         },
+         "scene": {
+          "directory": "research/evaluator",
+          "files_sha256": {
+           "grasp_templates.json": "d81f643e2e01…",
+           "scene.part2": "4cfec816a863…",
+           "scene_meta.json": "ef1457ee1585…",
+           "scene.part1": "592c6c008e1a…",
+           "scene.part0": "6287cc231f7a…",
+           "scene_chunks.json": "66569cc33a13…",
+           "object_patches.json": "055c58e04819…"
+          },
+          "robot": "Unmodified public right Wuji2.2 hardware; three free rigid plug slots, separate casing/blade0/blade1 convex meshes; real table/floor/inter-object collisions",
+          "padding": "For two objects, third physical slot rests on floor at4,4 outside workspace. Excluded from actual object observations/log names and render focus; no actual object collisions disabled."
+         },
+         "reference": {
+          "version": 4,
+          "use": "Estimated geometry and physical priors; anatomical palm/finger motion and contact phases guide criteria/grasp analysis. Dense retarget is diagnostic only, not replayed as executable policy.",
+          "retarget": "Anatomical wrist mapping and finger bend angles; failed collision check, max40.6mm penetration. Requires physical grasp optimization/PPO, not claimed feasible."
+         },
+         "controllers": {
+          "wrist": "Public CpuHand 1kHz floating-wrist impedance, force/torque, target speed limits; commands executed500Hz",
+          "fingers": "Public1kHz PD, exact20 joint order/lower/upper/velocity/effort/kp/kd; per1ms actual hardware audit; noise q.002rad/qd.05rad/s",
+          "outer_hz": 50
+         },
+         "objects": {
+          "source": "Selected reconstruction4 Blender meshes; white42x27.5x41mm,58g; black30.4x21.4x46.42mm29.8g; separate fixed15.875mm blades. Identification uncertain; public generic dimensional priors documented there.",
+          "randomization": "Kind Bernoulli.5 per slot, scale discrete.9/1/1.1, massfactorU(.8,1.2), object frictionU(.4,1) with priority1 so it governs contact, COM eachaxisU(-.003,.003)m. Inertia uniformly scaled-case prior."
+         },
+         "initial_conditions": {
+          "hand": "Wrist(.25,-.55,.4)m canonical palm posture; open thumb/index/middle, nominal unused ring/little.",
+          "objects": "2/3 actual plugs, all mixtures; broad right tabletop uniform positions/headings/faces including edges, adjacent and force-bearing leaning arrangements. Physical settling2s; accept slow, supported right-side states. Max96 proposals; after24 failed proposals resample physical priors preserving kinds/count. Conditioned on stable scene, never on policy outcomes.",
+          "sampling_strata": "Half separated,quarter adjacent,quarter leaning. Some leaning proposals physically rejected; quantify generated strata in gates."
+         },
+         "episode": {
+          "task_seconds": 60,
+          "pick_seconds": 6,
+          "turn_seconds": 4,
+          "place_seconds": 8,
+          "repeat_seconds": 54,
+          "policy_hz": 50,
+          "physics_hz": 1000,
+          "termination": "Fixed horizon; invalid policy exceptions recorded failures; no silent failure termination"
+         },
+         "validation": {
+          "hardware": "All lower/upper/velocity/effort/kp/kd arrays exact0 error, jointorder exact, mass.7088kg",
+          "start_check": "64/64 hold starts passed independent standard start_check, zero hardware violations, research/hold64_v1b",
+          "wrist": "3s 2cm1Hz translation/10deg yaw test: max.365mm/.281deg tracking error, zero HW",
+          "physical_hold": "Both nominal held grasps stay opposed final1s, pen.04/.18mm, no HW; does not prove tabletop entry",
+          "retarget": "FAILED: kinematic mapping penetrates40.6mm; explicitly diagnostic. Actual held dynamic contact model validated separately.",
+          "gpu_parity": {
+           "static": "PASS, exact options and dynamics arrays; compare_warp_opt gives[ ]",
+           "states": "301 actual pickup states;2.33% contact-set mismatch, normal p95.00163deg, nooverflows; WARN resting/dummy free-body qacc relative errors (small rest accelerations), not hidden",
+           "outcome": "PASS128 independent seeds, same offline-library policy: CPU106/128 vsGPU104/128, HW2vs3, dropped18vs22; per-seed success agreement.969,HW.992. Tools default tolerances unchanged.",
+           "throughput": "4096 worlds cuda1,16,610 policy transitions/s including scriptedbase,128contacts/512constraints, zero overflow. First compilation excluded.",
+           "required_next": "Recheck outcome parity on kept PPO checkpoint and turning contact distribution; state/outcome evidence is current pickup only."
+          },
+          "proprioceptive_payload_inference": "Analysis verification against actual truth (never policy input):155search+103new held starts; payload mass from2000epz-60vz medianrelativeerror<.003%,90th<.11%. HorizontalCOM from20eR-.4omega medianerror<.007mm,90th<.54mm, rare5mm dynamics outliers. Unknown verticalCOM/friction stay prior; inference sensitive to ideal wrist model and state precision.",
+          "turn_native_parity": {
+           "outcome": "PASS128 held-grip seeds: CPU101/128,GPU95/128; HW0both,drop0both; per-seed successagreement.953. Tool defaulttolerances unchanged; directional difference is explicit.",
+           "states": "201 actual in-hand-turn states, no overflow, peak25contacts/75constraints vs128/512caps; matched-contact normals close. Resting/dummy free-body qacc-relative-error warning remains explicit.",
+           "reward_check": "4096episodes each: optimizedphysicalreference37.213return/.728success,hold-2.383/0,random-8.497/0,HW0all.",
+           "scope": "Prepared curriculum contact states only; recheck outcome on actual pickup handoffs and any kept final actor."
+          }
+         },
+         "limitations": [
+          "No executable pickup/turn/placement proven yet",
+          "Geometric source and masses/COM/friction uncertain; own simulation claim only",
+          "Direct retarget not collision feasible"
+         ],
+         "changes": "Physical model unchanged. Criteria2 closes tabletop-versus-floor support and held-carry evaluation omissions before any full-task gate. Privileged feasibility observer now supplies current fullstate only with explicitflag, enabling incremental composite reference predictions. Learned skill and task commands still receive no privileged inputs bydefault."
+        },
+        "files": {
+         "scene_1": {
+          "sha": "ef1457ee1585",
+          "bytes": 3681,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0050",
+        "seq": 50,
+        "kind": "suite",
+        "version": 10,
+        "recorded_utc": "2026-11-14T23:11:41Z",
+        "exception": false,
+        "body": {
+         "suite": "task",
+         "suite_version": 3,
+         "suite_kind": "task",
+         "criteria_version": 2,
+         "stages": [
+          "picked",
+          "turned",
+          "placed",
+          "cleared"
+         ],
+         "pass_rate": 0.8,
+         "pass_rate_reason": "Own criteria1 require>=80% full deployment episodes; feasibility lower threshold only proves a physical motion exists.",
+         "max_hardware_violations": 0,
+         "dev_episodes": 64,
+         "final_episodes": 256,
+         "timeout_min": 30,
+         "description": "Whole deployment criteria2. Same physical starts/model; explicit tabletop-height support and held transport until lowering. Earlier task versions have no full-task gates.",
+         "precondition": null,
+         "postcondition": null,
+         "starts_from": null,
+         "primitive": null,
+         "primitives": [
+          "pick_lift",
+          "finger_turn",
+          "place_release",
+          "finish_remaining"
+         ],
+         "stage_predicates": {
+          "picked": [
+           {
+            "measure": "max_rise_m",
+            "op": ">=",
+            "value": 0.03,
+            "objects": "any"
+           },
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.25,
+            "objects": "any"
+           }
+          ],
+          "turned": [
+           {
+            "measure": "opposed_rel_rotation_deg",
+            "op": ">=",
+            "value": 47,
+            "objects": "any"
+           },
+           {
+            "measure": "passive_rel_rotation_deg",
+            "op": "<=",
+            "value": 15,
+            "objects": "any"
+           }
+          ],
+          "placed": [
+           {
+            "measure": "final_y_m",
+            "op": ">",
+            "value": 0.15,
+            "objects": "any"
+           },
+           {
+            "measure": "final_axis_angle_deg",
+            "op": "<=",
+            "value": 15,
+            "objects": "any",
+            "args": null
+           },
+           {
+            "measure": "rest_at_end_s",
+            "op": ">=",
+            "value": 1,
+            "objects": "any"
+           }
+          ],
+          "cleared": [
+           {
+            "measure": "final_y_m",
+            "op": ">",
+            "value": 0.15,
+            "objects": "each"
+           },
+           {
+            "measure": "final_axis_angle_deg",
+            "op": "<=",
+            "value": 15,
+            "objects": "each",
+            "args": null
+           },
+           {
+            "measure": "touching_environment_at_end",
+            "op": ">=",
+            "value": 1,
+            "objects": "each"
+           },
+           {
+            "measure": "rest_at_end_s",
+            "op": ">=",
+            "value": 1,
+            "objects": "each"
+           },
+           {
+            "measure": "opposed_rel_rotation_deg",
+            "op": ">=",
+            "value": 47,
+            "objects": "each"
+           },
+           {
+            "measure": "passive_rel_rotation_deg",
+            "op": "<=",
+            "value": 15,
+            "objects": "each"
+           },
+           {
+            "measure": "max_rise_m",
+            "op": ">=",
+            "value": 0.03,
+            "objects": "each"
+           },
+           {
+            "measure": "final_z_m",
+            "op": ">=",
+            "value": 0,
+            "objects": "each"
+           }
+          ]
+         },
+         "primitive_spec": null,
+         "harness_predicates": [],
+         "reference_check": null,
+         "chain": [
+          {
+           "primitive": "pick_lift",
+           "follows": [
+            "start"
+           ]
+          },
+          {
+           "primitive": "finger_turn",
+           "follows": [
+            "pick_lift"
+           ]
+          },
+          {
+           "primitive": "place_release",
+           "follows": [
+            "finger_turn"
+           ]
+          },
+          {
+           "primitive": "finish_remaining",
+           "follows": [
+            "place_release"
+           ]
+          }
+         ],
+         "follows": null,
+         "handoff_fraction": null,
+         "handoff": null,
+         "start_check": {
+          "support": "environment"
+         },
+         "start_check_result": {
+          "episodes": 64,
+          "passed": 64,
+          "rate": 1.0,
+          "required": 0.95,
+          "hold_s": 1.0,
+          "support": "environment",
+          "limits": {
+           "displacement_m": 0.02,
+           "rotation_deg": 20.0,
+           "end_speed_m_s": 0.05,
+           "end_angular_speed_rad_s": 0.5
+          },
+          "hand_still": {
+           "wrist_displacement_m": 0.005,
+           "wrist_rotation_deg": 3.0,
+           "joint_deviation_rad": 0.15
+          },
+          "measures": "meas-4",
+          "wall_s": 12.6,
+          "handoff_episodes": 0,
+          "failed": [],
+          "deployment_start_pool": 64
+         },
+         "reason": "Align frozen evaluator with explicit tabletop support and held carry",
+         "evaluator_bytes": 15860654,
+         "evaluator_files": 29
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "dd684641deb9",
+          "bytes": 3237,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0051",
+        "seq": 51,
+        "kind": "suite",
+        "version": 11,
+        "recorded_utc": "2026-11-14T23:11:44Z",
+        "exception": false,
+        "body": {
+         "suite": "repeat_proof",
+         "suite_version": 1,
+         "suite_kind": "feasibility",
+         "criteria_version": 2,
+         "stages": [
+          "picked",
+          "turned",
+          "placed",
+          "cleared"
+         ],
+         "pass_rate": 0.25,
+         "pass_rate_reason": "Own criteria1 require>=80% full deployment episodes; feasibility lower threshold only proves a physical motion exists.",
+         "max_hardware_violations": 0,
+         "dev_episodes": 64,
+         "final_episodes": 128,
+         "timeout_min": 45,
+         "description": "Composite repeat feasibility from actual placement ends, all actual objects logged. Protect initially cleared object; every remaining object must actively manipulate and finish independently on table. Privileged controller never finalpolicy.",
+         "precondition": null,
+         "postcondition": null,
+         "starts_from": null,
+         "primitive": "finish_remaining",
+         "primitives": null,
+         "stage_predicates": {
+          "picked": [
+           {
+            "measure": "max_rise_m",
+            "op": ">=",
+            "value": 0.03,
+            "objects": "any"
+           },
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.25,
+            "objects": "any"
+           }
+          ],
+          "turned": [
+           {
+            "measure": "opposed_rel_rotation_deg",
+            "op": ">=",
+            "value": 47,
+            "objects": "any"
+           },
+           {
+            "measure": "passive_rel_rotation_deg",
+            "op": "<=",
+            "value": 15,
+            "objects": "any"
+           }
+          ],
+          "placed": [
+           {
+            "measure": "final_y_m",
+            "op": ">",
+            "value": 0.15,
+            "objects": "any"
+           },
+           {
+            "measure": "final_axis_angle_deg",
+            "op": "<=",
+            "value": 15,
+            "objects": "any",
+            "args": null
+           },
+           {
+            "measure": "rest_at_end_s",
+            "op": ">=",
+            "value": 1,
+            "objects": "any"
+           }
+          ],
+          "cleared": [
+           {
+            "measure": "final_y_m",
+            "op": ">",
+            "value": 0.15,
+            "objects": "each"
+           },
+           {
+            "measure": "final_axis_angle_deg",
+            "op": "<=",
+            "value": 15,
+            "objects": "each",
+            "args": null
+           },
+           {
+            "measure": "touching_environment_at_end",
+            "op": ">=",
+            "value": 1,
+            "objects": "each"
+           },
+           {
+            "measure": "rest_at_end_s",
+            "op": ">=",
+            "value": 1,
+            "objects": "each"
+           },
+           {
+            "measure": "opposed_rel_rotation_deg",
+            "op": ">=",
+            "value": 47,
+            "objects": "any"
+           },
+           {
+            "measure": "passive_rel_rotation_deg",
+            "op": "<=",
+            "value": 15,
+            "objects": "each"
+           },
+           {
+            "measure": "max_rise_m",
+            "op": ">=",
+            "value": 0.03,
+            "objects": "any"
+           },
+           {
+            "measure": "final_z_m",
+            "op": ">=",
+            "value": 0,
+            "objects": "each"
+           }
+          ]
+         },
+         "primitive_spec": {
+          "motion": "other",
+          "support": "environment",
+          "angle_deg": 110.3,
+          "demo_interval_s": [
+           8.0,
+           14.5
+          ],
+          "video_evidence": "After white stands independently, the hand returns right, captures black, actively finger-turns it, carries left and releases it. Both finally stand bladesup without hand support. This composite repeats separately proven capture/turn/place motions.",
+          "reference": {
+           "states": "reference_plug_black.npz",
+           "object": "plug_black",
+           "interval_s": [
+            10.266666666666667,
+            11.166666666666666
+           ],
+           "axis_object": [
+            -0.9521,
+            0.0619,
+            -0.2993
+           ]
+          },
+          "task_condition": "Clear every remaining fallen plug oneatime and preserve the completed one.",
+          "deviations": "Composite repeats the proven primitives from actual placement ends. Reference110.3deg is its demonstrated internal blackturn; simulated remaining objects each still requirecriteria2 >=47deg,active digits,unsupportedturn,wrist/style. Privileged finite-model selection is amortized in100-step simulation chunks while actually holding, respecting actiontimebudget. No object actuation or teleportation; not finalPPO."
+         },
+         "harness_predicates": [],
+         "reference_check": {
+          "object": "plug_black",
+          "t0": 10.267,
+          "t1": 11.167,
+          "rel_rotation_deg": 110.3,
+          "axis_object": [
+           -0.9521,
+           0.0619,
+           -0.2993
+          ],
+          "wrist_rotation_deg": 33.9,
+          "object_world_rotation_deg": 133.9,
+          "angle_deg_spec": 110.3,
+          "angle_tolerance_deg": 22.060000000000002,
+          "axis_error_deg": 0.6
+         },
+         "chain": null,
+         "follows": [
+          "place_release"
+         ],
+         "handoff_fraction": 1.0,
+         "handoff": {
+          "fraction": 1.0,
+          "pool_states": 44,
+          "pool_sha256": "d7d84804c0b4…",
+          "sources": [
+           {
+            "follows": "place_release",
+            "suite": "place_proof",
+            "version": 1,
+            "kind": "feasibility",
+            "record": "r0045",
+            "mastered": false,
+            "states": 44
+           }
+          ],
+          "dev_episodes": 64
+         },
+         "start_check": null,
+         "start_check_result": null,
+         "reason": null,
+         "evaluator_bytes": 15860654,
+         "evaluator_files": 29
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "dd684641deb9",
+          "bytes": 3237,
+          "content_type": "application/json"
+         }
+        }
        }
       ],
       "first_recon_utc": "2026-11-14T19:26:26Z",
@@ -605466,6 +605998,293 @@
          "text": "Enforce entry-macro30Mframebudget in wholeepisodebatches: floor(30,000,000/(4096*250))=29updates,29.696Mcompletedphysicalframes,118784actualcompletedPPOdecisions. A guard will stopafterthatcheckpointratherthanovershootwith30th1.024Mbatch; any begunpartialrolloutisdiscardedandnotPPOupdated. Sameclass/currentpolicy/reward/curriculum, curvesflat~.54..56; no changekeptbeforefinalCPUaudit."
         },
         "files": {}
+       },
+       {
+        "id": "r0246",
+        "seq": 246,
+        "kind": "iter",
+        "version": 45,
+        "recorded_utc": "2026-11-14T23:09:36Z",
+        "exception": false,
+        "body": {
+         "policy_observations": "privileged",
+         "algorithm": "OfflineCEMphysicalreferenceoptimization;zeroPPO,notRL/finalpolicy",
+         "observations": "Privilegedcontact/Jacobianphysicalreferencewithstart-specific24waypoint/capparameters",
+         "action_space": "Old24MCPpulseparameters plus6localwristposepulseparameters,translation+-4mm/component,rotation+-5deg/component. Pulse1.3..2up/3..3.7return. InitialfloatingwristPD unchanged, noobjectmotor/guide.",
+         "reward_terms": [
+          {
+           "name": "opposed_progress",
+           "formula": "12*clip(1-err/(pi/2),-1,1)*oppfrac",
+           "weight": 1
+          },
+          {
+           "name": "active_progress",
+           "formula": "8*activefrac*max(0,progress)",
+           "weight": 1
+          },
+          {
+           "name": "aligned_opposition",
+           "formula": "16*exp(-(err/.035)^2)*oppfrac",
+           "weight": 1
+          },
+          {
+           "name": "contact_margin",
+           "formula": "4*min(thumbmargin/.5,1)*min(othermargin/.5,1)",
+           "weight": 1
+          },
+          {
+           "name": "deficit",
+           "formula": "-6*max(.8-oppfrac,0)-6*max(.75-activefrac,0)",
+           "weight": 1
+          },
+          {
+           "name": "base_rotation",
+           "formula": "-1.5*min(base_max/(pi/6),2)",
+           "weight": 1
+          },
+          {
+           "name": "irreversible",
+           "formula": "-20*dead",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-10*hw",
+           "weight": 1
+          },
+          {
+           "name": "strict_completion",
+           "formula": "30*strict_completion",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "native training parents",
+           "distribution": "16 successful original-entry-controller parent ends at 51 mm, native per-seed masses/friction/detent/damping/joint stiffness, two signs and two active fingers =>64 configurations. Not the frozen 31 gate handoffs."
+          },
+          {
+           "quantity": "repetitions",
+           "distribution": "4 GPU noise replicas per candidate/configuration; final CPU one per configuration"
+          }
+         ],
+         "training_summary": {
+          "algorithm": "Offline per-start CEM controller optimization, not RL or final policy",
+          "N": 4096,
+          "B": 64,
+          "C": 64,
+          "gens_requested": 20,
+          "gens_completed": 13,
+          "support_action": "Same MCP pulse plus6wristposeparameters localtranslation+-4mm/component androtation+-5deg/component,[redacted].3..2up/3..3.7return. No objectforces.",
+          "edge": 51,
+          "scope": "16freshoriginalentry-controller-successends,validatednative49/51mm xbothsigns xbothactivefingers; allfullquarter/free-object, no guides; CPU verification and fresh chain gates pending",
+          "seconds": 1018.6927785520093
+         },
+         "evaluation": {
+          "episodes": 64,
+          "physical_starts": 16,
+          "counts": {
+           "grip": 64,
+           "turn": 3,
+           "aligned_rest": 2
+          },
+          "HW": 0,
+          "results": "research/diagnostics/turn_parent_wrist_e51_cpu/results.json",
+          "scope": "16actualnative51original-entry-success trainingparents,notprivategate31"
+         },
+         "reflection": "MatchedCPU2/64full/HW0,neitherCW(vsMCPbaseline3/64incl1CW). Wristadditiondidnotimprovefixedtrainingreference. IncludeasdiversemodeinnewprivilegedplanneronlywithfullCPUcertificate,notPPOteacher/reliablemotionclaim. No deployablepolicy.",
+         "source": "research/sim/search_turn_parent_wrist.py",
+         "sim_version": 6,
+         "weights_sha256": null,
+         "parameter_sha256": "adb997659661…",
+         "compute": {
+          "GPU_trained_seconds": 1018.6928,
+          "completed_generations": 13,
+          "discarded_initialization": "Float64bounds/float32scatter failurebeforefirstcompletedgeneration,explicitdtypefixed,r0236; retrybudgetreduced1000s toincludeinitialcost",
+          "GPU_class_wall_budget_s": 1200
+         },
+         "curriculum": "none; sixteen actual original-entry-success training parents, both signs/two fingers",
+         "parity_limitation": "No matched 128-outcome parity of these optimized checkpoints. Existing native original-teacher49/51 parity passed, but these per-start searches are not used for PPO or claimed as deployable policies.",
+         "algorithm_hyperparameters": "4096worlds64configs16candidates4noisereps,30parameters,top4eliteCEM,13completedgenerations1018.69sretryplusinitializationfailuretime,20minwholeclass"
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "c39d501d6cc6",
+          "bytes": 1605,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "ea5feaff24d9",
+          "bytes": 107907,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "3c9a4825dd8b",
+          "bytes": 115261,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "250e687aa4bf",
+          "bytes": 141726,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0247",
+        "seq": 247,
+        "kind": "iter",
+        "version": 46,
+        "recorded_utc": "2026-11-14T23:10:12Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "policy_observations": "deployable",
+         "algorithm": "PPOcontextualepisodeMDPgamma0,Gaussian20latent onceper5sepisode,4epochs8minibatchesclip.2,actor1e-4critic3e-4,KLstop.03",
+         "architecture": "Initial233allowedstate ->128tanh128tanh20latentmean; bias=.05*tanh(latent) added to frozenretained836closedloopPPOrawoutput. Decoder2 unchanged. Baseexpertuses4recent209; initialcontext233adds24allowedpartpositions. No contacts/physics/planning in actor. Critic240=initial233+7physicsparams trainingONLY.",
+         "reward_terms": [
+          {
+           "name": "distance_progress",
+           "formula": "sum_t30*(previous_thumbpad_distance-current_distance), original3mmpad-target heuristic unchanged",
+           "weight": 1
+          },
+          {
+           "name": "opposition_progress",
+           "formula": "sum_t4*delta(clip(lower_opposition_timer,0,.5))/.5",
+           "weight": 1
+          },
+          {
+           "name": "regularization",
+           "formula": "sum_t[-.0005*sum(normalized_applied_target_increment^2)-.01*(abs(layer_angle-anchor)/radians(10))^2]",
+           "weight": 1
+          },
+          {
+           "name": "terminal",
+           "formula": "20*strict_entry_success-10*irreversible_failure, firstepisodeperworld",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "native50mm physics",
+           "distribution": "128originalbankstarts, mass50..90g,mu.4..1.2,detent.002..008,damp.00005..0002,fric.0005..002,ballstiff.4...8,exact9nativefields+detent; geometry50 only,52GPUexcluded"
+          },
+          {
+           "quantity": "noise",
+           "distribution": "noisyencoderq.002rad/qd.05;initiallatentGaussianstd.2 yielding~.01episodeconstantbias; finaldeterministicmean"
+          }
+         ],
+         "curriculum": "21reliableNN/teacherstarts then75%all128/25%21aftertwofirstbatches>=.8. The file teacher_cases actually128, correctedr0237. No distillationafterwidening.",
+         "training": {
+          "PPO_decisions": 118784,
+          "physical_50Hz_frames": 29696000,
+          "source_base_PPO_decisions": 2621440,
+          "actual_algorithm_decisions_warning": "One NEW PPO decision per5s; physicalframes are NOT PPOactions.",
+          "probe": "Teacher.977/mean.971/std.005.933/std.01.885/HW0;teacherreturn25.79>hold-.001/random-4.61.",
+          "parity": "Baselinezero-neuralbiasCPU exactlyincumbent qtargets250ticks(max0); retainednative50CPU51/GPU49of128PASSr0108. Samephysics/worldfields/defaultsolver/guards. Nonzero learnedmacroNNNumPy/Torch rawerror1.49e-7. No matchedoutcomeonthisunkeptcheckpoint.",
+          "guard": {
+           "reason": "Completeepisodebatchlimitfloor30M/(4096*250)=29;avoid30thfullbatchovershoot",
+           "completed_physical_frames": 29696000,
+           "completed_PPO_decisions": 118784,
+           "interruption_utc": "2026-11-14T23:07:21Z",
+           "incomplete_next_rollout": "Mayhavebegun;discarded,notPPOupdated. <.304Mbudgetheadroom available; guard polls100ms."
+          },
+          "finished_updates": 29,
+          "last_first_episode": {
+           "update": "28",
+           "PPO_decisions": "118784",
+           "physical_frames": "29696000",
+           "episode_return": "13.662113189697266",
+           "first_episode_success": "0.549072265625",
+           "first_episode_hardware": "0.0",
+           "episode_length": "224.954345703125",
+           "phase": "1",
+           "KL": "0.011208410374820232",
+           "parameter_change": "0.0006307945004664361",
+           "clip_fraction": "0.09967041015625",
+           "critic_loss": "86.09458923339844",
+           "latent_std": "0.1979241520166397",
+           "mean_absolute_bias": "0.008134155534207821",
+           "seconds": "1356.1884700759983",
+           "progress": "2.2484610668934693",
+           "contact": "2.7300195722674587",
+           "regularization": "-0.1482850455759035",
+           "terminal": "11.398343140259385"
+          }
+         },
+         "evaluation": {
+          "episodes": 64,
+          "success": 20,
+          "hardware_violations": 0,
+          "scope": "Cached exact initialstates of same64broad5size900000..63developmentstarts, unfiltered. No state/physics changes; placement not rerun. Retained34/64vsfinal20/64.",
+          "by_edge": {
+           "48": {
+            "new": 5,
+            "retained": 9,
+            "n": 15
+           },
+           "49": {
+            "new": 0,
+            "retained": 1,
+            "n": 4
+           },
+           "50": {
+            "new": 6,
+            "retained": 5,
+            "n": 12
+           },
+           "51": {
+            "new": 4,
+            "retained": 6,
+            "n": 13
+           },
+           "52": {
+            "new": 5,
+            "retained": 13,
+            "n": 20
+           }
+          }
+         },
+         "weights_sha256": "aafaf14fd349…",
+         "reflection": "Budgetcomplete29PPOupdates/118784actualepisode-decisions/29.696Mcompletedphysicalframes,partialnextrolloutdiscarded; phase1broadtrainingflat~.54..56/HW0. Early29/64andfinal20/64bothbelowretained34. Constantinitial-contextneuralbiasdidnotgeneralize contact better. Notkept/no newgate. No whole-taskPPO."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "15bdc1238cd9",
+          "bytes": 8492,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "7e963ede8641",
+          "bytes": 74171,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "77944c87b56e",
+          "bytes": 80263,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "706bfd788b7a",
+          "bytes": 84223,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0248",
+        "seq": 248,
+        "kind": "note",
+        "version": 148,
+        "recorded_utc": "2026-11-14T23:10:12Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "ExpandedCWplanner smoke test on KNOWN TRAINING source60022: first physicalproposal completed fullstrictquarterturn/rest/HW0 in3.47CPU s, actualhandrolloutmatched. Notgeneralizationproof; newfreshgate will decide. Wristclasscompleted13gens1018.69s plusfailedinitialization,CPU64full2/HW0(bothCCW),recordr0246. FinalentryepisodeneuralPPO29.696Mcompletedphysicalframes/118784episodePPOdecisions CPU64fullgrip20/HW0vsretained34;geometry50new6/12vsold5/12butotheredgesworse, no keep/gate. No whole-taskPPO."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-14T12:17:43Z",
@@ -605481,7 +606300,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-14T23:00:01Z",
+      "exported_utc": "2026-11-14T23:10:01Z",
       "submissions": [
        {
         "sub": "s04",
@@ -606136,7 +606955,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-14T23:00:01Z",
+      "exported_utc": "2026-11-14T23:10:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -606531,7 +607350,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-14T23:00:01Z",
+      "exported_utc": "2026-11-14T23:10:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -606792,7 +607611,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-14T23:08:08Z",
+  "staged_utc": "2026-11-14T23:13:03Z",
   "tasks": {
    "cube": {
     "files": {
@@ -606876,7 +607695,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-14T23:08:08Z",
+  "staged_utc": "2026-11-14T23:13:03Z",
   "tasks": {
    "tennis": {
     "status": "available",
