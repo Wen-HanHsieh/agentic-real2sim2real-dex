@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-14T03:42:38Z",
- "exported_utc": "2026-11-14T03:42:29Z",
+ "generated_utc": "2026-11-14T03:52:39Z",
+ "exported_utc": "2026-11-14T03:52:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-14T03:34:30",
+    "time": "2026-11-14T03:49:54",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-14T03:40:12",
+    "time": "2026-11-14T03:51:49",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -265841,6 +265841,291 @@
           "content_type": "application/json"
          }
         }
+       },
+       {
+        "id": "r0112",
+        "seq": 112,
+        "kind": "iter",
+        "version": 10,
+        "recorded_utc": "2026-11-14T03:44:04Z",
+        "exception": false,
+        "body": {
+         "sim_version": 6,
+         "evaluation_sim_version": 6,
+         "policy_observations": "deployable",
+         "policy": "research/candidates/turn_ppo_chunk_robust_u20",
+         "algorithm": {
+          "name": "PPO with0.1s held residual decisions",
+          "implementation": "Own teacher_stable copy with critic warmup, frozen actor stats, KL stop, multiGPU MuJoCoWarp",
+          "hyperparameters": {
+           "iterations": 400,
+           "steps_per_iter": 8,
+           "epochs": 4,
+           "minibatches": 8,
+           "gamma": 0.975248753121875,
+           "lam": 0.7737809374999998,
+           "clip": 0.2,
+           "lr": 5e-06,
+           "critic_lr": 0.0002,
+           "ent_coef": 0.0001,
+           "vf_coef": 1.0,
+           "max_grad_norm": 1.0,
+           "target_kl": 0.03,
+           "hidden": [
+            256,
+            256
+           ],
+           "critic_hidden": [
+            256,
+            256
+           ],
+           "init_log_std": -4.0,
+           "action_mode": "tanh",
+           "actor_keys": [
+            "deployable"
+           ],
+           "critic_keys": [
+            "privileged"
+           ],
+           "reward_scale": 0.1,
+           "residual_scale": 1.0,
+           "critic_warmup": 10,
+           "action_dim": null,
+           "device": "cuda:3",
+           "seed": 3401,
+           "log_every": 10,
+           "verbose": true,
+           "checkpoint_path": "research/turn_ppo_reference_v4/policy.pt",
+           "checkpoint_every": 20,
+           "violation_keys": [
+            "hw_violations",
+            "safety_violations"
+           ],
+           "stall_patience": 20,
+           "stall_kl": 1e-06,
+           "stall_rel_change": 1e-06,
+           "kl_warn": null,
+           "eval_every": 10,
+           "eval_metric": "success",
+           "best_checkpoint_path": null,
+           "restore_best": false,
+           "log_path": "research/turn_ppo_reference_v4/ppo.jsonl"
+          },
+          "updates_completed": 20,
+          "transitions": 122880,
+          "environments": 768,
+          "actor": "3x130 history (390 public features) -> ELU256 -> ELU256 ->23 tanh Gaussian; baseline residual scale1, filter.1",
+          "critic": "401 features:publichistory+6contacts+mass/friction/COM privileged duringtrainingonly",
+          "normalization": "Frozen46800 self+leave-one-out public histories; BC hidden layers retained, final actor layer zeroed before PPO",
+          "base": "116physicalplans (78teacher1 parentcriteria4,38teacher2criteria5), publiclookup only. Paired CPUdiagnostic69/192versusold53,0HW; newbase noiseCPU68/GPU52,PASSwithnear-tolerancebias.",
+          "actions": "One23D neural residual decision10Hz held5frames; base/history/filter updated50Hz; same target guard/wrist cap/latch; command500Hz/physics1kHz. Episodes ending inside a block mask subsequent rewards and reset at block boundary.",
+          "previous_updates": 120,
+          "previous_transitions": 5898240,
+          "resume": "From accepted r0101 hidden/critic weights and norms, zero actor output layer; new residual stdexp(-4). Actor390/critic401 unchanged.",
+          "physical_50hz_transitions": 614400
+         },
+         "reward_terms": [
+          {
+           "name": "world_goal_progress",
+           "formula": ".1*(previous_world_blade_angle-current_world_blade_angle)",
+           "weight": 1
+          },
+          {
+           "name": "relative_goal_progress",
+           "formula": ".1*(previous_initial_wrist_goal_angle-current_initial_wrist_goal_angle)",
+           "weight": 1
+          },
+          {
+           "name": "held",
+           "formula": ".01*held",
+           "weight": 1
+          },
+          {
+           "name": "opposed",
+           "formula": ".02*opposed",
+           "weight": 1
+          },
+          {
+           "name": "turn_bonus",
+           "formula": "15 first active>=60deg/opposed/passive<=15/fingers>=.15 AND relativegoal<=25/worldblade<=15",
+           "weight": 1
+          },
+          {
+           "name": "passive",
+           "formula": "-.005*min(20,max(passive-15,0))",
+           "weight": 1
+          },
+          {
+           "name": "motion",
+           "formula": "-(.2 if t>=4.6 else.005)*angularspeed-.1*linearspeed",
+           "weight": 1
+          },
+          {
+           "name": "action",
+           "formula": "-.01*mean(filtered_residual^2)",
+           "weight": 1
+          },
+          {
+           "name": "hardware",
+           "formula": "-10*hardwareflag",
+           "weight": 1
+          },
+          {
+           "name": "terminal",
+           "formula": "+60 success else-20; end on6s/hardware/environment/handgap>.2s",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "physics",
+           "distribution": "White mass uniform.038-.083kg; black.020-.070; independent COM coordinates uniform±.003m; effective friction uniform.4-1.2, spin.0005-.003, rolling.0001"
+          },
+          {
+           "name": "geometry",
+           "distribution": "Equal pergroup worlds: white scales.9/1/1.1; black.85/1/1.15"
+          },
+          {
+           "name": "grasp",
+           "distribution": "1008 actual successful settlePPO ends of1024 independent cyclicsteady-start draws941000-942023; initialposeproposal±5mm/±15deg; velocities and commands preserved at handoff"
+          },
+          {
+           "name": "encoders",
+           "distribution": "Gaussianq.002rad,qd.05rad/s"
+          }
+         ],
+         "curriculum": "Level0 samples33 previouslycrossbackend-successful source states, all6geometries; full1008actualhandoffpool retained forlevels1/2with50/25percentearlystarts. Noadvance by20updates. Conditionalcontrollerpreflight44/48, notdeploymentrate.",
+         "compute": {
+          "wall_seconds": 378.1799998283386,
+          "shared_gpu_device_wall_hours": 0.42019999980926515,
+          "note": "GPU0/1/2physics,3actor; overlaps preceding run/preflights, notexclusiveGPUusage."
+         },
+         "parity": "Same unchanged sim6 models/controllers; kept previousNN noiseCPU47/GPU43 of192PASS; newreference68/52PASS; this rejected20checkpointnotkept andhasno separateefficacy/parityclaim.",
+         "export_inference": {
+          "frames": 300,
+          "decisions": 60,
+          "max_abs_command_error": 1.3077259053417833e-07,
+          "tolerance": 3e-06,
+          "passed": true,
+          "scope": "Fixed public observation sequence: Torch10Hz decisions versus exported NumPy50Hz hold/filter/decode. No physical success assertion."
+         },
+         "reward_preflight": {
+          "controller": {
+           "success": 0.9166666666666666,
+           "return": 89.30367748342057,
+           "ep_len": 60.0,
+           "success_first_ep": 0.9166666666666666,
+           "return_first_ep": 89.30367748342057,
+           "ep_len_first_ep": 60.0,
+           "first_ep_n": 48,
+           "hw_violations_per_episode_first_ep": 0.0,
+           "hw_violations_episode_frac_first_ep": 0.0,
+           "first_ep_unfinished": 0,
+           "success_ep_weighted": 0.9166666666666666,
+           "return_ep_weighted": 89.30367748342057,
+           "ep_len_ep_weighted": 60.0,
+           "ep_weighted_n": 48,
+           "hw_violations_per_episode_ep_weighted": 0.0,
+           "hw_violations_episode_frac_ep_weighted": 0.0,
+           "episodes": 48,
+           "steps": 60,
+           "warnings": []
+          },
+          "hold": {
+           "success": 0.0,
+           "return": -13.209303561437991,
+           "ep_len": 56.770833333333336,
+           "success_first_ep": 0.0,
+           "return_first_ep": -13.209303561437991,
+           "ep_len_first_ep": 56.770833333333336,
+           "first_ep_n": 48,
+           "hw_violations_per_episode_first_ep": 0.0,
+           "hw_violations_episode_frac_first_ep": 0.0,
+           "first_ep_unfinished": 0,
+           "success_ep_weighted": 0.0,
+           "return_ep_weighted": -13.209303561437991,
+           "ep_len_ep_weighted": 56.770833333333336,
+           "ep_weighted_n": 48,
+           "hw_violations_per_episode_ep_weighted": 0.0,
+           "hw_violations_episode_frac_ep_weighted": 0.0,
+           "episodes": 48,
+           "steps": 60,
+           "warnings": []
+          },
+          "random": {
+           "success": 0.0,
+           "return": -20.744261290499708,
+           "ep_len": 8.395833333333334,
+           "success_first_ep": 0.0,
+           "return_first_ep": -20.744261290499708,
+           "ep_len_first_ep": 8.395833333333334,
+           "first_ep_n": 48,
+           "hw_violations_per_episode_first_ep": 0.0,
+           "hw_violations_episode_frac_first_ep": 0.0,
+           "first_ep_unfinished": 0,
+           "success_ep_weighted": 0.0,
+           "return_ep_weighted": -20.51564193579971,
+           "ep_len_ep_weighted": 8.294117647058824,
+           "ep_weighted_n": 51,
+           "hw_violations_per_episode_ep_weighted": 0.0,
+           "hw_violations_episode_frac_ep_weighted": 0.0,
+           "episodes": 51,
+           "steps": 13,
+           "warnings": []
+          }
+         },
+         "evaluation": {
+          "criteria_version": 5,
+          "gate": "r0110",
+          "episodes": 64,
+          "counts": {
+           "secured": 38,
+           "finger_turn": 18,
+           "steady": 12,
+           "success": 12
+          },
+          "hardware_violations": 0,
+          "decision": "rejected +1steadyneeds+4",
+          "meets_pass_rate": false
+         },
+         "reflection": "Macro20 scored12/64,0HW, rejected versus11/64incumbent below4margin. Sampledsource success~.49 despite deterministiccontroller.917, showing sensitivity to action perturbations. Continuefromlatercheckpoint60with publicreference-distance-dependent action gain to suppress corrections near knownplans while exploring unfamiliargrasps, and largerbatch. Fullranges/criteria stayfixed."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "8e26327aab1a",
+          "bytes": 13007,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "21104aaba6d0",
+          "bytes": 60750,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "d2145dc670fe",
+          "bytes": 63519,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "a0e717e71a05",
+          "bytes": 140769,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0113",
+        "seq": 113,
+        "kind": "note",
+        "version": 49,
+        "recorded_utc": "2026-11-14T03:49:54Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Start action-gain PPO: f=clip(initial public reference embedding distance/.15,.05,1), applied to neural residual mean AND Gaussian sample, held0.1s. No contacts/physicsparameters in f; derivedonlyq,ownqtarget,object/wristpose. Purpose: preserve familiar physicalplans while exploring larger corrections on unfamiliar starts. Preflight48screenedstarts controller43/48return87.32;hold0/-13.30;random6/48return5.64,0HW allfirstcohorts. Resume macrocheckpoint60, reference116/early33/full1008pool, worlds128->256 (1536total),300updates,globalstd.05 buteffectiveknownnoise muchsmaller. FreshAdam/10criticwarmup. Viewed r0110failures712018/712007: whitehousing partially rolls then leaves hand around3-4s. No task/criteria/simulatorchange. Correction: r0112 parent120-update field understates hidden/critic ancestry (parentr0101 includes120+40); outputheadwaszeroed, new20updatesarecorrect. Task712002 isblack andlostsupportat2.484s;712020whiteat4.444s, bothmeasured, regardlessrendercolor. Teacher2feas r0111accepted41/64,0HW."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-13T19:44:50Z",
@@ -554823,6 +555108,228 @@
          "text": "PointActor incremental BC r0140 failed0/512 with15HW despiteMSE.00485; viewed own final right-view frame710000 at2.32s: thumb/long fingers open and no quarter-turn. DAgger collected97053rows from512studentvisited trajectories,0success14HW, all retained and labelled with privileged teacher only during training. Change action parameterization to absolute normalized native targets, preserve.015rad/20ms rate, use teacher+studentvisited data. Fullteacher003u10 r0141=444/1024,15HW; notdistilled asfullteacher. Expanded CEMphysicalbank010359CPUverifiedplans from101pairs (previous224plans68pairs), GPUaudit running corrected counters. Task/primitive seed labels are independently sampled: task310004 original reference cornerpositions differ53.4mm fromprimitive310004, so previous paired-target probe was not a same-start comparison. VERIFICATION.md explicitly takes supported deployment starts forentrylink and actual endpoints thereafter; no criterion/physicschange is justified by seed names."
         },
         "files": {}
+       },
+       {
+        "id": "r0143",
+        "seq": 143,
+        "kind": "gate",
+        "version": 28,
+        "recorded_utc": "2026-11-14T03:42:53Z",
+        "exception": false,
+        "body": {
+         "suite": "task",
+         "suite_version": 2,
+         "suite_kind": "task",
+         "suite_record": "r0031",
+         "final": false,
+         "candidate_sha256": "64c4637d29b0…",
+         "method": "decision-layer+action-space",
+         "hypothesis": "Preserve trained expert timing/rate for novel starts rather than slow it: .015rad native command rate and original time, instead of .006rad and .8time. Delay observed cubie-pose guard from5.5deg to7.5deg, still below8deg criterion. In rejected r0136 seed15 reached47deg rather than90 while30 stalled; preserving learned contact timing may produce at least4completed turns without losinggrip or increasingHW. All motions remain PPO neural policies; no whole-tasktraining.",
+         "predicts": "turned",
+         "observed": "r0136 montages viewed:seed310015 layer0at2.48s,8.7deg3.52s,47.3deg7.52s withlategriploss;seed310030 remainsnear0.6degthrough7.52s. I infer slowretiming andearlyposeguard can stall expertmotion.",
+         "primitive": null,
+         "started_utc": "2026-11-14T03:41:07Z",
+         "pass_rate": 0.9,
+         "max_hardware_violations": 0,
+         "episodes": 64,
+         "counts": {
+          "gripped": 7,
+          "turned": 0,
+          "settled": 0,
+          "success": 0
+         },
+         "wilson95": {
+          "gripped": [
+           0.054,
+           0.209
+          ],
+          "turned": [
+           0.0,
+           0.0566
+          ],
+          "settled": [
+           0.0,
+           0.0566
+          ],
+          "success": [
+           0.0,
+           0.0566
+          ]
+         },
+         "funnel_first_failed": {
+          "gripped": 57,
+          "turned": 7,
+          "settled": 0,
+          "hardware": 0,
+          "complete": 0
+         },
+         "predicate_overrides": {
+          "gripped": 0,
+          "turned": 0,
+          "settled": 0
+         },
+         "hardware_violations": 3,
+         "success_rate": 0.0,
+         "reproducible": true,
+         "wall_s": 78.9,
+         "finished_utc": "2026-11-14T03:42:52Z",
+         "meets_pass_rate": false,
+         "decision": "rejected",
+         "incumbent": false,
+         "previous_incumbent": "r0128",
+         "delta": {
+          "gripped": -38,
+          "turned": 0,
+          "settled": 0,
+          "success": 0
+         },
+         "margin": 4,
+         "hardware_delta": 3,
+         "reason": "the predicted 'turned' changed by +0 episodes (needs +4); lost more than 4 episodes in 'gripped' (-38); hardware violations rose by 3",
+         "failure_review": {
+          "stage": "gripped",
+          "lost": 57,
+          "episodes": 64,
+          "montages": [
+           {
+            "role": "montage_1",
+            "frame_times_s": null
+           },
+           {
+            "role": "montage_2",
+            "frame_times_s": null
+           }
+          ]
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "e0308245f2e2",
+          "bytes": 61800,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "82dbe1aeb31b",
+          "bytes": 61721,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "99e3736c6e0c",
+          "bytes": 110193,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0144",
+        "seq": 144,
+        "kind": "iter",
+        "version": 35,
+        "recorded_utc": "2026-11-14T03:51:49Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "checkpoint_sha256": "07ba09fae7d7…",
+         "reward_terms": [
+          {
+           "name": "supervised_MSE",
+           "weight": 1,
+           "formula": "Predicted absolute normalized target minus teacher target,squared mean"
+          },
+          {
+           "name": "critic_regression",
+           "weight": 0.0001,
+           "formula": "Squared discounted physical return prediction,gamma.995"
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "encoders",
+           "distribution": "Independent Gaussian noise: 0.002 rad and 0.05 rad/s. Physical parameters fixed."
+          }
+         ],
+         "algorithm": "Supervised absolute-target BC warmstart only,50k minibatches1024. No RL update and never finalpolicy.",
+         "architecture": "Same permutation-invariant PointActor asr0140:shared10-64-64cubieencoder,upper/lowermean+max,512x512body,920allhistoryinputs,identitynormalizer.",
+         "observations": "Four recent184frames+initial184,onlyallowedphysicalstate/history. No forces/contacts/parameters/referenceplan inputs.",
+         "actions": "Twenty normalized absolute native finger targets, bounded and rate .015rad/20ms; fixed wrist. Labels converted from physical teacher bounded increments and own prior target.",
+         "curriculum": "144600teacherrows from482/512successful physicalmixedteachertrajectories(0HW),plus97053correctivelabels on512studentvisited trajectories(0success14HW,all kept),33initialstarts.",
+         "compute": {
+          "wall_seconds": 219.87923622131348,
+          "gpu_hours": 0.06107756561703152,
+          "gpu": "One L40S cuda0"
+         },
+         "evaluation": [
+          {
+           "controller": "network",
+           "n": 512,
+           "return_mean": -19.4283504486084,
+           "success_first_episode": 0.0,
+           "hardware_episode_fraction": 0.005859375,
+           "length": 151.232421875,
+           "seconds": 90.56355214118958,
+           "cases": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+           ]
+          }
+         ],
+         "reflection": "0/512success3HW atmeanMSE5.60e-5. Absolute targets alone didnotfix closed-loop failure;notkept. Generic state-feedback BC tends toward previous-target copying and insufficient precise reference motion; return to initial-conditioned neural prior plus PPO feedback on newly proven starts. Proposed interpretation,notameasurement. Full-task andturnmastery criteriaremainunpassed."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "40912601c649",
+          "bytes": 3318,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "a90fa9c52fcc",
+          "bytes": 66191,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "27f5eb094a20",
+          "bytes": 77888,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "bc3c1922d839",
+          "bytes": 95386,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-13T19:40:59Z",
@@ -554838,7 +555345,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-14T03:40:01Z",
+      "exported_utc": "2026-11-14T03:50:01Z",
       "submissions": [
        {
         "sub": "s04",
@@ -555493,7 +556000,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-14T03:40:01Z",
+      "exported_utc": "2026-11-14T03:50:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -555888,7 +556395,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-14T03:40:01Z",
+      "exported_utc": "2026-11-14T03:50:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -556149,7 +556656,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-14T03:42:33Z",
+  "staged_utc": "2026-11-14T03:52:33Z",
   "tasks": {
    "cube": {
     "files": {
@@ -556233,7 +556740,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-14T03:42:33Z",
+  "staged_utc": "2026-11-14T03:52:33Z",
   "tasks": {
    "tennis": {
     "status": "available",
