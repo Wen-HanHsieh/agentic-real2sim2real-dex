@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-14T12:22:39Z",
- "exported_utc": "2026-11-14T12:22:30Z",
+ "generated_utc": "2026-11-14T12:32:38Z",
+ "exported_utc": "2026-11-14T12:32:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-14T12:12:10",
+    "time": "2026-11-14T12:24:53",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -1720,7 +1720,7 @@
    "best": "s01",
    "latest_candidate": "s03",
    "activity": {
-    "time": "2026-11-14T12:19:38",
+    "time": "2026-11-14T12:32:18",
     "verb": "other"
    },
    "record_chain": "intact (13 entries)",
@@ -276602,9 +276602,210 @@
          "text": "Reconstruction: visible USB-C end and body proportions support an Apple-20W-like white geometry prior; black brand remains unidentified and uses a narrower-charger dimensional prior. Type-A 12.7 mm blade center spacing anchors metric scale. Object and hand tracking run independently on the same 436-frame time base; final contact/depth consistency will be checked jointly. The desired skill appears to be an approximately quarter-turn between opposed fingers with a roughly palm-down wrist; this remains a visual hypothesis until measured against reconstructed wrist motion."
         },
         "files": {}
+       },
+       {
+        "id": "r0003",
+        "seq": 3,
+        "kind": "recon",
+        "version": 1,
+        "recorded_utc": "2026-11-14T12:23:01Z",
+        "exception": false,
+        "body": {
+         "summary": "First contract-valid reconstruction baseline; 436-frame objects and 360 valid MANO right-hand frames. Physical quality failures remain explicit; refinement continues in the mandatory 60-minute stage.",
+         "components": [
+          {
+           "name": "camera",
+           "status": "partial",
+           "method": "MoGe plane/focal priors + weak-prior robust blade/casing PnP",
+           "note": "Estimated focal 1159.65px; gravity estimated from desktop; translation not resolved, rest drift remains."
+          },
+          {
+           "name": "objects_6d",
+           "status": "partial",
+           "method": "Blender model, SAM3 masks, render-and-compare objpose_track",
+           "note": "White median cropped IoU .8565; black .8511; feature checks reveal wrong blade orientations and rest spins. Being refined."
+          },
+          {
+           "name": "hand_motion",
+           "status": "partial",
+           "method": "HaWoR + unchanged default MANO fit, 400 iterations",
+           "note": "360 valid right hand frames; IoU .8632, scale .9991; self-collisions and weak thumb contact remain."
+          },
+          {
+           "name": "contact_phases",
+           "status": "partial",
+           "method": "Manual event boundaries and default fitter contacts",
+           "note": "White opposed contact only .211; black excluded by installed validator object list, extended validation running."
+          },
+          {
+           "name": "geometry_physics",
+           "status": "partial",
+           "method": "Blender rounded bodies and fixed blades, published similar-object priors",
+           "note": "Exact identities and physical properties unobserved; 27.3mm initial support mismatch needs refinement."
+          }
+         ],
+         "limitations": [
+          "VALID is the output-contract verdict; physical quality report overall FAIL, including wrong blade branches, support drift, weak opposed contact and self-intersections. See NOTES.md.",
+          "Exact charger identities, COM, inertia, friction, metric depth and occluded orientations remain uncertain."
+         ],
+         "validation": {
+          "schema": "recon-validation/1",
+          "utc": "2026-11-14T12:19:57Z",
+          "thresholds": {
+           "contact_band_mm": 5.0,
+           "phase_fail_mm": 10.0,
+           "pen_warn_mm": 5.0,
+           "pen_fail_mm": 10.0,
+           "wrist_speed_mps": 3.0,
+           "wrist_accel_mps2": 150.0,
+           "tip_speed_mps": 5.0,
+           "bone_jump_deg": 60.0,
+           "obj_jump_m": 0.1,
+           "obj_rot_jump_deg": 45.0,
+           "g": 9.81,
+           "g_tol": 2.0,
+           "rest_drift_mm": 5.0,
+           "sink_mm": 3.0,
+           "hand_chain_mm": [
+            140.0,
+            230.0
+           ],
+           "iou_warn": 0.6,
+           "hand_precision_warn": 0.7,
+           "opposition_deg": 60.0,
+           "anatomical_min_frac": 0.5
+          },
+          "checks": {
+           "reprojection": {
+            "status": "pass",
+            "per_part": null,
+            "below_threshold": null,
+            "note": "against your own masks: agreement with them is necessary, not sufficient (3D errors along the viewing ray are invisible here)"
+           },
+           "fingertip_distance": {
+            "status": "fail",
+            "phases": null
+           },
+           "anatomical_contact": {
+            "status": "warn",
+            "phases": null,
+            "note": "a grasp needs the thumb and an opposing finger on opposite sides of the object; single-finger pushes or palm support are legitimate but must be stated in the analysis. Low penetration does not imply contact."
+           },
+           "penetration_hand_object": {
+            "status": "warn",
+            "max_mm": null,
+            "frames_over_warn": null,
+            "signed": null,
+            "note": "unsigned (lower bound) distances where the object mesh is not watertight"
+           },
+           "self_penetration": {
+            "status": "fail",
+            "finger_finger_frames": null,
+            "finger_finger_frac": 0.4,
+            "hand_hand_frames": null,
+            "note": "triangle intersections between different fingers (FCL); counts are not volumes"
+           },
+           "continuity": {
+            "status": "pass",
+            "flagged": null,
+            "count": 0
+           },
+           "physics": {
+            "status": "warn",
+            "flights": null,
+            "rests": null,
+            "note": "free-flight intervals are given with --flight OBJ=a:b; rest intervals default to object intervals without contact"
+           },
+           "handedness_scale": {
+            "status": "pass",
+            "per_side": null,
+            "note": "left/right are the demonstrator's anatomical hands; a hand is never mirrored"
+           },
+           "sync": {
+            "status": "pass",
+            "t_real_monotonic": true,
+            "fps_real": 30.0,
+            "compare_frames": 436,
+            "compare_matches": true,
+            "object_offset_check": null
+           },
+           "camera_focal": {
+            "status": "pass",
+            "focal_px": 1159.6,
+            "prior_px": 1073.7,
+            "ratio": 1.08,
+            "prior_source": "research/recon_v1/transforms/moge/intrinsics.json",
+            "focal_label": "estimated",
+            "threshold_ratio": 1.25,
+            "note": "MoGe intrinsics are a learned prior; the focal should be calibrated against known geometry (camera_calib.py pnp). A large disagreement needs its explanation in NOTES.md (which one is wrong, and why)."
+           }
+          },
+          "summary": {
+           "reprojection": "pass",
+           "fingertip_distance": "fail",
+           "anatomical_contact": "warn",
+           "penetration_hand_object": "warn",
+           "self_penetration": "fail",
+           "continuity": "pass",
+           "physics": "warn",
+           "handedness_scale": "pass",
+           "sync": "pass",
+           "camera_focal": "pass"
+          },
+          "failed": [
+           "fingertip_distance",
+           "self_penetration"
+          ],
+          "incomplete": [],
+          "missing_required": [],
+          "overall": "fail",
+          "overall_note": "not pass: failed checks: fingertip_distance, self_penetration"
+         },
+         "check_reference": {
+          "verdict": "VALID",
+          "errors": 0,
+          "warnings": 0,
+          "error_list": []
+         },
+         "exception": null,
+         "producer": {
+          "tool": "r2s2r-d2s recon",
+          "recon_dir": "recon_v1"
+         }
+        },
+        "files": {
+         "compare_video": {
+          "sha": "b3999a99bb3e",
+          "bytes": 2133225,
+          "content_type": "video/mp4"
+         },
+         "validation_json": {
+          "sha": "8f87aca9f533",
+          "bytes": 7113,
+          "content_type": "application/json"
+         },
+         "viewer": {
+          "sha": "184b26fc31bd",
+          "bytes": 6768640,
+          "content_type": "application/x-tar"
+         }
+        }
+       },
+       {
+        "id": "r0004",
+        "seq": 4,
+        "kind": "note",
+        "version": 3,
+        "recorded_utc": "2026-11-14T12:24:22Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "r0003 records the first contract-valid baseline, with its physical failures explicit and preserved in research/snapshots/reference_v1. Refinement continues until 13:05:14Z. Feature inspection shows the black plug initially rests with blade separation partly vertical, unlike the white plug; the two need different orientation priors. I am correcting this branch and adding observed opposed contact and conservative distal-finger separation to my own copy of the MANO fitter, after preserving the unchanged default fit."
+        },
+        "files": {}
        }
       ],
-      "first_recon_utc": null,
+      "first_recon_utc": "2026-11-14T12:23:01Z",
       "chain_ok": true,
       "run": 15
      }
@@ -570095,6 +570296,204 @@
          "text": "The first camera fit matches one cube pose but leaves a3.9mm final table-plane inconsistency. A joint geometric calibration of initial and final resting cube corners on a common plane yields f1262.84px and gravity [-0.000873,0.673106,0.739546], RMS2.996px per coordinate; it independently agrees with MoGe. Reconstructing with this shared-support calibration should remove impossible support geometry while preserving mask agreement. I will compare both physical support and image error; this is a reconstruction refinement, not a training simulation."
         },
         "files": {}
+       },
+       {
+        "id": "r0005",
+        "seq": 5,
+        "kind": "recon",
+        "version": 2,
+        "recorded_utc": "2026-11-14T12:26:09Z",
+        "exception": false,
+        "body": {
+         "summary": "Contract-VALID dense contact refinement: opposed grip92.3%, independent hand-cube penetration1.25mm, improved masks; exact finger self-intersections still fail.",
+         "components": [
+          {
+           "name": "camera",
+           "status": "ok",
+           "method": "Six manually observed cube corners + pinhole PnP; background flow static-camera check",
+           "note": "f948.303px, RMS1.714px. MoGe disagreement retained as uncertainty; max background rotation0.492deg."
+          },
+          {
+           "name": "object_6d_motion",
+           "status": "partial",
+           "method": "Blender 50mm rigid envelope + SAM3 + render-and-compare tracking",
+           "note": "395/395 estimated frames, IoU median0.93. Rotation only modulo24 symmetries. No layer state; exact make and mass uncertain. Final support plane discrepancy3.9mm remains."
+          },
+          {
+           "name": "hand_motion",
+           "status": "partial",
+           "method": "HaWoR initialization + unchanged MANO fit, depth-order refinement",
+           "note": "Dense own fitter refinement:344left/316right valid frames,leftIoU0.7836,right0.6648. Dense penetration now passes; exact finger self-intersection quality check still fails."
+          },
+          {
+           "name": "contact_phases",
+           "status": "partial",
+           "method": "Manual dense-frame annotation and MANO/object geometry validation",
+           "note": "Opposed grip substantially improved; see independent report; hidden contacts remain inferred and internal layer state unresolved."
+          },
+          {
+           "name": "articulation",
+           "status": "unobservable",
+           "method": "Dense frame inspection; no invented part trajectories",
+           "note": "Fast blurred/occluded layers; top-layer candidates localized but signed internal angle not reconstructed. TASK.md provides commanded +/-90deg."
+          }
+         ],
+         "limitations": [
+          "Finger-finger intersections remain; right-hand cropping/reprojection weak, camera prior disagreement retained, internal layer states and24-fold orientation identity unresolved."
+         ],
+         "validation": {
+          "schema": "recon-validation/1",
+          "utc": "2026-11-14T12:24:43Z",
+          "thresholds": {
+           "contact_band_mm": 5.0,
+           "phase_fail_mm": 10.0,
+           "pen_warn_mm": 5.0,
+           "pen_fail_mm": 10.0,
+           "wrist_speed_mps": 3.0,
+           "wrist_accel_mps2": 150.0,
+           "tip_speed_mps": 5.0,
+           "bone_jump_deg": 60.0,
+           "obj_jump_m": 0.1,
+           "obj_rot_jump_deg": 45.0,
+           "g": 9.81,
+           "g_tol": 2.0,
+           "rest_drift_mm": 5.0,
+           "sink_mm": 3.0,
+           "hand_chain_mm": [
+            140.0,
+            230.0
+           ],
+           "iou_warn": 0.6,
+           "hand_precision_warn": 0.7,
+           "opposition_deg": 60.0,
+           "anatomical_min_frac": 0.5
+          },
+          "checks": {
+           "reprojection": {
+            "status": "warn",
+            "per_part": null,
+            "below_threshold": null,
+            "note": "against your own masks: agreement with them is necessary, not sufficient (3D errors along the viewing ray are invisible here)"
+           },
+           "fingertip_distance": {
+            "status": "pass",
+            "phases": null
+           },
+           "anatomical_contact": {
+            "status": "pass",
+            "phases": null,
+            "note": "a grasp needs the thumb and an opposing finger on opposite sides of the object; single-finger pushes or palm support are legitimate but must be stated in the analysis. Low penetration does not imply contact."
+           },
+           "penetration_hand_object": {
+            "status": "pass",
+            "max_mm": null,
+            "frames_over_warn": null,
+            "signed": null,
+            "note": "unsigned (lower bound) distances where the object mesh is not watertight"
+           },
+           "self_penetration": {
+            "status": "fail",
+            "finger_finger_frames": null,
+            "finger_finger_frac": 0.728,
+            "hand_hand_frames": null,
+            "note": "triangle intersections between different fingers (FCL); counts are not volumes"
+           },
+           "continuity": {
+            "status": "warn",
+            "flagged": null,
+            "count": 6
+           },
+           "physics": {
+            "status": "pass",
+            "flights": null,
+            "rests": null,
+            "note": "free-flight intervals are given with --flight OBJ=a:b; rest intervals default to object intervals without contact"
+           },
+           "handedness_scale": {
+            "status": "pass",
+            "per_side": null,
+            "note": "left/right are the demonstrator's anatomical hands; a hand is never mirrored"
+           },
+           "sync": {
+            "status": "pass",
+            "t_real_monotonic": true,
+            "fps_real": 30.0,
+            "compare_frames": 395,
+            "compare_matches": true,
+            "object_offset_check": null
+           },
+           "camera_focal": {
+            "status": "warn",
+            "focal_px": 948.3,
+            "prior_px": 1240.7,
+            "ratio": 0.764,
+            "focal_label": "estimated",
+            "threshold_ratio": 1.25,
+            "note": "MoGe intrinsics are a learned prior; the focal should be calibrated against known geometry (camera_calib.py pnp). A large disagreement needs its explanation in NOTES.md (which one is wrong, and why)."
+           }
+          },
+          "summary": {
+           "reprojection": "warn",
+           "fingertip_distance": "pass",
+           "anatomical_contact": "pass",
+           "penetration_hand_object": "pass",
+           "self_penetration": "fail",
+           "continuity": "warn",
+           "physics": "pass",
+           "handedness_scale": "pass",
+           "sync": "pass",
+           "camera_focal": "warn"
+          },
+          "failed": [
+           "self_penetration"
+          ],
+          "incomplete": [],
+          "missing_required": [],
+          "overall": "fail",
+          "overall_note": "not pass: failed checks: self_penetration"
+         },
+         "check_reference": {
+          "verdict": "VALID",
+          "errors": 0,
+          "warnings": 1,
+          "error_list": []
+         },
+         "exception": null,
+         "producer": {
+          "tool": "r2s2r-d2s recon",
+          "recon_dir": "recon"
+         }
+        },
+        "files": {
+         "compare_video": {
+          "sha": "7339dea5a227",
+          "bytes": 2987840,
+          "content_type": "video/mp4"
+         },
+         "validation_json": {
+          "sha": "a4f24a1a8158",
+          "bytes": 9304,
+          "content_type": "application/json"
+         },
+         "viewer": {
+          "sha": "5f7a0224a558",
+          "bytes": 7024640,
+          "content_type": "application/x-tar"
+         }
+        }
+       },
+       {
+        "id": "r0006",
+        "seq": 6,
+        "kind": "note",
+        "version": 4,
+        "recorded_utc": "2026-11-14T12:29:21Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Reconstruction v2 (r0005) improves opposed grip to92.3% and dense hand-cube penetration to1.25mm, but exact finger intersections remain a failed quality check. Its comparison and validator were current; the viewer rebuild encountered a read-only copied HTML file and retained earlier hand geometry. Own viewer permissions were corrected and rebuilt; the next reconstruction record will carry synchronized current media. Shared-support reconstruction is still being refined within the first hour."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-14T12:17:43Z",
@@ -570110,7 +570509,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-14T12:20:01Z",
+      "exported_utc": "2026-11-14T12:30:01Z",
       "submissions": [
        {
         "sub": "s04",
@@ -570765,7 +571164,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-14T12:20:01Z",
+      "exported_utc": "2026-11-14T12:30:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -571160,7 +571559,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-14T12:20:01Z",
+      "exported_utc": "2026-11-14T12:30:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -571421,7 +571820,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-14T12:22:32Z",
+  "staged_utc": "2026-11-14T12:32:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -571505,7 +571904,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-14T12:22:32Z",
+  "staged_utc": "2026-11-14T12:32:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
