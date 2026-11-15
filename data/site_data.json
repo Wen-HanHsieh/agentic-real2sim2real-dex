@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-15T05:22:39Z",
- "exported_utc": "2026-11-15T05:22:30Z",
+ "generated_utc": "2026-11-15T05:32:38Z",
+ "exported_utc": "2026-11-15T05:32:29Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-15T05:21:05",
+    "time": "2026-11-15T05:24:44",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-15T05:20:29",
+    "time": "2026-11-15T05:29:43",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -84517,6 +84517,19 @@
         "body": {
          "kind": "decision",
          "text": "Rolling-controller search budget:up to1600 nominal simulated2.2s baseline tests (~10min CPU),no RL and no final-policy claim. Failure r0046 seed765840375 loses ball by1.34s;test stronger centre feedback,normal grip,thumb tangential compliance and reversed palm-normal rolling direction allowed by TASK spinning instruction. First seek a stable70-90degree opposed submotion,then repeat genuine large rolling/regrasp motions to long-phase path target. Only full declared criteria and fresh feasibility gate can prove roll1;do not lower path/net thresholds."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0050",
+        "seq": 50,
+        "kind": "note",
+        "version": 29,
+        "recorded_utc": "2026-11-15T05:24:44Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Toss learning method budget:20million transitions or1GPUhour,whichever first,then inspect curves/gate. Use explicitly allowed residual PPO over the proven deployable toss controller (LEARNING section2). Baseline uses only allowed ball pose/velocity,time and prior targets;no contacts/forces/parameters. Final actions include nonzero learned residual targets,not BC-only replay. Report baseline and residual separately;baselinealready32/32,so do not claim PPO discovered launch. Four-frame allowed-state history,256x2,small residual ranges q.015rad,wrist.003m/.01rad,FF.03m/s;std.05,lr3e-5,PPOclip.2,gamma.99,lambda.95,4epochs. Include hardware failure penalty and first-reset cohort metrics missing from exploratory settle run. Reward actual flight/catch criteria with progress and stage bonuses;no alive/contact reward. Need teacher full-distribution pilot and toss outcome parity before relying on training."
         },
         "files": {}
        }
@@ -316106,6 +316119,1555 @@
          "text": "Negative capture experiments: separation-and-regrasp42/64firm, timing-only50/64, black-adjacent preload1.5and2each50/64, allHW0, versus original52/64. `None` kept. C100 category analysis: separated32/32firm but adjacentblack0/9; this identifies capture limitation, not proven separation remedy. Repeat r0187 hardware2 are physicaljointspeedratio1.2568, not action timeouts. Viewed repeat4 failures1387571775/465584785: hand carries first plug left by16.9s; second lifted at27s then low/unsupported around30s and remains right. Hypothesis: initial snapshot drifts during planning then command replay loses grip/impacts. Testing2sphysicalsettle before snapshot plus slower.45freeapproach; no actual resets/actuation, same criteria."
         },
         "files": {}
+       },
+       {
+        "id": "r0190",
+        "seq": 190,
+        "kind": "iter",
+        "version": 31,
+        "recorded_utc": "2026-11-15T05:22:40Z",
+        "exception": false,
+        "body": {
+         "sim_version": 14,
+         "reward_terms": [
+          {
+           "name": "lift_progress",
+           "formula": "10*increase(max opposed rise clipped.12)/.12",
+           "weight": 1
+          },
+          {
+           "name": "opposed_progress",
+           "formula": "4*increase(longest opposed interval clipped.25)/.25",
+           "weight": 1
+          },
+          {
+           "name": "retained_bonus",
+           "formula": "5 once longest opposed >=.25s",
+           "weight": 1
+          },
+          {
+           "name": "lifted_bonus",
+           "formula": "10 once retained and maxrise>=.03",
+           "weight": 1
+          },
+          {
+           "name": "completion_bonus",
+           "formula": "20 at end if lifted, final opposed/stability, no HW, pen<=.003",
+           "weight": 1
+          },
+          {
+           "name": "hardware_penalty",
+           "formula": "-30 once per hardware violation episode",
+           "weight": 1
+          },
+          {
+           "name": "drop_penalty",
+           "formula": "-10 once object center belowtable",
+           "weight": 1
+          },
+          {
+           "name": "penetration_penalty",
+           "formula": "-5 first hand-object penetration>3mm",
+           "weight": 1
+          },
+          {
+           "name": "regularization",
+           "formula": "-.0005 squared action change -.003 high actual speedratio>.7 squared",
+           "weight": 1
+          },
+          {
+           "name": "relative_slip_penalty",
+           "formula": "-.5ALLrelativepostliftrotationdegper100mswindow",
+           "weight": 1
+          },
+          {
+           "name": "low_slip_bonus",
+           "formula": "12terminalreadyANDALLrelativepath<=8;trainingreserveonly",
+           "weight": 1
+          },
+          {
+           "name": "firm_bonus",
+           "formula": "20terminalreadyANDALLrelativepath<=15;conservativeproxy,independentverificationusespassive15",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "deploymentbank",
+           "distribution": "4096independentfullDRdeploymentstarts810000+;kinds,scale.9/1/1.1,massfactor.8..1.2,friction.4..1,COM+-3mm,allstartstrata;nooutcomeconditioning"
+          }
+         ],
+         "policy_observations": "deployable",
+         "algorithm": "PPO",
+         "checkpoint": "research/candidates/pick_scale_c100_fast",
+         "training": {
+          "algorithm": "PPO",
+          "policy_observations": "deployable",
+          "sim_version": 14,
+          "proof": "r0119",
+          "base": "Offline36IKgraspconstantlibrary,knowngeometry+publicposeinferssupportscale;gap2mm,publicXYtracking/once-onlyreapproach;rootcap.8,descentlift.15,20qresidual;strictCPU/GPU128outcomeparityrecordedbeforeupdates",
+          "worlds": 4096,
+          "horizon": 300,
+          "learned_actions": 250,
+          "hold_residual_after_s": 5.0,
+          "history": 3,
+          "actor": [
+           570,
+           256,
+           256,
+           128,
+           26
+          ],
+          "critic": [
+           570,
+           256,
+           128,
+           1
+          ],
+          "action": "Residual20q(.25rad),3world wristpos(.015m),3local wristrot(.15rad), bounded rates; actualq lead.06rad",
+          "observations": "Noisyq/qd, previousq/residual, wrist state, all actual object states/kinds/presence, own phase/time/base command,targetindex; no contacts/forces/physics",
+          "reward_terms": [
+           "lift_progress",
+           "opposed_progress",
+           "retained_bonus",
+           "lifted_bonus",
+           "completion_bonus",
+           "hardware_penalty",
+           "drop_penalty",
+           "penetration_penalty",
+           "regularization",
+           "relative_slip_penalty",
+           "low_slip_bonus",
+           "firm_bonus"
+          ],
+          "bank": "4096newphysicallysettleddeploymentstarts,seed810000+,fullDRandallsceneclasses;independentdev/gates;unconditionedexceptphysicalsupport",
+          "gamma": 0.995,
+          "gae_lambda": 0.97,
+          "actor_lr": 5e-05,
+          "critic_lr": 0.0003,
+          "critic_warmup_updates": 5,
+          "initial_logstd": -4.2,
+          "parent_updates": 0,
+          "KL_guard": "preupdateabort.025,postupdaterollback.04andhalveactorLR;fixovershootwithlowexplorationnoise",
+          "budget": "150updatesor1.6GPUh;oldtripod150spentbeforelaunch;expectfirmnessbonusandCPUfirmimprovefrompublicbase52/64;allkeptcheckpointsgated",
+          "epochs": 3,
+          "batch": 16384,
+          "seed": 71
+         },
+         "policy": "Residual20q,3wristtranslation,3wristrotation over explicitly reported offline fitted feasibilitybase; noisystate/historyonly, actualq-relative targetlead.06rad. No onlineplanning. Every motion includes trained network residual.",
+         "observations": "3x190features: noisy20q/qd, previousq/residual, wrist pose/velocity, all actualobject pose/velocity/kind/presence, ownbase command/phase/time,targetindex. Contact/force/physics only reward, never actor.",
+         "actions": "26bounded residuals (.25rad,.015m,.15rad), filtered rates and actualqlead.06, then unchanged publicCpuHand/WarpHandEnv",
+         "base_comparison": "Publicscript52/64dev/0HW;freshfeasibilityr015249/64firm0HW;zeroresCPU100/GPU102of128HW0parityPASS. Finalactorcontainslearned26motorresiduals.",
+         "reward_check": [
+          {
+           "policy": "controller",
+           "return_mean": 58.46572494506836,
+           "success": 0.802978515625,
+           "hardware": 0.0,
+           "episodes": 4096
+          },
+          {
+           "policy": "hold",
+           "return_mean": 0.0,
+           "success": 0.0,
+           "hardware": 0.0,
+           "episodes": 4096
+          },
+          {
+           "policy": "random",
+           "return_mean": -1.674859881401062,
+           "success": 0.000244140625,
+           "hardware": 0.0,
+           "episodes": 4096
+          }
+         ],
+         "evaluation": {
+          "episodes": 64,
+          "stages": {
+           "opposed": 54,
+           "lifted": 54,
+           "ready": 51,
+           "firm": 50
+          },
+          "hardware": 0,
+          "seed_file": "research/task_dev_seeds.json"
+         },
+         "parity": "Simulation3 records staticPASS and128seed baselineoutcomePASS; this checkpoint needs fresh outcome parity before reliance.",
+         "compute": {
+          "checkpoint_wall_s": 3871.312143802643,
+          "gpu_hours": 1.075364484389623
+         },
+         "reflection": "Actual deterministic CPU validation; not full-task success or mastery. Current physical gate/handoff evidence authoritative. Every evaluated checkpoint recorded, only accepted gate kept. Training budget remains as declared. Same development firm c01051,c10050,c14451; readiness/capture plateau, no improvement claim. Class ended at144 updates on conservative5520s loop cap,5524.43s reported wall, not150completed.",
+         "evaluation_sim_version": 17
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "ba2d48454215",
+          "bytes": 67440,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "0e9d0808e09c",
+          "bytes": 57278,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "97993c5ee85a",
+          "bytes": 68621,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "0183a527caa4",
+          "bytes": 68263,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0191",
+        "seq": 191,
+        "kind": "iter",
+        "version": 32,
+        "recorded_utc": "2026-11-15T05:22:41Z",
+        "exception": false,
+        "body": {
+         "sim_version": 14,
+         "reward_terms": [
+          {
+           "name": "lift_progress",
+           "formula": "10*increase(max opposed rise clipped.12)/.12",
+           "weight": 1
+          },
+          {
+           "name": "opposed_progress",
+           "formula": "4*increase(longest opposed interval clipped.25)/.25",
+           "weight": 1
+          },
+          {
+           "name": "retained_bonus",
+           "formula": "5 once longest opposed >=.25s",
+           "weight": 1
+          },
+          {
+           "name": "lifted_bonus",
+           "formula": "10 once retained and maxrise>=.03",
+           "weight": 1
+          },
+          {
+           "name": "completion_bonus",
+           "formula": "20 at end if lifted, final opposed/stability, no HW, pen<=.003",
+           "weight": 1
+          },
+          {
+           "name": "hardware_penalty",
+           "formula": "-30 once per hardware violation episode",
+           "weight": 1
+          },
+          {
+           "name": "drop_penalty",
+           "formula": "-10 once object center belowtable",
+           "weight": 1
+          },
+          {
+           "name": "penetration_penalty",
+           "formula": "-5 first hand-object penetration>3mm",
+           "weight": 1
+          },
+          {
+           "name": "regularization",
+           "formula": "-.0005 squared action change -.003 high actual speedratio>.7 squared",
+           "weight": 1
+          },
+          {
+           "name": "relative_slip_penalty",
+           "formula": "-.5ALLrelativepostliftrotationdegper100mswindow",
+           "weight": 1
+          },
+          {
+           "name": "low_slip_bonus",
+           "formula": "12terminalreadyANDALLrelativepath<=8;trainingreserveonly",
+           "weight": 1
+          },
+          {
+           "name": "firm_bonus",
+           "formula": "20terminalreadyANDALLrelativepath<=15;conservativeproxy,independentverificationusespassive15",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "deploymentbank",
+           "distribution": "4096independentfullDRdeploymentstarts810000+;kinds,scale.9/1/1.1,massfactor.8..1.2,friction.4..1,COM+-3mm,allstartstrata;nooutcomeconditioning"
+          }
+         ],
+         "policy_observations": "deployable",
+         "algorithm": "PPO",
+         "checkpoint": "research/candidates/pick_scale_c144_fast",
+         "training": {
+          "algorithm": "PPO",
+          "policy_observations": "deployable",
+          "sim_version": 14,
+          "proof": "r0119",
+          "base": "Offline36IKgraspconstantlibrary,knowngeometry+publicposeinferssupportscale;gap2mm,publicXYtracking/once-onlyreapproach;rootcap.8,descentlift.15,20qresidual;strictCPU/GPU128outcomeparityrecordedbeforeupdates",
+          "worlds": 4096,
+          "horizon": 300,
+          "learned_actions": 250,
+          "hold_residual_after_s": 5.0,
+          "history": 3,
+          "actor": [
+           570,
+           256,
+           256,
+           128,
+           26
+          ],
+          "critic": [
+           570,
+           256,
+           128,
+           1
+          ],
+          "action": "Residual20q(.25rad),3world wristpos(.015m),3local wristrot(.15rad), bounded rates; actualq lead.06rad",
+          "observations": "Noisyq/qd, previousq/residual, wrist state, all actual object states/kinds/presence, own phase/time/base command,targetindex; no contacts/forces/physics",
+          "reward_terms": [
+           "lift_progress",
+           "opposed_progress",
+           "retained_bonus",
+           "lifted_bonus",
+           "completion_bonus",
+           "hardware_penalty",
+           "drop_penalty",
+           "penetration_penalty",
+           "regularization",
+           "relative_slip_penalty",
+           "low_slip_bonus",
+           "firm_bonus"
+          ],
+          "bank": "4096newphysicallysettleddeploymentstarts,seed810000+,fullDRandallsceneclasses;independentdev/gates;unconditionedexceptphysicalsupport",
+          "gamma": 0.995,
+          "gae_lambda": 0.97,
+          "actor_lr": 5e-05,
+          "critic_lr": 0.0003,
+          "critic_warmup_updates": 5,
+          "initial_logstd": -4.2,
+          "parent_updates": 0,
+          "KL_guard": "preupdateabort.025,postupdaterollback.04andhalveactorLR;fixovershootwithlowexplorationnoise",
+          "budget": "150updatesor1.6GPUh;oldtripod150spentbeforelaunch;expectfirmnessbonusandCPUfirmimprovefrompublicbase52/64;allkeptcheckpointsgated",
+          "epochs": 3,
+          "batch": 16384,
+          "seed": 71
+         },
+         "policy": "Residual20q,3wristtranslation,3wristrotation over explicitly reported offline fitted feasibilitybase; noisystate/historyonly, actualq-relative targetlead.06rad. No onlineplanning. Every motion includes trained network residual.",
+         "observations": "3x190features: noisy20q/qd, previousq/residual, wrist pose/velocity, all actualobject pose/velocity/kind/presence, ownbase command/phase/time,targetindex. Contact/force/physics only reward, never actor.",
+         "actions": "26bounded residuals (.25rad,.015m,.15rad), filtered rates and actualqlead.06, then unchanged publicCpuHand/WarpHandEnv",
+         "base_comparison": "Publicscript52/64dev/0HW;freshfeasibilityr015249/64firm0HW;zeroresCPU100/GPU102of128HW0parityPASS. Finalactorcontainslearned26motorresiduals.",
+         "reward_check": [
+          {
+           "policy": "controller",
+           "return_mean": 58.46572494506836,
+           "success": 0.802978515625,
+           "hardware": 0.0,
+           "episodes": 4096
+          },
+          {
+           "policy": "hold",
+           "return_mean": 0.0,
+           "success": 0.0,
+           "hardware": 0.0,
+           "episodes": 4096
+          },
+          {
+           "policy": "random",
+           "return_mean": -1.674859881401062,
+           "success": 0.000244140625,
+           "hardware": 0.0,
+           "episodes": 4096
+          }
+         ],
+         "evaluation": {
+          "episodes": 64,
+          "stages": {
+           "opposed": 54,
+           "lifted": 54,
+           "ready": 52,
+           "firm": 51
+          },
+          "hardware": 0,
+          "seed_file": "research/task_dev_seeds.json"
+         },
+         "parity": "Simulation3 records staticPASS and128seed baselineoutcomePASS; this checkpoint needs fresh outcome parity before reliance.",
+         "compute": {
+          "checkpoint_wall_s": 5524.434799194336,
+          "gpu_hours": 1.5345652219984267
+         },
+         "reflection": "Actual deterministic CPU validation; not full-task success or mastery. Current physical gate/handoff evidence authoritative. Every evaluated checkpoint recorded, only accepted gate kept. Training budget remains as declared. Same development firm c01051,c10050,c14451; readiness/capture plateau, no improvement claim. Class ended at144 updates on conservative5520s loop cap,5524.43s reported wall, not150completed.",
+         "evaluation_sim_version": 17
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "ba2d48454215",
+          "bytes": 67440,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "6648752a563b",
+          "bytes": 117984,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "dd052937df19",
+          "bytes": 165300,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "e9251611dfc1",
+          "bytes": 168932,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0192",
+        "seq": 192,
+        "kind": "iter",
+        "version": 33,
+        "recorded_utc": "2026-11-15T05:22:42Z",
+        "exception": false,
+        "body": {
+         "reward_terms": [
+          {
+           "name": "goal_progress",
+           "formula": "10increasebladeupcos",
+           "weight": 1
+          },
+          {
+           "name": "turn_progress",
+           "formula": "6increaseclippedopposedrelturn/47",
+           "weight": 1
+          },
+          {
+           "name": "retained_bonus",
+           "formula": "1onceopposed.25s",
+           "weight": 1
+          },
+          {
+           "name": "turned_bonus",
+           "formula": "7onceactive47deg/passive<=15",
+           "weight": 1
+          },
+          {
+           "name": "passive_penalty",
+           "formula": "-.2passivedegincrement",
+           "weight": 1
+          },
+          {
+           "name": "hardware_penalty",
+           "formula": "-30firstHW",
+           "weight": 1
+          },
+          {
+           "name": "drop_penalty",
+           "formula": "-10firsttargetenvcontact",
+           "weight": 1
+          },
+          {
+           "name": "regularization",
+           "formula": "-.0002actionchangesquared-.001speedabove.7limitsquared",
+           "weight": 1
+          },
+          {
+           "name": "completion_bonus",
+           "formula": "30 terminal localstrict AND pickup-passive+localturn-passive<=11;trainingreserve4",
+           "weight": 1
+          },
+          {
+           "name": "late_upright_penalty",
+           "formula": "-.015 blade tilt degrees each20ms after2s",
+           "weight": 1
+          },
+          {
+           "name": "late_drift_penalty",
+           "formula": "-.4 ALL wrist-relative rotation degrees after2.6s",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "actual_scale_aware_pickup_handoffs",
+           "distribution": "402actualscale-adaptivefirmgrips,322training80seed-disjointvalidation;necessaryfirmprecondition<=15historyfiltermatcheschainhandoffs. Startrobusttrainthenbroaden0/.25/.5/.75onlywhenheldoutcurrentlevel>=.8,atleast25%earlierretained. Reportunfilteredandfirmconditionalmetricsseparately. AllphysicalDRpreserved."
+          }
+         ],
+         "sim_version": 16,
+         "algorithm": "PPO",
+         "policy_observations": "deployable",
+         "checkpoint": "research/ppo_turn_robust_v1/checkpoint_100",
+         "training": {
+          "algorithm": "PPO",
+          "policy_observations": "deployable",
+          "sim_version": 16,
+          "feasibility_proof": "r0157",
+          "initialization": "SupervisedpublicNNinitializationthenPPOjointcategoricalchoiceamong8nearestfixedthreefingerCEMrefs+continuousfeedback. Noonlinephysicsplanning. Newmethodonlyafterprevious200updatebudgetspent.",
+          "worlds": 4096,
+          "actor": [
+           576,
+           256,
+           256,
+           128,
+           23
+          ],
+          "critic": [
+           576,
+           256,
+           128,
+           1
+          ],
+          "history": 3,
+          "decision_hz": 10,
+          "control_hz": 50,
+          "physics_hz": 1000,
+          "episode_s": 4,
+          "decisions_per_episode": 26,
+          "hold_after_s": 2.6,
+          "observations": "Noisyq/qd, own commands, wrist/object state/kind,time,entry q,initial tracking errors,selected constant reference knots,prior residual; no contacts/forces/physical parameters. Continuouscriticpublic576;referencecritic125includespickup-passive/15traininghistoryONLY,neveractor.",
+          "actions": "12 active finger residuals .3rad,3local wrist rotation residuals .15rad;8unused finger channels masked. Public encoder filter, lead .08,1rad/s,rotation40degcap.",
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "epochs": 4,
+          "batch": 8192,
+          "actor_lr": 5e-05,
+          "critic_lr": 0.0003,
+          "feedback_scale": 0.1,
+          "critic_warmup_updates": 5,
+          "clip": 0.2,
+          "seed": 239,
+          "reward_terms": [
+           "goal_progress",
+           "turn_progress",
+           "retained_bonus",
+           "turned_bonus",
+           "completion_bonus",
+           "passive_penalty",
+           "hardware_penalty",
+           "drop_penalty",
+           "regularization",
+           "late_upright_penalty",
+           "late_drift_penalty"
+          ],
+          "curriculum": "402actualscale-adaptivefirmgrips,322training80seed-disjointvalidation;necessaryfirmprecondition<=15historyfiltermatcheschainhandoffs. Startrobusttrainthenbroaden0/.25/.5/.75onlywhenheldoutcurrentlevel>=.8,atleast25%earlierretained. Reportunfilteredandfirmconditionalmetricsseparately. AllphysicalDRpreserved.",
+          "budget": "150updatesor1.5GPUhaftercurrentjoint200spent;newreference/datafamilyonly,samePPOarchitecture/reward/horizon/hparams. Previousactualnew-familyval25->28/80flatwhileold-familyproxyimproved,notclaimingoptimizerexhaustion. NewrobustreferenceNNbase61/80;expect>=.8heldoutandfreshgate.",
+          "reference_actor": [
+           223,
+           256,
+           128,
+           64,
+           1
+          ],
+          "reference_critic": [
+           125,
+           256,
+           128,
+           1
+          ],
+          "asymmetric_critic": "ReferencecriticONLYreceivespublic124+pickup-passivehistoryscalar/15;continuouscriticpublic576. Neitheractorreceivesprivatehistory/contacts/params.",
+          "reference_action": "Onceperepisodecategoricalamong8nearestfixedrefs,temperature.2training;deterministicargmaxdeployment",
+          "reward_margin": "Terminalbonusrequirespickup-passive+turn-passive<=11,reserving4forcarry;trainingobjectiveonly,verificationglobal15unchanged. Lateupright-.015degper20msafter2s,lateALLrelativepath-.4perdegafter2.6s."
+         },
+         "reward_check": [
+          {
+           "policy": "controller",
+           "return_mean": 36.28704071044922,
+           "success": 0.99365234375,
+           "hardware": 0,
+           "episodes": 4096
+          },
+          {
+           "policy": "hold",
+           "return_mean": -115.48248291015625,
+           "success": 0.0,
+           "hardware": 0,
+           "episodes": 4096
+          },
+          {
+           "policy": "random",
+           "return_mean": -114.13731384277344,
+           "success": 0.010009765625,
+           "hardware": 0,
+           "episodes": 4096
+          }
+         ],
+         "evaluation": {
+          "episodes": 80,
+          "stages": {
+           "retained": 80,
+           "turned": 72,
+           "steady": 63
+          },
+          "hardware": 0,
+          "seed_file": "research/scale_turn_validation80.json"
+         },
+         "compute": {
+          "checkpoint_wall_s": 2625.7444903850555,
+          "gpu_hours": 0.7293734695514044
+         },
+         "reflection": "Actual deterministic CPU validation; not full-task success or mastery. Current physical gate/handoff evidence authoritative. Every evaluated checkpoint recorded, only accepted gate kept. Training budget remains as declared. Both c020 and10063/80; training stochastic proxy improves but deterministic heldout flat.",
+         "evaluation_sim_version": 17
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "933e9a638321",
+          "bytes": 86776,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "c7b93016c081",
+          "bytes": 67427,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "312f66a08db5",
+          "bytes": 78432,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "8729d0dd52de",
+          "bytes": 98908,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0193",
+        "seq": 193,
+        "kind": "iter",
+        "version": 34,
+        "recorded_utc": "2026-11-15T05:22:42Z",
+        "exception": false,
+        "body": {
+         "sim_version": 17,
+         "algorithm": "PPO",
+         "policy_observations": "deployable",
+         "checkpoint": "research/ppo_place_quiet_v1/checkpoint_040",
+         "reward_terms": [
+          {
+           "name": "carry_progress",
+           "formula": "8*increase(1-targetdistance/startdistance)clipped0..1",
+           "weight": 1
+          },
+          {
+           "name": "left_bonus",
+           "formula": "3once targety>.15",
+           "weight": 1
+          },
+          {
+           "name": "support_progress",
+           "formula": "5*increase lowerprogress whileleftandhandcontact",
+           "weight": 1
+          },
+          {
+           "name": "upright_bonus",
+           "formula": "3once leftandtilt<=15",
+           "weight": 1
+          },
+          {
+           "name": "release_bonus",
+           "formula": "5once left/up/tablecontact/nohand/noother",
+           "weight": 1
+          },
+          {
+           "name": "hardware_penalty",
+           "formula": "-30onceHW",
+           "weight": 1
+          },
+          {
+           "name": "drop_penalty",
+           "formula": "-10oncecenterbelowtable",
+           "weight": 1
+          },
+          {
+           "name": "penetration_penalty",
+           "formula": "-5firstpen>3mm",
+           "weight": 1
+          },
+          {
+           "name": "regularization",
+           "formula": "-.0005squaredactionchange",
+           "weight": 1
+          },
+          {
+           "name": "completion_bonus",
+           "formula": "30terminaloldreleaseANDpalmmean30/max45",
+           "weight": 1
+          },
+          {
+           "name": "relative_path_penalty",
+           "formula": "-.5ALLopposedrelativepathdeg",
+           "weight": 1
+          },
+          {
+           "name": "quiet_bonus",
+           "formula": "20terminalquiet15",
+           "weight": 1
+          },
+          {
+           "name": "reserve_bonus",
+           "formula": "10terminalquiet5;trainingreserveonly",
+           "weight": 1
+          },
+          {
+           "name": "three_contact_bonus",
+           "formula": ".01thumb/index/middlecontactper20msbeforeopening",
+           "weight": 1
+          },
+          {
+           "name": "posture_penalty",
+           "formula": "-.005postureerrorabove30per20ms",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "actual_turn_handoff_bank",
+           "distribution": "569actualturnends=199nominal3+370newscale/robust;456train113seed-disjointval. Startrobustquietpublicbasecases,widen0/.25/.5/.75onlyCPUcurrentlevel>=.8,retain25%earlier;allgatestartsactualunfilteredhandoffs."
+          }
+         ],
+         "training": {
+          "algorithm": "PPO",
+          "policy_observations": "deployable",
+          "sim_version": 17,
+          "feasibility_proof": "r0170",
+          "base_change_gate": "r0180",
+          "base": "Samephysicalcarrycontrollerwithwristheldatentryorientation,zeromotorresidualbaseperformance/parityreportedseparately",
+          "worlds": 4096,
+          "actor": [
+           570,
+           256,
+           256,
+           128,
+           26
+          ],
+          "critic": [
+           570,
+           256,
+           128,
+           1
+          ],
+          "history": 3,
+          "decision_hz": 10,
+          "control_hz": 50,
+          "physics_hz": 1000,
+          "episode_s": 8,
+          "hold_after": null,
+          "observations": "Noisy20q/qd,owncommands,wrist/objectposes/vel/kind/presence,publicbasephase/command,time,priorresidual;NOcontacts/forces/params/family/privatehistory",
+          "actions": "20qresidual.15rad,3worldwristposition.010m,3localwristrotation.10rad;10HzPPOlinearlyinterpolatedover5x20ms,actualqlead.06,1rad/s,root1m/s/rotation1.5rad/s",
+          "initial_logstd": -3.8,
+          "actor_lr": 5e-05,
+          "critic_lr": 0.0003,
+          "warmup": 5,
+          "gamma": 0.99,
+          "gae_lambda": 0.95,
+          "epochs": 3,
+          "batch": 8192,
+          "KL_guard": "preabort.025/postrollback.04+halveactorLR",
+          "reward_terms": [
+           "carry_progress",
+           "left_bonus",
+           "support_progress",
+           "upright_bonus",
+           "release_bonus",
+           "completion_bonus",
+           "hardware_penalty",
+           "drop_penalty",
+           "penetration_penalty",
+           "regularization",
+           "relative_path_penalty",
+           "quiet_bonus",
+           "reserve_bonus",
+           "three_contact_bonus",
+           "posture_penalty"
+          ],
+          "curriculum": "569actualturnends=199nominal3+370newscale/robust;456train113seed-disjointval. Startrobustquietpublicbasecases,widen0/.25/.5/.75onlyCPUcurrentlevel>=.8,retain25%earlier;allgatestartsactualunfilteredhandoffs.",
+          "budget": "100updatesor1.5GPUhfirstlimit;oldplacement150budgetspentandoldstrictcurveflat;newquietcontractreveals21/64baseline. Allglobaltaskthresholdsunchanged.",
+          "reward": "Originalprogress/bonuses+stylemean30/max45terminal;-.5ALLopposedrelativepathdeg;20terminalquiet15+10quiet5trainingreserve;threecontact.01/tickbeforeopening;-.005postureerrorabove30/tick."
+         },
+         "policy": "26dim learnedPPOresidual overreportedphysicalplacementbase;allmotioncoordinatesinclude learnednetworkresidual. Noonlinephysicsplanning. 3x190history,570-256-256-128-26actor,350stochlearnedactions+50heldtail8s,4096worlds. q.15rad,p.010m,r.10rad;lead.06,qrate1,rootpostcap1m/s.",
+         "reward_check": [
+          {
+           "policy": "controller",
+           "return_mean": 74.74334716796875,
+           "success": 1.0,
+           "quiet": 0.994384765625,
+           "reserve": 0.3173828125,
+           "hardware": 0,
+           "episodes": 4096
+          },
+          {
+           "policy": "hold",
+           "return_mean": -1.7496352195739746,
+           "success": 0.0,
+           "quiet": 0.0,
+           "reserve": 0.0,
+           "hardware": 0,
+           "episodes": 4096
+          },
+          {
+           "policy": "random",
+           "return_mean": -20.813560485839844,
+           "success": 0.0,
+           "quiet": 0.0,
+           "reserve": 0.0,
+           "hardware": 0,
+           "episodes": 4096
+          }
+         ],
+         "parity": "Recorded sim8 base128CPU/GPUstrictplacement84both,HW0/drop0,401contactstatesnooverflow,1.25%mismatch,warningsretained. Newcheckpointparityduebeforekeeping.",
+         "evaluation": {
+          "episodes": 113,
+          "stages": {
+           "carried_left": 112,
+           "upright": 91,
+           "released": 90,
+           "quiet": 80
+          },
+          "hardware": 0,
+          "seed_file": "research/place_quiet_validation.json"
+         },
+         "compute": {
+          "checkpoint_wall_s": 1888.2801356315613,
+          "gpu_hours": 0.5245222598976559
+         },
+         "reflection": "Actual deterministic CPU validation; not full-task success or mastery. Current physical gate/handoff evidence authoritative. Every evaluated checkpoint recorded, only accepted gate kept. Training budget remains as declared. Zeroresbase77/113quiet; learned40=80/113, allHW0. Stochastictrainingquiet~.14 versus deterministicbase~.67 indicates explorationgap. Broadshare.5unchanged;nofakecurriculummastery.",
+         "evaluation_sim_version": 17
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "35e285c8dff9",
+          "bytes": 27858,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "c0599075230d",
+          "bytes": 147592,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "3ac50dc8bdb4",
+          "bytes": 122666,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "0f12eae587de",
+          "bytes": 149547,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0194",
+        "seq": 194,
+        "kind": "note",
+        "version": 56,
+        "recorded_utc": "2026-11-15T05:24:39Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Pickup144 budget completed at5524s: developmentfirm51/64sameas10, adjacentblack0/9 at100. Testing opposite grasp from model's localblade-axis180-degree collision symmetry: rectangularbody/twoequalblades swapwithoutgeometrychange; only blacktargetwithneighbor<7cm. Publicpose/knowngeometry transform selects existingofflineIKreference, no physicalstate modification oronlinephysicssearch. Hypothesis oppositehandapproach avoidsneighborblocking. Not kept ortrained until physical evidence."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0195",
+        "seq": 195,
+        "kind": "gate",
+        "version": 47,
+        "recorded_utc": "2026-11-15T05:24:56Z",
+        "exception": false,
+        "body": {
+         "suite": "pick_skill",
+         "suite_version": 2,
+         "suite_kind": "skill",
+         "suite_record": "r0118",
+         "final": false,
+         "candidate_sha256": "597bacc798c3…",
+         "method": "optimization-budget",
+         "hypothesis": "Same scale-adaptivePPOclass completed144updateson5520scap; actualdevfirm51/64unchangedbutopposed54andready52, investigatewhethertrainedcaptureimprovesfreshadjacent/leaningstarts versusaccepted10updates. Noobservation/geometry/controllerchanges.",
+         "predicts": "firm",
+         "observed": "r0164 montage777792033: twoadjacentblackplugsremainontablefrom2.64through5.64s,handclosesbesidethemthenwithdrawswithoutlift. Samefailure51877472at4.12s. ContinuedPPOcapturebudgettargetsremainingadjacentfailures;devdoesnotestablishgain.",
+         "primitive": "pick_lift",
+         "started_utc": "2026-11-15T05:23:27Z",
+         "pass_rate": 0.8,
+         "max_hardware_violations": 0,
+         "handoff": {
+          "episodes": 64,
+          "fraction": 1.0,
+          "follows": [
+           "start"
+          ],
+          "pool_states": 64,
+          "pool_sha256": "63bd0502207f…"
+         },
+         "episodes": 64,
+         "counts": {
+          "opposed": 49,
+          "lifted": 49,
+          "ready": 47,
+          "firm": 46,
+          "success": 46
+         },
+         "wilson95": {
+          "opposed": [
+           0.6487,
+           0.8525
+          ],
+          "lifted": [
+           0.6487,
+           0.8525
+          ],
+          "ready": [
+           0.6152,
+           0.827
+          ],
+          "firm": [
+           0.5987,
+           0.8141
+          ],
+          "success": [
+           0.5987,
+           0.8141
+          ]
+         },
+         "funnel_first_failed": {
+          "opposed": 15,
+          "lifted": 0,
+          "ready": 2,
+          "firm": 1,
+          "hardware": 0,
+          "complete": 46
+         },
+         "predicate_overrides": {
+          "opposed": 0,
+          "lifted": 0,
+          "ready": 0,
+          "firm": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 0.7188,
+         "reproducible": true,
+         "wall_s": 23.0,
+         "finished_utc": "2026-11-15T05:24:32Z",
+         "meets_pass_rate": false,
+         "paired": {
+          "episodes": 64,
+          "incumbent_record": "r0164",
+          "alpha": 0.05,
+          "candidate": {
+           "episodes": 64,
+           "counts": {
+            "opposed": 49,
+            "lifted": 49,
+            "ready": 47,
+            "firm": 46,
+            "success": 46
+           },
+           "wilson95": {
+            "opposed": null,
+            "lifted": null,
+            "ready": null,
+            "firm": null,
+            "success": null
+           },
+           "funnel_first_failed": {
+            "opposed": 15,
+            "lifted": 0,
+            "ready": 2,
+            "firm": 1,
+            "hardware": 0,
+            "complete": 46
+           },
+           "predicate_overrides": {
+            "opposed": 0,
+            "lifted": 0,
+            "ready": 0,
+            "firm": 0
+           },
+           "hardware_violations": 0,
+           "success_rate": 0.7188
+          },
+          "incumbent": {
+           "episodes": 64,
+           "counts": {
+            "opposed": 50,
+            "lifted": 50,
+            "ready": 49,
+            "firm": 48,
+            "success": 48
+           },
+           "wilson95": {
+            "opposed": null,
+            "lifted": null,
+            "ready": null,
+            "firm": null,
+            "success": null
+           },
+           "funnel_first_failed": {
+            "opposed": 14,
+            "lifted": 0,
+            "ready": 1,
+            "firm": 1,
+            "hardware": 0,
+            "complete": 48
+           },
+           "predicate_overrides": {
+            "opposed": 0,
+            "lifted": 0,
+            "ready": 0,
+            "firm": 0
+           },
+           "hardware_violations": 0,
+           "success_rate": 0.75
+          },
+          "discordant": {
+           "opposed": {
+            "candidate_only": 0,
+            "incumbent_only": 1,
+            "delta": -1,
+            "p_better": 1.0,
+            "p_worse": 0.5
+           },
+           "lifted": {
+            "candidate_only": 0,
+            "incumbent_only": 1,
+            "delta": -1,
+            "p_better": 1.0,
+            "p_worse": 0.5
+           },
+           "ready": {
+            "candidate_only": 0,
+            "incumbent_only": 2,
+            "delta": -2,
+            "p_better": 1.0,
+            "p_worse": 0.25
+           },
+           "firm": {
+            "candidate_only": 0,
+            "incumbent_only": 2,
+            "delta": -2,
+            "p_better": 1.0,
+            "p_worse": 0.25
+           },
+           "success": {
+            "candidate_only": 0,
+            "incumbent_only": 2,
+            "delta": -2,
+            "p_better": 1.0,
+            "p_worse": 0.25
+           }
+          },
+          "hardware_violations": {
+           "candidate": 0,
+           "incumbent": 0
+          },
+          "extension": null
+         },
+         "decision": "rejected",
+         "incumbent": false,
+         "previous_incumbent": "r0164",
+         "delta": {
+          "opposed": -1,
+          "lifted": -1,
+          "ready": -2,
+          "firm": -2,
+          "success": -2
+         },
+         "reason": "the predicted 'firm' is not significantly better: 0 episodes only the candidate completes vs 2 only the incumbent (sign test p = 1.0, needs <= 0.05)",
+         "failure_review": {
+          "stage": "opposed",
+          "lost": 15,
+          "episodes": 64,
+          "montages": [
+           {
+            "role": "montage_1",
+            "frame_times_s": null
+           },
+           {
+            "role": "montage_2",
+            "frame_times_s": null
+           }
+          ]
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "da1c93950165",
+          "bytes": 55912,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "abbfeca1e925",
+          "bytes": 60013,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "c382ab38fa96",
+          "bytes": 328253,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0196",
+        "seq": 196,
+        "kind": "gate",
+        "version": 48,
+        "recorded_utc": "2026-11-15T05:24:58Z",
+        "exception": false,
+        "body": {
+         "suite": "place_skill",
+         "suite_version": 5,
+         "suite_kind": "skill",
+         "suite_record": "r0169",
+         "final": false,
+         "candidate_sha256": "4bdc80bae0cb…",
+         "method": "reward,curriculum,temporalaction",
+         "hypothesis": "New10HzPPOtrainedwithALLrelativepathpenaltyandquietreserveon569actualnominal/scalehandoffs,entrywristfixed. Devquiet80/113vs77zerores;testagainstacceptedoldPPO115wristholdoncurrent54realhandoffs.",
+         "predicts": "quiet",
+         "observed": "r0180 failure1070241819 montage: objectheldbelowwristat.48-3.48s,handwithdrawsby5.52s;metricsneededtodistinguishslipfromuprightrelease. Inference: wristfixedaloneleaveslocalpassivefailures;trainconservativeALLrelativepathwithoutnoncontactfingerwiggle.",
+         "primitive": "place_release",
+         "started_utc": "2026-11-15T05:23:03Z",
+         "pass_rate": 0.8,
+         "max_hardware_violations": 0,
+         "handoff": {
+          "episodes": 64,
+          "fraction": 1.0,
+          "follows": [
+           "finger_turn"
+          ],
+          "pool_states": 54,
+          "pool_sha256": "00c42e074e27…"
+         },
+         "episodes": 64,
+         "counts": {
+          "carried_left": 57,
+          "upright": 45,
+          "released": 38,
+          "quiet": 26,
+          "success": 26
+         },
+         "wilson95": {
+          "carried_left": [
+           0.791,
+           0.946
+          ],
+          "upright": [
+           0.5823,
+           0.8009
+          ],
+          "released": [
+           0.4715,
+           0.7054
+          ],
+          "quiet": [
+           0.2946,
+           0.5285
+          ],
+          "success": [
+           0.2946,
+           0.5285
+          ]
+         },
+         "funnel_first_failed": {
+          "carried_left": 7,
+          "upright": 12,
+          "released": 7,
+          "quiet": 12,
+          "hardware": 0,
+          "complete": 26
+         },
+         "predicate_overrides": {
+          "carried_left": 0,
+          "upright": 0,
+          "released": 0,
+          "quiet": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 0.4062,
+         "reproducible": true,
+         "wall_s": 31.6,
+         "finished_utc": "2026-11-15T05:24:30Z",
+         "meets_pass_rate": false,
+         "paired": {
+          "episodes": 64,
+          "incumbent_record": "r0180",
+          "alpha": 0.05,
+          "candidate": {
+           "episodes": 64,
+           "counts": {
+            "carried_left": 57,
+            "upright": 45,
+            "released": 38,
+            "quiet": 26,
+            "success": 26
+           },
+           "wilson95": {
+            "carried_left": null,
+            "upright": null,
+            "released": null,
+            "quiet": null,
+            "success": null
+           },
+           "funnel_first_failed": {
+            "carried_left": 7,
+            "upright": 12,
+            "released": 7,
+            "quiet": 12,
+            "hardware": 0,
+            "complete": 26
+           },
+           "predicate_overrides": {
+            "carried_left": 0,
+            "upright": 0,
+            "released": 0,
+            "quiet": 0
+           },
+           "hardware_violations": 0,
+           "success_rate": 0.4062
+          },
+          "incumbent": {
+           "episodes": 64,
+           "counts": {
+            "carried_left": 57,
+            "upright": 46,
+            "released": 39,
+            "quiet": 30,
+            "success": 30
+           },
+           "wilson95": {
+            "carried_left": null,
+            "upright": null,
+            "released": null,
+            "quiet": null,
+            "success": null
+           },
+           "funnel_first_failed": {
+            "carried_left": 7,
+            "upright": 11,
+            "released": 7,
+            "quiet": 9,
+            "hardware": 0,
+            "complete": 30
+           },
+           "predicate_overrides": {
+            "carried_left": 0,
+            "upright": 0,
+            "released": 0,
+            "quiet": 0
+           },
+           "hardware_violations": 0,
+           "success_rate": 0.4688
+          },
+          "discordant": {
+           "carried_left": {
+            "candidate_only": 0,
+            "incumbent_only": 0,
+            "delta": 0,
+            "p_better": 1.0,
+            "p_worse": 1.0
+           },
+           "upright": {
+            "candidate_only": 0,
+            "incumbent_only": 1,
+            "delta": -1,
+            "p_better": 1.0,
+            "p_worse": 0.5
+           },
+           "released": {
+            "candidate_only": 0,
+            "incumbent_only": 1,
+            "delta": -1,
+            "p_better": 1.0,
+            "p_worse": 0.5
+           },
+           "quiet": {
+            "candidate_only": 0,
+            "incumbent_only": 4,
+            "delta": -4,
+            "p_better": 1.0,
+            "p_worse": 0.0625
+           },
+           "success": {
+            "candidate_only": 0,
+            "incumbent_only": 4,
+            "delta": -4,
+            "p_better": 1.0,
+            "p_worse": 0.0625
+           }
+          },
+          "hardware_violations": {
+           "candidate": 0,
+           "incumbent": 0
+          },
+          "extension": null
+         },
+         "decision": "rejected",
+         "incumbent": false,
+         "previous_incumbent": "r0180",
+         "delta": {
+          "carried_left": 0,
+          "upright": -1,
+          "released": -1,
+          "quiet": -4,
+          "success": -4
+         },
+         "reason": "the predicted 'quiet' is not significantly better: 0 episodes only the candidate completes vs 4 only the incumbent (sign test p = 1.0, needs <= 0.05)",
+         "failure_review": {
+          "stage": "upright",
+          "lost": 12,
+          "episodes": 64,
+          "montages": [
+           {
+            "role": "montage_1",
+            "frame_times_s": null
+           },
+           {
+            "role": "montage_2",
+            "frame_times_s": null
+           }
+          ]
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "59edc524fa18",
+          "bytes": 46124,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "234efc1b764a",
+          "bytes": 46089,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "41232a2934d1",
+          "bytes": 347582,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0197",
+        "seq": 197,
+        "kind": "note",
+        "version": 57,
+        "recorded_utc": "2026-11-15T05:27:56Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Gate r0195 rejects pickup144:46/64firmHW0,0gains2lossesversusincumbent48onpairedfreshstarts;keepc010. Gate r0196 rejects quiet-placement40:26/64quietHW0,0gains4losses;keepr0180. Robust-turnc020learned128outcomeparityCPU115/GPU115HW0,agreement.984PASS;unlikezeroresbaseline,directionalasymmetrydisappears. Newcompositev4own8has1fullsuccessHW0versusv2zero;notmasteryorakepttaskpolicyyet. Repeatsettledslowown8improves3->4clearHW0;freshpairedgatepending."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0198",
+        "seq": 198,
+        "kind": "note",
+        "version": 58,
+        "recorded_utc": "2026-11-15T05:28:38Z",
+        "exception": false,
+        "body": {
+         "kind": "hypothesis",
+         "text": "Turnc10017/80failed: examples980065active96.8/passive6.9/finaltilt23.9,wrist31.5;980110active56.6/passive7.1/tilt16.55. Publiclateuprightfeedbackmaycorrectworldtiltwithoutaddingrelativefingerturn. TestingPPOc020plus2.5sbladeaxisfeedback,.45rad/s,42degentrywristcap,3degtarget;all47relative/15passive/palmstylecriteriastay. Ownactuatorsonly. r0186failure1039623840visiblyheldbuttiltedlate;physicalmetricsdiagnosecause,noclaimallfailuresorientation."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0199",
+        "seq": 199,
+        "kind": "iter",
+        "version": 35,
+        "recorded_utc": "2026-11-15T05:28:40Z",
+        "exception": false,
+        "body": {
+         "sim_version": 17,
+         "algorithm": "PPO",
+         "policy_observations": "deployable",
+         "checkpoint": "research/candidates/public_composite_v4",
+         "components": {
+          "pick": {
+           "record": "r0164",
+           "source": "research/ppo_pick_scale_adaptive_v1/checkpoint_010",
+           "training": {
+            "algorithm": "PPO",
+            "policy_observations": "deployable",
+            "sim_version": 14,
+            "proof": "r0119",
+            "base": "Offline36IKgraspconstantlibrary,knowngeometry+publicposeinferssupportscale;gap2mm,publicXYtracking/once-onlyreapproach;rootcap.8,descentlift.15,20qresidual;strictCPU/GPU128outcomeparityrecordedbeforeupdates",
+            "worlds": 4096,
+            "horizon": 300,
+            "learned_actions": 250,
+            "hold_residual_after_s": 5.0,
+            "history": 3,
+            "actor": null,
+            "critic": null,
+            "action": "Residual20q(.25rad),3world wristpos(.015m),3local wristrot(.15rad), bounded rates; actualq lead.06rad",
+            "observations": "Noisyq/qd, previousq/residual, wrist state, all actual object states/kinds/presence, own phase/time/base command,targetindex; no contacts/forces/physics",
+            "reward_terms": null,
+            "bank": "4096newphysicallysettleddeploymentstarts,seed810000+,fullDRandallsceneclasses;independentdev/gates;unconditionedexceptphysicalsupport",
+            "gamma": 0.995,
+            "gae_lambda": 0.97,
+            "actor_lr": 5e-05,
+            "critic_lr": 0.0003,
+            "critic_warmup_updates": 5,
+            "initial_logstd": -4.2,
+            "parent_updates": 0,
+            "KL_guard": "preupdateabort.025,postupdaterollback.04andhalveactorLR;fixovershootwithlowexplorationnoise",
+            "budget": "150updatesor1.6GPUh;oldtripod150spentbeforelaunch;expectfirmnessbonusandCPUfirmimprovefrompublicbase52/64;allkeptcheckpointsgated",
+            "epochs": 3,
+            "batch": 16384,
+            "seed": 71
+           }
+          },
+          "turn": {
+           "record": "r0158",
+           "source": "research/ppo_turn_joint_v1/checkpoint_100",
+           "training": {
+            "algorithm": "PPO",
+            "policy_observations": "deployable",
+            "sim_version": 13,
+            "feasibility_proof": "r0130",
+            "initialization": "SupervisedpublicNNinitializationthenPPOjointcategoricalchoiceamong8nearestfixedthreefingerCEMrefs+continuousfeedback. Noonlinephysicsplanning. Newmethodonlyafterprevious200updatebudgetspent.",
+            "worlds": 4096,
+            "actor": null,
+            "critic": null,
+            "history": 3,
+            "decision_hz": 10,
+            "control_hz": 50,
+            "physics_hz": 1000,
+            "episode_s": 4,
+            "decisions_per_episode": 26,
+            "hold_after_s": 2.6,
+            "observations": "Noisyq/qd, own commands, wrist/object state/kind,time,entry q,initial tracking errors,selected constant reference knots,prior residual; no contacts/forces/physical parameters. Continuouscriticpublic576;referencecritic125includespickup-passive/15traininghistoryONLY,neveractor.",
+            "actions": "12 active finger residuals .3rad,3local wrist rotation residuals .15rad;8unused finger channels masked. Public encoder filter, lead .08,1rad/s,rotation40degcap.",
+            "gamma": 0.99,
+            "gae_lambda": 0.95,
+            "epochs": 4,
+            "batch": 8192,
+            "actor_lr": 5e-05,
+            "critic_lr": 0.0003,
+            "feedback_scale": 0.1,
+            "critic_warmup_updates": 5,
+            "clip": 0.2,
+            "seed": 239,
+            "reward_terms": null,
+            "curriculum": "296actualthreefingerpickupends,233training63seed-disjointvalidation;necessaryfirmprecondition<=15historyfiltermatcheschainhandoffs. Startrobusttrainthenbroaden0/.25/.5/.75onlywhenheldoutcurrentlevel>=.8,atleast25%earlierretained. Reportunfilteredandfirmconditionalmetricsseparately. AllphysicalDRpreserved.",
+            "budget": "200updatesor2GPUhclasscap,afteroldreference200budgetaudit;checkpoints10/50/100/200. Jointselection+latepose/driftrewardaddressmeasuredteacher/publicgap.",
+            "reference_actor": null,
+            "reference_critic": null,
+            "asymmetric_critic": "ReferencecriticONLYreceivespublic124+pickup-passivehistoryscalar/15;continuouscriticpublic576. Neitheractorreceivesprivatehistory/contacts/params.",
+            "reference_action": "Onceperepisodecategoricalamong8nearestfixedrefs,temperature.2training;deterministicargmaxdeployment",
+            "reward_margin": "Terminalbonusrequirespickup-passive+turn-passive<=11,reserving4forcarry;trainingobjectiveonly,verificationglobal15unchanged. Lateupright-.015degper20msafter2s,lateALLrelativepath-.4perdegafter2.6s."
+           }
+          },
+          "place": {
+           "record": "r0135",
+           "source": "research/ppo_place_v1/checkpoint_115_recovered",
+           "training": {
+            "algorithm": "PPO",
+            "policy_observations": "deployable",
+            "sim_version": 8,
+            "proof": "r0045",
+            "base": "place_script_v1, scripted feasibility44/64gate,0HW; residualfilterzero-base validation recorded separately",
+            "worlds": 4096,
+            "horizon": 400,
+            "learned_actions": 350,
+            "hold_residual_after_s": 7.0,
+            "history": 3,
+            "actor": null,
+            "critic": null,
+            "action": "Residual20q(.15rad),3world wristpos(.010m),3local wristrot(.10rad), bounded rates; actualq lead.06rad",
+            "observations": "Noisyq/qd, previousq/residual, wrist state, all actual object states/kinds/presence, own phase/time/base command,targetindex; no contacts/forces/physics",
+            "reward_terms": null,
+            "bank": "65actualsuccessfulphysicalturnends;first52training,last13heldout;independentfrozen46gatehandoffs. FullDRatpickupthenactualturn. Morestartsplanned.",
+            "gamma": 0.995,
+            "gae_lambda": 0.97,
+            "lr": 0.0002,
+            "epochs": 3,
+            "batch": 16384,
+            "seed": 71
+           }
+          }
+         },
+         "reward_terms": [
+          {
+           "name": "pick_component",
+           "formula": "Recordedrewardtermsinthecomponenttrainingconfiganditsiteration;noadditionalwhole-taskreward",
+           "weight": 1
+          },
+          {
+           "name": "turn_component",
+           "formula": "Recordedrewardtermsinthecomponenttrainingconfiganditsiteration;noadditionalwhole-taskreward",
+           "weight": 1
+          },
+          {
+           "name": "place_component",
+           "formula": "Recordedrewardtermsinthecomponenttrainingconfiganditsiteration;noadditionalwhole-taskreward",
+           "weight": 1
+          }
+         ],
+         "domain_randomization": [
+          {
+           "name": "deployment",
+           "distribution": "FullDR2/3objects,allkindmixes,body.9/1/1.1,mass.8..1.2,mu.4..1,COM+-3mm,halfseparated/quarteradjacent/quarterleaning;stablephysicalsupportonly,nooutcomefilter."
+          }
+         ],
+         "observations": "Onlynoisy20q/qd,wrist/objectposes/vel/kinds,ownpreviouscommands,step/time/history;N2or3actualstableindices.",
+         "actions": "EverymotorcommandfromPPOresidualskills. Publicrulechoosesoneobjectatatimeand6s/4s/8sskillswithonepublicpickupretry. Owncommand/historyresetatphaseboundary,NEVERphysicalreset.",
+         "evaluation": {
+          "episodes": 8,
+          "full_success": 1,
+          "hardware": 0,
+          "stages": {
+           "picked": 7,
+           "turned": 4,
+           "placed": 6,
+           "cleared": 1
+          },
+          "paired_old_v2_full": 0
+         },
+         "compute": {
+          "additional_training_gpu_hours": 0,
+          "CPU_eval_wall_s": 47.533
+         },
+         "reflection": "Own8development1fullvs0foroldcomposition;notmastery/verification/kepttaskcandidate. Needfreshpairedtaskgateafterrepeatfeasibilityrecovers. Allactualobjects/contacts/physicsunchanged.",
+         "composition": "PPO motor-skill composition; NO additional whole-taskRL",
+         "evaluation_sim_version": 17,
+         "change": "Onlyacceptedcomponents:pickr0164,robustturnr0186,entrywristholdplacer0180;samesequencer6/4/8s. Noadditionaltraining,nowhole-taskRL."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "3489dbd55b43",
+          "bytes": 96514,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "4dbb961a80be",
+          "bytes": 801757,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "35eda1ba5425",
+          "bytes": 867977,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "7fb6ff772420",
+          "bytes": 1029244,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
        }
       ],
       "first_recon_utc": "2026-11-14T19:26:26Z",
@@ -629834,7 +631396,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-15T05:20:01Z",
+      "exported_utc": "2026-11-15T05:30:02Z",
       "submissions": [
        {
         "sub": "s04",
@@ -630489,7 +632051,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-15T05:20:01Z",
+      "exported_utc": "2026-11-15T05:30:02Z",
       "submissions": [
        {
         "sub": "s01",
@@ -630884,7 +632446,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-15T05:20:01Z",
+      "exported_utc": "2026-11-15T05:30:02Z",
       "submissions": [
        {
         "sub": "s01",
@@ -631145,7 +632707,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-15T05:22:33Z",
+  "staged_utc": "2026-11-15T05:32:32Z",
   "tasks": {
    "cube": {
     "files": {
@@ -631229,7 +632791,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-15T05:22:33Z",
+  "staged_utc": "2026-11-15T05:32:32Z",
   "tasks": {
    "tennis": {
     "status": "available",
