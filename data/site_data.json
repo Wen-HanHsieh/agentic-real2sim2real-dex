@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-15T06:46:36Z",
- "exported_utc": "2026-11-15T06:42:30Z",
+ "generated_utc": "2026-11-15T06:52:34Z",
+ "exported_utc": "2026-11-15T06:52:26Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-15T06:41:03",
+    "time": "2026-11-15T06:52:10",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -89743,6 +89743,565 @@
          }
         },
         "out_of_order": false
+       },
+       {
+        "id": "r0089",
+        "seq": 89,
+        "kind": "gate",
+        "version": 22,
+        "recorded_utc": "2026-11-15T06:48:11Z",
+        "exception": false,
+        "body": {
+         "suite": "recup2-feas",
+         "suite_version": 1,
+         "suite_kind": "feasibility",
+         "suite_record": "r0085",
+         "final": false,
+         "candidate_sha256": "33a4a0846b4f…",
+         "method": "controller",
+         "hypothesis": "The same smooth cup restoration handles the shorter second-turn grip before the third toss",
+         "predicts": "ready3",
+         "observed": null,
+         "primitive": "recup2",
+         "started_utc": "2026-11-15T06:47:57Z",
+         "pass_rate": 0.25,
+         "max_hardware_violations": 0,
+         "handoff": {
+          "episodes": 32,
+          "fraction": 1.0,
+          "follows": [
+           "roll2"
+          ],
+          "pool_states": 32,
+          "pool_sha256": "29bbfc3fedc5…"
+         },
+         "episodes": 32,
+         "counts": {
+          "ready3": 32,
+          "success": 32
+         },
+         "wilson95": {
+          "ready3": [
+           0.8928,
+           1.0
+          ],
+          "success": [
+           0.8928,
+           1.0
+          ]
+         },
+         "funnel_first_failed": {
+          "ready3": 0,
+          "hardware": 0,
+          "complete": 32
+         },
+         "predicate_overrides": {
+          "ready3": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 1.0,
+         "reproducible": true,
+         "wall_s": 5.6,
+         "finished_utc": "2026-11-15T06:48:10Z",
+         "meets_pass_rate": true,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent",
+         "failure_review": {
+          "stage": null,
+          "lost": 0,
+          "episodes": 32,
+          "montages": []
+         }
+        },
+        "files": {
+         "results_json": {
+          "sha": "9a67bb445443",
+          "bytes": 38496,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0090",
+        "seq": 90,
+        "kind": "iter",
+        "version": 8,
+        "recorded_utc": "2026-11-15T06:48:15Z",
+        "exception": false,
+        "body": {
+         "sim_version": 2,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO",
+          "implementation": "provided d2s_teacher.train_teacher",
+          "updates": 600,
+          "continuation": {
+           "original_start_time": 1794722293.5417566,
+           "spent_updates": 252,
+           "spent_steps": 1032192,
+           "resume_weight_update": 200,
+           "reason": "Apply corrected complete dev scoring to live training;provided checkpoint retains actor,critic and normalizers but not Adam moments. Interrupted own sampler cleanly with SIGINT;continue same PPO method and aggregate original3.072M/75min budget."
+          },
+          "config": {
+           "lr": 0.0001,
+           "clip": 0.2,
+           "gamma": 0.99,
+           "lambda": 0.95,
+           "epochs": 4,
+           "rollout": 64,
+           "environments": 64,
+           "hidden": [
+            256,
+            256
+           ],
+           "history": 4,
+           "encoder_sigma": [
+            0.002,
+            0.05
+           ],
+           "actor_keys": [
+            "deployable"
+           ],
+           "critic_keys": [
+            "deployable",
+            "privileged"
+           ]
+          }
+         },
+         "reward_terms": [
+          {
+           "name": "progress",
+           "formula": "decrease in errors:3*path/270+3*opposednet/70+opposed_s/.3+2*goalcloseness afterpath200;eachcompletionfractionclipped1",
+           "weight": 1
+          },
+          {
+           "name": "completion",
+           "formula": "first path>=270,net>=70,opposed>=.3,passive<=30,goal<=25,held",
+           "weight": 20
+          },
+          {
+           "name": "failure",
+           "formula": "hardware,floor,orball>40cmfromwrist",
+           "weight": -20
+          },
+          {
+           "name": "regularization",
+           "formula": "mean(residual_action^2)",
+           "weight": -0.001
+          },
+          {
+           "name": "time",
+           "formula": "per50Hzstep",
+           "weight": -0.005
+          },
+          {
+           "name": "incomplete",
+           "formula": "horizonwithoutsuccess",
+           "weight": -5
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "start/physics",
+           "distribution": "success-driven nominal→main→full+stress;128actualpredecessorcontroller endpoints;25%earlierlevels;uniformballorientation;publicFKballradiusfixed33.5mm;noactualparametersinactor"
+          }
+         ],
+         "curriculum": "Threelevels,up.8,patience3,min20updates;providedCurriculum;actualhandoffsgatefullrange",
+         "action": "26continuousresidualsoverpublickinematicservo:q.03rad,p.003m,rot.01rad;servohasnoactualcontacts,forcesorrandomizedmodelparameters",
+         "observation": "424features=4x106;noisyq/qd,ownpreviouscommands,wrist/objectposesandvelocities,time,episodegoalderivedfrominitialallowedpose. Critic additionally sees contacts,physics,progress.",
+         "evaluation": {
+          "episodes": 64,
+          "success_rate": 0.109375,
+          "hardware_episodes": 1,
+          "gate": "notyetselected;thisisfixeddevvalidationonly"
+         },
+         "compute": {
+          "wall_s": 3001.6998856067657,
+          "cpu_sim_workers": 16,
+          "neural_device": "GPU2",
+          "steps": 2670592
+         },
+         "reflection": "Publicgeometry analyticservo plus PPO residual;nominalcontrollerbaseline89%/zeroHW;full-rangebaseline25%gate. Not a claim that PPO discovers entire rolling motion. Fresh gate required before keeping."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "e0e6f10400bb",
+          "bytes": 214555,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "4d6ea6f743b0",
+          "bytes": 146967,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "2bb79682c5b5",
+          "bytes": 163385,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "f0065b113c3d",
+          "bytes": 175829,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0091",
+        "seq": 91,
+        "kind": "gate",
+        "version": 23,
+        "recorded_utc": "2026-11-15T06:52:11Z",
+        "exception": false,
+        "body": {
+         "suite": "task",
+         "suite_version": 3,
+         "suite_kind": "task",
+         "suite_record": "r0064",
+         "final": false,
+         "candidate_sha256": "399ed6a420b2…",
+         "method": "composition",
+         "hypothesis": "Mandatory chain check adds proven short in-hand turn after second catch;later links remain absent",
+         "predicts": "spin2",
+         "observed": "r0081 chain5 reaches second catch in7/32but contains no second turn;the new controller provides the measured smaller finger-longitudinal rotation after capture",
+         "primitive": null,
+         "started_utc": "2026-11-15T06:47:57Z",
+         "pass_rate": 0.8,
+         "max_hardware_violations": 0,
+         "episodes": 32,
+         "counts": {
+          "settled": 16,
+          "catch1": 17,
+          "spin1": 4,
+          "ready2": 7,
+          "catch2": 7,
+          "spin2": 2,
+          "ready3": 0,
+          "catch3": 0,
+          "spin3_hold": 0,
+          "success": 0
+         },
+         "wilson95": {
+          "settled": [
+           0.3363,
+           0.6637
+          ],
+          "catch1": [
+           0.3645,
+           0.6913
+          ],
+          "spin1": [
+           0.0497,
+           0.2807
+          ],
+          "ready2": [
+           0.1102,
+           0.3875
+          ],
+          "catch2": [
+           0.1102,
+           0.3875
+          ],
+          "spin2": [
+           0.0173,
+           0.2015
+          ],
+          "ready3": [
+           0.0,
+           0.1072
+          ],
+          "catch3": [
+           0.0,
+           0.1072
+          ],
+          "spin3_hold": [
+           0.0,
+           0.1072
+          ],
+          "success": [
+           0.0,
+           0.1072
+          ]
+         },
+         "funnel_first_failed": {
+          "settled": 16,
+          "catch1": 0,
+          "spin1": 13,
+          "ready2": 0,
+          "catch2": 0,
+          "spin2": 1,
+          "ready3": 2,
+          "catch3": 0,
+          "spin3_hold": 0,
+          "hardware": 0,
+          "complete": 0
+         },
+         "predicate_overrides": {
+          "settled": 1,
+          "catch1": 0,
+          "spin1": 4,
+          "ready2": 0,
+          "catch2": 0,
+          "spin2": 2,
+          "ready3": 0,
+          "catch3": 0,
+          "spin3_hold": 0
+         },
+         "hardware_violations": 1,
+         "success_rate": 0.0,
+         "reproducible": true,
+         "wall_s": 43.7,
+         "finished_utc": "2026-11-15T06:49:17Z",
+         "meets_pass_rate": false,
+         "paired": {
+          "episodes": 96,
+          "incumbent_record": "r0081",
+          "alpha": 0.05,
+          "candidate": {
+           "episodes": 96,
+           "counts": {
+            "settled": 46,
+            "catch1": 50,
+            "spin1": 16,
+            "ready2": 22,
+            "catch2": 22,
+            "spin2": 5,
+            "ready3": 0,
+            "catch3": 0,
+            "spin3_hold": 0,
+            "success": 0
+           },
+           "wilson95": {
+            "settled": null,
+            "catch1": null,
+            "spin1": null,
+            "ready2": null,
+            "catch2": null,
+            "spin2": null,
+            "ready3": null,
+            "catch3": null,
+            "spin3_hold": null,
+            "success": null
+           },
+           "funnel_first_failed": {
+            "settled": 50,
+            "catch1": 0,
+            "spin1": 32,
+            "ready2": 0,
+            "catch2": 0,
+            "spin2": 9,
+            "ready3": 5,
+            "catch3": 0,
+            "spin3_hold": 0,
+            "hardware": 0,
+            "complete": 0
+           },
+           "predicate_overrides": {
+            "settled": 4,
+            "catch1": 0,
+            "spin1": 8,
+            "ready2": 1,
+            "catch2": 0,
+            "spin2": 8,
+            "ready3": 0,
+            "catch3": 0,
+            "spin3_hold": 0
+           },
+           "hardware_violations": 5,
+           "success_rate": 0.0
+          },
+          "incumbent": {
+           "episodes": 96,
+           "counts": {
+            "settled": 46,
+            "catch1": 52,
+            "spin1": 17,
+            "ready2": 22,
+            "catch2": 22,
+            "spin2": 0,
+            "ready3": 0,
+            "catch3": 0,
+            "spin3_hold": 0,
+            "success": 0
+           },
+           "wilson95": {
+            "settled": null,
+            "catch1": null,
+            "spin1": null,
+            "ready2": null,
+            "catch2": null,
+            "spin2": null,
+            "ready3": null,
+            "catch3": null,
+            "spin3_hold": null,
+            "success": null
+           },
+           "funnel_first_failed": {
+            "settled": 50,
+            "catch1": 0,
+            "spin1": 31,
+            "ready2": 0,
+            "catch2": 0,
+            "spin2": 15,
+            "ready3": 0,
+            "catch3": 0,
+            "spin3_hold": 0,
+            "hardware": 0,
+            "complete": 0
+           },
+           "predicate_overrides": {
+            "settled": 6,
+            "catch1": 0,
+            "spin1": 8,
+            "ready2": 1,
+            "catch2": 0,
+            "spin2": 0,
+            "ready3": 0,
+            "catch3": 0,
+            "spin3_hold": 0
+           },
+           "hardware_violations": 5,
+           "success_rate": 0.0
+          },
+          "discordant": {
+           "settled": {
+            "candidate_only": 0,
+            "incumbent_only": 0,
+            "delta": 0,
+            "p_better": 1.0,
+            "p_worse": 1.0
+           },
+           "catch1": {
+            "candidate_only": 0,
+            "incumbent_only": 2,
+            "delta": -2,
+            "p_better": 1.0,
+            "p_worse": 0.25
+           },
+           "spin1": {
+            "candidate_only": 0,
+            "incumbent_only": 1,
+            "delta": -1,
+            "p_better": 1.0,
+            "p_worse": 0.5
+           },
+           "ready2": {
+            "candidate_only": 0,
+            "incumbent_only": 0,
+            "delta": 0,
+            "p_better": 1.0,
+            "p_worse": 1.0
+           },
+           "catch2": {
+            "candidate_only": 0,
+            "incumbent_only": 0,
+            "delta": 0,
+            "p_better": 1.0,
+            "p_worse": 1.0
+           },
+           "spin2": {
+            "candidate_only": 5,
+            "incumbent_only": 0,
+            "delta": 5,
+            "p_better": 0.0312,
+            "p_worse": 1.0
+           },
+           "ready3": {
+            "candidate_only": 0,
+            "incumbent_only": 0,
+            "delta": 0,
+            "p_better": 1.0,
+            "p_worse": 1.0
+           },
+           "catch3": {
+            "candidate_only": 0,
+            "incumbent_only": 0,
+            "delta": 0,
+            "p_better": 1.0,
+            "p_worse": 1.0
+           },
+           "spin3_hold": {
+            "candidate_only": 0,
+            "incumbent_only": 0,
+            "delta": 0,
+            "p_better": 1.0,
+            "p_worse": 1.0
+           },
+           "success": {
+            "candidate_only": 0,
+            "incumbent_only": 0,
+            "delta": 0,
+            "p_better": 1.0,
+            "p_worse": 1.0
+           }
+          },
+          "hardware_violations": {
+           "candidate": 5,
+           "incumbent": 5
+          },
+          "extension": {
+           "episodes": 64,
+           "seeds_sha256": "9fe8f44c4112…",
+           "first_look": {
+            "discordant": null,
+            "hardware": null,
+            "reason": "the predicted 'spin2' is not significantly better: 2 episodes only the candidate completes vs 0 only the incumbent (sign test p = 0.25, needs <= 0.05)"
+           }
+          }
+         },
+         "decision": "accepted",
+         "incumbent": true,
+         "previous_incumbent": "r0081",
+         "delta": {
+          "settled": 0,
+          "catch1": -2,
+          "spin1": -1,
+          "ready2": 0,
+          "catch2": 0,
+          "spin2": 5,
+          "ready3": 0,
+          "catch3": 0,
+          "spin3_hold": 0,
+          "success": 0
+         },
+         "reason": "'spin2' better on the same seeds: 5 episodes only the candidate completes vs 0 only the incumbent (sign test p = 0.0312 <= 0.05); no stage significantly worse; hardware violations 5 vs 5",
+         "failure_review": {
+          "stage": "settled",
+          "lost": 16,
+          "episodes": 32,
+          "montages": [
+           {
+            "role": "montage_1",
+            "frame_times_s": null
+           },
+           {
+            "role": "montage_2",
+            "frame_times_s": null
+           }
+          ]
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "75b7a859ab92",
+          "bytes": 49865,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "abd6245c1946",
+          "bytes": 48477,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "1132aaca7e2c",
+          "bytes": 315785,
+          "content_type": "application/json"
+         }
+        }
        }
       ],
       "first_recon_utc": "2026-11-15T03:28:15Z",
@@ -642716,7 +643275,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-15T06:40:01Z",
+      "exported_utc": "2026-11-15T06:50:01Z",
       "submissions": [
        {
         "sub": "s04",
@@ -643371,7 +643930,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-15T06:40:01Z",
+      "exported_utc": "2026-11-15T06:50:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -643766,7 +644325,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-15T06:40:01Z",
+      "exported_utc": "2026-11-15T06:50:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -644027,7 +644586,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-15T06:42:43Z",
+  "staged_utc": "2026-11-15T06:52:28Z",
   "tasks": {
    "cube": {
     "files": {
@@ -644111,7 +644670,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-15T06:42:42Z",
+  "staged_utc": "2026-11-15T06:52:28Z",
   "tasks": {
    "tennis": {
     "status": "available",
