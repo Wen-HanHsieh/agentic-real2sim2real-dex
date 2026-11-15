@@ -1,7 +1,7 @@
 {
  "title": "agentic-dex-iterative-sim2real",
- "generated_utc": "2026-11-15T05:12:38Z",
- "exported_utc": "2026-11-15T05:12:29Z",
+ "generated_utc": "2026-11-15T05:22:39Z",
+ "exported_utc": "2026-11-15T05:22:30Z",
  "current": {
   "tennis": {
    "used": 2,
@@ -9,7 +9,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-15T05:12:02",
+    "time": "2026-11-15T05:21:05",
     "verb": "other"
    },
    "record_chain": "intact (7 entries)",
@@ -382,7 +382,7 @@
    "best": "s02",
    "latest_candidate": "s02",
    "activity": {
-    "time": "2026-11-15T05:12:17",
+    "time": "2026-11-15T05:20:29",
     "verb": "other"
    },
    "record_chain": "intact (6 entries)",
@@ -83553,6 +83553,972 @@
           "content_type": "application/json"
          }
         }
+       },
+       {
+        "id": "r0042",
+        "seq": 42,
+        "kind": "gate",
+        "version": 5,
+        "recorded_utc": "2026-11-15T05:14:58Z",
+        "exception": false,
+        "body": {
+         "suite": "settle-skill",
+         "suite_version": 1,
+         "suite_kind": "skill",
+         "suite_record": "r0037",
+         "final": false,
+         "candidate_sha256": "f46789d06dcc…",
+         "method": "ppo",
+         "hypothesis": "Deterministic PPO network maintains support despite unsafe stochastic exploration during training",
+         "predicts": "settled",
+         "observed": null,
+         "primitive": "settle",
+         "started_utc": "2026-11-15T05:14:46Z",
+         "pass_rate": 0.8,
+         "max_hardware_violations": 0,
+         "handoff": {
+          "episodes": 32,
+          "fraction": 1.0,
+          "follows": [
+           "start"
+          ],
+          "pool_states": 64,
+          "pool_sha256": "0b1b59626101…"
+         },
+         "episodes": 32,
+         "counts": {
+          "settled": 32,
+          "success": 32
+         },
+         "wilson95": {
+          "settled": [
+           0.8928,
+           1.0
+          ],
+          "success": [
+           0.8928,
+           1.0
+          ]
+         },
+         "funnel_first_failed": {
+          "settled": 0,
+          "hardware": 0,
+          "complete": 32
+         },
+         "predicate_overrides": {
+          "settled": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 1.0,
+         "reproducible": true,
+         "wall_s": 3.9,
+         "finished_utc": "2026-11-15T05:14:56Z",
+         "meets_pass_rate": true,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent",
+         "failure_review": {
+          "stage": null,
+          "lost": 0,
+          "episodes": 32,
+          "montages": []
+         }
+        },
+        "files": {
+         "results_json": {
+          "sha": "a02aefdb0375",
+          "bytes": 38621,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0043",
+        "seq": 43,
+        "kind": "iter",
+        "version": 1,
+        "recorded_utc": "2026-11-15T05:15:28Z",
+        "exception": false,
+        "body": {
+         "sim_version": 1,
+         "policy_observations": "deployable",
+         "algorithm": {
+          "name": "PPO",
+          "lr": 0.0003,
+          "clip": 0.2,
+          "gamma": 0.99,
+          "lambda": 0.95,
+          "epochs": 4,
+          "minibatch": 16384,
+          "seed": 710,
+          "worlds": 4096,
+          "horizon": 32,
+          "actor": "400->256tanh->256tanh->26;4-step100features;critic separate256x2",
+          "action": "20position targets chosen cup+0.12tanh;3wrist offsets0.015m and3rot offsets0.08rad;fixed scales,not scripted residual",
+          "observations": "Noisy q,qd,previous targets,wrist/object poses and velocities,time;4-step history. No contacts/forces/physical parameters."
+         },
+         "reward_terms": [
+          {
+           "name": "progress",
+           "formula": "decrease in100*||ball_root_local-cupcentre||^2+||relative_linear_velocity||^2,clipped[-1,1]",
+           "weight": 1
+          },
+          {
+           "name": "completion",
+           "formula": "first10 consecutive50Hz samples supported and relative_linear_speed<.08",
+           "weight": 10
+          },
+          {
+           "name": "action_regularization",
+           "formula": "mean(tanh(action)^2)",
+           "weight": -0.001
+          },
+          {
+           "name": "time",
+           "formula": "one per step",
+           "weight": -0.01
+          },
+          {
+           "name": "drop",
+           "formula": "floor or outside25cm",
+           "weight": -10
+          }
+         ],
+         "domain_randomization": [
+          {
+           "quantity": "physics/start",
+           "distribution": "128 independent full simulation1-distribution starts seeds2000..2127,repeated across4096worlds.80%main,20%stress;exact ranges in sim1;fresh dev seeds5000..5031"
+          }
+         ],
+         "curriculum": "none",
+         "compute": {
+          "updates": 12,
+          "worlds": 4096,
+          "horizon": 32,
+          "steps": 1572864,
+          "wall_s": 98.28235793113708,
+          "gpu_hours": 0.027300655179553563,
+          "seed": 710,
+          "history": 4,
+          "observation_size": 100,
+          "action": "absolute chosen-cup-centred position/pose targets from network,20fingers+3translation+3rotation",
+          "physics_randomization": "128 independently sampled full distribution starts,cycled across4096worlds; fresh gate uses new starts",
+          "note": "No handcrafted controller action at execution; chosen pose/action scales are constants."
+         },
+         "evaluation": {
+          "episodes": 32,
+          "seeds": "5000..5031",
+          "settled": 32,
+          "hardware_safe": 32,
+          "gate": "pending"
+         },
+         "checkpoint": "research/candidates/settle-ppo1/actor.npz",
+         "parity": "Own model static agrees;128CPU/GPU fixed-cup outcomes allsuccessful,zeroHW/drop both.300states.7%contact mismatches,zerooverflow;instantaneous qacc high-relative-error warnings in low-magnitude states. Kept checkpoint parity pending.",
+         "reflection": "Deterministic network32/32; exploration failed to earn completion bonus and caused frequent hardware terminations. Reward omitted a direct hardware penalty,so stochastic training curves are not evidence of safe exploration or learned recovery. Deterministic actions are learned network outputs and must pass fresh gate. Recorded hardware curves count ended episodes,not first-reset cohort,an instrumentation limitation fixed before subsequent PPO methods. Actual run1.573M transitions slightly exceeded announced1M but only98s,below10min wall cap. Entry controller equals hold policy identically,so those two reward baselines tie by definition;random actions fare worse."
+        },
+        "files": {
+         "curves_csv": {
+          "sha": "ed66690ec05b",
+          "bytes": 2505,
+          "content_type": "text/csv"
+         },
+         "video_left": {
+          "sha": "762230559bcc",
+          "bytes": 19599,
+          "content_type": "video/mp4"
+         },
+         "video_right": {
+          "sha": "f200c42db8cf",
+          "bytes": 17352,
+          "content_type": "video/mp4"
+         },
+         "video_top": {
+          "sha": "1deb0b5e1ef8",
+          "bytes": 18892,
+          "content_type": "video/mp4"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0044",
+        "seq": 44,
+        "kind": "suite",
+        "version": 7,
+        "recorded_utc": "2026-11-15T05:15:29Z",
+        "exception": false,
+        "body": {
+         "suite": "roll1-feas",
+         "suite_version": 1,
+         "suite_kind": "feasibility",
+         "criteria_version": 1,
+         "stages": [
+          "spin1"
+         ],
+         "pass_rate": 0.25,
+         "pass_rate_reason": "Declared feasibility threshold; aim.9",
+         "max_hardware_violations": 0,
+         "dev_episodes": 32,
+         "final_episodes": 32,
+         "timeout_min": 15,
+         "description": "Finger-driven supported long turn after first real toss/catch",
+         "precondition": null,
+         "postcondition": null,
+         "starts_from": null,
+         "primitive": "roll1",
+         "primitives": null,
+         "stage_predicates": {
+          "spin1": [
+           {
+            "measure": "opposed_s",
+            "op": ">=",
+            "value": 0.3
+           },
+           {
+            "measure": "opposed_rel_rotation_deg",
+            "op": ">=",
+            "value": 70
+           },
+           {
+            "measure": "passive_rel_rotation_deg",
+            "op": "<=",
+            "value": 30
+           },
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0.001
+           },
+           {
+            "measure": "wrist.max_rotation_deg",
+            "op": "<=",
+            "value": 65
+           }
+          ]
+         },
+         "primitive_spec": {
+          "motion": "reorientation",
+          "support": "none",
+          "angle_deg": 89.73551097431789,
+          "demo_interval_s": [
+           4.0,
+           4.433333333333334
+          ],
+          "video_evidence": "Thumb and opposing curled fingers roll the held ball. Marked texture turns strongly with small wrist rotation; long phase has repeated rolling/regrasps,not another toss.",
+          "reference": {
+           "states": "reference_states.npz",
+           "object": "tennis_ball",
+           "interval_s": [
+            4.0,
+            4.433333333333334
+           ],
+           "axis_object": [
+            -0.4740680086863098,
+            -0.4069150056501104,
+            -0.7808198904465532
+           ]
+          },
+          "task_condition": "First in-hand spin before second toss",
+          "deviations": "Use anatomical-hand axis and450degree commanded path:net90degree local target plus a full turn to satisfy long-phase criteria. Axis changes are permitted as demonstrated;robot contact servo is baseline only."
+         },
+         "harness_predicates": [
+          {
+           "measure": "environment_contact_s",
+           "op": "<=",
+           "value": 0.05,
+           "objects": "each"
+          },
+          {
+           "measure": "opposed_rel_rotation_deg",
+           "op": ">=",
+           "value": 67.3,
+           "objects": "any"
+          },
+          {
+           "measure": "passive_rel_rotation_deg",
+           "op": "<=",
+           "value": 31.4,
+           "objects": "any"
+          },
+          {
+           "measure": "goal_error_deg",
+           "op": "<=",
+           "value": 25.0,
+           "objects": "any"
+          }
+         ],
+         "reference_check": {
+          "object": "tennis_ball",
+          "t0": 4.0,
+          "t1": 4.433,
+          "rel_rotation_deg": 89.7,
+          "axis_object": [
+           -0.4741,
+           -0.4069,
+           -0.7808
+          ],
+          "wrist_rotation_deg": 5.3,
+          "object_world_rotation_deg": 92.3,
+          "angle_deg_spec": 89.73551097431789,
+          "angle_tolerance_deg": 17.94710219486358,
+          "axis_error_deg": 0.2
+         },
+         "chain": null,
+         "follows": [
+          "toss1"
+         ],
+         "handoff_fraction": 1.0,
+         "handoff": {
+          "fraction": 1.0,
+          "pool_states": 32,
+          "pool_sha256": "f4ffcbd30312…",
+          "sources": [
+           {
+            "follows": "toss1",
+            "suite": "toss1-feas",
+            "version": 1,
+            "kind": "feasibility",
+            "record": "r0040",
+            "mastered": false,
+            "states": 32
+           }
+          ],
+          "dev_episodes": 32
+         },
+         "start_check": null,
+         "start_check_result": null,
+         "reason": null,
+         "evaluator_bytes": 16450052,
+         "evaluator_files": 16
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "7e0b9921e3df",
+          "bytes": 1530,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0045",
+        "seq": 45,
+        "kind": "suite",
+        "version": 8,
+        "recorded_utc": "2026-11-15T05:16:23Z",
+        "exception": false,
+        "body": {
+         "suite": "toss1-skill",
+         "suite_version": 1,
+         "suite_kind": "skill",
+         "criteria_version": 1,
+         "stages": [
+          "catch1"
+         ],
+         "pass_rate": 0.8,
+         "pass_rate_reason": "Criteria1 deployable mastery threshold",
+         "max_hardware_violations": 0,
+         "dev_episodes": 32,
+         "final_episodes": 32,
+         "timeout_min": 15,
+         "description": "First down-up toss,open flight,yielding catch from settled predecessor handoffs",
+         "precondition": "Supported stable handoff after settle",
+         "postcondition": "One demonstrated-height toss with open fingers and yielding stable catch,no hardware violation",
+         "starts_from": "Frozen successful settle predecessor incumbent handoffs plus independent full-distribution predecessor rollouts",
+         "primitive": "toss1",
+         "primitives": null,
+         "stage_predicates": {
+          "catch1": [
+           {
+            "measure": "max_rise_m",
+            "op": ">=",
+            "value": 0.2
+           },
+           {
+            "measure": "held_s",
+            "op": ">=",
+            "value": 0.2
+           },
+           {
+            "measure": "environment_contact_s",
+            "op": "<=",
+            "value": 0.001
+           },
+           {
+            "measure": "wrist.max_rotation_deg",
+            "op": "<=",
+            "value": 65
+           }
+          ]
+         },
+         "primitive_spec": {
+          "motion": "other",
+          "support": "none",
+          "angle_deg": 0,
+          "demo_interval_s": [
+           1.4,
+           2.6
+          ],
+          "video_evidence": "Wrist dips then rises,thumb and long fingers open to release ball in vertical flight,and wrist lowers under returning ball before fingers close.",
+          "reference": {
+           "unavailable": "Translation and gravity flight are reconstructed in reference3. Absolute ball attitude offsets across the release/flight texture gaps are unobservable; this primitive is a translational toss/catch, not a prescribed reorientation, so no reference rotation angle is claimed. The reliable flight rises .280/.319/.295m and durations .433/.467/.500s guide its judge."
+          },
+          "task_condition": "Toss ball up and catch it in palm before first turn",
+          "deviations": "Robot timings may be slower and cup differs; all release height,speed,opening and yielding conditions remain from criteria1."
+         },
+         "harness_predicates": [
+          {
+           "measure": "environment_contact_s",
+           "op": "<=",
+           "value": 0.05,
+           "objects": "each"
+          }
+         ],
+         "reference_check": {
+          "unavailable": "Translation and gravity flight are reconstructed in reference3. Absolute ball attitude offsets across the release/flight texture gaps are unobservable; this primitive is a translational toss/catch, not a prescribed reorientation, so no reference rotation angle is claimed. The reliable flight rises .280/.319/.295m and durations .433/.467/.500s guide its judge."
+         },
+         "chain": null,
+         "follows": [
+          "settle"
+         ],
+         "handoff_fraction": 1.0,
+         "handoff": {
+          "fraction": 1.0,
+          "pool_states": 32,
+          "pool_sha256": "5d465ab75448…",
+          "sources": [
+           {
+            "follows": "settle",
+            "suite": "settle-skill",
+            "version": 1,
+            "kind": "skill",
+            "record": "r0042",
+            "mastered": true,
+            "states": 32
+           }
+          ],
+          "dev_episodes": 32
+         },
+         "start_check": null,
+         "start_check_result": null,
+         "reason": null,
+         "evaluator_bytes": 16450052,
+         "evaluator_files": 16
+        },
+        "files": {
+         "manifest_json": {
+          "sha": "7e0b9921e3df",
+          "bytes": 1530,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0046",
+        "seq": 46,
+        "kind": "gate",
+        "version": 6,
+        "recorded_utc": "2026-11-15T05:17:34Z",
+        "exception": false,
+        "body": {
+         "suite": "roll1-feas",
+         "suite_version": 1,
+         "suite_kind": "feasibility",
+         "suite_record": "r0044",
+         "final": false,
+         "candidate_sha256": "cc2007fdb532…",
+         "method": "controller",
+         "hypothesis": "Contact-Jacobian rolling servo tests whether thumb and fingers can sustain a full in-hand turn from actual catch handoffs",
+         "predicts": "spin1",
+         "observed": null,
+         "primitive": "roll1",
+         "started_utc": "2026-11-15T05:17:13Z",
+         "pass_rate": 0.25,
+         "max_hardware_violations": 0,
+         "handoff": {
+          "episodes": 32,
+          "fraction": 1.0,
+          "follows": [
+           "toss1"
+          ],
+          "pool_states": 32,
+          "pool_sha256": "f4ffcbd30312…"
+         },
+         "episodes": 32,
+         "counts": {
+          "spin1": 0,
+          "success": 0
+         },
+         "wilson95": {
+          "spin1": [
+           0.0,
+           0.1072
+          ],
+          "success": [
+           0.0,
+           0.1072
+          ]
+         },
+         "funnel_first_failed": {
+          "spin1": 32,
+          "hardware": 0,
+          "complete": 0
+         },
+         "predicate_overrides": {
+          "spin1": 0
+         },
+         "hardware_violations": 0,
+         "success_rate": 0.0,
+         "reproducible": true,
+         "wall_s": 8.3,
+         "finished_utc": "2026-11-15T05:17:33Z",
+         "meets_pass_rate": false,
+         "decision": "baseline",
+         "incumbent": true,
+         "previous_incumbent": null,
+         "delta": null,
+         "reason": "first gate of this suite version: the baseline, now the incumbent",
+         "failure_review": {
+          "stage": "spin1",
+          "lost": 32,
+          "episodes": 32,
+          "montages": [
+           {
+            "role": "montage_1",
+            "frame_times_s": null
+           },
+           {
+            "role": "montage_2",
+            "frame_times_s": null
+           }
+          ]
+         }
+        },
+        "files": {
+         "montage_1": {
+          "sha": "841c5ca6afa4",
+          "bytes": 67121,
+          "content_type": "image/jpeg"
+         },
+         "montage_2": {
+          "sha": "4ce1f42ec1d1",
+          "bytes": 74090,
+          "content_type": "image/jpeg"
+         },
+         "results_json": {
+          "sha": "4e1c96461121",
+          "bytes": 41475,
+          "content_type": "application/json"
+         }
+        }
+       },
+       {
+        "id": "r0047",
+        "seq": 47,
+        "kind": "note",
+        "version": 27,
+        "recorded_utc": "2026-11-15T05:18:01Z",
+        "exception": false,
+        "body": {
+         "kind": "reflection",
+         "text": "Roll1 baseline r0046:0/32,noHW. Viewed seed765840375 montage:marked ball rotates during first.34-.67s,but by~1.01s it escapes distal side and is fully separated at1.34s,then falls. This matches own servo contact logs:thumb opposition lost after40deg,followed by loss of remaining fingers. Next baseline experiment will constrain ball centre and introduce joint-limit-aware thumb/finger gait rather than increase spin reward. Settle PPO r0042 passed32/32;viewed successful montage confirmsstablecup to1.08s. Whole chain r0041 stillmissesroll,and frozen task2 also contains documented too-early catch completion bug."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0048",
+        "seq": 48,
+        "kind": "sim",
+        "version": 2,
+        "recorded_utc": "2026-11-15T05:19:05Z",
+        "exception": false,
+        "body": {
+         "reconstruction_version": 3,
+         "simulator": {
+          "name": "MuJoCo",
+          "version": "3.17.0",
+          "physics_dt_s": 0.001,
+          "integrator": "implicitfast",
+          "solver": "Newton",
+          "iterations": 100,
+          "ls_iterations": 50,
+          "tolerance": 1e-06,
+          "cone": "elliptic",
+          "multiccd": true
+         },
+         "scene": {
+          "model_sha256": "8aa8aa3686fc…",
+          "model": "scene.part000 through002 concatenate to gzip of native MJB; build_scene.py and scene.xml retained",
+          "hand": "Public right Wuji2.2 URDF,20joints,.7088kg;128vertex hull cap changes geometry by up to.9mm",
+          "self_collision": [
+           "hand collision hulls capped at 128 vertices (hand_hull_vertices); use this same model for the CPU evaluator",
+           "hand self-collision: 31 body pairs excluded (palm-casing overlaps at the open pose, same-finger links); different fingers collide"
+          ],
+          "ball": "Sphere; thin shell inertia nominal2/3*m*r^2. White visual seam proxy has no collision or mass.",
+          "floor": "z=0, no table"
+         },
+         "reference": {
+          "record": "r0017",
+          "uses": "Flight heights/durations, wrist style and dip, connected relative turn axes/angles; kinematic retarget comparison only",
+          "retargeting": {
+           "method": "Rigid yaw aligns human initial finger heading; wrist translation and gravity-aligned ball flight retained, anatomical orientation blended from selected12degree cup over.5s; long finger flexion/abduction changes mapped as offsets to robot cup joints, thumb MCP/IP similarly, joint limits clipped. This is a kinematic comparison only, never the policy.",
+           "max_contact_overlap_m": 0.03858590353255535,
+           "peak_joint_speed_ratio": 0.8209916359730889,
+           "limitation": "Human/robot geometry and hidden fingers differ; overlap or speed failures mean literal retargeting is not feasible. Actual controllers and PPO must prove physical skill."
+          }
+         },
+         "controllers": {
+          "implementation": "Immutable CpuHand; eventual WarpHandEnv only after parity",
+          "wrist": "Specified impedance,force/torque/target-speed clipping;hand-only gravity compensation",
+          "fingers": "Specified PD,effort clipping,limits and every-tick audit",
+          "encoder_noise": "Actor inputs sigma.002rad,.05rad/s; judge uses actual state"
+         },
+         "initial_conditions": {
+          "chosen_hand": {
+           "wrist_position": [
+            0,
+            0,
+            1.0
+           ],
+           "wrist_quaternion": [
+            0.5710404013823376,
+            0.44290726382344026,
+            -0.5242133719245826,
+            -0.4504956784886972
+           ],
+           "joint_position": [
+            0.480339527950558,
+            0.2715036198116576,
+            1.491051909299096,
+            0.6059746392799426,
+            0.48887182727218664,
+            -0.1764531350535668,
+            0.7169923612307018,
+            0.40179456674729785,
+            0.487019849905626,
+            -0.15243687691186222,
+            0.5983545864671909,
+            0.44809611912532693,
+            0.5259021033454141,
+            0.06936647466882864,
+            0.6588078134421415,
+            0.46155393788818033,
+            0.7311598912627929,
+            0.02507631838135584,
+            0.9273423613932622,
+            0.577369972754008
+           ],
+           "ball_radius": 0.0335,
+           "ball_mass": 0.0577,
+           "controller_hz": 1000,
+           "command_hz": 500,
+           "policy_hz": 50,
+           "episode_s": 18,
+           "hand_hull_vertices": 128,
+           "hand_contact_solref": [
+            0.008,
+            1.0
+           ],
+           "ball_floor_solref": [
+            -100000,
+            -58
+           ],
+           "reference_reconstruction_version": 3,
+           "hand_scene_notes": [
+            "hand collision hulls capped at 128 vertices (hand_hull_vertices); use this same model for the CPU evaluator",
+            "hand self-collision: 31 body pairs excluded (palm-casing overlaps at the open pose, same-finger links); different fingers collide"
+           ],
+           "model_sha256": "8aa8aa3686fc…",
+           "ball_local": [
+            0.012,
+            0.058,
+            -0.12
+           ]
+          },
+          "placement": "Uniform local X +-12mm,Z +-15mm;20% stress +-20mm,+-25mm. Uniform arbitrary orientation. Human setup slowly lowers ball1.5s,holds.6s,support fades3s,then3s completely unforced settling. No seeds rejected. Setup external forces never used in episode. Raw placement targets may funnel into a smaller resting region: claim is only settled human placement.",
+          "start_validation": {
+           "episodes": 64,
+           "seeds": "1000..1063",
+           "pass": 64,
+           "hardware_safe": 64,
+           "setup_hardware_ticks": 0
+          }
+         },
+         "randomization": {
+          "nominal80pct": {
+           "radius": [
+            0.0327,
+            0.0343
+           ],
+           "mass": [
+            0.056,
+            0.0594
+           ],
+           "mu": [
+            0.45,
+            1.1
+           ]
+          },
+          "stress20pct": {
+           "radius": [
+            0.0315,
+            0.0355
+           ],
+           "mass": [
+            0.05,
+            0.065
+           ],
+           "mu": [
+            0.3,
+            1.3
+           ]
+          },
+          "all_uniform": {
+           "contact_tc": [
+            0.006,
+            0.01
+           ],
+           "damping_ratio": [
+            0.6,
+            1.2
+           ],
+           "inertia_factor_mr2": [
+            0.55,
+            0.7
+           ]
+          },
+          "contact": "48 hand-ball pairs positive solref(.008,1)nominal;condim4. Ball-floor direct gains(-100000,-58),solimp(.9,.95,.001),ballmargin1mm. Fixed floor calibrated against public ITF rebound prior; not measured this ball."
+         },
+         "episode": {
+          "deadline_s": 18,
+          "policy_hz": 50,
+          "command_hz": 500,
+          "termination": "floor,unreachable ball,hardware failure or deadline; never reset object within episode"
+         },
+         "validation": {
+          "model_sha256": "8aa8aa3686fc…",
+          "hand_mass_kg": 0.7088000000000002,
+          "joint_order": [
+           "r_thumb_cmc_flex",
+           "r_thumb_cmc_abd",
+           "r_thumb_mcp",
+           "r_thumb_ip",
+           "r_index_finger_mcp_flex",
+           "r_index_finger_mcp_abd",
+           "r_index_finger_pip",
+           "r_index_finger_dip",
+           "r_middle_finger_mcp_flex",
+           "r_middle_finger_mcp_abd",
+           "r_middle_finger_pip",
+           "r_middle_finger_dip",
+           "r_ring_finger_mcp_flex",
+           "r_ring_finger_mcp_abd",
+           "r_ring_finger_pip",
+           "r_ring_finger_dip",
+           "r_pinky_mcp_flex",
+           "r_pinky_mcp_abd",
+           "r_pinky_pip",
+           "r_pinky_dip"
+          ],
+          "max_wrist_position_error_m": 0.0007173552744991412,
+          "p95_wrist_position_error_m": 0.0007121818188258602,
+          "max_wrist_orientation_error_deg": 0.4472104551784265,
+          "hardware_ok": true,
+          "hardware_max": [
+           0.0,
+           0.020691003724078044,
+           0.37241095431585336
+          ],
+          "max_contact_overlap_m": 0.0002836908081061654,
+          "nominal_setup_hardware_ticks": 0,
+          "description": "1cm1Hz wrist circle plus5degree1Hz yaw with matching feedforward; fixed published gains and torque/force saturation. Object supported in the cup.",
+          "retargeting": {
+           "method": "Rigid yaw aligns human initial finger heading; wrist translation and gravity-aligned ball flight retained, anatomical orientation blended from selected12degree cup over.5s; long finger flexion/abduction changes mapped as offsets to robot cup joints, thumb MCP/IP similarly, joint limits clipped. This is a kinematic comparison only, never the policy.",
+           "max_contact_overlap_m": 0.03858590353255535,
+           "peak_joint_speed_ratio": 0.8209916359730889,
+           "limitation": "Human/robot geometry and hidden fingers differ; overlap or speed failures mean literal retargeting is not feasible. Actual controllers and PPO must prove physical skill."
+          }
+         },
+         "gpu_parity": {
+          "base_hold": {
+           "command": "outcome",
+           "cpu_file": "research/sim_dev/parity/cpu.json",
+           "gpu_file": "research/sim_dev/parity/gpu.json",
+           "criterion": "Outcome parity (same policy, both backends, >= min-seeds seeds, scored by the evaluator's judge) is the criterion that counts. State-level and replay checks are diagnostics.",
+           "min_seeds": 128,
+           "metrics": {
+            "success": null,
+            "hardware_violation": null,
+            "dropped": null
+           },
+           "failures": [],
+           "warnings": [],
+           "n_seeds": {
+            "cpu": 128,
+            "gpu": 128
+           },
+           "per_seed_agreement": {
+            "n_shared_seeds": 128,
+            "success": 1.0,
+            "hardware_violation": 1.0,
+            "success_cpu_only": 0,
+            "success_gpu_only": 0,
+            "mcnemar_p": 1.0
+           },
+           "status": "pass"
+          },
+          "kept_settle_ppo1": {
+           "command": "outcome",
+           "cpu_file": "research/sim_dev/parity/cpu_ppo1.json",
+           "gpu_file": "research/sim_dev/parity/gpu_ppo1.json",
+           "criterion": "Outcome parity (same policy, both backends, >= min-seeds seeds, scored by the evaluator's judge) is the criterion that counts. State-level and replay checks are diagnostics.",
+           "min_seeds": 128,
+           "metrics": {
+            "success": null,
+            "hardware_violation": null,
+            "dropped": null
+           },
+           "failures": [],
+           "warnings": [],
+           "n_seeds": {
+            "cpu": 128,
+            "gpu": 128
+           },
+           "per_seed_agreement": {
+            "n_shared_seeds": 128,
+            "success": 1.0,
+            "hardware_violation": 1.0,
+            "success_cpu_only": 0,
+            "success_gpu_only": 0,
+            "mcnemar_p": 1.0
+           },
+           "status": "pass"
+          },
+          "states": {
+           "command": "states",
+           "model": "research/sim_v1/scene.mjb",
+           "gpu_model": "research/sim_dev/parity/gpu_model.mjb",
+           "states_file": "research/sim_dev/parity/states.npz",
+           "states_in_file": 300,
+           "states_compared": 300,
+           "device": "cuda:0",
+           "float32_note": "MJWarp computes in float32. States are rounded to float32 and the same rounded values are given to the CPU, so initial rounding is not counted as a difference; float32 arithmetic still is.",
+           "internal_buffers": {
+            "nconmax": 128,
+            "njmax": 900
+           },
+           "contacts_per_state_mean": {
+            "cpu": 9.213333333333333,
+            "gpu": 9.206666666666667
+           },
+           "contact_set_mismatch": 0.006666666666666667,
+           "frac_states_penetrating_pair_missing_on_gpu": 0.0,
+           "frac_states_penetrating_pair_extra_on_gpu": 0.0,
+           "normal_deg_matched_pairs": {
+            "p50": 0.0003887305574416662,
+            "p95": 0.0021189623037507484,
+            "n": 1642
+           },
+           "normal_deg_state_max": {
+            "p50": 0.0013370835799444282,
+            "p95": 0.0057496894812981
+           },
+           "pair_type_breakdown": {
+            "mesh-mesh": null,
+            "mesh-sphere": null
+           },
+           "qacc_rel_err": {
+            "all_dofs": null,
+            "wrist_free": null,
+            "tennis_ball_free": null
+           },
+           "qacc_rel_err_formula": "|qacc_gpu - qacc_cpu| / (|qacc_cpu| + 1e-3), per state",
+           "nonfinite_gpu_qacc_states": 0,
+           "buffers": {
+            "nconmax": 128,
+            "njmax": 900,
+            "caps_source": "nconmax given, njmax given",
+            "peak_contacts_per_world": 15,
+            "peak_constraints_per_world": 60,
+            "peak_cpu_ncon": 15,
+            "peak_cpu_nefc": 60,
+            "worlds_over_nconmax": 0,
+            "worlds_over_njmax": 0,
+            "first_states_over": null,
+            "suggested_nconmax": 32,
+            "suggested_njmax": 120,
+            "note": "Per-world check (conservative): MJWarp pools contacts as nconmax*nworld, but a batch where many worlds reach this state would overflow. Sampled states may miss the worst DR start; check overflow on every rollout too."
+           },
+           "qacc_threshold_on": "tennis_ball_free",
+           "warnings": [
+            "qacc relative error p95 4.328 (tennis_ball_free) > 0.10"
+           ],
+           "failures": [],
+           "note": "Outcome parity (same policy, both backends, >= min-seeds seeds, scored by the evaluator's judge) is the criterion that counts. State-level and replay checks are diagnostics.",
+           "status": "warn"
+          },
+          "meta": {
+           "seconds": 17.47441530227661,
+           "worlds": 4096,
+           "fields": [
+            "body_mass",
+            "body_inertia",
+            "body_subtreemass",
+            "body_invweight0",
+            "dof_invweight0",
+            "geom_size",
+            "geom_rbound",
+            "geom_aabb",
+            "pair_friction",
+            "pair_solref"
+           ],
+           "buffers": [
+            51712,
+            56
+           ],
+           "overflow_worlds": 0
+          }
+         },
+         "limitations": [
+          "Literal retarget38.6mm overlap is physically infeasible, not a policy success. Physical controller check max.284mm overlap.",
+          "No deformable shell/cover; uncertain contact/inertia randomized.",
+          "Settled human placement assumption.",
+          "Simulation claim only, no official or real-world evaluation."
+         ],
+         "reason": "Same model and settings as simulation1;adds completed CPU/GPU validation and kept checkpoint parity"
+        },
+        "files": {
+         "scene_1": {
+          "sha": "a0b0c2ad90bd",
+          "bytes": 1949,
+          "content_type": "application/json"
+         },
+         "scene_2": {
+          "sha": "09bcd68c80b8",
+          "bytes": 1959,
+          "content_type": "application/json"
+         },
+         "scene_3": {
+          "sha": "c32d8dcb2dfe",
+          "bytes": 2932,
+          "content_type": "application/json"
+         }
+        },
+        "out_of_order": false
+       },
+       {
+        "id": "r0049",
+        "seq": 49,
+        "kind": "note",
+        "version": 28,
+        "recorded_utc": "2026-11-15T05:21:05Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Rolling-controller search budget:up to1600 nominal simulated2.2s baseline tests (~10min CPU),no RL and no final-policy claim. Failure r0046 seed765840375 loses ball by1.34s;test stronger centre feedback,normal grip,thumb tangential compliance and reversed palm-normal rolling direction allowed by TASK spinning instruction. First seek a stable70-90degree opposed submotion,then repeat genuine large rolling/regrasp motions to long-phase path target. Only full declared criteria and fresh feasibility gate can prove roll1;do not lower path/net thresholds."
+        },
+        "files": {}
        }
       ],
       "first_recon_utc": "2026-11-15T03:28:15Z",
@@ -315125,6 +316091,19 @@
         "body": {
          "kind": "hypothesis",
          "text": "Unkeptcapture-entryexperimentwhilecurrent150budgetfinishes:checkpoint100developmentadjacentblack0/9firmvsseparatedall32/32,viewedr0164failures51877472/777792033targetremainsbesideneighborafterpartialclosure. Tryone2.5cmhorizontaltranslationawayfromnearestneighboratphase2partialclosure,thenpublicreapproach/regrasp;onlyifneighbor<7cm/objectstillontable. Faster1.2rad/ssoftwareqrateand.65sclosurebatchedtosaverecoverytime,actuallead.06unchanged;hardwaremaxspeedcheckedinRIGHT_HAND. Allmotionsdynamic,noobjectactuation/reset/contacts/params/onlinephysicsplanning. Adaptationtotouching/leaningTASKdeploymentnotseparatehuman-examplestep;muststateinprimitive_specifkept. NotRL/finaluntiltrainedandgated;doNOTchangekeptpolicyyet."
+        },
+        "files": {}
+       },
+       {
+        "id": "r0189",
+        "seq": 189,
+        "kind": "note",
+        "version": 55,
+        "recorded_utc": "2026-11-15T05:20:29Z",
+        "exception": false,
+        "body": {
+         "kind": "decision",
+         "text": "Negative capture experiments: separation-and-regrasp42/64firm, timing-only50/64, black-adjacent preload1.5and2each50/64, allHW0, versus original52/64. `None` kept. C100 category analysis: separated32/32firm but adjacentblack0/9; this identifies capture limitation, not proven separation remedy. Repeat r0187 hardware2 are physicaljointspeedratio1.2568, not action timeouts. Viewed repeat4 failures1387571775/465584785: hand carries first plug left by16.9s; second lifted at27s then low/unsupported around30s and remains right. Hypothesis: initial snapshot drifts during planning then command replay loses grip/impacts. Testing2sphysicalsettle before snapshot plus slower.45freeapproach; no actual resets/actuation, same criteria."
         },
         "files": {}
        }
@@ -628855,7 +629834,7 @@
    "plug": {
     "runs": {
      "10": {
-      "exported_utc": "2026-11-15T05:10:01Z",
+      "exported_utc": "2026-11-15T05:20:01Z",
       "submissions": [
        {
         "sub": "s04",
@@ -629510,7 +630489,7 @@
       ]
      },
      "11": {
-      "exported_utc": "2026-11-15T05:10:01Z",
+      "exported_utc": "2026-11-15T05:20:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -629905,7 +630884,7 @@
       ]
      },
      "8": {
-      "exported_utc": "2026-11-15T05:10:01Z",
+      "exported_utc": "2026-11-15T05:20:01Z",
       "submissions": [
        {
         "sub": "s01",
@@ -630166,7 +631145,7 @@
   "audit": true
  },
  "staging_env": {
-  "staged_utc": "2026-11-15T05:12:32Z",
+  "staged_utc": "2026-11-15T05:22:33Z",
   "tasks": {
    "cube": {
     "files": {
@@ -630250,7 +631229,7 @@
   }
  },
  "bench": {
-  "staged_utc": "2026-11-15T05:12:32Z",
+  "staged_utc": "2026-11-15T05:22:33Z",
   "tasks": {
    "tennis": {
     "status": "available",
